@@ -3449,6 +3449,103 @@ int test31(int argc, char **argv) {
 
 
 
+int test32(int argc, char **argv) {
+  LC_CLIENT *cl;
+  GWEN_DB_NODE *db;
+  LC_CARD *card;
+  LC_CLIENT_RESULT res;
+
+  db=GWEN_DB_Group_new("client");
+  if (GWEN_DB_ReadFile(db,
+                       "chipcardc.conf",
+                       GWEN_DB_FLAGS_DEFAULT |
+                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+    fprintf(stderr, "ERROR: Could not read file\n");
+    return 1;
+  }
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfig(cl, db)) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  GWEN_DB_Group_free(db); db=0;
+
+  fprintf(stderr, "INFO: Sending StartWait\n");
+  res=LC_Client_StartWait(cl, 0, 0);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "INFO: Waiting for card\n");
+  card=LC_Client_WaitForNextCard(cl, 30000);
+  if (!card) {
+    fprintf(stderr, "ERROR: No card found.\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: We got this card:\n");
+  LC_Card_Dump(card, stderr, 2);
+
+  if (LC_DDVCard_ExtendCard(card)) {
+    fprintf(stderr, "Could not extend card as DDV card\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: Opening card\n");
+  res=LC_Card_Open(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Stopping wait\n");
+  res=LC_Client_StopWait(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Selecting EF...\n");
+  res=LC_ProcessorCard_SelectEF(card, "EF_BNK");
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr,
+          "Signkey: %d, %d\n",
+          LC_DDVCard_GetSignKeyVersion(card),
+          LC_DDVCard_GetSignKeyNumber(card));
+  fprintf(stderr,
+          "Cryptkey: %d, %d\n",
+          LC_DDVCard_GetCryptKeyVersion(card),
+          LC_DDVCard_GetCryptKeyNumber(card));
+
+  fprintf(stderr, "INFO: Closing card\n");
+  res=LC_Card_Close(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Sleeping...\n");
+  sleep(5);
+
+  LC_Client_free(cl);
+  return 0;
+}
+
+
+
 int testFS1(int argc, char **argv) {
   LC_FS *fs;
   GWEN_TYPE_UINT32 clid;
@@ -3842,6 +3939,8 @@ int main(int argc, char **argv) {
     return test30(argc, argv);
   else if (strcasecmp(argv[1], "test31")==0)
     return test31(argc, argv);
+  else if (strcasecmp(argv[1], "test32")==0)
+    return test32(argc, argv);
   else if (strcasecmp(argv[1], "fs")==0)
     return testFS1(argc, argv);
   else if (strcasecmp(argv[1], "fs2")==0)
