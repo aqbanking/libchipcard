@@ -1,5 +1,5 @@
 <cards>
-  <card name="ProcessorCard" type="processor" >
+  <card name="ProcessorCard" >
 
     <commands>
     	<!-- Select DF by 16-bit-id -->

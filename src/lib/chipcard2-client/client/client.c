@@ -1408,6 +1408,16 @@ int LC_Client_HandleCardAvailable(LC_CLIENT *cl, GWEN_DB_NODE *dbReq){
                    cardType,
                    rflags,
                    atr);
+
+  for (i=0;; i++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbReq, "body/cardTypes", i, 0);
+    if (!s)
+      break;
+    LC_Card_AddCardType(card, s);
+  }
+
   LC_Card_List_Add(card, cl->cards);
   DBG_INFO(LC_LOGDOMAIN, "Card added");
   return 0;
@@ -2452,6 +2462,208 @@ LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
 
   return LC_Client_ResultOk;
 }
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCardCheck(LC_CLIENT *cl,
+                                         LC_CARD *cd){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  dbReq=GWEN_DB_Group_new("CardCheck");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "cardid", numbuf);
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, cd, LC_Card_GetServerId(cd), dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckCardCheck(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+  const char *code;
+  const char *text;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  code=GWEN_DB_GetCharValue(dbRsp, "body/code", 0, "ERROR");
+  text=GWEN_DB_GetCharValue(dbRsp, "body/text", 0, "(none)");
+  DBG_DEBUG(LC_LOGDOMAIN, "CardCheck result: %s (%s)", code, text);
+  if (strcasecmp(code, "OK"))
+    res=LC_Client_ResultOk;
+  else if (strcasecmp(code, "REMOVED")){
+    res=LC_Client_ResultCardRemoved;
+  }
+  else {
+    res=LC_Client_ResultGeneric;
+  }
+  GWEN_DB_Group_free(dbRsp);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CardCheck(LC_CLIENT *cl, LC_CARD *card){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  rqid=LC_Client_SendCardCheck(cl, card);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"CardCheck\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"CardCheck\"");
+    }
+    return res;
+  }
+  res=LC_Client_CheckCardCheck(cl, rqid);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CardCheck\"");
+    return LC_Client_ResultCmdError;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCardReset(LC_CLIENT *cl, LC_CARD *cd){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  dbReq=GWEN_DB_Group_new("CardReset");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "cardid", numbuf);
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, cd, LC_Card_GetServerId(cd), dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+  const char *code;
+  const char *text;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  code=GWEN_DB_GetCharValue(dbRsp, "body/code", 0, "ERROR");
+  text=GWEN_DB_GetCharValue(dbRsp, "body/text", 0, "(none)");
+  DBG_DEBUG(LC_LOGDOMAIN, "CardReset result: %s (%s)", code, text);
+  if (strcasecmp(code, "OK"))
+    res=LC_Client_ResultOk;
+  else
+    res=LC_Client_ResultGeneric;
+  GWEN_DB_Group_free(dbRsp);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CardReset(LC_CLIENT *cl,
+                                     LC_CARD *card){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  rqid=LC_Client_SendCardReset(cl, card);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"CardReset\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"CardReset\"");
+    }
+    return res;
+  }
+  res=LC_Client_CheckCardReset(cl, rqid);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CardReset\"");
+    return LC_Client_ResultCmdError;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 <cards>
-  <card name="STARCOS" extends="ProcessorCard" type="processor" >
+  <card name="STARCOS" >
     <commands>
 
       <!-- Secure PIN verification using the reader's keypad -->

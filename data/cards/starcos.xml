@@ -6,15 +6,21 @@
         RSA card (card from G and D with STARCOS operating system)
       </descr>
       <atrs>
-        <atr>3BB79400c02431fe6553504b32339000b4</atr>
-        <atr>3BB794008131fe6553504b32339000d1</atr>
+        <atr> <!-- unknown -->
+          3B B7 94 00 c0 24 31 fe 65 53 50 4b 32 33 90 00 b4
+        </atr>
+        <atr> <!-- 2.1 -->
+          3B BF 18 00 81 31 70 55 53 54 41 52 43 4F 53 20 53 32 31 20 43 90 00 FA
+        </atr>
+        <atr> <!-- 2.2 -->
+          3B B7 94 00 81 31 FE 65 53 50 4B 32 32 90 00 D0
+        </atr>
+        <atr> <!-- 2.3 -->
+          3B B7 94 00 81 31 fe 65 53 50 4b 32 33 90 00 d1
+        </atr>
       </atrs>
     </cardinfo>
     
-    <apps>
-      <app name="starcos" />
-    </apps
-
     <formats>
       <format id="KeyLogDescr">
         <ELEM name="status" type="byte" >

@@ -1,2 +1,2 @@
-SUBDIRS=lib drivers tools services test
+SUBDIRS=lib drivers tools services fake_ctapi test
 

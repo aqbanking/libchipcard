@@ -239,6 +239,14 @@ int LC_CardServer_HandleGetDriverVar(LC_CARDSERVER *cs,
                                      GWEN_TYPE_UINT32 rid,
                                      GWEN_DB_NODE *dbReq);
 
+int LC_CardServer_HandleCardCheck(LC_CARDSERVER *cs,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq);
+
+int LC_CardServer_HandleCardReset(LC_CARDSERVER *cs,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq);
+
 /*@}*/
 
 

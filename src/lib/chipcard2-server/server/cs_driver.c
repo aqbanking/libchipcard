@@ -378,18 +378,19 @@ int LC_CardServer_CheckReader(LC_CARDSERVER *cs, LC_READER *r) {
     /* check for delayed start */
     if (LC_Reader_GetStatus(r)==LC_ReaderStatusDown &&
         LC_Reader_IsAvailable(r) &&
-        LC_Reader_GetWantRestart(r)) {
+        LC_Reader_GetWantRestart(r) &&
+        LC_Driver_GetStatus(d)==LC_DriverStatusDown) {
       int rv;
 
-        DBG_ERROR(0, "Delayed start of reader \"%s\"",
-                  LC_Reader_GetReaderName(r));
-        rv=LC_CardServer_StartReader(cs, r);
-        if (rv) {
-          DBG_INFO(0, "here");
-          return -1;
-        }
-        LC_Reader_SetWantRestart(r, 0);
-        couldDoSomething++;
+      DBG_ERROR(0, "Delayed start of reader \"%s\"",
+                LC_Reader_GetReaderName(r));
+      rv=LC_CardServer_StartReader(cs, r);
+      if (rv) {
+        DBG_INFO(0, "here");
+        return -1;
+      }
+      LC_Reader_SetWantRestart(r, 0);
+      couldDoSomething++;
     } /* if wantRestart */
   } /* if status is DOWN */
 

@@ -136,8 +136,10 @@ GWEN_BUFFER *LC_Slot_GetAtr(const LC_SLOT *sl){
 
 void LC_Slot_SetAtr(LC_SLOT *sl, GWEN_BUFFER *atr){
   assert(sl);
-  GWEN_Buffer_free(sl->atr);
-  sl->atr=atr;
+  if (sl->atr!=atr) {
+    GWEN_Buffer_free(sl->atr);
+    sl->atr=atr;
+  }
 }
 
 

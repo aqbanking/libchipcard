@@ -59,9 +59,9 @@ TakeCardResponse {
 CardAvailable {
   char CardId     ="0x12345678"
   char CardType   ="PROCESSOR"     # or "MEMORY"
-
+  char CardTypes   ="DDV1"     # or any other card type whose definition
+                               # matches the ATR 
   char ReaderFlags="DISPLAY", "KEYPAD"
-  
   bin ATR         ="01020304"
 }
 
@@ -125,9 +125,9 @@ GetDriverVarResponse {
 
 
 
-2.6. Notifications (general)
+2.8. Notifications (general)
 ----------------------------
-2.6.1. Request
+2.8.1. Request
 
 Notification {
   clientId="0x12345" # client id assigned by the server
@@ -139,9 +139,9 @@ Notification {
 }
 
 
-2.7. Driver-Notifications
+2.9. Driver-Notifications
 -------------------------
-2.7.1. Request
+2.9.1. Request
 
 Notification {
   clientId="0x12345" # client id assigned by the server
@@ -159,9 +159,9 @@ Notification {
 
 
 
-2.8. Reader-Notifications
+2.10. Reader-Notifications
 -------------------------
-2.8.1. Request
+2.10.1. Request
 
 Notification {
   clientId="0x12345" # client id assigned by the server
@@ -178,6 +178,43 @@ Notification {
     shortDescr="Towitoko Chip Drive Micro" # short description
     info="blablabla"           # optional info (depending on "ncode")
   }
+}
+
+
+
+2.11. CardCheck
+---------------
+
+2.11.1. Request
+
+CardCheck {
+  char CardId="0x12345678"
+}
+
+
+2.11.2. Response
+
+CardCheckResponse {
+  code="OK"     # or "REMOVED"
+  text="ok"     # descriptive text
+}
+
+
+2.12. CardReset
+---------------
+
+2.12.1. Request
+
+CardReset {
+  char CardId="0x12345678"
+}
+
+
+2.11.2. Response
+
+CardResetResponse {
+  code="OK"     #
+  text="ok"     # descriptive text
 }
 
 

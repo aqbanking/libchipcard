@@ -29,6 +29,7 @@ struct LC_CARD {
   unsigned int slot;
   LC_CARD_TYPE type;
   GWEN_TYPE_UINT32 readersCardId;
+  GWEN_STRINGLIST *types;
 
   LC_CLIENT *client;
   time_t busySince;

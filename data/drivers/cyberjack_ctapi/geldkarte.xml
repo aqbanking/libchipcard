@@ -1,14 +1,5 @@
 <cards>
-  <card name="geldkarte" extends="ProcessorCard" type="processor" >
-    <cardinfo>
-      <name>Geldkarte</name>
-      <descr>
-        Geldkarte (German value card)
-      </descr>
-      <atrs>
-        <atr>3bef00ff81314245656306030302500006144a9047024038</atr>
-      </atrs>
-    </cardinfo>
+  <card name="geldkarte" >
   
     <commands>
 

@@ -1,7 +1,9 @@
-- more work on file system (added new file system which works with real
-  files in a folder).
-  When this is finished I will have to write a service which will for example
-  offer a filesystem hierarchy which shows information about readers, cards,
-  clients, service etc). Later I can built a KIO module for that...
-- fixed a bug in the driver description file for Cyberjack ("autoPortMode"
-  must be set to "vendorId")
+- added command "CardCheck" which checks whether a card has been removed
+- added command "CardReset" 
+- added an ATR database: When a card is inserted the server checks the list of
+  known cards for ATRs. If any of them matches the corresponding card type is 
+  added to the list of possible card types. "chipcard-tool atr" should now show
+  this.
+  However, this only lists the *possible* card types, e.g. there is no way to
+  tell an EC (Euro Cheque) card from a DDV card by ATR.
+- started working on a fake CTAPI

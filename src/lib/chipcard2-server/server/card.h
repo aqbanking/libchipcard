@@ -21,6 +21,7 @@ typedef struct LC_CARD LC_CARD;
 
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/misc.h>
+#include <gwenhywfar/stringlist.h>
 #include <chipcard2-server/server/reader.h>
 #include <chipcard2-server/server/client.h>
 
@@ -75,6 +76,9 @@ time_t LC_Card_GetBusySince(const LC_CARD *cd);
 GWEN_BUFFER *LC_Card_GetAtr(const LC_CARD *cd);
 
 LC_CARD_TYPE LC_Card_GetType(const LC_CARD *cd);
+
+const GWEN_STRINGLIST *LC_Card_GetTypes(const LC_CARD *cd);
+int LC_Card_AddType(LC_CARD *cd, const char *s);
 
 GWEN_TYPE_UINT32 LC_Card_GetFirstWaitingClient(const LC_CARD *cd);
 int LC_Card_AddWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id);

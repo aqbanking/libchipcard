@@ -1,16 +1,5 @@
 <cards>
   <card name="ddv0">
-    <cardinfo>
-      <name>HBCICard</name>
-      <descr>
-        HBCI card, old style (used before 2001)
-      </descr>
-      <atr>3bef00ff81314245656306030302500006144a9047024038</atr>
-    </cardinfo>
-    
-    <apps>
-      <app name="ddv0" />
-    </apps
   
     <commands>
 

@@ -249,6 +249,7 @@ int LC_CardServer_CheckCards(LC_CARDSERVER *cs) {
             GWEN_TYPE_UINT32 flags;
             LC_CARD_TYPE ct;
             GWEN_TYPE_UINT32 rid;
+            GWEN_STRINGLISTENTRY *se;
 
             /* card is newly available to this client */
             needIO++;
@@ -287,13 +288,32 @@ int LC_CardServer_CheckCards(LC_CARDSERVER *cs) {
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "readerflags", "AUTO");
 
+            /* add card types */
+            se=GWEN_StringList_FirstEntry(LC_Card_GetTypes(cd));
+            while (se) {
+              const char *s;
+
+              s=GWEN_StringListEntry_Data(se);
+              assert(s);
+              GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
+                                   "cardtypes", s);
+              se=GWEN_StringListEntry_Next(se);
+            }
+
+            /* add cards' base type */
             ct=LC_Card_GetType(cd);
-            if (ct==LC_CardTypeProcessor)
+            if (ct==LC_CardTypeProcessor) {
+              GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
+                                   "cardtypes", "ProcessorCard");
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "cardtype", "PROCESSOR");
-            else if (ct==LC_CardTypeMemory)
+            }
+            else if (ct==LC_CardTypeMemory) {
+              GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
+                                   "cardtypes", "MemoryCard");
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "cardtype", "MEMORY");
+            }
             else
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "cardtype", "UNKNOWN");
@@ -456,6 +476,7 @@ int LC_CardServer_HandleCardInserted(LC_CARDSERVER *cs,
 
   card=LC_Card_new(r, slotNum, cardNum, ct, atr);
   LC_Card_SetStatus(card, LC_CardStatusInserted);
+  LC_CardMgr_AddCardTypesByAtr(cs->cardManager, card);
   LC_Card_List_Add(card, cs->freeCards);
   DBG_NOTICE(0, "Free card added with id \"%08x\" in reader \"%s\"(%08x)",
              LC_Card_GetCardId(card),

@@ -1824,4 +1824,226 @@ int LC_CardServer_HandleSetNotify(LC_CARDSERVER *cs,
 
 
 
+int LC_CardServer_HandleCardCheck(LC_CARDSERVER *cs,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 cardId;
+  LC_CARD *card;
+  LC_CLIENT *cl;
+  GWEN_TYPE_UINT32 clientId;
+  GWEN_DB_NODE *dbRsp;
+
+  assert(dbReq);
+  clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
+  assert(clientId);
+
+  cl=LC_Client_List_First(cs->clients);
+  while(cl) {
+    if (LC_Client_GetClientId(cl)==clientId)
+      break;
+    cl=LC_Client_List_Next(cl);
+  } /* while */
+  if (!cl) {
+    DBG_ERROR(0, "Client \"%08x\" not found", clientId);
+    /* Send SegResult */
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+				    "Unknown client id");
+    return -1;
+  }
+
+  DBG_NOTICE(0, "Client %08x: CardCheck [%s/%s]",
+             clientId,
+             LC_Client_GetApplicationName(cl),
+             LC_Client_GetUserName(cl));
+
+  /* get card id */
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/cardid", 0, "0"),
+		"%x", &cardId)) {
+    DBG_ERROR(0, "Bad client message");
+    return -1;
+  }
+
+  /* search for card in free list */
+  card=LC_Card_List_First(cs->activeCards);
+  while(card) {
+    if (LC_Card_GetCardId(card)==cardId) {
+      /* card found */
+      break;
+    }
+    card=LC_Card_List_Next(card);
+  } /* while */
+
+  if (!card) {
+    /* search for card in active list */
+    card=LC_Card_List_First(cs->freeCards);
+    while(card) {
+      if (LC_Card_GetCardId(card)==cardId) {
+	/* card found */
+        break;
+      }
+      card=LC_Card_List_Next(card);
+    } /* while */
+  }
+
+  if (!card) {
+    DBG_ERROR(0, "No card with id \"%08x\" found", cardId);
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Card not found");
+    return -1;
+  }
+
+  if (LC_Card_GetClient(card)==cl) {
+    DBG_ERROR(0, "Card \"%08x\" not owned by this client", cardId);
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_CARD_NOT_OWNED,
+                                    "Card not owned");
+    return -1;
+  }
+
+  /* create response for client */
+  dbRsp=GWEN_DB_Group_new("CardCheckResponse");
+  if (LC_Card_GetStatus(card)==LC_CardStatusRemoved) {
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "REMOVED");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", "Card has been removed");
+  }
+  else {
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "OK");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", "Card is ok");
+  }
+  /* send response */
+  if (GWEN_IPCManager_SendResponse(cs->ipcManager, rid, dbRsp)) {
+    DBG_ERROR(0, "Could not send response to client");
+    return -1;
+  }
+  DBG_DEBUG(0, "Response sent.");
+  GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0);
+  return 0;
+}
+
+
+
+int LC_CardServer_HandleCardReset(LC_CARDSERVER *cs,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 cardId;
+  LC_CARD *card;
+  LC_CLIENT *cl;
+  GWEN_TYPE_UINT32 clientId;
+  GWEN_DB_NODE *dbRsp;
+  GWEN_TYPE_UINT32 ridReset;
+
+  assert(dbReq);
+  clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
+  assert(clientId);
+
+  cl=LC_Client_List_First(cs->clients);
+  while(cl) {
+    if (LC_Client_GetClientId(cl)==clientId)
+      break;
+    cl=LC_Client_List_Next(cl);
+  } /* while */
+  if (!cl) {
+    DBG_ERROR(0, "Client \"%08x\" not found", clientId);
+    /* Send SegResult */
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+				    "Unknown client id");
+    return -1;
+  }
+
+  DBG_NOTICE(0, "Client %08x: CardReset [%s/%s]",
+             clientId,
+             LC_Client_GetApplicationName(cl),
+             LC_Client_GetUserName(cl));
+
+  /* get card id */
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/cardid", 0, "0"),
+		"%x", &cardId)) {
+    DBG_ERROR(0, "Bad client message");
+    return -1;
+  }
+
+  /* search for card in free list */
+  card=LC_Card_List_First(cs->activeCards);
+  while(card) {
+    if (LC_Card_GetCardId(card)==cardId) {
+      /* card found */
+      break;
+    }
+    card=LC_Card_List_Next(card);
+  } /* while */
+
+  if (!card) {
+    /* search for card in active list */
+    card=LC_Card_List_First(cs->freeCards);
+    while(card) {
+      if (LC_Card_GetCardId(card)==cardId) {
+	/* card found */
+        break;
+      }
+      card=LC_Card_List_Next(card);
+    } /* while */
+  }
+
+  if (!card) {
+    DBG_ERROR(0, "No card with id \"%08x\" found", cardId);
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Card not found");
+    return -1;
+  }
+
+  if (LC_Card_GetClient(card)==cl) {
+    DBG_ERROR(0, "Card \"%08x\" not owned by this client", cardId);
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_CARD_NOT_OWNED,
+                                    "Card not owned");
+    return -1;
+  }
+
+  if (LC_Card_GetStatus(card)==LC_CardStatusRemoved) {
+    DBG_ERROR(0, "Card \"%08x\" removed", cardId);
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_CARD_REMOVED,
+                                    "Card removed");
+    return -1;
+  }
+
+  /* reset card */
+  ridReset=LC_CardServer_SendResetCard(cs, card);
+  if (ridReset==0) {
+    DBG_ERROR(0, "Could not send card reset request");
+  }
+  else
+    /* we don't expect an answer, delete request */
+    /* TODO: Enqueue this request and return success only if RESET really
+     * succeeded */
+    GWEN_IPCManager_RemoveRequest(cs->ipcManager, ridReset, 1);
+
+  /* create response for client */
+  dbRsp=GWEN_DB_Group_new("CardCheckResponse");
+  GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "code", "OK");
+  GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "text", "Card is ok");
+
+  /* send response */
+  if (GWEN_IPCManager_SendResponse(cs->ipcManager, rid, dbRsp)) {
+    DBG_ERROR(0, "Could not send response to client");
+    return -1;
+  }
+  DBG_DEBUG(0, "Response sent.");
+  GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0);
+  return 0;
+}
+
+
+
+
 

@@ -47,6 +47,7 @@ GWEN_TYPE_UINT32 LC_Card_GetCardId(const LC_CARD *cd);
 GWEN_TYPE_UINT32 LC_Card_GetReaderFlags(const LC_CARD *cd);
 
 const char *LC_Card_GetCardType(const LC_CARD *cd);
+const GWEN_STRINGLIST *LC_Card_GetCardTypes(const LC_CARD *cd);
 GWEN_BUFFER *LC_Card_GetAtr(const LC_CARD *cd);
 
 
@@ -65,6 +66,9 @@ void LC_Card_SetCloseFn(LC_CARD *card, LC_CARD_CLOSE_FN fn);
 
 LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
 LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
+
+LC_CLIENT_RESULT LC_Card_Check(LC_CARD *card);
+LC_CLIENT_RESULT LC_Card_Reset(LC_CARD *card);
 
 int LC_Card_SelectApp(LC_CARD *card, const char *appName);
 

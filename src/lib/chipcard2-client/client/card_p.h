@@ -31,6 +31,8 @@ struct LC_CARD {
   GWEN_TYPE_UINT32 serverId;
   GWEN_BUFFER *atr;
 
+  GWEN_STRINGLIST *cardTypes;
+
   LC_CARDCONTEXT *context;
 
   LC_CARD_OPEN_FN openFn;

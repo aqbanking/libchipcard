@@ -36,7 +36,8 @@ typedef enum {
   LC_Client_ResultInvalid,
   LC_Client_ResultInternal,
   LC_Client_ResultGeneric,
-  LC_Client_ResultNoData
+  LC_Client_ResultNoData,
+  LC_Client_ResultCardRemoved
 } LC_CLIENT_RESULT;
 
 
@@ -318,6 +319,17 @@ LC_CLIENT_RESULT LC_Client_CheckGetDriverVar(LC_CLIENT *cl,
                                              GWEN_BUFFER *vbuf);
 
 
+GWEN_TYPE_UINT32 LC_Client_SendCardCheck(LC_CLIENT *cl,
+                                         LC_CARD *cd);
+
+LC_CLIENT_RESULT LC_Client_CheckCardCheck(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
+
+GWEN_TYPE_UINT32 LC_Client_SendCardReset(LC_CLIENT *cl, LC_CARD *cd);
+LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
+
+
 GWEN_TYPE_UINT32 LC_Client_SendOpenService(LC_CLIENT *cl,
                                            GWEN_TYPE_UINT32 serverId,
                                            GWEN_TYPE_UINT32 svid,
@@ -375,6 +387,12 @@ LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
                                         LC_CARD *card,
                                         const char *vname,
                                         GWEN_BUFFER *vbuf);
+
+LC_CLIENT_RESULT LC_Client_CardCheck(LC_CLIENT *cl,
+                                     LC_CARD *card);
+
+LC_CLIENT_RESULT LC_Client_CardReset(LC_CLIENT *cl,
+                                     LC_CARD *card);
 
 
 LC_CLIENT_RESULT LC_Client_OpenService(LC_CLIENT *cl,

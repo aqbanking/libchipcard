@@ -286,6 +286,10 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
   }
 
+  DBG_INFO(lg,
+           "Received response:");
+  GWEN_Text_LogString(buffer, lr, lg, GWEN_LoggerLevelInfo);
+
   if ((unsigned char)buffer[lr-2]!=0x90) {
     if ((unsigned char)buffer[lr-2]!=0x62) {
       DBG_INFO(lg,
@@ -330,8 +334,8 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
   }
 
   if (!(LC_Slot_GetStatus(sl) & LC_SLOT_STATUS_CARD_INSERTED)) {
-    DBG_NOTICE(LC_Reader_GetLogger(r),
-               "No card in slot, will not connect");
+    DBG_INFO(LC_Reader_GetLogger(r),
+             "No card in slot, will not connect");
     return 0;
   }
 
@@ -488,9 +492,15 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
                   "Slot %d has no card inserted", slotNum);
         LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
       }
-      if ((p[slotNum] & 0x4)) {
+      if (((p[slotNum] & 0xc)==0x4)) {
         DBG_DEBUG(LC_Reader_GetLogger(r),
                   "Slot %d is connected", slotNum);
+        LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+      }
+      else if (((p[slotNum] & 0xc)==0x0) && (p[slotNum] & 0x1)) {
+        DBG_DEBUG(LC_Reader_GetLogger(r),
+                  "No connection info, assuming slot %d is connected",
+                  slotNum);
         LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
       }
       else {
@@ -615,9 +625,11 @@ LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
 
 
 GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r) {
+#if 0
   LC_SLOT *sl;
   LC_SLOT_LIST *slotList;
   unsigned int oks;
+#endif
   char rvd;
   DRIVER_CTAPI *dct;
 
@@ -642,6 +654,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r) {
   }
   LC_Reader_AddStatus(r, LC_READER_STATUS_UP);
 
+#if 0
   slotList=LC_Reader_GetSlots(r);
   assert(slotList);
   oks=0;
@@ -656,6 +669,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r) {
     DBG_ERROR(LC_Reader_GetLogger(r), "Could not connect any slot");
     return DRIVER_CTAPI_ERROR_NO_SLOTS_CONNECTED;
   }
+#endif
   return 0;
 }
 

@@ -923,6 +923,12 @@ int LC_CardServer_HandleNextCommand(LC_CARDSERVER *cs) {
     else if (strcasecmp(name, "GetDriverVar")==0) {
       rv=LC_CardServer_HandleGetDriverVar(cs, ridNext, dbReq);
     }
+    else if (strcasecmp(name, "CardCheck")==0) {
+      rv=LC_CardServer_HandleCardCheck(cs, ridNext, dbReq);
+    }
+    else if (strcasecmp(name, "CardReset")==0) {
+      rv=LC_CardServer_HandleCardReset(cs, ridNext, dbReq);
+    }
     else if (strcasecmp(name, "ServiceOpen")==0) {
       rv=LC_CardServer_HandleServiceOpen(cs, ridNext, dbReq);
     }

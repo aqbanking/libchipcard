@@ -1,5 +1,14 @@
 <cards>
   <card name="kvk" type="memory" extends="card" >
+    <cardinfo>
+      <name>KrankenversichertenKarte</name>
+      <descr>
+        Krankenversicherten-Karte (German medical card)
+      </descr>
+      <atrs>
+        <atr>?? 13 10 ??</atr>
+      </atrs>
+    </cardinfo>
 
     <commands>
       <!-- Select Master File -->

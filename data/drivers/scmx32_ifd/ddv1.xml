@@ -1,5 +1,5 @@
 <cards>
-  <card name="ddv1" extends="ProcessorCard" type="processor" >
+  <card name="ddv1" >
 
     <commands>
 

@@ -6,15 +6,10 @@
         HBCI card, new style
       </descr>
       <atrs>
-        <atr>3bff1800ff81313c4565630d023102500010391350100410d5</atr>
+       <atr>3b ff 18 00 ff 81 31 3c 45 65 63 0d 02 31 02 50 00 10 *</atr>
       </atrs>
     </cardinfo>
     
-    <apps>
-      <app name="ddv1" />
-    </apps
-  
-
     <commands>
 
       <!-- Verify PIN -->

@@ -61,6 +61,9 @@ int LC_CardMgr_SelectCard(LC_CARDMGR *mgr,
 GWEN_XMLNODE *LC_CardMgr_FindCardNode(LC_CARDMGR *mgr,
                                       const char *cardName);
 
+int LC_CardMgr_AddCardTypesByAtr(LC_CARDMGR *mgr,
+                                 LC_CARD *card);
+
 #endif /* CHIPCARD_SERVER_CARDMGR_L_H */
 
 

@@ -6,7 +6,8 @@
         Geldkarte (German value card)
       </descr>
       <atrs>
-        <atr>3bef00ff81314245656306030302500006144a9047024038</atr>
+        <atr>3b ef 00 ff 81 31 ?? 45 65 63 *</atr>
+        <atr>3b ff 18 00 ff 81 31 ?? 45 65 63 *</atr>
       </atrs>
     </cardinfo>
     

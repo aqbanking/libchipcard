@@ -1022,7 +1022,7 @@ int LC_Driver_CheckStatusChanges(LC_DRIVER *d) {
           oldStatus=LC_Slot_GetLastStatus(sl);
   
           if (((newStatus^oldStatus) & LC_SLOT_STATUS_CARD_INSERTED) &&
-              !(newStatus & LC_SLOT_STATUS_CARD_CONNECTED) &&
+              /*!(newStatus & LC_SLOT_STATUS_CARD_CONNECTED) && */
               (newStatus & LC_SLOT_STATUS_CARD_INSERTED)){
             /* card has just been inserted, try to connect it */
             DBG_NOTICE(LC_Reader_GetLogger(r),

@@ -63,6 +63,7 @@ LC_CARD *LC_Card_new(LC_CLIENT *cl,
   cd->closeFn=LC_Card__Close;
 
   cd->driverVars=GWEN_DB_Group_new("driverVars");
+  cd->cardTypes=GWEN_StringList_new();
 
   return cd;
 }
@@ -76,11 +77,26 @@ void LC_Card_free(LC_CARD *cd){
     free(cd->cardType);
     free(cd->lastResult);
     free(cd->lastText);
+    GWEN_StringList_free(cd->cardTypes);
     GWEN_Buffer_free(cd->atr);
     LC_CardContext_free(cd->context);
     GWEN_LIST_FINI(LC_CARD, cd);
     GWEN_FREE_OBJECT(cd);
   }
+}
+
+
+
+const GWEN_STRINGLIST *LC_Card_GetCardTypes(const LC_CARD *cd){
+  assert(cd);
+  return cd->cardTypes;
+}
+
+
+
+int LC_Card_AddCardType(LC_CARD *cd, const char *s) {
+  assert(cd);
+  return GWEN_StringList_AppendString(cd->cardTypes, s, 0, 1);
 }
 
 
@@ -224,6 +240,7 @@ void LC_Card_ResetCardId(LC_CARD *cd){
 
 void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
   int k;
+  GWEN_STRINGLISTENTRY *se;
 
   for (k=0; k<insert; k++)
     fprintf(f, " ");
@@ -241,6 +258,19 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
   for (k=0; k<insert; k++)
     fprintf(f, " ");
   fprintf(f, "Card type   : %s\n", cd->cardType);
+  for (k=0; k<insert; k++)
+    fprintf(f, " ");
+  fprintf(f, "Card types  :");
+  se=GWEN_StringList_FirstEntry(cd->cardTypes);
+  while(se) {
+    const char *s;
+
+    s=GWEN_StringListEntry_Data(se);
+    assert(s);
+    fprintf(f, " %s", s);
+    se=GWEN_StringListEntry_Next(se);
+  } /* while */
+  fprintf(f, "\n");
   for (k=0; k<insert; k++)
     fprintf(f, " ");
   fprintf(f, "Server id   : %08x\n", cd->serverId);
@@ -487,6 +517,18 @@ LC_CLIENT_RESULT LC_Card_ExecAPDU(LC_CARD *card,
   }
 
   return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_Check(LC_CARD *card){
+  return LC_Client_CardCheck(card->client, card);
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_Reset(LC_CARD *card){
+  return LC_Client_CardReset(card->client, card);
 }
 
 

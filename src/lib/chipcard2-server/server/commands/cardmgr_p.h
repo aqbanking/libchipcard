@@ -27,7 +27,6 @@ struct LC_CARDMGR {
   GWEN_STRINGLIST *cardFiles;
   GWEN_STRINGLIST *appFiles;
   GWEN_STRINGLIST *loadedCards;
-  GWEN_STRINGLIST *loadedApps;
   GWEN_XMLNODE *xmlCards;
   GWEN_XMLNODE *xmlApps;
   GWEN_TYPE_UINT32 usage;
@@ -47,7 +46,7 @@ int LC_CardMgr_MergeXMLDefs(LC_CARDMGR *mgr,
 
 
 int LC_CardMgr_LoadCard(LC_CARDMGR *mgr, const char *name);
-int LC_CardMgr_LoadApp(LC_CARDMGR *mgr, const char *name);
+int LC_CardMgr_LoadAllCards(LC_CARDMGR *mgr);
 
 
 #endif /* CHIPCARD_SERVER_CARDMGR_P_H */

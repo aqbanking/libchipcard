@@ -1,5 +1,6 @@
-<cards>
-  <card name="STARCOS" extends="ProcessorCard" type="processor" >
+<cards.inactive>
+  <card name="STARCOS" >
+
     <commands>
 
       <!-- Secure PIN verification using the reader's keypad -->
@@ -107,5 +108,5 @@
     </results>
 
   </card>
-</cards>
+</cards.inactive>
 

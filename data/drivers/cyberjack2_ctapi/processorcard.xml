@@ -1,5 +1,5 @@
-<cards>
-  <card name="ProcessorCard" type="processor" >
+<cards.inactive>
+  <card name="ProcessorCard" >
 
     <commands>
     	<!-- Select DF by 16-bit-id -->
@@ -320,5 +320,5 @@
     </results>
 
   </card>
-</cards>
+</cards.inactive>
 

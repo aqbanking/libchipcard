@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -42,19 +43,22 @@ LC_CARDMGR *LC_CardMgr_new(const GWEN_STRINGLIST *paths){
   LC_CARDMGR *mgr;
 
   GWEN_NEW_OBJECT(LC_CARDMGR, mgr);
+  mgr->usage=1;
   DBG_MEM_INC("LC_CARDMGR", 0);
   mgr->contexts=LC_CardContext_List_new();
   mgr->paths=GWEN_StringList_dup(paths);
   mgr->cardFiles=GWEN_StringList_new();
   mgr->appFiles=GWEN_StringList_new();
   mgr->loadedCards=GWEN_StringList_new();
-  mgr->loadedApps=GWEN_StringList_new();
   mgr->xmlCards=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "cards");
   mgr->xmlApps=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "apps");
-  LC_CardMgr_SampleFiles(mgr, paths);
   mgr->msgEngine=LC_MsgEngine_new();
+  LC_CardMgr_SampleFiles(mgr, paths);
+  LC_CardMgr_LoadAllCards(mgr);
 
-  mgr->usage=1;
+  GWEN_XMLNode_WriteFile(mgr->xmlCards, "/tmp/cards.xml",
+                         GWEN_XML_FLAGS_DEFAULT | GWEN_XML_FLAGS_SIMPLE);
+
   return mgr;
 }
 
@@ -69,7 +73,6 @@ void LC_CardMgr_free(LC_CARDMGR *mgr){
       GWEN_MsgEngine_free(mgr->msgEngine);
       GWEN_XMLNode_free(mgr->xmlApps);
       GWEN_XMLNode_free(mgr->xmlCards);
-      GWEN_StringList_free(mgr->loadedApps);
       GWEN_StringList_free(mgr->loadedCards);
       GWEN_StringList_free(mgr->appFiles);
       GWEN_StringList_free(mgr->cardFiles);
@@ -198,8 +201,8 @@ int LC_CardMgr_MergeXMLDefs(LC_CARDMGR *mgr,
 
         /* merge 2nd level */
         DBG_DEBUG(0, "Merging tags from \"%s\" into \"%s\"",
-                   GWEN_XMLNode_GetData(nsrc),
-                   GWEN_XMLNode_GetData(ndst));
+                  GWEN_XMLNode_GetData(nsrc),
+                  GWEN_XMLNode_GetData(ndst));
         nsrc2=GWEN_XMLNode_GetChild(nsrc);
         while(nsrc2) {
           if (GWEN_XMLNode_GetType(nsrc2)==GWEN_XMLNodeTypeTag) {
@@ -207,30 +210,40 @@ int LC_CardMgr_MergeXMLDefs(LC_CARDMGR *mgr,
                                         GWEN_XMLNodeTypeTag,
                                         GWEN_XMLNode_GetData(nsrc2));
             if (ndst2) {
-              GWEN_XMLNODE *n;
+              const char *dname;
+
+              dname=GWEN_XMLNode_GetData(nsrc2);
 
               DBG_DEBUG(0,
-                         "Level2: Merging tags from "
-                         "\"%s\" into \"%s\"",
-                         GWEN_XMLNode_GetData(nsrc2),
-                         GWEN_XMLNode_GetData(ndst2));
-              /* node found, copy branch */
-              n=GWEN_XMLNode_GetChild(nsrc2);
-              while (n) {
-                GWEN_XMLNODE *newNode;
+                        "Level2: Merging tags from "
+                        "\"%s\" into \"%s\"",
+                        GWEN_XMLNode_GetData(nsrc2),
+                        GWEN_XMLNode_GetData(ndst2));
+              if (strcasecmp(dname, "cardInfo")==0) {
+                GWEN_XMLNODE *nsrc3;
 
-                DBG_DEBUG(0, "Adding node \"%s\"",
-                           GWEN_XMLNode_GetData(n));
-                newNode=GWEN_XMLNode_dup(n);
-                GWEN_XMLNode_AddChild(ndst2, newNode);
-                n=GWEN_XMLNode_Next(n);
-              } /* while n */
+                nsrc3=GWEN_XMLNode_FindFirstTag(nsrc2, "ATRS", 0, 0);
+                if (nsrc3) {
+                  GWEN_XMLNODE *ndst3;
+
+                  ndst3=GWEN_XMLNode_FindFirstTag(ndst2, "ATRS", 0, 0);
+                  if (!ndst3) {
+                    ndst3=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "ATRS");
+                    GWEN_XMLNode_AddChild(ndst2, ndst3);
+                  }
+                  GWEN_XMLNode_AddChildrenOnly(ndst3, nsrc3, 1);
+                }
+              }
+              else {
+                /* node found, copy branch */
+                GWEN_XMLNode_AddChildrenOnly(ndst2, nsrc2, 1);
+              }
             }
             else {
               GWEN_XMLNODE *newNode;
 
               DBG_DEBUG(0, "Adding branch \"%s\"",
-                         GWEN_XMLNode_GetData(nsrc2));
+                        GWEN_XMLNode_GetData(nsrc2));
               newNode=GWEN_XMLNode_dup(nsrc2);
               GWEN_XMLNode_AddChild(ndst, newNode);
             }
@@ -328,32 +341,25 @@ int LC_CardMgr_LoadCard(LC_CARDMGR *mgr, const char *name) {
 
 
 
-int LC_CardMgr_LoadApp(LC_CARDMGR *mgr, const char *name) {
+int LC_CardMgr_LoadAllCards(LC_CARDMGR *mgr) {
   GWEN_STRINGLISTENTRY *se;
-  unsigned int j;
   unsigned int filesLoaded;
 
   assert(mgr);
-  assert(name);
-  if (GWEN_StringList_HasString(mgr->loadedApps, name)) {
-    DBG_DEBUG(0, "App type \"%s\" already loaded", name);
-    return 0;
-  }
 
   filesLoaded=0;
-  j=strlen(name);
-  se=GWEN_StringList_FirstEntry(mgr->appFiles);
+  se=GWEN_StringList_FirstEntry(mgr->cardFiles);
   while(se) {
     unsigned int i;
 
     i=strlen(GWEN_StringListEntry_Data(se));
-    if (i>j+3) {
-      if (strncasecmp(GWEN_StringListEntry_Data(se)+i-4-j,
-                      name, j)==0) {
+    if (i>3) {
+      if (strncasecmp(GWEN_StringListEntry_Data(se)+i-4,
+                      ".xml", 4)==0) {
         GWEN_XMLNODE *n;
 
         /* name matches */
-        n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "app");
+        n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "card");
         if (GWEN_XML_ReadFile(n,
                               GWEN_StringListEntry_Data(se),
                               GWEN_XML_FLAGS_DEFAULT)) {
@@ -363,21 +369,41 @@ int LC_CardMgr_LoadApp(LC_CARDMGR *mgr, const char *name) {
         else {
           GWEN_XMLNODE *nn;
 
-          nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, "apps");
+          nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, "cards");
           if (!nn) {
-            DBG_WARN(0, "File \"%s\" does not contain <apps>",
+            DBG_INFO(0, "File \"%s\" does not contain <cards>",
                      GWEN_StringListEntry_Data(se));
           }
           else {
-            if (LC_CardMgr_MergeXMLDefs(mgr, mgr->xmlApps, nn)) {
-              DBG_ERROR(0, "Could not merge file \"%s\"",
-                        GWEN_StringListEntry_Data(se));
+            const char *name;
+            GWEN_XMLNODE *nnn;
+
+            nnn=GWEN_XMLNode_FindNode(nn, GWEN_XMLNodeTypeTag, "card");
+            if (!nnn) {
+              DBG_INFO(0, "File \"%s\" does not contain <card>",
+                       GWEN_StringListEntry_Data(se));
             }
             else {
-              GWEN_StringList_AppendString(mgr->loadedApps,
-                                           name,
-                                           0, 1);
-              filesLoaded++;
+              name=GWEN_XMLNode_GetProperty(nnn, "name", 0);
+              if (!name) {
+                DBG_WARN(0, "Name missing for card in file \"%s\"",
+                         GWEN_StringListEntry_Data(se));
+              }
+              else {
+                if (LC_CardMgr_MergeXMLDefs(mgr, mgr->xmlCards, nn)) {
+                  DBG_ERROR(0, "Could not merge file \"%s\"",
+                            GWEN_StringListEntry_Data(se));
+                }
+                else {
+                  GWEN_StringList_AppendString(mgr->loadedCards,
+                                               name,
+                                               0, 1);
+                  GWEN_MsgEngine_SetDefinitions(mgr->msgEngine,
+                                                mgr->xmlCards,
+                                                0); /* dont take over */
+                  filesLoaded++;
+                }
+              }
             }
           }
         }
@@ -404,10 +430,12 @@ int LC_CardMgr_SelectCard(LC_CARDMGR *mgr,
 
   assert(cardName);
 
+  /*
   if (LC_CardMgr_LoadCard(mgr, cardName)) {
     DBG_ERROR(0, "Card type \"%s\" not available", cardName);
     return LC_CardMgr_ResultCmdError;
   }
+  */
   cardNode=GWEN_XMLNode_FindFirstTag(mgr->xmlCards,
                                      "card",
                                      "name",
@@ -424,6 +452,131 @@ int LC_CardMgr_SelectCard(LC_CARDMGR *mgr,
   /* FIXME LC_CardContext_free(ctx); */
   return 0;
 }
+
+
+
+int LC_CardMgr_AddCardTypesByAtr(LC_CARDMGR *mgr,
+                                 LC_CARD *card) {
+  GWEN_XMLNODE *cardNode;
+  GWEN_BUFFER *atr;
+  GWEN_BUFFER *hexAtr;
+  int types=0;
+  int done;
+
+  assert(mgr);
+  DBG_ERROR(0, "Adding card types...");
+
+  /* get ATR, convert it to hex */
+  atr=LC_Card_GetAtr(card);
+  if (atr==0) {
+    DBG_INFO(0, "No ATR");
+    return 1;
+  }
+  hexAtr=GWEN_Buffer_new(0, 256, 0, 1);
+  if (GWEN_Text_ToHexBuffer(GWEN_Buffer_GetStart(atr),
+                            GWEN_Buffer_GetUsedBytes(atr),
+                            hexAtr, 0, 0, 0)) {
+    DBG_ERROR(0, "Internal error");
+    abort();
+  }
+
+  cardNode=GWEN_XMLNode_FindFirstTag(mgr->xmlCards, "card", 0, 0);
+  if (!cardNode) {
+    DBG_ERROR(0, "No card nodes.");
+    return -1;
+  }
+  while(cardNode) {
+    const char *name;
+    const char *tp;
+    int sameBaseType=0;
+
+    name=GWEN_XMLNode_GetProperty(cardNode, "name", 0);
+    assert(name);
+    tp=GWEN_XMLNode_GetProperty(cardNode, "type", 0);
+
+    DBG_VERBOUS(0, "Checking card \"%s\"", name);
+    if (tp) {
+      if (LC_Card_GetType(card)==LC_CardTypeProcessor)
+        sameBaseType=(strcasecmp(tp, "processor")==0);
+      else if (LC_Card_GetType(card)==LC_CardTypeMemory)
+        sameBaseType=(strcasecmp(tp, "memory")==0);
+    }
+    if (sameBaseType) {
+      GWEN_XMLNODE *nAtrs;
+
+      nAtrs=GWEN_XMLNode_FindFirstTag(cardNode, "cardinfo", 0, 0);
+      if (nAtrs)
+        nAtrs=GWEN_XMLNode_FindFirstTag(nAtrs, "atrs", 0, 0);
+      if (nAtrs) {
+        GWEN_XMLNODE *nAtr;
+  
+        nAtr=GWEN_XMLNode_GetFirstTag(nAtrs);
+        while(nAtr) {
+          GWEN_XMLNODE *nData;
+  
+          nData=GWEN_XMLNode_GetFirstData(nAtr);
+          if (nData) {
+            const char *p;
+  
+            p=GWEN_XMLNode_GetData(nData);
+            if (p) {
+              GWEN_BUFFER *dbuf;
+  
+              dbuf=GWEN_Buffer_new(0, 256, 0, 1);
+              while(*p) {
+                if (!isspace(*p))
+                  GWEN_Buffer_AppendByte(dbuf, *p);
+                p++;
+              } /* while */
+              if (-1!=GWEN_Text_ComparePattern(GWEN_Buffer_GetStart(hexAtr),
+                                               GWEN_Buffer_GetStart(dbuf),
+                                               0)) {
+                DBG_DEBUG(0, "Card \"%s\" matches ATR", name);
+                if (LC_Card_AddType(card, name)) {
+                  DBG_INFO(0, "Added card type \"%s\"", name);
+                  types++;
+                }
+              }
+              GWEN_Buffer_free(dbuf);
+            } /* if data */
+          } /* if data node */
+          nAtr=GWEN_XMLNode_GetNextTag(nAtr);
+        } /* while */
+      } /* if atrs */
+    } /* if sameBaseType */
+    cardNode=GWEN_XMLNode_FindNextTag(cardNode, "card", 0, 0);
+  } /* while */
+  GWEN_Buffer_free(hexAtr);
+
+  /* add all cards whose base types are contained in the list.
+   * repeat this as long as we added cards */
+  done=0;
+  while(!done) {
+    done=1;
+    cardNode=GWEN_XMLNode_FindFirstTag(mgr->xmlCards, "card", 0, 0);
+    while(cardNode) {
+      const char *name;
+      const char *extends;
+
+      name=GWEN_XMLNode_GetProperty(cardNode, "name", 0);
+      assert(name);
+      extends=GWEN_XMLNode_GetProperty(cardNode, "extends", 0);
+      if (extends) {
+        if (GWEN_StringList_HasString(LC_Card_GetTypes(card), extends)) {
+          if (LC_Card_AddType(card, name)) {
+            DBG_DEBUG(0, "Added card type \"%s\"", name);
+            types++;
+            done=0;
+          }
+        }
+      }
+      cardNode=GWEN_XMLNode_FindNextTag(cardNode, "card", 0, 0);
+    }
+  } /* while */
+
+  return (types!=0)?0:1;
+}
+
 
 
 
@@ -490,29 +643,16 @@ LC_CARDMGR_RESULT LC_CardMgr_CheckResponse(LC_CARDMGR *mgr,
 
 GWEN_XMLNODE *LC_CardMgr_FindCardNode(LC_CARDMGR *mgr,
                                       const char *cardName){
-
+  /*
   if (LC_CardMgr_LoadCard(mgr, cardName)) {
     DBG_ERROR(0, "Card type \"%s\" not available", cardName);
     return 0;
   }
+  */
   return GWEN_XMLNode_FindFirstTag(mgr->xmlCards,
                                    "card",
                                    "name",
                                    cardName);
-}
-
-
-
-GWEN_XMLNODE *LC_CardMgr_FindAppNode(LC_CARDMGR *mgr,
-                                     const char *appName){
-  if (LC_CardMgr_LoadApp(mgr, appName)) {
-    DBG_ERROR(0, "Card application \"%s\" not available", appName);
-    return 0;
-  }
-  return GWEN_XMLNode_FindFirstTag(mgr->xmlApps,
-                                   "app",
-                                   "name",
-                                   appName);
 }
 
 

@@ -1,5 +1,5 @@
 <cards>
-  <card name="kvk" type="memory" extends="card" >
+  <card name="kvk" >
 
     <commands>
       <!-- Select Master File -->

@@ -51,7 +51,7 @@ LC_CARD *LC_Card_new(LC_READER *r, unsigned int slot,
     LC_Card_LastId=time(0);
   cd->cardId=++LC_Card_LastId;
   cd->waitingClients=GWEN_IdList_new();
-
+  cd->types=GWEN_StringList_new();
   return cd;
 }
 
@@ -64,6 +64,7 @@ void LC_Card_free(LC_CARD *cd){
       LC_Reader_DecUsageCount(cd->reader);
     }
     GWEN_LIST_FINI(LC_CARD, cd);
+    GWEN_StringList_free(cd->types);
     GWEN_Buffer_free(cd->atr);
     GWEN_IdList_free(cd->waitingClients);
     LC_CardContext_free(cd->cardContext);
@@ -76,6 +77,20 @@ void LC_Card_free(LC_CARD *cd){
 GWEN_TYPE_UINT32 LC_Card_GetCardId(const LC_CARD *cd){
   assert(cd);
   return cd->cardId;
+}
+
+
+
+const GWEN_STRINGLIST *LC_Card_GetTypes(const LC_CARD *cd){
+  assert(cd);
+  return cd->types;
+}
+
+
+
+int LC_Card_AddType(LC_CARD *cd, const char *s) {
+  assert(cd);
+  return GWEN_StringList_AppendString(cd->types, s, 0, 1);
 }
 
 

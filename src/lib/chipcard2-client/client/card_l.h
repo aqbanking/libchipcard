@@ -41,6 +41,8 @@ void LC_Card_SetLastResult(LC_CARD *cd,
                            const char *text,
                            int sw1, int sw2);
 
+int LC_Card_AddCardType(LC_CARD *cd, const char *s);
+
 
 #endif /* CHIPCARD_CLIENT_CARD_L_H */
 
