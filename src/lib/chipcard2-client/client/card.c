@@ -243,6 +243,10 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
     fprintf(f, " keypad");
   if (cd->readerFlags & LC_CARD_READERFLAGS_DISPLAY)
     fprintf(f, " display");
+  if (cd->readerFlags & LC_CARD_READERFLAGS_NOINFO)
+    fprintf(f, " noinfo");
+  if (cd->readerFlags & LC_CARD_READERFLAGS_REMOTE)
+    fprintf(f, " remote");
   fprintf(f, "\n");
   if (cd->atr) {
     for (k=0; k<insert; k++)

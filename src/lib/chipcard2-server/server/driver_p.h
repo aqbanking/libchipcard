@@ -36,6 +36,7 @@ struct LC_DRIVER {
   GWEN_TYPE_UINT32 driverId;
   GWEN_PROCESS *process;
   LC_DRIVER_STATUS status;
+  GWEN_TYPE_UINT32 driverFlags;
   time_t lastStatusChangeTime;
   time_t idleSince;
   time_t pingTime;

@@ -1154,6 +1154,12 @@ GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
   if (rflags & LC_CARD_READERFLAGS_DISPLAY)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "flags", "DISPLAY");
+  if (rflags & LC_CARD_READERFLAGS_NOINFO)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "flags", "NOINFO");
+  if (rflags & LC_CARD_READERFLAGS_REMOTE)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "flags", "REMOTE");
 
   /* set rmask */
   if (rmask & LC_CARD_READERFLAGS_KEYPAD)
@@ -1162,6 +1168,13 @@ GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
   if (rmask & LC_CARD_READERFLAGS_DISPLAY)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "mask", "DISPLAY");
+  if (rmask & LC_CARD_READERFLAGS_NOINFO)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "mask", "NOINFO");
+  if (rmask & LC_CARD_READERFLAGS_REMOTE)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "mask", "REMOTE");
+
 
   /* send request */
   rqid=LC_Client_SendRequest(cl, 0, 0, db);

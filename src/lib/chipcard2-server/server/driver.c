@@ -492,6 +492,34 @@ void LC_Driver_DecPendingCommandCount(LC_DRIVER *d){
 
 
 
+GWEN_TYPE_UINT32 LC_Driver_GetDriverFlags(const LC_DRIVER *d){
+  assert(d);
+  return d->driverFlags;
+}
+
+
+
+void LC_Driver_SetDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl){
+  assert(d);
+  d->driverFlags=fl;
+}
+
+
+
+void LC_Driver_AddDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl){
+  assert(d);
+  d->driverFlags|=fl;
+}
+
+
+
+void LC_Driver_SubDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl){
+  assert(d);
+  d->driverFlags&=~fl;
+}
+
+
+
 void LC_Driver_Dump(const LC_DRIVER *d, FILE *f, int indent) {
   int i;
 

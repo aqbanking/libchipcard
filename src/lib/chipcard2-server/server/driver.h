@@ -24,6 +24,9 @@ typedef struct LC_DRIVER LC_DRIVER;
 
 #include <time.h>
 
+/** driver is a remote driver, not started by the server */
+#define LC_DRIVER_FLAGS_REMOTE 0x00000001
+
 
 GWEN_LIST_FUNCTION_DEFS(LC_DRIVER, LC_Driver);
 
@@ -88,6 +91,10 @@ void LC_Driver_ResetAssignedReadersCount(LC_DRIVER *d);
 void LC_Driver_IncAssignedReadersCount(LC_DRIVER *d);
 void LC_Driver_DecAssignedReadersCount(LC_DRIVER *d);
 
+GWEN_TYPE_UINT32 LC_Driver_GetDriverFlags(const LC_DRIVER *d);
+void LC_Driver_SetDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl);
+void LC_Driver_AddDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl);
+void LC_Driver_SubDriverFlags(LC_DRIVER *d, GWEN_TYPE_UINT32 fl);
 
 GWEN_TYPE_UINT32 LC_Driver_GetIpcId(const LC_DRIVER *d);
 void LC_Driver_SetIpcId(LC_DRIVER *d, GWEN_TYPE_UINT32 id);

@@ -510,167 +510,42 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
 
   if (LC_Driver_GetStatus(d)==LC_DriverStatusStopping) {
     GWEN_PROCESS *p;
-    GWEN_PROCESS_STATE pst;
 
     p=LC_Driver_GetProcess(d);
-    if (!p) {
-      // DEBUG
-      DBG_ERROR(0, "No process for this driver:");
-      LC_Driver_Dump(d, stderr, 2);
-      abort();
-    }
-    assert(p);
-
-    pst=GWEN_Process_CheckState(p);
-    if (pst==GWEN_ProcessStateRunning) {
-      if (cs->driverStopTimeout &&
-          difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
-          cs->driverStopTimeout) {
-        DBG_WARN(0, "Driver is still running, killing it");
-        if (GWEN_Process_Terminate(p)) {
-          DBG_ERROR(0, "Could not kill process");
-        }
-        LC_Driver_SetProcess(d, 0);
-        LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-        if (nid) {
-          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-          if (rv) {
-            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                     LC_Driver_GetDriverId(d));
-          }
-          LC_Driver_SetIpcId(d, nid);
-        }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_ERROR,
-					     d,
-					     "Driver still running, "
-					     "killing it");
-        return -1;
-      }
-      else {
-        /* otherwise give the process a little bit time ... */
-        DBG_DEBUG(0, "still waiting for driver to go down");
-        return 1;
-      }
-    }
-    else if (pst==GWEN_ProcessStateExited) {
-      DBG_WARN(0, "Driver terminated normally");
-      LC_Driver_SetProcess(d, 0);
-      LC_Driver_SetStatus(d, LC_DriverStatusDown);
-      if (nid) {
-        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-        if (rv) {
-          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
-        }
-        LC_Driver_SetIpcId(d, nid);
-      }
-      LC_CardServer_SendDriverNotification(cs, 0,
-					   LC_NOTIFY_CODE_DRIVER_DOWN,
-                                           d, "Driver terminated normally");
-      return 0;
-    }
-    else if (pst==GWEN_ProcessStateAborted) {
-      DBG_WARN(0, "Driver terminated abnormally");
-      LC_Driver_SetProcess(d, 0);
-      LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-      if (nid) {
-        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-        if (rv) {
-          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
-        }
-        LC_Driver_SetIpcId(d, nid);
-      }
-      LC_CardServer_SendDriverNotification(cs, 0,
-					   LC_NOTIFY_CODE_DRIVER_ERROR,
-                                           d, "Driver terminated abnormally");
-      return 0;
-    }
-    else if (pst==GWEN_ProcessStateStopped) {
-      DBG_WARN(0, "Driver has been stopped, killing it");
-      if (GWEN_Process_Terminate(p)) {
-        DBG_ERROR(0, "Could not kill process");
-      }
-      LC_Driver_SetProcess(d, 0);
-      LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-      if (nid) {
-        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-        if (rv) {
-          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
-        }
-        LC_Driver_SetIpcId(d, nid);
-      }
-      LC_CardServer_SendDriverNotification(cs, 0,
-					   LC_NOTIFY_CODE_DRIVER_ERROR,
-					   d,
-					   "Driver has been stopped, "
-					   "killing it");
-      return 0;
-    }
-    else {
-      DBG_ERROR(0, "Unknown process status %d, killing", pst);
-      if (GWEN_Process_Terminate(p)) {
-        DBG_ERROR(0, "Could not kill process");
-      }
-      LC_Driver_SetProcess(d, 0);
-      LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-      if (nid) {
-        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-        if (rv) {
-          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
-        }
-        LC_Driver_SetIpcId(d, nid);
-      }
-      LC_CardServer_SendDriverNotification(cs, 0,
-					   LC_NOTIFY_CODE_DRIVER_ERROR,
-					   d,
-					   "Unknown process status, "
-					   "killing");
-      return 0;
-    }
-  } /* if stopping */
-
-
-  if (LC_Driver_GetStatus(d)==LC_DriverStatusStarted) {
-    /* driver started, check timeout */
-    if (cs->driverStartTimeout &&
-        difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
-        cs->driverStartTimeout) {
-      GWEN_PROCESS *p;
+    if (p) {
       GWEN_PROCESS_STATE pst;
-
-      DBG_WARN(0, "Driver \"%s\" timed out", LC_Driver_GetDriverName(d));
-      p=LC_Driver_GetProcess(d);
-      assert(p);
 
       pst=GWEN_Process_CheckState(p);
       if (pst==GWEN_ProcessStateRunning) {
-        DBG_WARN(0,
-                 "Driver is running but did not signal readyness, "
-                 "killing it");
-        if (GWEN_Process_Terminate(p)) {
-          DBG_ERROR(0, "Could not kill process");
-        }
-        LC_Driver_SetProcess(d, 0);
-        LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-        if (nid) {
-          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-          if (rv) {
-            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                     LC_Driver_GetDriverId(d));
+        if (cs->driverStopTimeout &&
+            difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
+            cs->driverStopTimeout) {
+          DBG_WARN(0, "Driver is still running, killing it");
+          if (GWEN_Process_Terminate(p)) {
+            DBG_ERROR(0, "Could not kill process");
           }
-          LC_Driver_SetIpcId(d, nid);
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_ERROR,
+                                               d,
+                                               "Driver still running, "
+                                               "killing it");
+          return -1;
         }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_ERROR,
-					     d,
-					     "Driver is running but did not "
-					     "signal readyness, "
-					     "killing it");
-        return -1;
+        else {
+          /* otherwise give the process a little bit time ... */
+          DBG_DEBUG(0, "still waiting for driver to go down");
+          return 1;
+        }
       }
       else if (pst==GWEN_ProcessStateExited) {
         DBG_WARN(0, "Driver terminated normally");
@@ -684,8 +559,8 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
           }
           LC_Driver_SetIpcId(d, nid);
         }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_DOWN,
+        LC_CardServer_SendDriverNotification(cs, 0,
+                                             LC_NOTIFY_CODE_DRIVER_DOWN,
                                              d, "Driver terminated normally");
         return 0;
       }
@@ -701,11 +576,10 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
           }
           LC_Driver_SetIpcId(d, nid);
         }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_ERROR,
-					     d,
-					     "Driver terminated abnormally");
-        return -1;
+        LC_CardServer_SendDriverNotification(cs, 0,
+                                             LC_NOTIFY_CODE_DRIVER_ERROR,
+                                             d, "Driver terminated abnormally");
+        return 0;
       }
       else if (pst==GWEN_ProcessStateStopped) {
         DBG_WARN(0, "Driver has been stopped, killing it");
@@ -722,12 +596,12 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
           }
           LC_Driver_SetIpcId(d, nid);
         }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_ERROR,
-					     d,
-					     "Driver has been stopped, "
-					     "killing it");
-        return -1;
+        LC_CardServer_SendDriverNotification(cs, 0,
+                                             LC_NOTIFY_CODE_DRIVER_ERROR,
+                                             d,
+                                             "Driver has been stopped, "
+                                             "killing it");
+        return 0;
       }
       else {
         DBG_ERROR(0, "Unknown process status %d, killing", pst);
@@ -744,12 +618,148 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
           }
           LC_Driver_SetIpcId(d, nid);
         }
-	LC_CardServer_SendDriverNotification(cs, 0,
-					     LC_NOTIFY_CODE_DRIVER_ERROR,
-					     d,
-					     "Unknown process status, "
-					     "killing");
-	return -1;
+        LC_CardServer_SendDriverNotification(cs, 0,
+                                             LC_NOTIFY_CODE_DRIVER_ERROR,
+                                             d,
+                                             "Unknown process status, "
+                                             "killing");
+        return 0;
+      }
+    } /* if process */
+    else {
+      if (!(LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
+        DBG_ERROR(0, "No process for local driver:");
+        LC_Driver_Dump(d, stderr, 2);
+        abort();
+      }
+    }
+  } /* if stopping */
+
+
+  if (LC_Driver_GetStatus(d)==LC_DriverStatusStarted) {
+    /* driver started, check timeout */
+    if (cs->driverStartTimeout &&
+        difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
+        cs->driverStartTimeout) {
+      GWEN_PROCESS *p;
+
+      DBG_WARN(0, "Driver \"%s\" timed out", LC_Driver_GetDriverName(d));
+      p=LC_Driver_GetProcess(d);
+      if (p) {
+        GWEN_PROCESS_STATE pst;
+
+        pst=GWEN_Process_CheckState(p);
+        if (pst==GWEN_ProcessStateRunning) {
+          DBG_WARN(0,
+                   "Driver is running but did not signal readyness, "
+                   "killing it");
+          if (GWEN_Process_Terminate(p)) {
+            DBG_ERROR(0, "Could not kill process");
+          }
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_ERROR,
+                                               d,
+                                               "Driver is running but did not "
+                                               "signal readyness, "
+                                               "killing it");
+          return -1;
+        }
+        else if (pst==GWEN_ProcessStateExited) {
+          DBG_WARN(0, "Driver terminated normally");
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusDown);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_DOWN,
+                                               d, "Driver terminated normally");
+          return 0;
+        }
+        else if (pst==GWEN_ProcessStateAborted) {
+          DBG_WARN(0, "Driver terminated abnormally");
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_ERROR,
+                                               d,
+                                               "Driver terminated abnormally");
+          return -1;
+        }
+        else if (pst==GWEN_ProcessStateStopped) {
+          DBG_WARN(0, "Driver has been stopped, killing it");
+          if (GWEN_Process_Terminate(p)) {
+            DBG_ERROR(0, "Could not kill process");
+          }
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_ERROR,
+                                               d,
+                                               "Driver has been stopped, "
+                                               "killing it");
+          return -1;
+        }
+        else {
+          DBG_ERROR(0, "Unknown process status %d, killing", pst);
+          if (GWEN_Process_Terminate(p)) {
+            DBG_ERROR(0, "Could not kill process");
+          }
+          LC_Driver_SetProcess(d, 0);
+          LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+          if (nid) {
+            rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+            if (rv) {
+              DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                       LC_Driver_GetDriverId(d));
+            }
+            LC_Driver_SetIpcId(d, nid);
+          }
+          LC_CardServer_SendDriverNotification(cs, 0,
+                                               LC_NOTIFY_CODE_DRIVER_ERROR,
+                                               d,
+                                               "Unknown process status, "
+                                               "killing");
+          return -1;
+        }
+      } /* if process */
+      else {
+        if (!(LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
+          DBG_ERROR(0, "No process for local driver:");
+          LC_Driver_Dump(d, stderr, 2);
+          abort();
+        }
       }
     }
     else {
@@ -765,52 +775,58 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
 
     /* check whether the driver really is still up and running */
     p=LC_Driver_GetProcess(d);
-    assert(p);
-    pst=GWEN_Process_CheckState(p);
-    if (pst!=GWEN_ProcessStateRunning) {
-      DBG_ERROR(0, "Driver is not running anymore");
-      GWEN_Process_Terminate(p);
-      LC_Driver_SetProcess(d, 0);
-      LC_Driver_SetStatus(d, LC_DriverStatusAborted);
-      if (nid) {
-        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
-        if (rv) {
-          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
-        }
-        LC_Driver_SetIpcId(d, nid);
-      }
-      LC_CardServer_SendDriverNotification(cs, 0,
-					   LC_NOTIFY_CODE_DRIVER_ERROR,
-					   d,
-					   "Driver is not running anymore");
-      return -1;
-    }
-    else {
-      DBG_DEBUG(0, "Driver still running");
-      if (LC_Driver_GetActiveReadersCount(d)==0 &&
-          cs->driverIdleTimeout) {
-        time_t t;
-
-        /* check for idle timeout */
-        t=LC_Driver_GetIdleSince(d);
-        assert(t);
-
-        if (cs->driverIdleTimeout &&
-            difftime(time(0), t)>cs->driverIdleTimeout) {
-          DBG_NOTICE(0, "Driver \"%08x\" is too long idle, stopping it",
+    if (p) {
+      pst=GWEN_Process_CheckState(p);
+      if (pst!=GWEN_ProcessStateRunning) {
+        DBG_ERROR(0, "Driver is not running anymore");
+        GWEN_Process_Terminate(p);
+        LC_Driver_SetProcess(d, 0);
+        LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
                      LC_Driver_GetDriverId(d));
-          if (LC_CardServer_StopDriver(cs, d)) {
-            DBG_INFO(0, "Could not stop driver \"%08x\"",
-                     LC_Driver_GetDriverId(d));
-            return -1;
           }
-          return 0;
-        } /* if timeout */
-        /* otherwise reader is not idle */
+          LC_Driver_SetIpcId(d, nid);
+        }
+        LC_CardServer_SendDriverNotification(cs, 0,
+                                             LC_NOTIFY_CODE_DRIVER_ERROR,
+                                             d,
+                                             "Driver is not running anymore");
+        return -1;
       }
-      return 1;
+    } /* if process */
+    else {
+      if (!(LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
+        DBG_ERROR(0, "No process for local driver:");
+        LC_Driver_Dump(d, stderr, 2);
+        abort();
+      }
     }
+    DBG_DEBUG(0, "Driver still running");
+    if (LC_Driver_GetActiveReadersCount(d)==0 &&
+        cs->driverIdleTimeout) {
+      time_t t;
+
+      /* check for idle timeout */
+      t=LC_Driver_GetIdleSince(d);
+      assert(t);
+
+      if (cs->driverIdleTimeout &&
+          difftime(time(0), t)>cs->driverIdleTimeout) {
+        DBG_NOTICE(0, "Driver \"%08x\" is too long idle, stopping it",
+                   LC_Driver_GetDriverId(d));
+        if (LC_CardServer_StopDriver(cs, d)) {
+          DBG_INFO(0, "Could not stop driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+          return -1;
+        }
+        return 0;
+      } /* if timeout */
+      /* otherwise reader is not idle */
+    }
+    return 1;
   }
 
   return 1;
@@ -1640,6 +1656,9 @@ int LC_CardServer_CheckCards(LC_CARDSERVER *cs) {
 	    if (flags & LC_READER_FLAGS_NOINFO)
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "readerflags", "NOINFO");
+	    if (flags & LC_READER_FLAGS_REMOTE)
+              GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
+                                   "readerflags", "REMOTE");
 
             ct=LC_Card_GetType(cd);
             if (ct==LC_CardTypeProcessor)
@@ -3453,6 +3472,8 @@ GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db,
       f|=LC_READER_FLAGS_DISPLAY;
     else if (strcasecmp(p, "NOINFO")==0)
       f|=LC_READER_FLAGS_NOINFO;
+    else if (strcasecmp(p, "REMOTE")==0)
+      f|=LC_READER_FLAGS_REMOTE;
   } /* for */
 
   return f;
@@ -7600,6 +7621,9 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
   if (flags & LC_READER_FLAGS_NOINFO)
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_DEFAULT,
 			 "readerflags", "NOINFO");
+  if (flags & LC_READER_FLAGS_REMOTE)
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_DEFAULT,
+                         "readerflags", "REMOTE");
 
   s=LC_Reader_GetReaderInfo(r);
   if (s)

@@ -23,6 +23,9 @@ typedef struct LC_CARD LC_CARD;
 
 #define LC_CARD_READERFLAGS_KEYPAD  0x00010000
 #define LC_CARD_READERFLAGS_DISPLAY 0x00020000
+#define LC_CARD_READERFLAGS_NOINFO  0x00040000
+#define LC_CARD_READERFLAGS_REMOTE  0x00080000
+
 
 #include <chipcard2-client/client/client.h>
 #include <gwenhywfar/buffer.h>
