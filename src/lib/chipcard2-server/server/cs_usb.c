@@ -215,8 +215,8 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
       assert(count);
 
       port=count-1+autoPortOffset;
-      DBG_NOTICE(0, "Assigning port value %d to reader \"%s\"",
-                 port, LC_Reader_GetReaderName(r));
+      DBG_INFO(0, "Assigning port value %d to reader \"%s\"",
+               port, LC_Reader_GetReaderName(r));
     }
     else {
       port=GWEN_DB_GetIntValue(dbReader, numbuf, 0, defPort);

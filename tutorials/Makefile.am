@@ -1,5 +1,5 @@
 
-EXTRA_DIST=README
+EXTRA_DIST=README examplecard.xml
 
 noinst_PROGRAMS=\
  tutorial1a tutorial1b tutorial1c \

@@ -768,7 +768,11 @@ int LC_CardServer_StartDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
     GWEN_Buffer_AppendString(abuf, s);
   }
 
-  GWEN_Buffer_AppendString(abuf, " --loglevel info");
+  s=getenv("LC_DRIVER_LOGLEVEL");
+  if (s) {
+    GWEN_Buffer_AppendString(abuf, " --loglevel ");
+    GWEN_Buffer_AppendString(abuf, s);
+  }
 
   if (cs->typeForDrivers) {
     GWEN_Buffer_AppendString(abuf, " -t ");
@@ -846,14 +850,14 @@ int LC_CardServer_StopDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
   assert(d);
   rid=LC_CardServer_SendStopDriver(cs, d);
   if (!rid) {
-    DBG_ERROR(0, "Could not send StopDriver command for driver \"%08x\"",
-              LC_Driver_GetDriverId(d));
+    DBG_ERROR(0, "Could not send StopDriver command for driver \"%s\"",
+              LC_Driver_GetDriverName(d));
     LC_CardServer_DriverDown(cs, d, LC_DriverStatusAborted,
                              "Could not send StopDriver command");
     return -1;
   }
-  DBG_DEBUG(0, "Sent StopDriver request for driver \"%08x\"",
-            LC_Driver_GetDriverId(d));
+  DBG_DEBUG(0, "Sent StopDriver request for driver \"%s\"",
+            LC_Driver_GetDriverName(d));
   LC_Driver_SetStatus(d, LC_DriverStatusStopping);
   return 0;
 }
@@ -879,8 +883,8 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
        (LC_Driver_GetAssignedReadersCount(d)==0)
       )
      ){
-    DBG_NOTICE(0, "Driver \"%08x\" is unused, removing it",
-               LC_Driver_GetDriverId(d));
+    DBG_NOTICE(0, "Driver \"%s\" is unused, removing it",
+               LC_Driver_GetDriverName(d));
     LC_Driver_List_Del(d);
     LC_Driver_free(d);
     return 0;
@@ -890,8 +894,8 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
     if (cs->driverRestartTime &&
         difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
         cs->driverRestartTime) {
-      DBG_NOTICE(0, "Reenabling driver \"%08x\"",
-                 LC_Driver_GetDriverId(d));
+      DBG_NOTICE(0, "Reenabling driver \"%s\"",
+                 LC_Driver_GetDriverName(d));
       LC_Driver_SetStatus(d, LC_DriverStatusDown);
     }
   }
@@ -1084,11 +1088,11 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
 
       if (cs->driverIdleTimeout &&
           difftime(time(0), t)>cs->driverIdleTimeout) {
-        DBG_NOTICE(0, "Driver \"%08x\" is too long idle, stopping it",
-                   LC_Driver_GetDriverId(d));
+        DBG_NOTICE(0, "Driver \"%s\" is too long idle, stopping it",
+                   LC_Driver_GetDriverName(d));
         if (LC_CardServer_StopDriver(cs, d)) {
-          DBG_INFO(0, "Could not stop driver \"%08x\"",
-                   LC_Driver_GetDriverId(d));
+          DBG_INFO(0, "Could not stop driver \"%s\"",
+                   LC_Driver_GetDriverName(d));
           return -1;
         }
         return 0;
@@ -1130,7 +1134,7 @@ int LC_CardServer_HandleDriverReady(LC_CARDSERVER *cs,
     return -1;
   }
 
-  DBG_NOTICE(0, "Driver %08x: DriverReady", nodeId);
+  DBG_INFO(0, "Driver %08x: DriverReady", nodeId);
 
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/driverId", 0, "0"),
                 "%x", &i)) {
@@ -1263,7 +1267,7 @@ int LC_CardServer_HandleGetDriverVar(LC_CARDSERVER *cs,
     return -1;
   }
 
-  DBG_NOTICE(0, "Client %08x: GetDriverVar", clientId);
+  DBG_INFO(0, "Client %08x: GetDriverVar", clientId);
   varName=GWEN_DB_GetCharValue(dbReq, "body/varName", 0, 0);
   if (varName==0) {
     DBG_ERROR(0, "Missing variable name");
@@ -1369,7 +1373,7 @@ int LC_CardServer_HandleReaderError(LC_CARDSERVER *cs,
     return -1;
   }
 
-  DBG_NOTICE(0, "Driver %08x: Reader error", nodeId);
+  DBG_INFO(0, "Driver %08x: Reader error", nodeId);
 
   /* reader error */
   if (sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
@@ -1808,8 +1812,8 @@ int LC_CardServer__SampleDrivers(GWEN_STRINGLIST *sl,
 
       nDriver=GWEN_XMLNode_FindNode(nFile, GWEN_XMLNodeTypeTag, "driver");
       if (!nDriver) {
-	DBG_WARN(0, "XML file \"%s\" does not contain a driver",
-		 GWEN_Buffer_GetStart(nbuf));
+        DBG_INFO(0, "XML file \"%s\" does not contain a driver",
+                 GWEN_Buffer_GetStart(nbuf));
       }
       else {
 	GWEN_DB_NODE *dbDriver;
@@ -1827,7 +1831,7 @@ int LC_CardServer__SampleDrivers(GWEN_STRINGLIST *sl,
             nReader=GWEN_XMLNode_FindNode(nDriver, GWEN_XMLNodeTypeTag,
                                           "readers");
             if (!nReader) {
-              DBG_WARN(0, "XML file \"%s\" contains no <readers> tag",
+              DBG_INFO(0, "XML file \"%s\" contains no <readers> tag",
                        GWEN_Buffer_GetStart(nbuf));
             }
             else {
@@ -1846,7 +1850,7 @@ int LC_CardServer__SampleDrivers(GWEN_STRINGLIST *sl,
                 nReader=GWEN_XMLNode_FindNextTag(nReader, "reader", 0, 0);
               } /* while */
               if (!readers) {
-                DBG_WARN(0, "XML file \"%s\" contains no readers",
+                DBG_INFO(0, "XML file \"%s\" contains no readers",
                          GWEN_Buffer_GetStart(nbuf));
               }
             }

@@ -21,6 +21,7 @@
 #include <gwenhywfar/version.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ipc.h>
+#include <gwenhywfar/netconnectionhttp.h>
 #include <gwenhywfar/nettransportssl.h>
 #include <gwenhywfar/nettransportsock.h>
 #include <gwenhywfar/net.h>
@@ -501,6 +502,7 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
       GWEN_INETADDRESS *addr;
       GWEN_TYPE_UINT32 sid;
       const char *address;
+      GWEN_NETCONNECTION *conn;
 
       typ=GWEN_DB_GetCharValue(gr, "typ", 0, "local");
       address=GWEN_DB_GetCharValue(gr,
@@ -640,6 +642,11 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
 	GWEN_DB_Dump(gr, stderr, 2);
         return -1;
       }
+
+      conn=GWEN_IPCManager_GetConnection(cs->ipcManager, sid);
+      assert(conn);
+      GWEN_NetConnectionHTTP_SetDefaultURL(conn, "/libchipcard2/server");
+
 
       if (strcasecmp(typ, "local")==0) {
         if (chmod(GWEN_DB_GetCharValue(gr,
@@ -1267,8 +1274,8 @@ int LC_CardServer__SendNotification(LC_CARDSERVER *cs,
 
   assert(ntype);
   assert(ncode);
-  DBG_NOTICE(0, "Sending notification to client \"%08x\"",
-             LC_Client_GetClientId(cl));
+  DBG_INFO(0, "Sending notification to client \"%08x\"",
+           LC_Client_GetClientId(cl));
 
   dbReq=GWEN_DB_Group_new("Notification");
 

@@ -336,7 +336,8 @@ int LC_CardServer_CheckCards(LC_CARDSERVER *cs) {
 
 int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
                                 LC_READER *r,
-                                unsigned int slotNum) {
+                                unsigned int slotNum,
+                                const char *reason) {
   LC_CARD *card;
 
   /* find card in active ones */
@@ -350,7 +351,7 @@ int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
                  LC_Card_GetCardId(card));
         LC_CardServer_CardDown(cs, card,
                                LC_CardStatusRemoved,
-                               "Replaced by new card");
+                               reason);
       }
     }
     card=LC_Card_List_Next(card);
@@ -370,7 +371,7 @@ int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
                  LC_Card_GetCardId(card));
         LC_CardServer_CardDown(cs, card,
                                LC_CardStatusRemoved,
-                               "Replaced by new card");
+                               reason);
       }
     }
     card=next;
@@ -405,7 +406,7 @@ int LC_CardServer_HandleCardInserted(LC_CARDSERVER *cs,
     return -1;
   }
 
-  DBG_NOTICE(0, "Driver %08x: Card inserted", nodeId);
+  DBG_INFO(0, "Driver %08x: Card inserted", nodeId);
 
   /* driver ready */
   if (sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
@@ -451,7 +452,7 @@ int LC_CardServer_HandleCardInserted(LC_CARDSERVER *cs,
 
   /* TODO: Check for reader status */
 
-  LC_CardServer_RemoveCardsAt(cs, r, slotNum);
+  LC_CardServer_RemoveCardsAt(cs, r, slotNum, "Replaced by new card");
 
   card=LC_Card_new(r, slotNum, cardNum, ct, atr);
   LC_Card_SetStatus(card, LC_CardStatusInserted);
@@ -514,7 +515,7 @@ int LC_CardServer_HandleCardRemoved(LC_CARDSERVER *cs,
 
   /* TODO: Check for reader status */
 
-  LC_CardServer_RemoveCardsAt(cs, r, slotNum);
+  LC_CardServer_RemoveCardsAt(cs, r, slotNum, "Card removed");
 
   GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0);
   return 0;

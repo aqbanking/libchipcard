@@ -117,7 +117,8 @@ struct LC_CARDSERVER {
 void LC_CardServer_CollectCommands(LC_CARDSERVER *cs);
 int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
                                 LC_READER *r,
-                                unsigned int slotNum);
+                                unsigned int slotNum,
+                                const char *reason);
 
 GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db, const char *vname);
 

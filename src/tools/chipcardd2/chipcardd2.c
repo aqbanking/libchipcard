@@ -147,9 +147,9 @@ void Arguments_free(ARGUMENTS *ar) {
 void usage(const char *name) {
   fprintf(stdout,"%s%s%s%s%s%s",
 	  I18N("ChipCardDaemon2 - A daemon for chipcard access\n"
-               "                 Part of LibChipCard "
+               "                 Part of LibChipCard2 "
                CHIPCARD_VERSION_STRING"\n"
-	       "(c) 2004 Martin Preuss<martin@libchipcard.de>\n"
+	       "(c) 2004,2005 Martin Preuss<martin@libchipcard.de>\n"
 	       "This library is free software; you can redistribute it and/or\n"
 	       "modify it under the terms of the GNU Lesser General Public\n"
 	       "License as published by the Free Software Foundation; either\n"

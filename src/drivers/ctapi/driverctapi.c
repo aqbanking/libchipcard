@@ -329,6 +329,12 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
     return DRIVER_CTAPI_ERROR_READER_INIT;
   }
 
+  if (!(LC_Slot_GetStatus(sl) & LC_SLOT_STATUS_CARD_INSERTED)) {
+    DBG_NOTICE(LC_Reader_GetLogger(r),
+               "No card in slot, will not connect");
+    return 0;
+  }
+
   DBG_INFO(LC_Reader_GetLogger(r),
            "Connecting slot %d", LC_Slot_GetSlotNum(sl));
   apdu[2]=LC_Slot_GetSlotNum(sl)+1;

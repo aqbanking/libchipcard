@@ -116,8 +116,17 @@ The option "-f" makes the daemon stay in the foreground. In this case you can
 stop it using CTRL-C.
 
 
+5. Server Environment Variables
+===============================
 
-5. Client Setup
+
+LC_DRIVER_LOGLEVEL
+------------------
+Loglevel to be used for drivers.
+
+
+
+6. Client Setup
 ===============
 
 Clients for libchipcard2 use the configuration file 
@@ -127,7 +136,7 @@ This file contains a description of the chipcard2 servers to connect to.
 
 
 
-6. Using Libchipcard2 in your own Projects
+7. Using Libchipcard2 in your own Projects
 ==========================================
 
 Please have a look at the file in tutorials/. They pretty much explain how

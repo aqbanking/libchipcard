@@ -24,6 +24,7 @@
 #include <gwenhywfar/net.h>
 #include <gwenhywfar/nettransportsock.h>
 #include <gwenhywfar/nettransportssl.h>
+#include <gwenhywfar/netconnectionhttp.h>
 #include <gwenhywfar/waitcallback.h>
 #include <gwenhywfar/directory.h>
 #include <chipcard2/chipcard2.h>
@@ -641,6 +642,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
   gr=GWEN_DB_GetFirstGroup(db);
   while(gr) {
     LC_SERVER *sv;
+    GWEN_NETCONNECTION *conn;
 
     if (strcasecmp(GWEN_DB_GroupName(gr), "server")==0) {
       const char *typ;
@@ -784,6 +786,10 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
         GWEN_Buffer_free(cfbuf);
         return -1;
       }
+
+      conn=GWEN_IPCManager_GetConnection(cl->ipcManager, sid);
+      assert(conn);
+      GWEN_NetConnectionHTTP_SetDefaultURL(conn, "/libchipcard2/server");
 
       sv=LC_Server_new(sid);
       LC_Server_List_Add(sv, cl->servers);
