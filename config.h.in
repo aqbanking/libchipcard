@@ -123,6 +123,9 @@
 /* if BeOS is used */
 #undef OS_BEOS
 
+/* if Apple Darwin is used */
+#undef OS_DARWIN
+
 /* if FreeBSD is used */
 #undef OS_FREEBSD
 
@@ -132,14 +135,23 @@
 /* target system */
 #undef OS_NAME
 
+/* if NetBSD is used */
+#undef OS_NETBSD
+
 /* if OpenBSD is used */
 #undef OS_OPENBSD
+
+/* if PalmOS is used */
+#undef OS_PALMOS
 
 /* if this is a POSIX system */
 #undef OS_POSIX
 
 /* target system */
 #undef OS_SHORTNAME
+
+/* if Solaris is used */
+#undef OS_SOLARIS
 
 /* system type */
 #undef OS_TYPE

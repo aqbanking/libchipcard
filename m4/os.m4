@@ -31,6 +31,18 @@ case "$target" in
 	AC_DEFINE(OS_POSIX,1,[if this is a POSIX system])
 	OS_TYPE="posix"
 	;;
+    *-solaris*)
+	OSYSTEM="solaris"
+	AC_DEFINE(OS_SOLARIS,1,[if Solaris is used])
+	AC_DEFINE(OS_POSIX,1,[if this is a POSIX system])
+	OS_TYPE="posix"
+	;;
+    *-darwin*)
+	OSYSTEM="osx"
+	AC_DEFINE(OS_DARWIN,1,[if Apple Darwin is used])
+	AC_DEFINE(OS_POSIX,1,[if this is a POSIX system])
+	OS_TYPE="posix"
+	;;
     *-openbsd*)
 	OSYSTEM="openbsd"
 	AC_DEFINE(OS_OPENBSD,1,[if OpenBSD is used])
@@ -40,6 +52,12 @@ case "$target" in
     *-freebsd*)
 	OSYSTEM="freebsd"
 	AC_DEFINE(OS_FREEBSD,1,[if FreeBSD is used])
+	AC_DEFINE(OS_POSIX,1,[if this is a POSIX system])
+	OS_TYPE="posix"
+	;;
+    *-netbsd*)
+	OSYSTEM="netbsd"
+	AC_DEFINE(OS_NETBSD,1,[if NetBSD is used])
 	AC_DEFINE(OS_POSIX,1,[if this is a POSIX system])
 	OS_TYPE="posix"
 	;;
@@ -65,6 +83,11 @@ case "$target" in
 	MAKE_DLL_TARGET="dll"
 	INSTALL_DLL_TARGET="dll-install"
 	;;
+    *-palmos*)
+    	OSYSTEM="palmos"
+	AC_DEFINE(OS_PALMOS,1,[if PalmOS is used])
+	OS_TYPE="palmos"
+        ;;
     *)
 	AC_MSG_WARN([Sorry, but target $target is not supported.
         Please report if it works anyway. We will assume that your system

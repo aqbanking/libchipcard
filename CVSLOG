@@ -1,2 +1,2 @@
-- prepared libchipcard2 to have system-dependent parts in driver.xml files
-- added compile note for MacOS to README
+- added system-check code to m4 file for BSDs and MacOSX.
+  Now libchipcard2 should be usable out of the box on MacOSX with a Cyberjack.

@@ -59,7 +59,7 @@
 
   <!-- MacOS specific part -->
 
-  <lib osname="macos">
+  <lib osname="osx">
     <names>
       <name>CyberJack_CTAPI</name>
     </names>
@@ -77,12 +77,12 @@
     </downloads>
   </lib>
 
-  <vars osname="macos" >
+  <vars osname="osx" >
     <var name="autoPortOffset">1</var>
     <var name="autoPortMode">vendorId</var>
   </vars>
 
-  <readers osname="macos" >
+  <readers osname="osx" >
 
     <reader name="cyberjack" com="USB" vendor="0x0c4b" product="0x0100">
       <short>Cyberjack pinpad or ecom</short>
