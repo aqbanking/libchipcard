@@ -551,8 +551,9 @@ char CT__requestICC(CTAPI_CONTEXT *ctx,
 
   DBG_ERROR(CT_API_LOGDOMAIN, "REQUEST ICC");
 
-  if (apdu->p1!=0x01) {
-    DBG_ERROR(CT_API_LOGDOMAIN, "Only one slot supported (%d)", apdu->p1);
+  if (apdu->p1!=0x00 && apdu->p1!=0x01) {
+      DBG_ERROR(CT_API_LOGDOMAIN,
+                "Only CT or one slot supported (%d)", apdu->p1);
     return CT_API_RV_ERR_CT;
   }
 
