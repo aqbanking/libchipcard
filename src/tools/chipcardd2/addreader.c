@@ -262,7 +262,7 @@ int addReader(ARGUMENTS *args) {
       if (strcasecmp(rname, args->rtype)==0)
         break;
     }
-    dbDriver=GWEN_DB_FindNextGroup(dbDriver, "driver");
+    dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");
   }
 
   if (!dbReader) {
