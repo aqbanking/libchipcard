@@ -1,0 +1,123 @@
+
+
+1. Introduction
+===============
+
+This is the server and the client part of Libchipcard2.
+
+Since 2005/01/02 Libchipcard2 contains both the packages chipcard2-server and
+chipcard2-client.
+
+
+
+2. Needed Components
+====================
+
+Libchipcard2 needs the following packages:
+- Gwenhywfar (http://gwenhywfar.sf.net/)          [required]
+- LibUSB (http://libusb.sf.net/)                  [strongly recommended]
+
+If LibUSB is available at compile time it will be used to scan the USB bus
+for new devices. Fortunately LibUSB is ported to the major *nix-alike 
+systems ;-)
+If LibUSB is missing autoconfiguration of USB devices is not possible.
+
+
+
+3. Server Setup
+===============
+
+The chipcard daemon uses the configuration file 
+    $PREFIX/etc/chipcard2-server/chipcardd2.conf
+
+This file contains a description of which drivers to load and a list of
+configured readers.
+
+
+3.1. Security Mode
+------------------
+
+The underlying IPC (interprocess communication) model used allows a variety
+of security modes:
+ 
+ a) local
+    This mode uses Unix Domain Sockets. These sockets are only available on
+    POSIX systems (not on WIN32 platforms), they can only be connected to from
+    the very same machine.
+    This is the recommended mode for local-only usage.
+    
+ b) public
+    This mode uses simple TCP sockets for IPC. You should not use this mode
+    since it does not provide any encryption.
+ 
+ c) private
+    This mode uses SSL secured sockets. This is the recommended mode on
+    systems where there are no Unix Domain Sockets (i.e. the "local" mode is
+    not available).
+    
+ d) secure
+    This mode is the same as "private", but it requires the client to present
+    a valid certificate. This certificate is looked up in a directory on the
+    server and if not found access will be denied.
+    You can use this mode if you want to be very safe. It also allows the
+    server to distinguish between multiple users accessing the server, so that
+    administration accounts can be realized (which will only allow special
+    users to execute administrative commands).
+
+For security modes "private" and "secure" some additional setup is to be done.
+You can do most of that additional setup with the following command:
+
+#>chipcardd2 init
+
+This will create all files necessary for "private" or "secure" mode (such as
+Diffie-Hellman-parameters, a self-signed certificate etc).
+
+Please refer to the file doc/CERTIFICATES for details.
+
+
+3.2. Adding Readers
+-------------------
+
+#>chipcardd2 addreader --rname ARG [--dtype ARG] [--rtype ARG] [--rport ARG]
+
+Adds a reader to the configuration. Please see "chipcardd2 --help".
+
+
+
+4. Starting The Daemon
+======================
+
+"chipcardd2 --help" lists all possible command line arguments.
+
+However, in most cases the following does suffice:
+
+#>chipcardd2 --pidfile PIDFILENAME
+where PIDFILENAME is the name of the PID file (used to store the process id
+of the server which can be used to send signals to it).
+
+
+For debugging purposes the following is more usefull:
+
+#>chipcardd2 --pidfile PIDFILENAME -f --logtype console --loglevel notice
+
+For "loglevel" you can use "--loglevel info" to increase the verbosity even
+more. 
+The option "-f" makes the daemon stay in the foreground. In this case you can
+stop it using CTRL-C.
+
+
+
+5. Client Setup
+===============
+
+Clients for libchipcard2 use the configuration file 
+    $PREFIX/etc/chipcard2-client/chipcardc2.conf
+
+This file contains a description of which the chipcard2 servers to connect to.
+
+
+
+
+Martin Preuss, Hamburg/Germany, 2005/01/02
+
+

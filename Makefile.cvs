@@ -1,0 +1,41 @@
+default: all
+
+dist:
+	@echo "This file is to make it easier for you to create all you need"
+	aclocal -I ./m4
+	autoheader
+# use --include-deps, if you want to release the stuff. Don't use it for
+# yourself
+	automake --include-deps
+	autoconf
+	touch stamp-h.in
+	rm -f `find . -name \*~`
+	rm -Rf `find . -type d -name CVS`
+	rm -f `find . -type f -name .cvsignore`
+	#rm -f `find . -type f -name Makefile.am`
+	#rm -f configure.in
+	rm -Rf apidoc
+	rm -f Makefile.cvs
+
+cvsclean::
+	automake --include-deps
+	autoconf
+	touch stamp-h.in
+	rm -f `find . -name \*~`
+	rm -Rf apidoc
+
+all:
+	libtoolize -f --automake
+	aclocal -I ./m4
+	autoheader
+	automake --add-missing
+	autoconf
+	./configure --enable-maintainer-mode
+
+mp:
+	libtoolize -f --automake
+	aclocal -I ./m4
+	autoheader
+	automake --add-missing
+	autoconf
+	CFLAGS="-ggdb -Wall -O" CXXFLAGS="-ggdb -Wall -O" ./configure --enable-maintainer-mode

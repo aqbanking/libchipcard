@@ -1,0 +1,20 @@
+- improved handling of drivers which do not behave themselves:
+  E.g. sometimes the Cyberjack driver simply hangs upon CT_close(). This is 
+  now detected and the driver is in this case terminated with brute force
+  (signal KILL)
+- fixed some bugs which made the server hold readers forever if a special
+  command error occurred
+- now transitional states are detected: I.e. if a client wants to access a 
+  reader which is on its way down (or if its driver is going down) then the
+  server finishes the deinitialisation in progress and remembers to start the
+  reader afterwards
+- fixed some possible problems in driver process (e.g. detect whether GWEN's
+  IPC code is running wild)
+- example server configuration files are now copied to the system folder
+- the server now shows a message about whether USB support is enabled
+- reworked Cyberjack-stuff:
+  Added a driver configuration for the new Cyberjack driver (2.x) while the
+  existing Cyberjack driver configuration uses the old driver (1.x) only.
+  Now old AND new Cyberjack devices work in parallel.
+- added code which autodetects the port value to be used for new Cyberjack
+  drivers.

@@ -1,0 +1,43 @@
+
+<driver name="orga_ctapi" type="ctapi">
+  <short>Driver for Orga Readers</short>
+  <manufacturer>
+    <name>ORGA Kartensysteme GmbH</name>
+    <url>http://www.orga.com/</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libctapi-mct09.so</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://www.panstruga.de/ct-api/</url>
+      <filename></filename>
+    </downloads>
+  </lib>
+
+  <readers>
+    <reader name="orga" com="COM">
+      <short>Orga</short>
+      <flags>
+      </flags>
+      <ports>
+        <port value="0">COM1</port>
+        <port value="1">COM2</port>
+        <port value="2">COM3</port>
+        <port value="3">COM4</port>
+      </ports>
+      <image>orga.jpg</image>
+    </reader>
+  </readers>
+
+
+</driver>
+

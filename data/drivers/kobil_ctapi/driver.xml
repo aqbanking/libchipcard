@@ -1,0 +1,183 @@
+
+<driver name="kobil_ctapi" type="ctapi">
+  <short>Driver for Kobil Readers</short>
+  <manufacturer>
+    <name>Kobil Systems GmbH</name>
+    <url>http://www.kobil.de/</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libct.so</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/usr/lib/kobil</loc>
+      <loc>/usr/local/lib/kobil</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://http://www.kobil.de/</url>
+    </downloads>
+  </lib>
+
+  <readers>
+    <reader name="ko_kaan_std" com="serial" >
+      <short>Kaan Standard</short>
+      <ports>
+        <port value="1">COM1</port>
+        <port value="2">COM2</port>
+        <port value="3">COM3</port>
+        <port value="4">COM4</port>
+        
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+    </reader>
+    
+    <reader name="ko_kaan_plus" com="serial" >
+      <short>Kaan Standard Plus</short>
+      <ports>
+        <port value="1">COM1</port>
+        <port value="2">COM2</port>
+        <port value="3">COM3</port>
+        <port value="4">COM4</port>
+        
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+      </flags>
+    </reader>
+
+    <reader name="ko_kaan_pro" com="serial" >
+      <short>Kaan Professional</short>
+      <ports>
+        <port value="1">COM1</port>
+        <port value="2">COM2</port>
+        <port value="3">COM3</port>
+        <port value="4">COM4</port>
+        
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+    </reader>
+
+    <reader name="ko_b1_pro" com="serial" >
+      <short>B1 Professional</short>
+      <ports>
+        <port value="1">COM1</port>
+        <port value="2">COM2</port>
+        <port value="3">COM3</port>
+        <port value="4">COM4</port>
+        
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+    </reader>
+
+    <reader name="ko_ct_b1_s" com="serial" >
+      <short>CT B1-S</short>
+      <descr>Reader without keypad and display</descr>
+      <ports>
+        <port value="1">COM1</port>
+        <port value="2">COM2</port>
+        <port value="3">COM3</port>
+        <port value="4">COM4</port>
+        
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+      </flags>
+    </reader>
+
+    <reader name="ko_kaan_pro_usb" com="USBSerial" 
+            vendor="0x0d46" product="0x2011" >
+      <short>Kaan Professional (USB)</short>
+      <ports>
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+    </reader>
+
+    <reader name="ko_kaan_plus_usb" com="USBSerial" 
+            vendor="0x0d46" product="0x2012" >
+      <short>Kaan Standard Plus (USB)</short>
+      <ports>
+        <port value="0">USB0</port>
+        <port value="1">USB1</port>
+        <port value="2">USB2</port>
+        <port value="3">USB3</port>
+        <port value="4">USB4</port>
+        <port value="5">USB5</port>
+        <port value="6">USB6</port>
+        <port value="7">USB7</port>
+      </ports>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+    </reader>
+
+    
+  </readers>
+
+
+</driver>
+

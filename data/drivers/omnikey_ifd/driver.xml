@@ -1,0 +1,61 @@
+
+<driver name="omnikey_ifd" type="ifd">
+  <short>Driver for Omnikey CardMan</short>
+  <manufacturer>
+    <name>Omnikey</name>
+    <url>http://www.omnikey.at</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libcm2020.so</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/usr/lib/pcsc/drivers/ifd-cm2020.bundle/Contents/Linux</loc>
+      <loc>/usr/local/lib/pcsc/drivers/ifd-cm2020.bundle/Contents/Linux</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://www.omnikey.at</url>
+      <filename></filename>
+    </downloads>
+  </lib>
+
+  <readers>
+  
+    <reader name="omnikey_cm2020" com="USB" vendor="0x076b" product="0x0596" >
+      <short>Omnikey CardMan 2020</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="omnikey_cm6020" com="USB" vendor="0x076b" product="0x1784" >
+      <short>Omnikey CardMan 6020</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="fsc_usb" com="USB" vendor="0x08d4" product="0x0009" >
+      <short>FSC USB Smartcard Reader</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+  </readers>
+
+
+</driver>
+

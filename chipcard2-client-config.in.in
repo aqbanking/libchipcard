@@ -1,0 +1,50 @@
+# $Id$
+# Author of this file: Martin Preuss<martin@libchipcard.de>
+
+result=""
+
+for d in $*; do
+    case $d in
+	--includes)
+	    result="$result @all_includes@ @libchipcard2_includes@"
+	    ;;
+	--libraries)
+	    result="$result @libchipcard2c_libs@"
+	    ;;
+	--vmajor)
+	    result="$result @CHIPCARD_VERSION_MAJOR@"
+	    ;;
+	--vminor)
+	    result="$result @CHIPCARD_VERSION_MINOR@"
+	    ;;
+	--vpatchlevel)
+	    result="$result @CHIPCARD_VERSION_PATCHLEVEL@"
+	    ;;
+	--vbuild)
+	    result="$result @CHIPCARD_VERSION_BUILD@"
+	    ;;
+	--vtag)
+	    result="$result @CHIPCARD_VERSION_TAG@"
+	    ;;
+        --vstring)
+	    result="$result @CHIPCARD_VERSION_MAJOR@.@CHIPCARD_VERSION_MINOR@.@CHIPCARD_VERSION_PATCHLEVEL@"
+            ;;
+	--datadir)
+	    result="$result @libchipcard2c_config@"
+	    ;;
+	*)
+	    echo "Usage:"
+	    echo "$0 --includes gives you the include flags"
+	    echo "$0 --libraries gives you the library flags"
+	    echo "$0 --vmajor gives the major version of LibChipcard2"
+	    echo "$0 --vminor gives the minor version of LibChipcard2"
+	    echo "$0 --vpatchlevel gives the patchlevel of LibChipcard2"
+	    echo "$0 --vbuild gives the build number of LibChipcard2"
+	    echo "$0 --vtag gives the tag of LibChipcard2 (cvs, beta or stable)"
+	    echo "$0 --vstring returns a version string"
+	    echo "$0 --datadir returns the data folder"
+	    exit 1
+	    ;;
+    esac
+done
+echo $result

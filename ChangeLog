@@ -1,0 +1,495 @@
+
+2005/01/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- combined chipcard2-client and chipcard2-server to form the new libchipcard2.
+
+
+===========================================================================
+MARK: released version 1.9.7beta (2004/12/31)
+===========================================================================
+
+
+2004/12/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- improved handling of drivers which do not behave themselves:
+  E.g. sometimes the Cyberjack driver simply hangs upon CT_close(). This is 
+  now detected and the driver is in this case terminated with brute force
+  (signal KILL)
+- fixed some bugs which made the server hold readers forever if a special
+  command error occurred
+- now transitional states are detected: I.e. if a client wants to access a 
+  reader which is on its way down (or if its driver is going down) then the
+  server finishes the deinitialisation in progress and remembers to start the
+  reader afterwards
+- fixed some possible problems in driver process (e.g. detect whether GWEN's
+  IPC code is running wild)
+- example server configuration files are now copied to the system folder
+- the server now shows a message about whether USB support is enabled
+- reworked Cyberjack-stuff:
+  Added a driver configuration for the new Cyberjack driver (2.x) while the
+  existing Cyberjack driver configuration uses the old driver (1.x) only.
+  Now old AND new Cyberjack devices work in parallel.
+- added code which autodetects the port value to be used for new Cyberjack
+  drivers.
+- added command "initialpin" to tool "rsacard"
+- MemoryCard can now determine the capacity
+- added some tutorials
+- added tool "kvkcard" which reads German medical cards and stores the data
+  to a file (or stdout)
+- now an example configuration file is installed
+- added tool "cardcommand" (port of my cardcommander from Libchipcard1)
+
+
+
+2004/12/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- driver descriptions may now contain driver variables in "<vars>" section.
+- added IPC command GetDriverVar
+- added base card types ProcessorCard and MemoryCard
+- added *_UnextendCard() functions to all non-base card types
+- added tool memcard2
+
+
+2004/12/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for Kobil Standard Plus (USB)
+  Thanks to Bernd Wurst.
+- added some port definitions to Kobil driver description
+
+
+2004/12/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added starcos.xml for Cyberjack and Kobil devices
+- tool rsacard: print a note if the PIN was successfully verified
+
+
+2004/12/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added file doc/FAQ
+- improved error output of drivers
+- added commands to chipcard-tool:
+  "check" 
+    Starts all available readers and monitors their progress.
+    This command can be used to check whether all readers are usable.
+    The option "--showall" shows a detailed log about the status of
+    each driver and reader.
+  "atr"
+    Waits for a card to be inserted into any reader and shows some
+    information about it.
+
+
+===========================================================================
+MARK: released server version 1.9.6beta (2004/11/29)
+===========================================================================
+===========================================================================
+MARK: released client version 1.9.4beta (2004/11/29)
+===========================================================================
+
+
+2004/11/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for new Reiner-SCT Cyberjack (USB device 0xc4b/0x300)
+- now the list of installed drivers is reread whenever a new USB device is
+  plugged in
+- fixed a bug in client.c
+
+
+2004/11/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added driver description for Omnikey CardMan drivers
+
+
+2004/11/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in cardserver.c: was not adjusting the reader status when
+  reader became unavailable
+- added "enabled=1" in example files
+
+
+2004/11/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added autoconfiguration support for Kobil Kaan Pro USB
+
+
+2004/11/05: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on services: now clients can offer services to other
+  clients as well
+- added service notification (sent by services to inform clients)
+- implemented OfferService command
+- now handling ServiceOpen, ServiceClose and ServiceCommand requests
+- updated doc/IPCCOMMANDS
+
+
+2004/11/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed some bugs in STARCOS xml data
+- starcos.c: 
+  - LC_Starcos_ReadInstituteData() now checks for empty contexts
+  - fixed two bugs in ManageSE (double free/no pointer init)
+  - fixed a bug in ReadSigCounter
+
+
+2004/11/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- improved reader/driver error messages sent via notifications
+- initial notifications in response to a SetNotify command are now sent
+  before the actual response. This makes it easier for clients to determine
+  when the list of readers/drivers is complete.
+- renamed tool "geldkarte" to "geldkarte2"
+- added tool "chipcard-tool" ("chipcard-tool list" lists all readers/drivers)
+- added copyright headers to alll tools
+
+
+===========================================================================
+MARK: released version 1.9.5beta (2004/11/01)
+===========================================================================
+
+
+2004/11/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- LC_READER now includes a short description. This is send with reader
+  notifications, too.
+- improved searching for libraryFile: 
+  - driver.xml files may now contain
+    file patterns (such as "libtowitoko.so.*").
+  - a default lowlevel driver folder is now searched before any other folder.
+- readerNotifications: now reads short descriptions of readers
+
+
+2004/10/31: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- cardserver.c: Upon receiption of a SetNotify message the server now 
+  initially sends notifications for each driver/reader to give initial info
+  to the client.
+
+
+2004/10/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added monitoring framework (monitors chipcard servers by evaluating
+  notifications)
+- more work on notification framework: now the monitoring is built into
+  the client. The monitoring is done transparently upon receiption of
+  a notification. The client can get a pointer to the monitor via 
+  LC_Client_GetMonitor(). This monitor keeps track of all servers, drivers, 
+  readers etc which are announced via notifications.
+
+
+2004/10/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added notification framework: clients may now sign in for notifications
+  about driver started/up/down/error, reader started/up/down/error etc.
+  This will simplify debugging and may be used for a monitor tool.
+  These features can also be used to list working readers in clients (just
+  apply for ReaderStart, ReaderUp and ReaderError notifications and send a 
+  StartWait request. As soon as a reader is up the client will be notified).
+- CardServer: CheckReader now removes existing currentRequestId
+
+
+2004/10/10: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added Kobil CT B1-S reader (without keypad and display)
+
+
+===========================================================================
+MARK: released server version 1.9.4beta (2004/10/09)
+===========================================================================
+===========================================================================
+MARK: released client version 1.9.3beta (2004/10/09)
+===========================================================================
+
+
+2004/10/09: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- rsacard: added options to modify logging-behaviour
+- doc/chipcardc2.conf.example: clarifications
+- README: filled with information
+
+
+2004/10/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- starcos: now institute data is added even if empty
+
+
+2004/10/06: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- cardcontext: "lr" property overwrites lr value, if -1
+- added tool "geldkarte"
+
+
+2004/10/05: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added card description for geldkarte
+- fixed a bug in LC_CardServer_ReaderDbFromXml
+- started working on geldkarte
+
+
+2004/10/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- CTAPI driver now logs the port number used
+
+
+===========================================================================
+MARK: released version 1.9.3beta (2004/10/02)
+===========================================================================
+
+
+2004/10/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- USB-TTY code now works with 2.6.x kernels as well (thanks to Lukas Kolbe
+  for his bug report on this)
+
+
+2004/09/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug: Now it is allowed to have a configuration file without any
+  driver sections (as is the case with autodetected-only readers)
+
+
+===========================================================================
+MARK: released server version 1.9.2beta (2004/09/26)
+===========================================================================
+===========================================================================
+MARK: released client version 1.9.2beta (2004/09/26)
+===========================================================================
+
+
+2004/09/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- configure now uses $sysconfdir and $localstatedir instead of hardcoded
+  $prefix derived values
+
+
+2004/09/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- server now logs the error message when a driver sends a ReaderError
+  notification.
+- added vendor/product id of Towitoko Chipdrive USB
+- tool rsacard: added commands to read/write bank information
+
+
+2004/09/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started the first tool: rsacard. This tool can be used to manage
+  a STARCOS RSA card (used for HBCI in Germany)
+- the tool rsacard is now able to create, activate, deactivate and export 
+  keys.
+
+
+2004/09/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- starcos: Secure PIN verification and modification works with
+  SCM Chipdrive Pinpad ;-)
+- started working on STARCOS (RSA) cards. The following already works:
+  - extend card as a STARCOS card
+  - retrieve pin status
+  - verify cardholder pin
+  - read a descriptor from EF_KEY_LOG
+  - read a public key
+  - write a public key
+
+
+2004/09/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on STARCOS cards
+- msgengine: removed check for too few bytes in "bytes" handling
+- fixed automake warnings about underquoted definitions
+
+
+2004/09/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in Gwen
+- added target for linked source docs
+- removed reasons for automakes underquote warnings
+- use sysconfdir instead of prefix/etc to conform to the holy Debian 
+  guidelines ;-)
+- chipcardd2:
+  - split main file into multiple files, one for each command
+  - added command "addreader". This command allows to add a reader to the
+    configuration of the chipard daemon.
+
+
+2004/08/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- valgrind session: fixed some memory leaks
+
+
+2004/08/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in gwen
+- created log domain for Libchipcard2 client
+
+
+2004/08/09: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in gwen
+- StartWait now clears the client's list of seenCards to allow reusing of 
+  already seen cards.
+
+
+2004/08/06: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in gwen
+- fixed some bugs
+
+
+2004/08/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in gwen
+
+
+2004/07/27: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for Ludovic Rousseau's generic CCID driver.
+  This should allow even more USB devices to be recognized.
+
+
+2004/07/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- tools/chipcardd2: fixed a bug (one free to often)
+
+
+===========================================================================
+MARK: released server version 1.9.1beta3 (2004/07/03)
+===========================================================================
+===========================================================================
+MARK: released client version 1.9.1beta4 (2004/07/03)
+===========================================================================
+
+
+2004/07/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed some major bugs (code, XML files)
+- added a driver.xml for Kobil readers
+- completed simple version of chipcard-setup tool
+
+
+2004/07/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed some bugs
+
+
+2004/06/27: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- setup tool will use the new UI in Gwen, so no need for low level console
+  stuff here ;-)
+- added driver description for old towitoko chipdrives
+
+
+2004/06/18: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on a ncurses based configuration tool.
+  Hmm, ncurses is pretty cool (but it takes quite long to figure out how
+  it really works)
+
+
+2004/06/17: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added and armed auto-configuration code. The chipcard daemon is now
+  able to detect plugging and unplugging of USB readers.
+  For known readers (these are readers for whose driver we have a driver.xml)
+  the correct port is selected (as needed with ttyUSBx readers such as
+  Cyberjacks).
+  While the Towitoko Chipdrive Pinpad can unplugged at any time the Cyberjack
+  tends to hang up the USB bus if unplugged while still accessed...
+  You can disable the autoconfiguration code by adding the following line
+  to your chipcardd2.conf file:
+     int disableAutoConf="1"
+- the drivers now really disconnect when an transmission error is encountered
+- readers that are not used and which are unavailable (as flagged by the
+  USB monitor) are removed completely.
+- Libchipcard now uses LibUSB to check for USB devices. This way the USB code
+  is already ported to Linux (2.4, 2.6), FreeBSD, NetBSD, OpenBSD, Darwin...
+- m4/libusb.m4: Wrote a rudimentary M4-script to detect LibUSB
+- improved logfile handling by drivers: if not given otherwise a driver will
+  use a separate log file for every reader.
+- chipcardd2 can now accepts commands on the command line. This will later
+  be used for some administration, for now the only command allowed (and
+  which is the default command if omitted) is "server".
+- added commands to chipcard daemon:
+  - "init"  : creates all files necessary for SSL connections (certificate 
+              etc)
+  - "mkcert": creates a certificate for a user which he can use to securely
+              communicate with the chipcard daemon
+
+
+2004/06/15: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added testmode to drivers, this now allows for testing a reader (like the
+  old tool "readertest" did)
+
+
+2004/06/13: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for KVK cards (German medical cards)
+
+
+2004/06/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added a service library (can be used to create services)
+- added descriptions for KVK card
+- added descriptions for Orga reader
+
+
+2004/06/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- finished USB monitor, I will now have to use it in CardServer...
+
+
+2004/06/07: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on an USB monitor (which will later be used to detect
+  plugged-in and plugged-out devices)
+
+
+2004/05/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- results are now also searched for in data of cards which extend the current
+  one (inheritage)
+- added support for FPIN2
+- aded verification commands for DDV0 cards
+- added new chipcardd2
+- results are now also searched for in data of cards which extend the current
+  one (inheritage)
+- added support for FPIN2
+- aded verification commands for DDV0 cards
+
+
+2004/05/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- worked on IPC stuff, added some files to DDV0 app
+
+
+2004/05/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added implementation of command ReadRecord
+- minor fixes to the MsgEngine
+- added data files for cards and card applications
+
+
+2004/05/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added binType functions for TLV to MsgEngine
+- changed name to Libchipcard2
+- completed reading of TLVs in MSgEngine
+
+
+2004/05/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- executing commands using the new server-side command engine works ;-)
+
+
+2004/05/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on server based card commands, moved message engine
+  from client to server library
+
+
+2004/05/18: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on MsgEngine for APDUs
+
+
+2004/05/17: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to new IPC module in Gwenhywfar
