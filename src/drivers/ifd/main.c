@@ -14,9 +14,11 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include "driverifd.h"
 #include <gwenhywfar/debug.h>
+#include <gwenhywfar/inetsocket.h>
 
 #include <unistd.h>
 
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
     }
 
     DBG_NOTICE(0, "Stopping driver \"%s\"", argv[0]);
-    sleep(1);
+    GWEN_Socket_Select(0, 0, 0, 1000);
   }
 
   LC_Driver_free(d);

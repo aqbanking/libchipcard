@@ -18,7 +18,6 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/stringlist2.h>
 
-
 #define LC_FS_MODE_MASK_NODE               0x0000ffff
 
 #define LC_FS_NODE_MODE_RIGHTS_OWNER_MASK  0x00000700

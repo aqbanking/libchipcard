@@ -1,6 +1,8 @@
-- added license exception needed for Debian
-- no longer install the server library (it is not needed by any tool except
-  the chipcard daemon, and no program should need it)
-- no longer install ctapi.h (not needed and it interferes with the same file
-  from some drivers)
-- added prefix "CHIPCARD_API" to all exported functions
+- moved usb stuff to a convenience library of its own, to be used by drivers
+  and setup tools in addition to the server
+- no longer install the driver library (it is not needed by any tool except
+  the built-in drivers, and no program should need it)
+- added library libchipcard2i.so (provides information about installed drivers
+  and USB devices, this might be used by setup tools)
+- added build-rules for WIN32 platforms (now compiles and the client already
+  works)

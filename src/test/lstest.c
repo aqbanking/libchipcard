@@ -2,7 +2,7 @@
 
 #define GWEN_EXTEND_WAITCALLBACK
 #include <chipcard2-server/server/cardserver.h>
-#include <chipcard2-server/server/usbmonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/net.h>
 #include <gwenhywfar/nettransportssl.h>

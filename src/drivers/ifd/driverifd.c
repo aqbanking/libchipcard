@@ -14,6 +14,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include "driverifd_p.h"
 
@@ -21,6 +22,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
+#include <gwenhywfar/inetsocket.h>
 #include <chipcard2/chipcard2.h>
 
 #include <unistd.h>

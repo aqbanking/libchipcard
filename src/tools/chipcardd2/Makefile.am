@@ -1,7 +1,7 @@
 
 INCLUDES=@all_includes@ -I../../lib/chipcard2-server/server
 
-AM_CFLAGS=\
+DEFS=@DEFS@ \
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \
   -DLC_DEFAULT_DHFILE=\"@LC_DEFAULT_DHFILE@\"\
   -DLC_DEFAULT_DATADIR=\"@libchipcard2s_config_am@\" \
@@ -20,4 +20,4 @@ chipcardd2_SOURCES=\
   mkcert.c \
   chipcardd2.c
 chipcardd2_LDADD=-L../../lib/chipcard2-server -lchipcard2s @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
-
+chipcardd2_LDFLAGS=@STRIPALL@

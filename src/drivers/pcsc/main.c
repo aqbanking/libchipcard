@@ -14,10 +14,12 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwenhywfar.h>
+#include <gwenhywfar/inetsocket.h>
 
 #include <unistd.h>
 
@@ -26,6 +28,6 @@
 int main(int argc, char **argv) {
   GWEN_Init();
   DBG_ERROR(0, "Not yet supported");
-  sleep(5);
+  GWEN_Socket_Select(0, 0, 0, 1000);
   return 2;
 }

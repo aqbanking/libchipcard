@@ -9,10 +9,9 @@ dnl   $1: major version minimum
 dnl   $2: minor version minimum
 dnl   $3: patchlevel version minimum
 dnl   $4: build version minimum
-dnl Returns: chipcard_server_dir
-dnl          chipcard_server_datadir
-dnl          chipcard_server_libs
-dnl          chipcard_server_includes
+dnl Returns: chipcard_server_datadir
+dnl          chipcard_server_driverdir
+dnl          chipcard_server_servicedir
 dnl          have_chipcard_server
 
 if test -z "$1"; then vma="0"; else vma="$1"; fi
@@ -32,8 +31,6 @@ chipcard_server_dir=""
 chipcard_server_servicedir=""
 chipcard_server_driverdir=""
 chipcard_server_datadir=""
-chipcard_server_libs=""
-chipcard_server_includes=""
 if test "$enable_chipcard_server" != "no"; then
   AC_MSG_CHECKING(for chipcard_server)
   AC_ARG_WITH(chipcard-server-dir, [  --with-chipcard-server-dir=DIR
@@ -64,12 +61,6 @@ if test "$enable_chipcard_server" != "no"; then
 *** successor chipcard2.])
   else
       AC_MSG_RESULT($chipcard_server_dir)
-      AC_MSG_CHECKING(for chipcard-server libs)
-      chipcard_server_libs="`$chipcard_server_dir/bin/chipcard2-server-config --libraries`"
-      AC_MSG_RESULT($chipcard_server_libs)
-      AC_MSG_CHECKING(for chipcard-server includes)
-      chipcard_server_includes="`$chipcard_server_dir/bin/chipcard2-server-config --includes`"
-      AC_MSG_RESULT($chipcard_server_includes)
       AC_MSG_CHECKING(for chipcard-server datadir)
       chipcard_server_datadir="`$chipcard_server_dir/bin/chipcard2-server-config --datadir`"
       AC_MSG_RESULT($chipcard_server_datadir)
@@ -120,10 +111,7 @@ if test "$enable_chipcard_server" != "no"; then
 dnl end of "if enable-chipcard-server"
 fi
 
-AC_SUBST(chipcard_server_dir)
 AC_SUBST(chipcard_server_servicedir)
 AC_SUBST(chipcard_server_driverdir)
 AC_SUBST(chipcard_server_datadir)
-AC_SUBST(chipcard_server_libs)
-AC_SUBST(chipcard_server_includes)
 ])

@@ -20,7 +20,7 @@
 #define LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL2_6_FILE \
   "/proc/tty/driver/usbserial"
 
-#include <chipcard2-server/server/usbttymonitor.h>
+#include <chipcard2-server/common/usbttymonitor.h>
 
 
 

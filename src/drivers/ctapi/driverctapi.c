@@ -14,6 +14,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include "driverctapi_p.h"
 #include "readerctapi.h"
@@ -22,6 +23,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
+#include <gwenhywfar/inetsocket.h>
 #include <chipcard2/chipcard2.h>
 
 #include <unistd.h>
@@ -433,7 +435,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
   currStatus=LC_Slot_GetStatus(sl);
   rv=LC_Driver_DisconnectSlot(d, sl);
   DBG_ERROR(LC_Reader_GetLogger(LC_Slot_GetReader(sl)), "Slot reset");
-  sleep(1);
+  GWEN_Socket_Select(0, 0, 0, 1000);
   if (currStatus & LC_SLOT_STATUS_CARD_CONNECTED) {
     rv|=LC_Driver_ConnectSlot(d, sl);
   }

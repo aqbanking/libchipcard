@@ -15,12 +15,16 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/netconnection.h>
 #include <gwenhywfar/nettransportssl.h>
+#include <gwenhywfar/inetsocket.h>
 #include "cbtest.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
+#ifdef OS_WIN32
+# define sleep(x) GWEN_Socket_Select(0, 0, 0, (x)*1000)
+#endif
 
 
 int test1(int argc, char **argv) {

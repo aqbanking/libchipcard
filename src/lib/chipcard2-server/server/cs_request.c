@@ -28,8 +28,8 @@
 #include <gwenhywfar/directory.h>
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/server/usbmonitor.h>
-#include <chipcard2-server/server/usbttymonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
+#include <chipcard2-server/common/usbttymonitor.h>
 
 #include <stdlib.h>
 #include <assert.h>

@@ -26,6 +26,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #define I18N(m) m
 #define I18NT(m) m
@@ -39,6 +40,7 @@
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
+#include <gwenhywfar/nettransportssl.h>
 
 #include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
@@ -374,6 +376,13 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 
 
 
+GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT _askAddCert(GWEN_NETTRANSPORT *tr,
+                                                   GWEN_DB_NODE *cert){
+  return GWEN_NetTransportSSL_AskAddCertResultTmp;
+}
+
+
+
 
 
 int main(int argc, char **argv) {
@@ -385,10 +394,11 @@ int main(int argc, char **argv) {
   LC_CARD *card=0;
   GWEN_DB_NODE *db;
   const char *s;
-  GWEN_DB_NODE *dbConfig;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   LC_CLIENT_RESULT res;
+
+  GWEN_NetTransportSSL_SetAskAddCertFn(_askAddCert);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -438,28 +448,15 @@ int main(int argc, char **argv) {
   }
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, logLevel);
 
-  dbConfig=GWEN_DB_Group_new("client");
-  if (GWEN_DB_ReadFile(dbConfig,
-                       GWEN_DB_GetCharValue(db, "configfile", 0,
-                                            LC_DEFAULT_DATADIR
-                                            "/chipcardc2.conf"),
-                       GWEN_DB_FLAGS_DEFAULT |
-                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
-    fprintf(stderr, "ERROR: Could not read file\n");
-    GWEN_DB_Group_free(dbConfig);
-    GWEN_DB_Group_free(db);
-    return 2;
-  }
-
   cl=LC_Client_new("cardcommander2", "0", 0);
-  if (LC_Client_ReadConfig(cl, dbConfig)) {
+  if (LC_Client_ReadConfigFile(cl,
+                               GWEN_DB_GetCharValue(db, "configfile",
+                                                    0, 0))) {
     fprintf(stderr, "Error reading configuration.\n");
     LC_Client_free(cl);
-    GWEN_DB_Group_free(dbConfig);
     GWEN_DB_Group_free(db);
     return 2;
   }
-  GWEN_DB_Group_free(dbConfig); dbConfig=0;
 
   fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_StartWait(cl, 0, 0);

@@ -48,8 +48,8 @@
 #include <chipcard2-server/server/client.h>
 #include <chipcard2-server/server/card.h>
 #include <chipcard2-server/server/service.h>
-#include <chipcard2-server/server/usbttymonitor.h>
-#include <chipcard2-server/server/usbmonitor.h>
+#include <chipcard2-server/common/usbttymonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
 
 #include "commands/cardmgr_l.h"
 
@@ -321,11 +321,6 @@ int LC_CardServer_ReplaceVar(const char *path,
                              const char *var,
                              const char *value,
                              GWEN_BUFFER *nbuf);
-
-void LC_CardServer__SampleDirs(const char *dataDir, GWEN_STRINGLIST *sl);
-int LC_CardServer__SampleDrivers(GWEN_STRINGLIST *sl,
-                                 GWEN_DB_NODE *dbDrivers,
-                                 int availOnly);
 
 int LC_CardServer__USBDeviceToDB(LC_USBDEVICE *ud,
                                  GWEN_DB_NODE *dbDrivers,

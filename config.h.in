@@ -78,11 +78,17 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
@@ -170,6 +176,21 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* common app data path */
+#undef WIN_PATH_COMMON_APPDATA
+
+/* home path */
+#undef WIN_PATH_HOME
+
+/* program files path */
+#undef WIN_PATH_PROGRAM_FILES
+
+/* system path */
+#undef WIN_PATH_SYSTEM
+
+/* windows path */
+#undef WIN_PATH_WINDOWS
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

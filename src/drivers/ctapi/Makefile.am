@@ -1,7 +1,5 @@
 INCLUDES=@all_includes@
 
-AM_CFLAGS=-DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\"
-
 driverdir=@LC_DEVICEDRIVER_PATH@
 driver_PROGRAMS=ctapi
 
@@ -16,5 +14,6 @@ ctapi_SOURCES=\
   readerctapi.c \
   main.c
 
-ctapi_LDADD=-L../../lib/chipcard2-server -lchipcard2d
-
+ctapi_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
+  @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
+ctapi_LDFLAGS=@STRIPALL@

@@ -1,4 +1,4 @@
-AM_CFLAGS=\
+DEFS=@DEFS@ \
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 INCLUDES=@all_includes@ -I../ -I../client
@@ -27,11 +27,11 @@ iheader_HEADERS=\
  service.h
 
 libmon_la_SOURCES=\
- client.c \
- driver.c \
+ mclient.c \
+ mdriver.c \
  monitor.c \
- reader.c \
- server.c \
- service.c
+ mreader.c \
+ mserver.c \
+ mservice.c
 
 

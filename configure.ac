@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=9
-CHIPCARD_VERSION_BUILD=7
+CHIPCARD_VERSION_BUILD=9
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -25,6 +25,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 LIBCHIPCARD_SO_CURRENT=0
 LIBCHIPCARD_SO_REVISION=0
 LIBCHIPCARD_SO_AGE=0
+LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
 # Create release string
@@ -81,19 +82,31 @@ AC_DEFINE_UNQUOTED(CHIPCARD_VERSION_TAG,$CHIPCARD_VERSION_TAG, [tag])
 AC_SUBST(LIBCHIPCARD_SO_CURRENT)
 AC_SUBST(LIBCHIPCARD_SO_REVISION)
 AC_SUBST(LIBCHIPCARD_SO_AGE)
+AC_SUBST(LIBCHIPCARD_SO_EFFECTIVE)
 
 
 AM_INIT_AUTOMAKE(libchipcard2, $CHIPCARD_VERSION_RELEASE_STRING)
 
 
+
 ###-------------------------------------------------------------------------
-dnl prefix handling
+# check for OS
+
+AQ_CHECK_OS
+
+
+###-------------------------------------------------------------------------
+# prefix handling
+
+AC_MSG_CHECKING(for installation prefix)
 AC_PREFIX_DEFAULT(/usr)
 if test "x$prefix" = "xNONE"; then
   prefix=$ac_default_prefix
   ac_configure_args="$ac_configure_args --prefix $prefix"
 fi
+AC_MSG_RESULT($prefix)
 AC_SUBST(prefix)
+
 
 
 ###-------------------------------------------------------------------------
@@ -142,6 +155,7 @@ AC_C_CONST
 # Checks for library functions.
 
 AC_CHECK_FUNCS(snprintf)
+AC_CHECK_FUNCS(strcasecmp strncasecmp)
 AC_CHECK_FUNCS(fork)
 AC_CHECK_FUNCS(time)
 AC_CHECK_FUNCS(getpid)
@@ -203,7 +217,7 @@ fi
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,7,0,0)
+AC_GWENHYWFAR(1,7,2,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -211,60 +225,59 @@ all_includes="$all_includes $gwenhywfar_includes"
 ###-------------------------------------------------------------------------
 dnl OS dependant settings
 
-AQ_CHECK_OS
 
 case "$OS_TYPE" in
     posix)
-        libchipcard2d_libs="-L\${prefix}/lib -lchipcard2d"
-        
-        libchipcard2s_libs="-L\${prefix}/lib -lchipcard2s"
         libchipcard2s_config_am="\${sysconfdir}/chipcard2-server"
+        
+        libchipcard2i_libs="-L\${libdir} -lchipcard2i"
 
-        libchipcard2sv_libs="-L\${(prefix}/lib -lchipcard2sv"
-        libchipcard2c_libs="-L`eval echo $prefix/lib` -lchipcard2c"
+        libchipcard2sv_libs="-L\${(libdir} -lchipcard2sv"
+
+        libchipcard2c_libs="-L\${libdir} -lchipcard2c"
         libchipcard2c_config_am="\${sysconfdir}/chipcard2-client"
         chipcard_client_includes="-I`eval echo $prefix/include`"
 
         libchipcard2_includes="-I\${prefix}/include"
-        LC_DEVICEDRIVER_PATH="\${prefix}/lib/chipcard2-server/drivers"
-        LC_LOWLEVELDRIVER_PATH="\${prefix}/lib/chipcard2-server/lowlevel"
-        LC_SERVICE_PATH="\${prefix}/lib/chipcard2-server/services"
+        LC_DEVICEDRIVER_PATH="\${libdir}/chipcard2-server/drivers"
+        LC_LOWLEVELDRIVER_PATH="\${libdir}/chipcard2-server/lowlevel"
+        LC_SERVICE_PATH="\${libdir}/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
         LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
         LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
         LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
-        LC_DEFAULT_LIBDIR="\${prefix}/lib/chipcard2"
+        LC_DEFAULT_LIBDIR="\${libdir}/chipcard2"
     	;;
     windows)
         AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
-        
-        libchipcard2d_libs="-L\${prefix}/lib -lchipcard2d32"
-        
-        libchipcard2s_libs="-L\${prefix}/lib -lchipcard2s32"
-        libchipcard2s_config_am="\${sysconfdir}/chipcard2-server"
+        ACX_WINDOWS_PATHS
 
-        libchipcard2sv_libs="-L\${prefix}/lib -lchipcard2sv"
+        libchipcard2s_config_am="\${sysconfdir}/chipcard2-server"
         
-        libchipcard2c_libs="-L`eval echo $prefix/lib` -lchipcard2c"
+        libchipcard2i_libs="-L\${libdir} -lchipcard2i"
+
+        libchipcard2sv_libs="-L\${(libdir} -lchipcard2sv"
+
+        libchipcard2c_libs="-L\${libdir} -lchipcard2c"
         libchipcard2c_config_am="\${sysconfdir}/chipcard2-client"
+        chipcard_client_includes="-I`eval echo $prefix/include`"
+
         libchipcard2_includes="-I\${prefix}/include"
-        LC_DEVICEDRIVER_PATH="\${prefix}/lib/chipcard2-server/drivers"
-        LC_LOWLEVELDRIVER_PATH="\${prefix}/lib/chipcard2-server/lowlevel"
-        LC_SERVICE_PATH="\${prefix}/lib/chipcard2-server/services"
+        LC_DEVICEDRIVER_PATH="\${libdir}/chipcard2-server/drivers"
+        LC_LOWLEVELDRIVER_PATH="\${libdir}/chipcard2-server/lowlevel"
+        LC_SERVICE_PATH="\${libdir}/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
         LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
         LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
         LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
-        LC_DEFAULT_LIBDIR="\${prefix}/lib/chipcard2"
-        
-        LIBCHIPCARD_MAKE_DLL_TARGET="dll"
-        LIBCHIPCARD_INSTALL_DLL_TARGET="dll-install"
+        LC_DEFAULT_LIBDIR="\${libdir}/chipcard2"
     	;;
 esac
 
+AM_CONDITIONAL(IS_WINDOWS, [test "$OS_TYPE" = "windows"])
+
 AC_SUBST(libchipcard2d_libs)
 AC_SUBST(libchipcard2s_config_am)
-AC_SUBST(libchipcard2s_libs)
 AC_SUBST(libchipcard2sv_libs)
 AC_SUBST(libchipcard2c_config)
 AC_SUBST(libchipcard2c_config_am)
@@ -284,8 +297,32 @@ AC_SUBST(all_includes)
 AC_SUBST(all_libraries)
 
 
+###-------------------------------------------------------------------------
+#
+# check for release
+#
+AC_MSG_CHECKING(whether this is an official release)
+AC_ARG_ENABLE(release,
+  [  --enable-release         make this an official release (default=no)],
+  [ case "${enableval}" in
+    yes) enable_release="yes";;
+    no)  enable_release="no";;
+    *) AC_MSG_ERROR(bad value ${enableval} for --enable-release);;
+    esac
+  ],
+  enable_release="no")
+
+if test "$enable_release" = "yes"; then
+  STRIPALL="-s"
+else
+  STRIPALL=""
+fi
+AC_SUBST(STRIPALL)
+AC_MSG_RESULT($enable_release)
+
 dnl check for the documentation output path
 AQ_DOCPATH
+
 
 
 ###-------------------------------------------------------------------------
@@ -402,7 +439,7 @@ ln -s "${lprefix}/src/lib/chipcard2.h" chipcard2/chipcard2.h
 #
 # create header directory for server, make symlinks
 #
-lc_modules="server driver"
+lc_modules="server driver common"
 lc_server_modules="commands"
 
 lprefix="${srcdir}"
@@ -579,6 +616,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/version.h
                  src/lib//chipcard2.h
                  src/lib/chipcard2-client/Makefile
+                 src/lib/chipcard2-client/ressource.rc
                  src/lib/chipcard2-client/cards/Makefile
                  src/lib/chipcard2-client/client/Makefile
                  src/lib/chipcard2-client/client/apps/Makefile
@@ -586,15 +624,19 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-client/mon/Makefile
                  src/lib/chipcard2-client/fs/Makefile
                  src/lib/chipcard2-server/Makefile
+                 src/lib/chipcard2-server/ressource.rc
+                 src/lib/chipcard2-server/common/Makefile
                  src/lib/chipcard2-server/driver/Makefile
                  src/lib/chipcard2-server/server/Makefile
                  src/lib/chipcard2-server/server/commands/Makefile
                  src/lib/chipcard2-service/Makefile
+                 src/lib/chipcard2-service/ressource.rc
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ifd/Makefile
                  src/drivers/pcsc/Makefile
                  src/fake_ctapi/Makefile
+                 src/fake_ctapi/ressource.rc
                  src/tools/Makefile
                  src/tools/chipcardd2/Makefile
                  src/tools/chipcardrd/Makefile

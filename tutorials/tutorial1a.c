@@ -43,6 +43,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 /* You always need to include the header files of Libchipcard2 to work with

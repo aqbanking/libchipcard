@@ -6,3 +6,5 @@ iheaderdir=${includedir}/chipcard2
 iheader_HEADERS=\
   chipcard2.h \
   version.h
+
+

@@ -29,8 +29,9 @@
 #include <gwenhywfar/directory.h>
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/server/usbmonitor.h>
-#include <chipcard2-server/server/usbttymonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
+#include <chipcard2-server/common/usbttymonitor.h>
+#include <chipcard2-server/common/driverinfo.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -56,9 +57,6 @@ LC_CARDSERVER *LC_CardServer_new(const char *dataDir){
   LC_CARDSERVER *cs;
   GWEN_STRINGLIST *sl;
 
-  if (!dataDir)
-    dataDir=LC_DEFAULT_DATADIR;
-
   GWEN_NEW_OBJECT(LC_CARDSERVER, cs);
   cs->ipcManager=GWEN_IPCManager_new();
   cs->drivers=LC_Driver_List_new();
@@ -74,7 +72,16 @@ LC_CARDSERVER *LC_CardServer_new(const char *dataDir){
   cs->readerIdleTimeout=LC_CARDSERVER_DEFAULT_READERIDLETIMEOUT;
   cs->driverIdleTimeout=LC_CARDSERVER_DEFAULT_DRIVERIDLETIMEOUT;
 
-  cs->dataDir=strdup(dataDir);
+  if (dataDir)
+    cs->dataDir=strdup(dataDir);
+  else {
+    GWEN_BUFFER *tbuf;
+
+    tbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, tbuf, 1);
+    cs->dataDir=strdup(GWEN_Buffer_GetStart(tbuf));
+    GWEN_Buffer_free(tbuf);
+  }
 
   cs->dbDrivers=GWEN_DB_Group_new("drivers");
   cs->dbConfigDrivers=GWEN_DB_Group_new("configDrivers");
@@ -455,8 +462,8 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
         GWEN_BUFFER *lbuf;
 
         lbuf=GWEN_Buffer_new(0, 256, 0, 1);
-        LC_CardServer_ReplaceVar(LC_DEFAULT_LOGDIR
-                                 "/drivers/@driver@"
+        GWEN_Directory_OsifyPath(LC_DEFAULT_LOGDIR, lbuf, 1);
+        LC_CardServer_ReplaceVar("/drivers/@driver@"
                                  "/@reader@"
                                  ".log",
                                  "driver",
@@ -501,8 +508,8 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
         GWEN_BUFFER *lbuf;
 
         lbuf=GWEN_Buffer_new(0, 256, 0, 1);
-        LC_CardServer_ReplaceVar(LC_DEFAULT_LOGDIR
-                                 "/services/@service@.log",
+        GWEN_Directory_OsifyPath(LC_DEFAULT_LOGDIR, lbuf, 1);
+        LC_CardServer_ReplaceVar("/services/@service@.log",
                                  "service",
                                  LC_Service_GetServiceName(as),
                                  lbuf);
@@ -577,15 +584,43 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
         const char *newCertDir;
         const char *ownCertFile;
         const char *ciphers;
-        GWEN_BUFFER *cfbuf;
+        const char *dhFile;
+        GWEN_BUFFER *cfbuf=0;
+        GWEN_BUFFER *cdbuf=0;
+        GWEN_BUFFER *ncdbuf=0;
+        GWEN_BUFFER *dhbuf=0;
 
-        cfbuf=0;
-        certDir=GWEN_DB_GetCharValue(gr, "certdir", 0,
-                                     LC_DEFAULT_DATADIR"/"
-                                     "certificates/valid");
-        newCertDir=GWEN_DB_GetCharValue(gr, "newcertdir", 0,
-                                        LC_DEFAULT_DATADIR"/"
-                                        "certificates/new");
+        /* get cert dir */
+        certDir=GWEN_DB_GetCharValue(gr, "certdir", 0, 0);
+        if (!certDir) {
+          cdbuf=GWEN_Buffer_new(0, 256, 0, 1);
+          GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR"/"
+                                   "certificates/valid",
+                                   cdbuf, 1);
+          certDir=GWEN_Buffer_GetStart(cdbuf);
+        }
+
+        /* get new cert dir */
+        newCertDir=GWEN_DB_GetCharValue(gr, "newcertdir", 0, 0);
+        if (!newCertDir) {
+          ncdbuf=GWEN_Buffer_new(0, 256, 0, 1);
+          GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR"/"
+                                   "certificates/new",
+                                   ncdbuf, 1);
+          newCertDir=GWEN_Buffer_GetStart(ncdbuf);
+        }
+
+        /* get dh file */
+        dhFile=GWEN_DB_GetCharValue(gr, "dhfile", 0, 0);
+        if (!dhFile) {
+          dhbuf=GWEN_Buffer_new(0, 256, 0, 1);
+          GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR
+                                   DIRSEP
+                                   LC_DEFAULT_DHFILE,
+                                   dhbuf, 1);
+          dhFile=GWEN_Buffer_GetStart(dhbuf);
+        }
+
         ciphers=GWEN_DB_GetCharValue(gr, "ciphers", 0, 0);
         ownCertFile=GWEN_DB_GetCharValue(gr, "certfile", 0, 0);
         if (ownCertFile) {
@@ -598,7 +633,7 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
               fclose(f);
             else {
               cfbuf=GWEN_Buffer_new(0, 256, 0, 1);
-              GWEN_Buffer_AppendString(cfbuf, LC_DEFAULT_DATADIR);
+              GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, cfbuf, 1);
               GWEN_Buffer_AppendByte(cfbuf, DIRSEPC);
               GWEN_Buffer_AppendString(cfbuf, ownCertFile);
               ownCertFile=GWEN_Buffer_GetStart(cfbuf);
@@ -621,8 +656,7 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
                                       certDir,
                                       newCertDir,
                                       ownCertFile,
-                                      LC_DEFAULT_DATADIR DIRSEP
-                                      LC_DEFAULT_DHFILE,
+                                      dhFile,
 				      0,
 				      1);
 	}
@@ -633,7 +667,7 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
                                       certDir,
                                       newCertDir,
 				      ownCertFile,
-				      LC_DEFAULT_DHFILE,
+                                      dhFile,
 				      1,
 				      1);
 	}
@@ -641,9 +675,15 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
 	  DBG_ERROR(0, "Unknown mode \"%s\"", typ);
           GWEN_InetAddr_free(addr);
           GWEN_Buffer_free(cfbuf);
+          GWEN_Buffer_free(cdbuf);
+          GWEN_Buffer_free(ncdbuf);
+          GWEN_Buffer_free(dhbuf);
 	  return -1;
 	}
         GWEN_Buffer_free(cfbuf);
+        GWEN_Buffer_free(cdbuf);
+        GWEN_Buffer_free(ncdbuf);
+        GWEN_Buffer_free(dhbuf);
 
         if (ciphers)
           GWEN_NetTransportSSL_SetCipherList(tr, ciphers);
@@ -1091,138 +1131,9 @@ void LC_CardServer_SetIpcId(LC_CARDSERVER *cs, GWEN_TYPE_UINT32 id){
 
 
 
-void LC_CardServer__SampleDirs(const char *dataDir, GWEN_STRINGLIST *sl) {
-  GWEN_BUFFER *buf;
-  GWEN_DIRECTORYDATA *d;
-  unsigned int dpos;
-
-  buf=GWEN_Buffer_new(0, 256, 0, 1);
-
-  /* always append data dir */
-  GWEN_StringList_AppendString(sl, dataDir, 0, 1);
-
-  d=GWEN_Directory_new();
-  GWEN_Buffer_AppendString(buf, dataDir);
-  GWEN_Buffer_AppendByte(buf, '/');
-  GWEN_Buffer_AppendString(buf, "drivers");
-  dpos=GWEN_Buffer_GetPos(buf);
-  if (!GWEN_Directory_Open(d, GWEN_Buffer_GetStart(buf))) {
-    char buffer[256];
-
-    while (!GWEN_Directory_Read(d, buffer, sizeof(buffer))){
-      struct stat st;
-
-      GWEN_Buffer_Crop(buf, 0, dpos);
-      GWEN_Buffer_SetPos(buf, dpos);
-      GWEN_Buffer_AppendByte(buf, '/');
-      GWEN_Buffer_AppendString(buf, buffer);
-      if (stat(GWEN_Buffer_GetStart(buf), &st)) {
-        DBG_ERROR(0, "stat(%s): %s",
-                  GWEN_Buffer_GetStart(buf),
-                  strerror(errno));
-      }
-      else {
-        if (S_ISDIR(st.st_mode)) {
-          if (strcasecmp(buffer, "..")!=0 &&
-              strcasecmp(buffer, ".")!=0) {
-            DBG_DEBUG(0, "Adding driver dir \"%s\"",
-                      GWEN_Buffer_GetStart(buf));
-            GWEN_StringList_AppendString(sl,
-                                         GWEN_Buffer_GetStart(buf),
-                                         0, 1);
-          } /* if real folder name */
-        } /* if it is not a folder */
-      } /* if stat succeeded */
-    } /* while */
-  } /* if open succeeded */
-  else {
-    DBG_ERROR(0, "Could not open folder %s", GWEN_Buffer_GetStart(buf));
-  }
-  GWEN_Directory_Close(d);
-  GWEN_Directory_free(d);
-  GWEN_Buffer_free(buf);
-}
-
-
-
 void LC_CardServer_SampleDirs(LC_CARDSERVER *cs,
                               GWEN_STRINGLIST *sl) {
-  return LC_CardServer__SampleDirs(cs->dataDir, sl);
-}
-
-
-
-int LC_CardServer_FindFile(GWEN_STRINGLIST *slDirs,
-			   GWEN_STRINGLIST *slNames,
-			   GWEN_BUFFER *nbuf) {
-  GWEN_STRINGLISTENTRY *eDirs;
-
-  eDirs=GWEN_StringList_FirstEntry(slDirs);
-  while(eDirs) {
-    GWEN_TYPE_UINT32 pos;
-    GWEN_STRINGLISTENTRY *eNames;
-
-    GWEN_Buffer_Reset(nbuf);
-    GWEN_Buffer_AppendString(nbuf, GWEN_StringListEntry_Data(eDirs));
-    GWEN_Buffer_AppendByte(nbuf, '/');
-    pos=GWEN_Buffer_GetPos(nbuf);
-
-    eNames=GWEN_StringList_FirstEntry(slNames);
-
-    while(eNames) {
-      GWEN_DIRECTORYDATA *dDir;
-
-      dDir=GWEN_Directory_new();
-      if (!GWEN_Directory_Open(dDir, GWEN_StringListEntry_Data(eDirs))) {
-        char nameBuf[256];
-
-        /* search for name in this folder */
-        while(!GWEN_Directory_Read(dDir, nameBuf, sizeof(nameBuf))) {
-          if (strcmp(nameBuf, ".")!=0 &&
-              strcmp(nameBuf, "..")!=0) {
-            if (-1!=GWEN_Text_ComparePattern(nameBuf,
-                                             GWEN_StringListEntry_Data(eNames),
-                                             0)) {
-              struct stat st;
-
-              /* found name, add it to the buffer */
-              GWEN_Buffer_Crop(nbuf, 0, pos);
-              GWEN_Buffer_SetPos(nbuf, pos);
-              GWEN_Buffer_AppendString(nbuf, nameBuf);
-              if (stat(GWEN_Buffer_GetStart(nbuf), &st)) {
-                /* error */
-                DBG_WARN(0, "stat(%s): %s",
-                         GWEN_Buffer_GetStart(nbuf),
-                         strerror(errno));
-              }
-              else {
-                /* check for regular file */
-                if (S_ISREG(st.st_mode)) {
-                  GWEN_Directory_Close(dDir);
-                  GWEN_Directory_free(dDir);
-                  DBG_INFO(0, "File found: %s", GWEN_Buffer_GetStart(nbuf));
-                  return 0;
-                }
-                else {
-                  DBG_INFO(0, "Entry \"%s\" is not a regular file",
-                           GWEN_Buffer_GetStart(nbuf));
-                }
-              }
-            } /* if name pattern matches */
-          } /* if not a special entry */
-        } /* while still entries */
-        GWEN_Directory_Close(dDir);
-      }
-      GWEN_Directory_free(dDir);
-
-      eNames=GWEN_StringListEntry_Next(eNames);
-    } /* while eNames */
-
-    eDirs=GWEN_StringListEntry_Next(eDirs);
-  } /* while eDirs */
-
-  DBG_DEBUG(0, "File not found in search paths");
-  return -1;
+  return LC_DriverInfo_SampleDirs(cs->dataDir, sl);
 }
 
 

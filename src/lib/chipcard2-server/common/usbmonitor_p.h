@@ -18,7 +18,7 @@
 #define LC_USB_PROC_DIR "/proc/bus/usb"
 #define LC_USB_PROC_BUS_USB_DEVICES_FILE "/proc/bus/usb/devices"
 
-#include <chipcard2-server/server/usbmonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
 
 
 

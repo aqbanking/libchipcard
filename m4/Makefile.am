@@ -7,5 +7,6 @@ EXTRA_DIST=\
  libsysfs.m4 \
  os.m4 \
  pcsc.m4 \
- searchfiles.m4
+ searchfiles.m4 \
+ windoze.m4
 

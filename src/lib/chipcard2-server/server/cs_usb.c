@@ -28,8 +28,9 @@
 #include <gwenhywfar/directory.h>
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/server/usbmonitor.h>
-#include <chipcard2-server/server/usbttymonitor.h>
+#include <chipcard2-server/common/usbmonitor.h>
+#include <chipcard2-server/common/usbttymonitor.h>
+#include <chipcard2-server/common/driverinfo.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -484,7 +485,7 @@ int LC_CardServer_ScanUSB(LC_CARDSERVER *cs) {
 	  /* reload driver list */
 	  GWEN_DB_Group_free(cs->dbDrivers);
 	  cs->dbDrivers=GWEN_DB_Group_dup(cs->dbConfigDrivers);
-	  reloaded=!LC_CardServer_ReadDrivers(cs->dataDir, cs->dbDrivers, 1);
+          reloaded=!LC_DriverInfo_ReadDrivers(cs->dataDir, cs->dbDrivers, 1);
         }
 
 	if (LC_CardServer_USBDevice_Up(cs, ud)) {
@@ -531,7 +532,7 @@ int LC_CardServer_ScanUSB(LC_CARDSERVER *cs) {
 	  /* reload driver list */
 	  GWEN_DB_Group_free(cs->dbDrivers);
 	  cs->dbDrivers=GWEN_DB_Group_dup(cs->dbConfigDrivers);
-	  reloaded=!LC_CardServer_ReadDrivers(cs->dataDir, cs->dbDrivers, 1);
+	  reloaded=!LC_DriverInfo_ReadDrivers(cs->dataDir, cs->dbDrivers, 1);
 	}
 	if (LC_CardServer_USBTTYDevice_Up(cs, ud)) {
 	  DBG_INFO(0, "here");

@@ -397,7 +397,8 @@ int LC_FSFileModule__Dir2Node2(LC_FS_MODULE *fs,
             fmode|=LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC;
 
           /* group rights */
-          if (st.st_mode & S_IRGRP)
+#ifndef OS_WIN32
+	  if (st.st_mode & S_IRGRP)
             fmode|=LC_FS_NODE_MODE_RIGHTS_GROUP_READ;
           if (st.st_mode & S_IWGRP)
             fmode|=LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE;
@@ -411,6 +412,7 @@ int LC_FSFileModule__Dir2Node2(LC_FS_MODULE *fs,
             fmode|=LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE;
           if (st.st_mode & S_IXOTH)
             fmode|=LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC;
+#endif
 
           /* file type */
           if (S_ISDIR(st.st_mode))
@@ -610,7 +612,12 @@ int LC_FSFileModule_MkDir(LC_FS_MODULE *fs,
            GWEN_Buffer_GetStart(pbuf));
 
   flags=LC_FSFileModule__FileModeToSys(mode);
-  if (mkdir(GWEN_Buffer_GetStart(pbuf), flags)) {
+#ifdef OS_WIN32
+  rv=mkdir(GWEN_Buffer_GetStart(pbuf));
+#else
+  rv=mkdir(GWEN_Buffer_GetStart(pbuf), flags);
+#endif
+  if (rv) {
     DBG_ERROR(LC_LOGDOMAIN, "mkdir(%s): %s",
               GWEN_Buffer_GetStart(pbuf),
               strerror(errno));
@@ -745,6 +752,7 @@ int LC_FSFileModule__FileModeToSys(GWEN_TYPE_UINT32 fm) {
   if (fm & LC_FS_NODE_MODE_RIGHTS_OWNER_READ)
     res|=S_IRUSR;
 
+#ifndef OS_WIN32
   /* group rights */
   if (fm & LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC)
     res|=S_IXGRP;
@@ -760,6 +768,7 @@ int LC_FSFileModule__FileModeToSys(GWEN_TYPE_UINT32 fm) {
     res|=S_IWOTH;
   if (fm & LC_FS_NODE_MODE_RIGHTS_OTHER_READ)
     res|=S_IROTH;
+#endif
 
   return res;
 }

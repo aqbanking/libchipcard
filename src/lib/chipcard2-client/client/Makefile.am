@@ -1,6 +1,6 @@
 SUBDIRS=lowlevel apps
 
-AM_CFLAGS=\
+DEFS=@DEFS@ \
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 INCLUDES=@all_includes@ -I..

@@ -14,11 +14,13 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include "kvks_p.h"
 #include "kvkscard.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
+#include <gwenhywfar/inetsocket.h>
 #include <chipcard2-client/client/client.h>
 #include <chipcard2-client/client/tlv.h>
 
@@ -880,7 +882,7 @@ int main(int argc, char **argv) {
   }
 
   DBG_NOTICE(0, "Stopping service \"%s\"", argv[0]);
-  sleep(1);
+  GWEN_Socket_Select(0, 0, 0, 1000);
 
   LC_Client_free(sv);
   return 0;

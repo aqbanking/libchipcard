@@ -24,6 +24,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 #include <chipcard2/chipcard2.h>

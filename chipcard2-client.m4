@@ -13,6 +13,9 @@ dnl Returns: chipcard_client_dir
 dnl          chipcard_client_datadir
 dnl          chipcard_client_libs
 dnl          chipcard_client_includes
+dnl          chipcard_client_servicedir
+dnl          chipcard_client_infolib
+dnl          chipcard_client_servicelib
 dnl          have_chipcard_client
 
 if test -z "$1"; then vma="0"; else vma="$1"; fi
@@ -31,7 +34,10 @@ have_chipcard_client="no"
 chipcard_client_dir=""
 chipcard_client_datadir=""
 chipcard_client_libs=""
+chipcard_client_infolib=""
+chipcard_client_servicelib=""
 chipcard_client_includes=""
+chipcard_client_servicedir=""
 if test "$enable_chipcard_client" != "no"; then
   AC_MSG_CHECKING(for chipcard_client)
   AC_ARG_WITH(chipcard-client-dir, [  --with-chipcard-client-dir=DIR
@@ -71,6 +77,15 @@ if test "$enable_chipcard_client" != "no"; then
       AC_MSG_CHECKING(for chipcard-client datadir)
       chipcard_client_datadir="`$chipcard_client_dir/bin/chipcard2-client-config --datadir`"
       AC_MSG_RESULT($chipcard_client_datadir)
+      AC_MSG_CHECKING(for chipcard-client servicedir)
+      chipcard_client_servicedir="`$chipcard_client_dir/bin/chipcard2-client-config --servicedir`"
+      AC_MSG_RESULT($chipcard_client_servicedir)
+      AC_MSG_CHECKING(for chipcard-client infolib)
+      chipcard_client_infolib="`$chipcard_client_dir/bin/chipcard2-client-config --infolib`"
+      AC_MSG_RESULT($chipcard_client_infolib)
+      AC_MSG_CHECKING(for chipcard-client servicelib)
+      chipcard_client_servicelib="`$chipcard_client_dir/bin/chipcard2-client-config --servicelib`"
+      AC_MSG_RESULT($chipcard_client_servicelib)
   fi
   AC_MSG_CHECKING(if chipcard_client test desired)
   AC_ARG_ENABLE(chipcard-client-test,
@@ -113,6 +128,9 @@ fi
 
 AC_SUBST(chipcard_client_dir)
 AC_SUBST(chipcard_client_datadir)
+AC_SUBST(chipcard_client_servicedir)
+AC_SUBST(chipcard_client_infolib)
+AC_SUBST(chipcard_client_servicelib)
 AC_SUBST(chipcard_client_libs)
 AC_SUBST(chipcard_client_includes)
 ])

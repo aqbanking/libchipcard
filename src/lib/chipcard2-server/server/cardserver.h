@@ -49,10 +49,6 @@ void LC_CardServer_SetIpcId(LC_CARDSERVER *cs, GWEN_TYPE_UINT32 id);
 
 
 
-int LC_CardServer_ReadDrivers(const char *dataDir,
-                              GWEN_DB_NODE *dbDrivers,
-                              int availOnly);
-
 int LC_CardServer_GetUSBDevices(GWEN_DB_NODE *dbKnownDrivers,
                                 GWEN_DB_NODE *dbReaders);
 

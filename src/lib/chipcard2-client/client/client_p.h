@@ -22,7 +22,11 @@
 
 #define LC_CLIENT_MARK 1
 
-#define LC_CLIENT_DATADIR ".chipcard2"
+#ifdef OS_WIN32
+# define LC_CLIENT_DATADIR "chipcard2"
+#else
+# define LC_CLIENT_DATADIR ".chipcard2"
+#endif
 #define LC_CLIENT_CERTDIR "certificates"
 
 #include <gwenhywfar/logger.h>

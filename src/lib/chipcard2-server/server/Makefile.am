@@ -2,9 +2,8 @@ SUBDIRS=commands
 
 INCLUDES=@all_includes@
 
-AM_CFLAGS=\
+DEFS=@DEFS@ \
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \
-  -DLC_LOWLEVELDRIVER_PATH=\"@LC_LOWLEVELDRIVER_PATH@\" \
   -DLC_SERVICE_PATH=\"@LC_SERVICE_PATH@\" \
   -DLC_DEFAULT_LOGDIR=\"@LC_DEFAULT_LOGDIR@\" \
   -DLC_DEFAULT_DHFILE=\"@LC_DEFAULT_DHFILE@\"\
@@ -23,9 +22,7 @@ noinst_HEADERS=\
   request_p.h \
   serverconn_l.h \
   serverconn_p.h \
-  service_p.h \
-  usbmonitor_p.h \
-  usbttymonitor_p.h
+  service_p.h
 
 
 iheaderdir=${includedir}/chipcard2-server/server
@@ -36,9 +33,7 @@ iheader_HEADERS=\
   driver.h \
   reader.h \
   request.h \
-  service.h \
-  usbmonitor.h \
-  usbttymonitor.h
+  service.h
 
 
 libserver_la_SOURCES=\
@@ -54,9 +49,7 @@ libserver_la_SOURCES=\
   reader.c \
   request.c \
   serverconn.c \
-  service.c \
-  usbmonitor.c \
-  usbttymonitor.c
+  service.c
 
 libserver_la_LIBADD=\
   commands/libcommands.la

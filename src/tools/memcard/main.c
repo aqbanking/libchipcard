@@ -14,6 +14,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include <errno.h>
 #include <string.h>
@@ -23,6 +24,7 @@
 #include "global.h"
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
+#include <gwenhywfar/nettransportssl.h>
 
 #define I18N(msg) msg
 
@@ -675,14 +677,22 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
+GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT _askAddCert(GWEN_NETTRANSPORT *tr,
+                                                   GWEN_DB_NODE *cert){
+  return GWEN_NetTransportSSL_AskAddCertResultTmp;
+}
+
+
+
 int main(int argc, char **argv) {
   int rv;
   GWEN_DB_NODE *db;
   const char *s;
   LC_CLIENT *cl;
-  GWEN_DB_NODE *dbConfig;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
+
+  GWEN_NetTransportSSL_SetAskAddCertFn(_askAddCert);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -739,29 +749,15 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  dbConfig=GWEN_DB_Group_new("client");
-  if (GWEN_DB_ReadFile(dbConfig,
-                       GWEN_DB_GetCharValue(db, "configfile", 0,
-                                            LC_DEFAULT_DATADIR
-                                            "/chipcardc2.conf"),
-                       GWEN_DB_FLAGS_DEFAULT |
-                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
-    fprintf(stderr, "ERROR: Could not read file\n");
-    GWEN_DB_Group_free(dbConfig);
-    GWEN_DB_Group_free(db);
-    return RETURNVALUE_SETUP;
-  }
-
   cl=LC_Client_new("memcard2", PROGRAM_VERSION, 0);
-  if (LC_Client_ReadConfig(cl, dbConfig)) {
+  if (LC_Client_ReadConfigFile(cl,
+                               GWEN_DB_GetCharValue(db, "configfile",
+                                                    0, 0))) {
     fprintf(stderr, "Error reading configuration.\n");
     LC_Client_free(cl);
-    GWEN_DB_Group_free(dbConfig);
     GWEN_DB_Group_free(db);
     return RETURNVALUE_SETUP;
   }
-
-  GWEN_DB_Group_free(dbConfig); dbConfig=0;
 
   /* handle command */
   if (strcasecmp(s, "read")==0) {

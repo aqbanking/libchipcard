@@ -5,12 +5,6 @@ result=""
 
 for d in $*; do
     case $d in
-	--includes)
-	    result="$result @all_includes@ @libchipcard2_includes@"
-	    ;;
-	--libraries)
-	    result="$result @libchipcard2s_libs@"
-	    ;;
 	--vmajor)
 	    result="$result @CHIPCARD_VERSION_MAJOR@"
 	    ;;
@@ -32,16 +26,11 @@ for d in $*; do
 	--datadir)
 	    result="$result @libchipcard2s_config@"
 	    ;;
-	--servicedir)
-	    result="$result @LC_SERVICE_PATH@"
-	    ;;
 	--driverdir)
 	    result="$result @LC_DEVICEDRIVER_PATH@"
 	    ;;
 	*)
 	    echo "Usage:"
-	    echo "$0 --includes gives you the include flags"
-	    echo "$0 --libraries gives you the library flags"
 	    echo "$0 --vmajor gives the major version of Chipcard2 Server"
 	    echo "$0 --vminor gives the minor version of Chipcard2 Server"
 	    echo "$0 --vpatchlevel gives the patchlevel of Chipcard2 Server"
@@ -50,7 +39,6 @@ for d in $*; do
 	    echo "$0 --vstring returns a version string"
 	    echo "$0 --datadir returns the data folder"
 	    echo "$0 --driverdir returns the folder which contains drivers"
-	    echo "$0 --servicedir returns the folder which contains services"
 	    exit 1
 	    ;;
     esac

@@ -1,7 +1,5 @@
 INCLUDES=@all_includes@
 
-AM_CFLAGS=-DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\"
-
 driverdir=@LC_DEVICEDRIVER_PATH@
 driver_PROGRAMS=ifd
 
@@ -13,5 +11,6 @@ ifd_SOURCES=\
   driverifd.c \
   main.c
 
-ifd_LDADD=-L../../lib/chipcard2-server -lchipcard2d
-
+ifd_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
+  @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
+ifd_LDFLAGS=@STRIPALL@

@@ -14,6 +14,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 /* define this to dump the server state upon reception of signal USR1 */
 #define USR1_DUMPS 1
@@ -30,6 +31,8 @@
 
 
 #include "chipcardd2_p.h"
+
+#include <gwenhywfar/inetsocket.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -663,7 +666,10 @@ int createPidFile(const char *pidfile) {
 
 #ifdef HAVE_SYS_STAT_H
   pidfd = open(pidfile, O_EXCL|O_CREAT|O_WRONLY,
-	       S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+#ifndef OS_WIN32
+               S_IRGRP|S_IROTH |
+#endif
+               S_IRUSR|S_IWUSR);
   if (pidfd < 0) {
     DBG_ERROR(0, "Could not create PID file \"%s\" (%s), aborting.",
 	      pidfile,
@@ -796,7 +802,7 @@ int server(ARGUMENTS *args) {
 	  }
 	  else {
             DBG_NOTICE(0, "Daemon still suspended.");
-	    sleep(300);
+            GWEN_Socket_Select(0, 0, 0, 300000);
 	  }
 	}
 	else {
@@ -913,7 +919,7 @@ int server(ARGUMENTS *args) {
 		  }
 		  else if (ShortFailCounter>5) {
 		    DBG_NOTICE(0, "Daemon dies to often, will wait");
-		    sleep(1);
+                    GWEN_Socket_Select(0, 0, 0, 1000);
 		  }
 		  else {
 		    DBG_NOTICE(0, "Respawning daemon.");

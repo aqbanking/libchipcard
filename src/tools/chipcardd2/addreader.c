@@ -14,6 +14,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 /* Internationalization */
@@ -28,6 +29,7 @@
 
 #include "chipcardd2_p.h"
 #include <gwenhywfar/directory.h>
+#include <chipcard2-server/common/driverinfo.h>
 
 
 int addReader(ARGUMENTS *args) {
@@ -77,7 +79,7 @@ int addReader(ARGUMENTS *args) {
 
   /* read drivers */
   dbKnownDrivers=GWEN_DB_Group_new("drivers");
-  if (LC_CardServer_ReadDrivers(args->dataDir, dbKnownDrivers, 0)){
+  if (LC_DriverInfo_ReadDrivers(args->dataDir, dbKnownDrivers, 0)){
     fprintf(stderr,
             I18N("Could not read the driver list\n"
                  "(tried \"%s\")\n"

@@ -1,10 +1,18 @@
 bin_PROGRAMS=kvkcard2
 
-DEFS=-DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
+INCLUDES=@all_includes@
+
+DEFS=@DEFS@ -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 noinst_HEADERS=global.h
 
+if IS_WINDOWS
+  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE) @gwenhywfar_libs@
+else
+  CLIENT_LIB=-lchipcard2c
+endif
+
 kvkcard2_SOURCES=\
   main.c
-kvkcard2_LDADD=-L../../lib/chipcard2-client -lchipcard2c
-
+kvkcard2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB)
+kvkcard2_LDFLAGS=@STRIPALL@

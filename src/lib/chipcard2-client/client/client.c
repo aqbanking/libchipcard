@@ -36,6 +36,12 @@
 
 #include <time.h>
 
+#ifdef OS_WIN32
+# define DIRSEP "\\"
+#else
+# define DIRSEP "/"
+#endif
+
 
 GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
 
@@ -46,6 +52,7 @@ LC_CLIENT *LC_Client_new(const char *programName,
                          const char *dataDir) {
   LC_CLIENT *cl;
   GWEN_STRINGLIST *paths;
+  GWEN_BUFFER *tbuf;
 
   if (!GWEN_Logger_Exists(LC_LOGDOMAIN)) {
       /* only set our logger if not not already has been */
@@ -77,8 +84,12 @@ LC_CLIENT *LC_Client_new(const char *programName,
     assert(rv==0);
     dirbuf=GWEN_Buffer_new(0, 256, 0, 1);
     GWEN_Buffer_AppendString(dirbuf, homeDir);
+#ifdef OS_WIN32
+    GWEN_Buffer_AppendByte(dirbuf, '\\');
+#else
     GWEN_Buffer_AppendByte(dirbuf, '/');
-    GWEN_Buffer_AppendString(dirbuf, ".chipcard2");
+#endif
+    GWEN_Buffer_AppendString(dirbuf, LC_CLIENT_DATADIR);
     cl->dataDir=strdup(GWEN_Buffer_GetStart(dirbuf));
     GWEN_Buffer_free(dirbuf);
   }
@@ -86,8 +97,15 @@ LC_CLIENT *LC_Client_new(const char *programName,
   cl->ipcManager=GWEN_IPCManager_new();
 
   paths=GWEN_StringList_new();
+
   /* always append system-wide data dir */
-  GWEN_StringList_AppendString(paths, LC_DEFAULT_DATADIR, 0, 1);
+  tbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, tbuf, 1);
+  GWEN_StringList_AppendString(paths,
+                               GWEN_Buffer_GetStart(tbuf),
+                               0, 1);
+  GWEN_Buffer_free(tbuf);
+
   /* append local data dir */
   GWEN_StringList_AppendString(paths, cl->dataDir, 0, 1);
   cl->cardMgr=LC_CardMgr_new(paths);
@@ -629,7 +647,12 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
 
     cfbuf=GWEN_Buffer_new(0, 256, 0, 1);
     GWEN_Buffer_AppendString(cfbuf, cl->dataDir);
-    GWEN_Buffer_AppendString(cfbuf, "/user.crt");
+#ifdef OS_WIN32
+    GWEN_Buffer_AppendByte(cfbuf, '\\');
+#else
+    GWEN_Buffer_AppendByte(cfbuf, '/');
+#endif
+    GWEN_Buffer_AppendString(cfbuf, "user.crt");
     f=fopen(GWEN_Buffer_GetStart(cfbuf), "r");
     if (f) {
       fclose(f);
@@ -706,13 +729,12 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
 
         tmpbuf1=GWEN_Buffer_new(0, 256, 0, 1);
         GWEN_Buffer_AppendString(tmpbuf1, cl->dataDir);
-        GWEN_Buffer_AppendString(tmpbuf1,
-                                 "/" LC_CLIENT_CERTDIR);
+        GWEN_Buffer_AppendString(tmpbuf1, DIRSEP LC_CLIENT_CERTDIR);
         tmpbuf2=GWEN_Buffer_new(0, 256, 0, 1);
         GWEN_Buffer_AppendBuffer(tmpbuf2, tmpbuf1);
 
-        GWEN_Buffer_AppendString(tmpbuf1, "/valid");
-        GWEN_Buffer_AppendString(tmpbuf2, "/new");
+        GWEN_Buffer_AppendString(tmpbuf1, DIRSEP "valid");
+        GWEN_Buffer_AppendString(tmpbuf2, DIRSEP "new");
 
         certDir=GWEN_DB_GetCharValue(gr, "certdir", 0,
                                      GWEN_Buffer_GetStart(tmpbuf1));
@@ -825,7 +847,7 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl, const char *fname){
   if (!fname) {
     GWEN_Buffer_Reset(buf);
     GWEN_Buffer_AppendString(buf, cl->dataDir);
-    GWEN_Buffer_AppendString(buf, "/chipcardc2.conf");
+    GWEN_Buffer_AppendString(buf, DIRSEP "chipcardc2.conf");
     f=fopen(GWEN_Buffer_GetStart(buf), "r");
     if (f) {
       fclose(f);
@@ -834,8 +856,8 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl, const char *fname){
 
     if (!found) {
       GWEN_Buffer_Reset(buf);
-      GWEN_Buffer_AppendString(buf, LC_DEFAULT_DATADIR);
-      GWEN_Buffer_AppendString(buf, "/chipcardc2.conf");
+      GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, buf, 1);
+      GWEN_Buffer_AppendString(buf, DIRSEP "chipcardc2.conf");
       f=fopen(GWEN_Buffer_GetStart(buf), "r");
       if (f) {
         fclose(f);
