@@ -45,8 +45,18 @@ LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs){
 
 void LC_FSMemNode_FreeData(void *bp, void *p) {
   LC_FSMEM_NODE *mn;
+  LC_FS_NODE *n;
+  LC_FS_NODE *nn;
 
   mn=(LC_FSMEM_NODE*)p;
+  n=(LC_FS_NODE*)bp;
+
+  /* unlink from all children */
+  nn=LC_FSNode_List_First(mn->children);
+  while(nn) {
+    LC_FSMemNode_SetParent(nn, 0);
+    nn=LC_FSNode_List_Next(nn);
+  }
   free(mn->name);
   GWEN_Buffer_free(mn->data);
   LC_FSNode_List_free(mn->children);
