@@ -1,1 +1,2 @@
-- fixed some bugs in Geldkarte
+- prepared libchipcard2 to have system-dependent parts in driver.xml files
+- added compile note for MacOS to README

@@ -190,7 +190,20 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node) {
   }
 
   /* read variables */
-  n=GWEN_XMLNode_FindFirstTag(node, "vars", 0, 0);
+  n=GWEN_XMLNode_FindFirstTag(node, "vars", "osname", OS_SHORTNAME);
+  if (!n)
+    n=GWEN_XMLNode_FindFirstTag(node, "vars", "ostype", OS_TYPE);
+  if (!n)
+    n=GWEN_XMLNode_FindFirstTag(node, "vars", "ostype", 0);
+  if (!n) {
+    n=GWEN_XMLNode_FindFirstTag(node, "vars", 0, 0);
+    while(n) {
+      if (GWEN_XMLNode_GetProperty(n, "osname", 0)==0 &&
+          GWEN_XMLNode_GetProperty(n, "ostype", 0)==0)
+        break;
+      n=GWEN_XMLNode_FindNextTag(n, "vars", 0, 0);
+    } /* while */
+  }
   if (n) {
     GWEN_DB_NODE *dbVars;
     GWEN_XMLNODE *nn;
@@ -240,7 +253,18 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node) {
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "short", p);
 
-  nLib=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "lib");
+  nLib=GWEN_XMLNode_FindFirstTag(node, "lib", "osname", OS_SHORTNAME);
+  if (!nLib)
+    nLib=GWEN_XMLNode_FindFirstTag(node, "lib", "ostype", OS_TYPE);
+  if (!nLib) {
+    nLib=GWEN_XMLNode_FindFirstTag(node, "lib", 0, 0);
+    while(nLib) {
+      if (GWEN_XMLNode_GetProperty(nLib, "osname", 0)==0 &&
+          GWEN_XMLNode_GetProperty(nLib, "ostype", 0)==0)
+        break;
+      nLib=GWEN_XMLNode_FindNextTag(nLib, "lib", 0, 0);
+    } /* while */
+  }
   if (!nLib) {
     DBG_ERROR(0, "No <lib> tag for driver \"%s\"", dname);
     GWEN_DB_Group_free(db);
@@ -248,7 +272,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node) {
   }
 
   /* fetch dirs */
-  n=GWEN_XMLNode_FindNode(nLib, GWEN_XMLNodeTypeTag, "locations");
+  n=GWEN_XMLNode_FindFirstTag(nLib, "locations", 0, 0);
   if (!n) {
     DBG_ERROR(0, "No locations given for driver \"%s\"", dname);
     GWEN_DB_Group_free(db);
@@ -277,7 +301,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node) {
   } /* while */
 
   /* fetch names */
-  n=GWEN_XMLNode_FindNode(nLib, GWEN_XMLNodeTypeTag, "names");
+  n=GWEN_XMLNode_FindFirstTag(nLib, "names", 0, 0);
   if (!n) {
     DBG_ERROR(0, "No names given for driver \"%s\"", dname);
     GWEN_StringList_free(slDirs);
@@ -453,8 +477,21 @@ int LC_DriverInfo_SampleDrivers(GWEN_STRINGLIST *sl,
               !availOnly) {
             GWEN_XMLNODE *nReader;
   
-            nReader=GWEN_XMLNode_FindNode(nDriver, GWEN_XMLNodeTypeTag,
-                                          "readers");
+	    nReader=GWEN_XMLNode_FindFirstTag(nDriver, "readers",
+					      "osname", OS_SHORTNAME);
+	    if (!nReader)
+	      nReader=GWEN_XMLNode_FindFirstTag(nDriver, "readers",
+						"ostype", OS_TYPE);
+            if (!nReader) {
+              nReader=GWEN_XMLNode_FindFirstTag(nDriver, "readers", 0, 0);
+              while(nReader) {
+                if (GWEN_XMLNode_GetProperty(nReader, "osname", 0)==0 &&
+                    GWEN_XMLNode_GetProperty(nReader, "ostype", 0)==0)
+                  break;
+                nReader=GWEN_XMLNode_FindNextTag(nReader, "readers",
+                                                 0, 0);
+              } /* while */
+            }
             if (!nReader) {
               DBG_INFO(0, "XML file \"%s\" contains no <readers> tag",
                        GWEN_Buffer_GetStart(nbuf));

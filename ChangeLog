@@ -1,4 +1,10 @@
 
+2005/03/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- prepared libchipcard2 to have system-dependent parts in driver.xml files
+- added compile note for MacOS to README
+
+
 2005/02/23: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed some bugs in Geldkarte

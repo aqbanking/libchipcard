@@ -10,6 +10,7 @@
                  7. Using Libchipcard2 in your own Projects
                  8. Remote Drivers
                  9. Using OpenSC with Libchipcard2
+                 10. Using Libchipcard2 With MacOS
                  -------------------------------------------
 
 
@@ -212,7 +213,24 @@ You will also have to add a driver section to that configuration file below
 Such a section allows OpenSC to dynamically load the driver module.
 
 
-Martin Preuss, Hamburg/Germany, 2005/02/19
+
+10. Using Libchipcard2 With MacOS
+=================================
+
+The following commands will compile Libchipcard2 on MacOS:
+
+--------------------------------------------------------------------------------------
+./configure --prefix=/sw LDFLAGS=-L/sw/lib CFLAGS=-I/sw/include CPPFLAGS=-I/sw/include
+make
+sudo make install
+--------------------------------------------------------------------------------------
+
+The configuration files are then expected in /sw/chipcard2-server.
+
+
+
+
+Martin Preuss, Hamburg/Germany, 2005/03/04
 
 
 
