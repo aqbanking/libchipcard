@@ -722,9 +722,9 @@ int server(ARGUMENTS *args) {
 #endif
 
 #if !defined(USE_LIBUSB) && !defined(USE_LIBSYSFS)
-  DBG_WARNING(0,
-              "USB scanning not supported "
-              "(neither LibUSB nor LibSYSFS is available).");
+  DBG_WARN(0,
+           "USB scanning not supported "
+           "(neither LibUSB nor LibSYSFS is available).");
 #endif
 
 #ifdef HAVE_FORK
