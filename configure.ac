@@ -13,9 +13,9 @@ AC_CONFIG_HEADER([config.h])
 #
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
-CHIPCARD_VERSION_PATCHLEVEL=10
-CHIPCARD_VERSION_BUILD=1
-CHIPCARD_VERSION_TAG="cvs"
+CHIPCARD_VERSION_PATCHLEVEL=11
+CHIPCARD_VERSION_BUILD=0
+CHIPCARD_VERSION_TAG="beta"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
 
@@ -232,7 +232,7 @@ AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,8,0,0)
+AC_GWENHYWFAR(1,9,0,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -247,7 +247,7 @@ case "$OS_TYPE" in
         
         libchipcard2i_libs="-L\${libdir} -lchipcard2i"
 
-        libchipcard2sv_libs="-L\${(libdir} -lchipcard2sv"
+        libchipcard2sv_libs="-L\${libdir} -lchipcard2sv"
 
         libchipcard2c_libs="-L\${libdir} -lchipcard2c"
         libchipcard2c_config_am="\${sysconfdir}/chipcard2-client"
@@ -297,6 +297,7 @@ AC_SUBST(libchipcard2sv_libs)
 AC_SUBST(libchipcard2c_config)
 AC_SUBST(libchipcard2c_config_am)
 AC_SUBST(libchipcard2c_libs)
+AC_SUBST(libchipcard2i_libs)
 AC_SUBST(libchipcard2_includes)
 AC_SUBST(LIBCHIPCARD_MAKE_DLL_TARGET)
 AC_SUBST(LIBCHIPCARD_INSTALL_DLL_TARGET)
