@@ -1,4 +1,4 @@
-
+<!--
 <driver name="cyberjack2_ctapi" type="ctapi">
   <short>Driver for the Reiner-SCT Cyberjack</short>
   <manufacturer>
@@ -41,4 +41,5 @@
 
 
 </driver>
+-->
 

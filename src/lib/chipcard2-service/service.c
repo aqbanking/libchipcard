@@ -24,7 +24,7 @@
 #include <gwenhywfar/nettransportssl.h>
 #include <gwenhywfar/net.h>
 
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 #include <stdlib.h>
 #include <assert.h>

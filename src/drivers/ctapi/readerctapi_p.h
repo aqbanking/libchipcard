@@ -11,27 +11,22 @@
  ***************************************************************************/
 
 
-#ifndef RSACARD_GLOBAL_H
-#define RSACARD_GLOBAL_H
+#ifndef CHIPCARD_READER_CTAPI_P_H
+#define CHIPCARD_READER_CTAPI_P_H
 
-
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
-#include <chipcard2-client/cards/kvkcard.h>
-
-#include <gwenhywfar/logger.h>
-
-
-#define RETURNVALUE_PARAM   1
-#define RETURNVALUE_SETUP   2
-#define RETURNVALUE_WORK    3
-#define RETURNVALUE_DEINIT  4
-
-
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
+#include "readerctapi.h"
 
 
 
+typedef struct READER_CTAPI READER_CTAPI;
+struct READER_CTAPI {
+  int ctn;
+};
 
-#endif /* RSACARD_GLOBAL_H */
+void ReaderCTAPI_freeData(void *bp, void *p);
+
+
+#endif /* CHIPCARD_READER_CTAPI_P_H */
+
+
 

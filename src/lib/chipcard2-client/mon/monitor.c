@@ -22,7 +22,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/card.h>
 
 

@@ -21,7 +21,7 @@ typedef struct LC_SERVICE LC_SERVICE;
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/types.h>
 
-#include <chipcard2-server/service/client.h>
+#include <chipcard2-service/client.h>
 
 
 typedef enum {

@@ -25,7 +25,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/directory.h>
 
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 
 #include <stdlib.h>

@@ -19,7 +19,7 @@
 #include "reader_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -28,21 +28,25 @@
 
 
 GWEN_LIST_FUNCTIONS(LC_READER, LC_Reader);
+GWEN_INHERIT_FUNCTIONS(LC_READER);
 
 
 LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
                          const char *name,
                          int port,
-                         unsigned int slots){
+                         unsigned int slots,
+                         GWEN_TYPE_UINT32 flags){
   LC_READER *r;
   unsigned int i;
 
   GWEN_NEW_OBJECT(LC_READER, r);
   GWEN_LIST_INIT(LC_READER, r);
+  GWEN_INHERIT_INIT(LC_READER, r);
   r->readerId=readerId;
   if (name)
     r->name=strdup(name);
   r->port=port;
+  r->readerFlags=flags;
   r->slots=LC_Slot_List_new();
   /* create slots */
   for (i=0; i<slots; i++) {
@@ -59,6 +63,7 @@ LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
 
 void LC_Reader_free(LC_READER *r){
   if (r) {
+    GWEN_INHERIT_FINI(LC_READER, r);
     GWEN_LIST_FINI(LC_READER, r);
     free(r->name);
     LC_Slot_List_free(r->slots);
@@ -87,6 +92,13 @@ const char *LC_Reader_GetName(const LC_READER *r){
 int LC_Reader_GetPort(const LC_READER *r){
   assert(r);
   return r->port;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Reader_GetReaderFlags(const LC_READER *r){
+  assert(r);
+  return r->readerFlags;
 }
 
 

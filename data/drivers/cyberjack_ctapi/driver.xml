@@ -1,3 +1,4 @@
+<!-- contains all readers again since cyberjack driver 2.0.6 -->
 
 <driver name="cyberjack_ctapi" type="ctapi">
   <short>Driver for the Reiner-SCT Cyberjack</short>
@@ -8,7 +9,7 @@
 
   <lib>
     <names>
-      <name>libctapi-cyberjack1.so</name>
+      <name>libctapi-cyberjack.so</name>
     </names>
     
     <locations>
@@ -18,26 +19,39 @@
     </locations>
     
     <downloads>
-      <url>http://support.reiner-sct.de/downloads/LINUX/V1.0.0/</url>
-      <filename>ctapi-cyberjack-1.0.0.tar.gz</filename>
+      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.6/</url>
+      <filename>ctapi-cyberjack-2.0.6.tar.gz</filename>
     </downloads>
   </lib>
+
+  <vars>
+    <var name="autoPortOffset">1</var>
+  </vars>
 
   <readers>
 
     <reader name="cyberjack" com="USBSerial" vendor="0x0c4b" product="0x0100">
       <short>Cyberjack pinpad or ecom</short>
       <ports>
-        <port value="1">USB0</port>
-        <port value="2">USB1</port>
-        <port value="3">USB2</port>
-        <port value="4">USB3</port>
+        <port value="0x8001">USB0</port>
+        <port value="0x8002">USB1</port>
+        <port value="0x8003">USB2</port>
+        <port value="0x8004">USB3</port>
       </ports>
       <flags>
         <flag>keypad</flag>
       </flags>
       <image>cyberjack_pinpad.jpg</image>
     </reader>
+
+    <reader name="cyberjack2" com="USB" vendor="0x0c4b" product="0x0300">
+      <short>Cyberjack pinpad</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      <image>cyberjack_pinpad.jpg</image>
+    </reader>
+
 
   </readers>
 

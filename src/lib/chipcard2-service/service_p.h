@@ -21,7 +21,7 @@
 #define LC_SERVICE_IPC_MAXWORK 256
 
 #include <gwenhywfar/logger.h>
-#include <chipcard2-server/service/service.h>
+#include <chipcard2-service/service.h>
 
 
 

@@ -43,7 +43,7 @@
 typedef struct LC_FS_NODE LC_FS_NODE;
 typedef struct LC_FS_NODE_HANDLE LC_FS_NODE_HANDLE;
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 
 GWEN_LIST_FUNCTION_LIB_DEFS(LC_FS_NODE, LC_FSNode, LC_CLIENT_API)

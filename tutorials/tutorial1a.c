@@ -48,7 +48,7 @@
 /* You always need to include the header files of Libchipcard2 to work with
  * it ;-)
  */
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
 
 

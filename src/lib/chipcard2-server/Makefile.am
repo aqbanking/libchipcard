@@ -1,4 +1,4 @@
-SUBDIRS=server driver service
+SUBDIRS=server driver
 
 AM_CFLAGS=\
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \
@@ -7,12 +7,7 @@ AM_CFLAGS=\
 
 EXTRA_DIST=chipcard2.h.in version.h.in
 
-lib_LTLIBRARIES=libchipcard2s.la libchipcard2d.la libchipcard2sv.la
-
-iheaderdir=${includedir}/chipcard2-server
-iheader_HEADERS=\
-  chipcard2.h \
-  version.h
+lib_LTLIBRARIES=libchipcard2s.la libchipcard2d.la
 
 libchipcard2s_la_SOURCES=dummy.c
 libchipcard2s_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ \
@@ -22,9 +17,4 @@ libchipcard2s_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ \
 libchipcard2d_la_SOURCES=dummy.c
 libchipcard2d_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@\
   driver/libdriver.la
-
-
-libchipcard2sv_la_SOURCES=dummy.c
-libchipcard2sv_la_LIBADD= @gwenhywfar_libs@ \
-  service/libservice.la
 

@@ -20,7 +20,7 @@
 #include <gwenhywfar/stringlist2.h>
 #include <gwenhywfar/buffer.h>
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 
 enum LC_FS_ERROR {

@@ -23,7 +23,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/directory.h>
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/msgengine.h>
 
 #include <stdlib.h>

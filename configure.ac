@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=9
+CHIPCARD_VERSION_BUILD=11
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -371,11 +371,27 @@ fi
 
 
 
+
+###-------------------------------------------------------------------------
+#
+# create header directory for all, make symlinks
+#
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2
+mkdir chipcard2
+AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard2.h"
+ln -s "${lprefix}/src/lib/version.h" chipcard2/version.h
+ln -s "${lprefix}/src/lib/chipcard2.h" chipcard2/chipcard2.h
+
+
+
 ###-------------------------------------------------------------------------
 #
 # create header directory for server, make symlinks
 #
-lc_modules="server driver service"
+lc_modules="server driver"
 lc_server_modules="commands"
 
 lprefix="${srcdir}"
@@ -383,7 +399,6 @@ lprefix=`( cd ${lprefix} ; pwd )`
 
 rm -Rf chipcard2-server
 mkdir chipcard2-server
-AQ_HEADER_FILES="${lprefix}/src/lib/chipcard2-server/version.h ${lprefix}/src/lib/chipcard2-server/chipcard2.h"
 
 # symlink all headers from src/lib/chipcard2-server
 hfiles=`( cd "${srcdir}/src/lib/chipcard2-server" && ls *.h 2>/dev/null )`
@@ -415,8 +430,6 @@ for sm in $lc_modules; do
     esac
   done
 done
-ln -s "${lprefix}/src/lib/chipcard2-server/version.h" chipcard2-server/version.h
-ln -s "${lprefix}/src/lib/chipcard2-server/chipcard2.h" chipcard2-server/chipcard2.h
 
 # symlink all headers from src/lib/chipcard/server/*
 for sm in $lc_server_modules; do
@@ -450,7 +463,6 @@ lprefix=`( cd ${lprefix} ; pwd )`
 
 rm -Rf chipcard2-client
 mkdir chipcard2-client
-AQ_HEADER_FILES="${lprefix}/src/lib/chipcard2-client/version.h ${lprefix}/src/lib/chipcard2-client/chipcard2.h"
 
 # symlink all headers from src/lib/chipcard2-client
 hfiles=`( cd "${srcdir}/src/lib/chipcard2-client" && ls *.h 2>/dev/null )`
@@ -482,8 +494,6 @@ for sm in $lc_modules; do
     esac
   done
 done
-ln -s "${lprefix}/src/lib/chipcard2-client/version.h" chipcard2-client/version.h
-ln -s "${lprefix}/src/lib/chipcard2-client/chipcard2.h" chipcard2-client/chipcard2.h
 
 # symlink all headers from src/lib/chipcard2-client/client/*
 for sm in $lc_client_modules; do
@@ -501,6 +511,33 @@ for sm in $lc_client_modules; do
             ;;
     esac
   done
+done
+
+
+
+###-------------------------------------------------------------------------
+#
+# create header directory for service, make symlinks
+#
+
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2-service
+mkdir chipcard2-service
+AQ_HEADER_FILES="${lprefix}/src/lib/chipcard2-service/version.h"
+
+# symlink all headers from src/lib/chipcard2-service
+hfiles=`( cd "${srcdir}/src/lib/chipcard2-service" && ls *.h 2>/dev/null )`
+for f in ${hfiles}; do
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-service/${f}"
+  case ${f} in
+    *_p.h | *version.h | *chipcard2.h)
+              ;;
+    *)
+              ln -s "${lprefix}/src/lib/chipcard2-service/${f}" "chipcard2-service/${f}"
+              ;;
+  esac
 done
 
 
@@ -527,6 +564,8 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  src/Makefile
                  src/lib/Makefile
+                 src/lib/version.h
+                 src/lib//chipcard2.h
                  src/lib/chipcard2-client/Makefile
                  src/lib/chipcard2-client/cards/Makefile
                  src/lib/chipcard2-client/client/Makefile
@@ -535,14 +574,12 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-client/mon/Makefile
                  src/lib/chipcard2-client/fs/Makefile
                  src/lib/chipcard2-client/chipcard2.h
-                 src/lib/chipcard2-client/version.h
                  src/lib/chipcard2-server/Makefile
                  src/lib/chipcard2-server/driver/Makefile
                  src/lib/chipcard2-server/server/Makefile
                  src/lib/chipcard2-server/server/commands/Makefile
-                 src/lib/chipcard2-server/service/Makefile
-                 src/lib/chipcard2-server/chipcard2.h
-                 src/lib/chipcard2-server/version.h
+                 src/lib/chipcard2-service/Makefile
+                 src/lib/chipcard2-service/version.h
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ifd/Makefile

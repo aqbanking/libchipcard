@@ -18,7 +18,7 @@
 
 typedef struct LCM_READER LCM_READER;
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>

@@ -27,7 +27,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/directory.h>
 
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-server/server/usbmonitor.h>
 #include <chipcard2-server/server/usbttymonitor.h>
 
@@ -977,6 +977,7 @@ int LC_CardServer_CheckReader(LC_CARDSERVER *cs, LC_READER *r) {
 	DBG_NOTICE(0, "Removing unused and unavailable reader \"%s\"",
 		   LC_Reader_GetReaderName(r));
         LC_Reader_List_Del(r);
+        LC_Driver_DecAssignedReadersCount(d);
 	LC_Reader_free(r);
         return 0;
       }
@@ -1636,6 +1637,9 @@ int LC_CardServer_CheckCards(LC_CARDSERVER *cs) {
             if (flags & LC_READER_FLAGS_DISPLAY)
               GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                                    "readerflags", "DISPLAY");
+	    if (flags & LC_READER_FLAGS_NOINFO)
+              GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
+                                   "readerflags", "NOINFO");
 
             ct=LC_Card_GetType(cd);
             if (ct==LC_CardTypeProcessor)
@@ -2522,6 +2526,7 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
           /* reader section found */
           r=LC_Reader_FromDb(d, dbR);
           assert(r);
+          LC_Driver_IncAssignedReadersCount(d);
           DBG_INFO(0, "Adding reader \"%s\"", LC_Reader_GetReaderName(r));
           /* readers from config file are always assumed available */
           LC_Reader_SetIsAvailable(r, 1);
@@ -3514,6 +3519,8 @@ GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db,
       f|=LC_READER_FLAGS_KEYPAD;
     else if (strcasecmp(p, "DISPLAY")==0)
       f|=LC_READER_FLAGS_DISPLAY;
+    else if (strcasecmp(p, "NOINFO")==0)
+      f|=LC_READER_FLAGS_NOINFO;
   } /* for */
 
   return f;
@@ -5509,6 +5516,8 @@ GWEN_TYPE_UINT32 LC_CardServer_SendStartReader(LC_CARDSERVER *cs,
                        "name", LC_Reader_GetReaderName(r));
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slots", LC_Reader_GetSlots(r));
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+		      "flags", LC_Reader_GetFlags(r));
   port=LC_Reader_GetPort(r);
   if (port==-1) {
     port=LC_Driver_GetFirstNewPort(d)+(++(cs->nextNewPort));
@@ -6673,8 +6682,14 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
     d=LC_Driver_List_First(cs->drivers);
     while(d) {
       if (strcasecmp(LC_Driver_GetDriverName(d), dname)==0) {
-	if (LC_Driver_GetMaxReaders(d)>LC_Driver_GetActiveReadersCount(d))
-	  break;
+        if (LC_Driver_GetMaxReaders(d)>LC_Driver_GetAssignedReadersCount(d)) {
+          DBG_NOTICE(0,
+                     "Reusing driver %s: MaxReaders: %d, Active Readers: %d",
+                     LC_Driver_GetDriverName(d),
+                     LC_Driver_GetMaxReaders(d),
+                     LC_Driver_GetAssignedReadersCount(d));
+          break;
+        }
       }
       d=LC_Driver_List_Next(d);
     } /* while */
@@ -6701,6 +6716,7 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
     /* create reader */
     r=LC_Reader_FromDb(d, dbReader);
     assert(r);
+    LC_Driver_IncAssignedReadersCount(d);
     LC_Reader_List_Add(r, cs->readers);
 
     nbuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -6745,16 +6761,16 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
           if (strcasecmp(GWEN_DB_GroupName(dbT), "reader")==0) {
             if (strcasecmp(GWEN_DB_GetCharValue(dbT,
                                                 "comType", 0, "serial"),
-                           "USB")==0) {
-              if ((GWEN_DB_GetIntValue(dbT, "vendorId", 0, 0)==
-                   (int)LC_USBDevice_GetVendorId(tud)) &&
-                  (GWEN_DB_GetIntValue(dbT, "productId", 0, 0)==
-                   (int)LC_USBDevice_GetProductId(tud))) {
-                /* reader found */
-                break;
-              }
-            }
-          }
+                           "serial")!=0) {
+	      if ((GWEN_DB_GetIntValue(dbT, "vendorId", 0, 0)==
+		   (int)LC_USBDevice_GetVendorId(tud)) &&
+		  (GWEN_DB_GetIntValue(dbT, "productId", 0, 0)==
+		   (int)LC_USBDevice_GetProductId(tud))) {
+		/* reader found */
+		break;
+	      }
+	    }
+	  }
           dbT=GWEN_DB_GetNextGroup(dbT);
         } /* while */
         if (dbT) {
@@ -6884,8 +6900,14 @@ int LC_CardServer_USBTTYDevice_Up(LC_CARDSERVER *cs, LC_USBTTYDEVICE *ud) {
     d=LC_Driver_List_First(cs->drivers);
     while(d) {
       if (strcasecmp(LC_Driver_GetDriverName(d), dname)==0) {
-	if (LC_Driver_GetMaxReaders(d)>LC_Driver_GetActiveReadersCount(d))
-	  break;
+        if (LC_Driver_GetMaxReaders(d)>LC_Driver_GetAssignedReadersCount(d)) {
+          DBG_NOTICE(0,
+                     "Reusing driver %s: MaxReaders: %d, Active Readers: %d",
+                     LC_Driver_GetDriverName(d),
+                     LC_Driver_GetMaxReaders(d),
+                     LC_Driver_GetAssignedReadersCount(d));
+          break;
+        }
       }
       d=LC_Driver_List_Next(d);
     } /* while */
@@ -6912,6 +6934,7 @@ int LC_CardServer_USBTTYDevice_Up(LC_CARDSERVER *cs, LC_USBTTYDEVICE *ud) {
     /* create reader */
     r=LC_Reader_FromDb(d, dbReader);
     assert(r);
+    LC_Driver_IncAssignedReadersCount(d);
     LC_Reader_List_Add(r, cs->readers);
 
     nbuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -7645,6 +7668,9 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
   if (flags & LC_READER_FLAGS_DISPLAY)
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_DEFAULT,
                          "readerflags", "DISPLAY");
+  if (flags & LC_READER_FLAGS_NOINFO)
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_DEFAULT,
+			 "readerflags", "NOINFO");
 
   s=LC_Reader_GetReaderInfo(r);
   if (s)

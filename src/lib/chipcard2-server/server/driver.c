@@ -382,6 +382,35 @@ void LC_Driver_DecActiveReadersCount(LC_DRIVER *d){
 
 
 
+GWEN_TYPE_UINT32 LC_Driver_GetAssignedReadersCount(const LC_DRIVER *d){
+  assert(d);
+  return d->assignedReaders;
+}
+
+
+
+void LC_Driver_ResetAssignedReadersCount(LC_DRIVER *d){
+  assert(d);
+  d->assignedReaders=0;
+}
+
+
+
+void LC_Driver_IncAssignedReadersCount(LC_DRIVER *d){
+  assert(d);
+  d->assignedReaders++;
+}
+
+
+
+void LC_Driver_DecAssignedReadersCount(LC_DRIVER *d){
+  assert(d);
+  if (d->assignedReaders)
+    d->assignedReaders--;
+}
+
+
+
 GWEN_TYPE_UINT32 LC_Driver_GetIpcId(const LC_DRIVER *d){
   assert(d);
   return d->ipcId;

@@ -15,7 +15,8 @@
 #define CHIPCARD_SERVICE_CARDFS_P_H
 
 
-#include <chipcard2-server/service/service.h>
+#include <chipcard2/chipcard2.h>
+#include <chipcard2-service/service.h>
 
 
 #define SERVICE_CARDFS_ERROR_BAD_RESPONSE          1

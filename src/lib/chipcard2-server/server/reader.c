@@ -137,6 +137,8 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
       r->flags|=LC_READER_FLAGS_KEYPAD;
     else if (strcasecmp(p, "display")==0)
       r->flags|=LC_READER_FLAGS_DISPLAY;
+    else if (strcasecmp(p, "noinfo")==0)
+      r->flags|=LC_READER_FLAGS_NOINFO;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }

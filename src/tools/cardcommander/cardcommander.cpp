@@ -40,7 +40,7 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
 
 using namespace std;

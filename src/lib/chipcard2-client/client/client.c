@@ -26,7 +26,7 @@
 #include <gwenhywfar/nettransportssl.h>
 #include <gwenhywfar/waitcallback.h>
 #include <gwenhywfar/directory.h>
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 
 #include <stdlib.h>

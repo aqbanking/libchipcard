@@ -39,6 +39,7 @@ GWEN_INHERIT_FUNCTION_DEFS(LC_DRIVER);
 
 typedef GWEN_TYPE_UINT32 (*LC_DRIVER_SENDAPDU_FN)(LC_DRIVER *d,
                                                   int toReader,
+                                                  LC_READER *r,
                                                   LC_SLOT *slot,
                                                   const unsigned char *apdu,
                                                   unsigned int apdulen,
@@ -60,6 +61,12 @@ typedef GWEN_TYPE_UINT32 (*LC_DRIVER_READERSTATUS_FN)(LC_DRIVER *d,
 typedef GWEN_TYPE_UINT32 (*LC_DRIVER_READERINFO_FN)(LC_DRIVER *d,
                                                     LC_READER *r,
                                                     GWEN_BUFFER *buf);
+typedef LC_READER* (*LC_DRIVER_CREATEREADER_FN)(LC_DRIVER *d,
+                                                GWEN_TYPE_UINT32 readerId,
+                                                const char *name,
+                                                int port,
+                                                unsigned int slots,
+                                                GWEN_TYPE_UINT32 flags);
 
 
 typedef const char* (*LC_DRIVER_GETERRORTEXT_FN)(LC_DRIVER *d,
@@ -125,6 +132,7 @@ int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
 
 GWEN_TYPE_UINT32 LC_Driver_SendAPDU(LC_DRIVER *d,
                                     int toReader,
+                                    LC_READER *r,
                                     LC_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
@@ -147,6 +155,13 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
                                       LC_READER *r,
                                       GWEN_BUFFER *buf);
 
+LC_READER *LC_Driver_CreateReader(LC_DRIVER *d,
+                                  GWEN_TYPE_UINT32 readerId,
+                                  const char *name,
+                                  int port,
+                                  unsigned int slots,
+                                  GWEN_TYPE_UINT32 flags);
+
 
 void LC_Driver_SetSendApduFn(LC_DRIVER *d, LC_DRIVER_SENDAPDU_FN fn);
 void LC_Driver_SetConnectSlotFn(LC_DRIVER *d, LC_DRIVER_CONNECTSLOT_FN fn);
@@ -161,6 +176,8 @@ void LC_Driver_SetReaderStatusFn(LC_DRIVER *d,
                                  LC_DRIVER_READERSTATUS_FN fn);
 void LC_Driver_SetReaderInfoFn(LC_DRIVER *d,
                                LC_DRIVER_READERINFO_FN fn);
+void LC_Driver_SetCreateReaderFn(LC_DRIVER *d,
+                                 LC_DRIVER_CREATEREADER_FN fn);
 void LC_Driver_SetGetErrorTextFn(LC_DRIVER *d,
                                  LC_DRIVER_GETERRORTEXT_FN fn);
 

@@ -1,4 +1,15 @@
 
+2005/01/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- now uses a single chipcard2.h and version.h file for all sublibraries
+- moved service code from chipcard2-server/service to chipcard2-service
+
+
+2005/01/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for new Cyberjack driver 2.0.6
+
+
 2005/01/21: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - debugging of FS code (creating a folder and setting the CWD now works)

@@ -15,15 +15,21 @@
 #define CHIPCARD_DRIVER_READER_H
 
 
+#define LC_READER_FLAGS_KEYPAD  0x00010000
+#define LC_READER_FLAGS_DISPLAY 0x00020000
+#define LC_READER_FLAGS_NOINFO  0x00040000
+
 #define LC_READER_STATUS_UP  0x00000001
 
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/logger.h>
+#include <gwenhywfar/inherit.h>
 
 
 typedef struct LC_READER LC_READER;
 GWEN_LIST_FUNCTION_DEFS(LC_READER, LC_Reader);
+GWEN_INHERIT_FUNCTION_DEFS(LC_READER);
 
 #include <chipcard2-server/driver/slot.h>
 
@@ -31,7 +37,8 @@ GWEN_LIST_FUNCTION_DEFS(LC_READER, LC_Reader);
 LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
                          const char *name,
                          int port,
-                         unsigned int slots);
+                         unsigned int slots,
+                         GWEN_TYPE_UINT32 flags);
 void LC_Reader_free(LC_READER *r);
 
 GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r);
@@ -42,6 +49,9 @@ GWEN_TYPE_UINT32 LC_Reader_GetStatus(const LC_READER *r);
 void LC_Reader_SetStatus(LC_READER *r, GWEN_TYPE_UINT32 s);
 void LC_Reader_AddStatus(LC_READER *r, GWEN_TYPE_UINT32 s);
 void LC_Reader_SubStatus(LC_READER *r, GWEN_TYPE_UINT32 s);
+
+GWEN_TYPE_UINT32 LC_Reader_GetReaderFlags(const LC_READER *r);
+
 
 GWEN_TYPE_UINT32 LC_Reader_GetDriverFlags(const LC_READER *r);
 void LC_Reader_SetDriverFlags(LC_READER *r, GWEN_TYPE_UINT32 s);

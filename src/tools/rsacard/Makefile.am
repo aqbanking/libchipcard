@@ -1,10 +1,10 @@
-bin_PROGRAMS=rsacard
+bin_PROGRAMS=rsacard2
 
 DEFS=-DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 noinst_HEADERS=global.h
 
-rsacard_SOURCES=\
+rsacard2_SOURCES=\
   main.c \
   generatekey.c \
   activatekey.c \
@@ -14,5 +14,5 @@ rsacard_SOURCES=\
   exportbankinfo.c \
   importbankinfo.c \
   initialpin.c
-rsacard_LDADD=-L../../lib/chipcard2-client -lchipcard2c
+rsacard2_LDADD=-L../../lib/chipcard2-client -lchipcard2c
 

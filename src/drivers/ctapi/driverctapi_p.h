@@ -20,8 +20,6 @@
 #include <chipcard2-server/driver/driver.h>
 
 
-#define LC_DRIVERCTAPI_CTN 0
-
 #define LC_DRIVERCTAPI_DAD_CT   1
 
 #define LC_DRIVERCTAPI_SAD_HOST 2
@@ -64,6 +62,7 @@ void DriverCTAPI_freeData(void *bp, void *p);
 int DriverCTAPI_TransformDAD(int i);
 GWEN_TYPE_UINT32  DriverCTAPI_SendAPDU(LC_DRIVER *d,
                                        int toReader,
+                                       LC_READER *r,
                                        LC_SLOT *slot,
                                        const unsigned char *apdu,
                                        unsigned int apdulen,
@@ -83,6 +82,13 @@ const char *DriverCTAPI_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
                                         GWEN_BUFFER *buf);
+
+LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
+                                    GWEN_TYPE_UINT32 readerId,
+                                    const char *name,
+                                    int port,
+                                    unsigned int slots,
+                                    GWEN_TYPE_UINT32 flags);
 
 
 #endif /* CHIPCARD_DRIVER_CTAPI_P_H */

@@ -15,7 +15,7 @@
 #ifndef CHIPCARD_SERVICE_CLIENT_P_H
 #define CHIPCARD_SERVICE_CLIENT_P_H
 
-#include <chipcard2-server/service/client.h>
+#include <chipcard2-service/client.h>
 
 
 struct LC_SERVICECLIENT {

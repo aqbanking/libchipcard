@@ -19,6 +19,7 @@ typedef struct LC_READER LC_READER;
 
 #define LC_READER_FLAGS_KEYPAD  0x00010000
 #define LC_READER_FLAGS_DISPLAY 0x00020000
+#define LC_READER_FLAGS_NOINFO  0x00040000
 
 
 #include <gwenhywfar/db.h>

@@ -15,7 +15,7 @@
 #define LC_MON_DRIVER_L_H
 
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/mon/driver.h>
 
 

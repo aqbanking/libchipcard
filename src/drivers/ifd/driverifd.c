@@ -21,7 +21,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 #include <unistd.h>
 
@@ -272,6 +272,7 @@ int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
 
 GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
                                     int toReader,
+                                    LC_READER *r,
                                     LC_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
@@ -282,8 +283,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
   DRIVER_IFD *dct;
   const char *lg;
 
-  if (slot) lg=LC_Reader_GetLogger(LC_Slot_GetReader(slot));
-  else lg=0;
+  lg=LC_Reader_GetLogger(r);
 
   assert(d);
   dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);

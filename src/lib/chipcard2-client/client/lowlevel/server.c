@@ -19,7 +19,7 @@
 #include "server_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 
 #include <stdlib.h>

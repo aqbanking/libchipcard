@@ -88,6 +88,7 @@ int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
 
 GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
                                     int toReader,
+                                    LC_READER *r,
                                     LC_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,

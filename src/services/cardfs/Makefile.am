@@ -12,6 +12,6 @@ cardfs_SOURCES=\
   cardfs.c
 
 cardfs_LDADD=\
- -L../../lib/chipcard2-server -lchipcard2sv \
+ -L../../lib/chipcard2-service -lchipcard2sv \
  -L../../lib/chipcard2-client -lchipcard2c
 

@@ -25,7 +25,7 @@
 #include <gwenhywfar/net.h>
 #include <gwenhywfar/directory.h>
 
-#include <chipcard2-server/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -280,7 +280,8 @@ LC_DRIVER *LC_Driver_new(int argc, char **argv) {
   GWEN_Logger_SetLevel(0, d->logLevel);
 
   if (!d->testMode) {
-    DBG_NOTICE(0, "Starting driver \"%s\"", argv[0]);
+    DBG_NOTICE(0, "Starting driver \"%s\" with lowlevel \"%s\"",
+               argv[0], d->libraryFile);
 
     d->ipcManager=GWEN_IPCManager_new();
 
@@ -384,10 +385,12 @@ int LC_Driver_Test(LC_DRIVER *d) {
     return -1;
   }
 
-  r=LC_Reader_new(1,
-		  d->rname,
-		  d->rport,
-		  d->rslots);
+  r=LC_Driver_CreateReader(d,
+                           1,
+                           d->rname,
+                           d->rport,
+                           d->rslots,
+                           0);
   assert(r);
   fprintf(stdout, "Connecting reader...\n");
   res=LC_Driver_ConnectReader(d, r);
@@ -702,6 +705,7 @@ LC_READER_LIST *LC_Driver_GetReaders(const LC_DRIVER *d){
 
 GWEN_TYPE_UINT32 LC_Driver_SendAPDU(LC_DRIVER *d,
                                     int toReader,
+                                    LC_READER *r,
                                     LC_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
@@ -709,7 +713,7 @@ GWEN_TYPE_UINT32 LC_Driver_SendAPDU(LC_DRIVER *d,
                                     int *bufferlen){
   assert(d);
   assert(d->sendApduFn);
-  return d->sendApduFn(d, toReader, slot, apdu, apdulen,
+  return d->sendApduFn(d, toReader, r, slot, apdu, apdulen,
                        buffer, bufferlen);
 }
 
@@ -769,6 +773,27 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
   assert(d);
   assert(d->readerInfoFn);
   return d->readerInfoFn(d, r, buf);
+}
+
+
+
+LC_READER *LC_Driver_CreateReader(LC_DRIVER *d,
+                                  GWEN_TYPE_UINT32 readerId,
+                                  const char *name,
+                                  int port,
+                                  unsigned int slots,
+                                  GWEN_TYPE_UINT32 flags){
+  LC_READER *r;
+
+  assert(d);
+  if (!d->createReaderFn) {
+    r=LC_Reader_new(readerId, name, port, slots, flags);
+  }
+  else {
+    r=d->createReaderFn(d, readerId, name, port, slots, flags);
+  }
+
+  return r;
 }
 
 
@@ -838,6 +863,14 @@ void LC_Driver_SetReaderInfoFn(LC_DRIVER *d,
                                LC_DRIVER_READERINFO_FN fn){
   assert(d);
   d->readerInfoFn=fn;
+}
+
+
+
+void LC_Driver_SetCreateReaderFn(LC_DRIVER *d,
+                                 LC_DRIVER_CREATEREADER_FN fn){
+  assert(d);
+  d->createReaderFn=fn;
 }
 
 
@@ -1052,6 +1085,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
   const char *name;
   int port;
   int slots;
+  GWEN_TYPE_UINT32 flags;
   LC_READER *r;
   char numbuf[16];
   GWEN_TYPE_UINT32 retval;
@@ -1069,6 +1103,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
   }
   name=GWEN_DB_GetCharValue(dbReq, "body/name", 0, "noname");
   port=GWEN_DB_GetIntValue(dbReq, "body/port", 0, 0);
+  flags=GWEN_DB_GetIntValue(dbReq, "body/flags", 0, 0);
   slots=GWEN_DB_GetIntValue(dbReq, "body/slots", 0, 0);
   if (!slots || slots>16) {
     DBG_ERROR(0, "Bad number of slots (%d)", slots);
@@ -1102,21 +1137,26 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                            LC_Driver_GetErrorText(d, retval));
     }
     else {
-      GWEN_BUFFER *ibuf;
-      GWEN_TYPE_UINT32 rv;
-
-      ibuf=GWEN_Buffer_new(0, 256, 0, 1);
-      rv=LC_Driver_ReaderInfo(d, r, ibuf);
-      if (rv) {
-        DBG_WARN(0, "ReaderInfo not available (%s)",
-                 LC_Driver_GetErrorText(d, rv));
+      if (LC_Reader_GetReaderFlags(r) & LC_READER_FLAGS_NOINFO) {
+        DBG_WARN(0, "ReaderInfo disabled");
       }
       else {
-        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                             "info",
-                             GWEN_Buffer_GetStart(ibuf));
+        GWEN_BUFFER *ibuf;
+        GWEN_TYPE_UINT32 rv;
+
+        ibuf=GWEN_Buffer_new(0, 256, 0, 1);
+        rv=LC_Driver_ReaderInfo(d, r, ibuf);
+        if (rv) {
+          DBG_WARN(0, "ReaderInfo not available (%s)",
+                   LC_Driver_GetErrorText(d, rv));
+        }
+        else {
+          GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                               "info",
+                               GWEN_Buffer_GetStart(ibuf));
+        }
+        GWEN_Buffer_free(ibuf);
       }
-      GWEN_Buffer_free(ibuf);
 
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "OK");
@@ -1148,7 +1188,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
     }
 
     /* ok to create the reader */
-    r=LC_Reader_new(readerId, name, port, slots);
+    r=LC_Driver_CreateReader(d, readerId, name, port, slots, flags);
     if (d->readerLogFile) {
       GWEN_BUFFER *mbuf;
 
@@ -1553,7 +1593,7 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   GWEN_Text_LogString(apdu, apdulen, 0, GWEN_LoggerLevelDebug);
   dbRsp=GWEN_DB_Group_new("CardCommandResponse");
   rsplen=sizeof(rspbuffer)-1;
-  retval=LC_Driver_SendAPDU(d, toReader, slot, apdu, apdulen,
+  retval=LC_Driver_SendAPDU(d, toReader, r, slot, apdu, apdulen,
                               rspbuffer, &rsplen);
   if (retval!=0) {
     DBG_ERROR(LC_Reader_GetLogger(r), "Error executing APDU (%08x)", retval);

@@ -18,7 +18,7 @@
 
 typedef struct LCM_SERVER LCM_SERVER;
 
-#include <chipcard2-client/chipcard2.h>
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-client/mon/reader.h>
 #include <chipcard2-client/mon/driver.h>
 #include <chipcard2-client/mon/service.h>

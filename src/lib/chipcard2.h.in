@@ -1,0 +1,47 @@
+/***************************************************************************
+ $RCSfile$
+                             -------------------
+    cvs         : $Id$
+    begin       : Tue Dec 23 2003
+    copyright   : (C) 2003 by Martin Preuss
+    email       : martin@libchipcard.de
+
+ ***************************************************************************
+ *          Please see toplevel file COPYING for license details           *
+ ***************************************************************************/
+
+
+#ifndef CHIPCARD_CHIPCARD2_H
+#define CHIPCARD_CHIPCARD2_H
+
+#ifdef __declspec
+# if BUILDING_LIBCHIPCARD2_DLL
+#  define LC_CLIENT_API __declspec (dllexport)
+# else /* BUILDING_LIBCHIPCARD2_DLL */
+#  define LC_CLIENT_API __declspec (dllimport)
+# endif /* Not BUILDING_LIBCHIPCARD2_DLL */
+#else
+# define LC_CLIENT_API
+#endif
+
+
+/* APIDOC stuff for Doxygen */
+/** @defgroup MOD_TUTORIALS Tutorials */
+
+
+#define LC_DEFAULT_PORT 7392 /* FIXME: make this adjustable by configure */
+#define LC_DEFAULT_UDS_SOCK "/var/run/chipcard2d.sock"
+
+#define LC_ERROR_NONE               0x00000000
+#define LC_ERROR_GENERIC            0x00000001
+#define LC_ERROR_INVALID            0x00000002
+#define LC_ERROR_CARD_REMOVED       0x00000003
+#define LC_ERROR_CARD_NOT_OWNED     0x00000004
+#define LC_ERROR_NOT_SUPPORTED      0x00000005
+#define LC_ERROR_SETUP              0x00000006
+#define LC_ERROR_NO_DATA            0x00000007
+
+#define LC_LOGDOMAIN "ccclient"
+
+
+#endif /* CHIPCARD_CHIPCARD2_H */

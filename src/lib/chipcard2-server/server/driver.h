@@ -83,6 +83,11 @@ void LC_Driver_ResetActiveReadersCount(LC_DRIVER *d);
 void LC_Driver_IncActiveReadersCount(LC_DRIVER *d);
 void LC_Driver_DecActiveReadersCount(LC_DRIVER *d);
 
+GWEN_TYPE_UINT32 LC_Driver_GetAssignedReadersCount(const LC_DRIVER *d);
+void LC_Driver_ResetAssignedReadersCount(LC_DRIVER *d);
+void LC_Driver_IncAssignedReadersCount(LC_DRIVER *d);
+void LC_Driver_DecAssignedReadersCount(LC_DRIVER *d);
+
 
 GWEN_TYPE_UINT32 LC_Driver_GetIpcId(const LC_DRIVER *d);
 void LC_Driver_SetIpcId(LC_DRIVER *d, GWEN_TYPE_UINT32 id);
