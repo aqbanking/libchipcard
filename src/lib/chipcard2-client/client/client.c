@@ -19,6 +19,7 @@
 #include "client_p.h"
 #include "mon/monitor_l.h"
 #include "apps/cardmgr_l.h"
+#include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/version.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/net.h>
@@ -53,6 +54,13 @@ LC_CLIENT *LC_Client_new(const char *programName,
   LC_CLIENT *cl;
   GWEN_STRINGLIST *paths;
   GWEN_BUFFER *tbuf;
+  GWEN_ERRORCODE err;
+
+  err=GWEN_Init();
+  if (!GWEN_Error_IsOk(err)) {
+    DBG_ERROR_ERR(LC_LOGDOMAIN);
+    abort();
+  }
 
   if (!GWEN_Logger_Exists(LC_LOGDOMAIN)) {
       /* only set our logger if not not already has been */
@@ -118,6 +126,8 @@ LC_CLIENT *LC_Client_new(const char *programName,
 
 void LC_Client_free(LC_CLIENT *cl) {
   if (cl) {
+    GWEN_ERRORCODE err;
+
     GWEN_INHERIT_FINI(LC_CLIENT, cl);
     free(cl->programName);
     free(cl->programVersion);
@@ -130,6 +140,11 @@ void LC_Client_free(LC_CLIENT *cl) {
     LC_Server_List_free(cl->servers);
     GWEN_IPCManager_free(cl->ipcManager);
     GWEN_FREE_OBJECT(cl);
+
+    err=GWEN_Fini();
+    if (!GWEN_Error_IsOk(err)) {
+      DBG_ERROR_ERR(LC_LOGDOMAIN);
+    }
   }
 }
 
