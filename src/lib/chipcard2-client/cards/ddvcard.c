@@ -402,7 +402,9 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
   }
 
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 2, mbuf);
+  res=LC_ProcessorCard_ReadRecord(card,
+                                  1 /* should be 2 */,
+                                  mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -410,7 +412,9 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
   }
   GWEN_Buffer_Rewind(mbuf);
   dbRecord=GWEN_DB_Group_new("autd");
-  if (LC_Card_ParseRecord(card, 2, mbuf, dbRecord)) {
+  if (LC_Card_ParseRecord(card,
+                          1 /* should be 2, but that doesn't work */,
+                          mbuf, dbRecord)) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record");
     GWEN_DB_Group_free(dbRecord);
     GWEN_Buffer_free(mbuf);
@@ -506,10 +510,10 @@ int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card){
   assert(ddv);
 
   if (ddv->ddvType==0) {
-    return LC_DDVCard_GetSignKeyVersion0(card);
+    return LC_DDVCard_GetCryptKeyVersion0(card);
   }
   else if (ddv->ddvType==1) {
-    return LC_DDVCard_GetSignKeyVersion1(card);
+    return LC_DDVCard_GetCryptKeyVersion1(card);
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Unknown DDV card type (%d)", ddv->ddvType);
@@ -520,7 +524,16 @@ int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card){
 
 
 int LC_DDVCard_GetSignKeyNumber(LC_CARD *card){
-  return 2;
+  LC_DDVCARD *ddv;
+
+  assert(card);
+  ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
+  assert(ddv);
+
+  if (ddv->ddvType==0)
+    return 1;
+  else
+    return 2;
 }
 
 

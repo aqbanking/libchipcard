@@ -54,6 +54,15 @@ void CTAPI_Context_free(CTAPI_CONTEXT *ctx){
 
 
 
+void CTAPI_Context_SetCardType(CTAPI_CONTEXT *ctx, const char *ct){
+  assert(ctx);
+  free(ctx->cardType);
+  if (ct) ctx->cardType=strdup(ct);
+  else ctx->cardType=0;
+}
+
+
+
 CTAPI_CONTEXT *CTAPI_Context_FindByCtn(unsigned short ctn){
   CTAPI_CONTEXT *ctx;
 
@@ -319,12 +328,20 @@ char CT_data(unsigned short ctn,
       result=CT__getStatusICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
-    case 0x15: /* EJECT ICC */
+    case 0x14: /* DEACTIVATE ICC */
+      result=CT__ejectICC(ctx, dad, sad, apdu, lenr, response);
+      handled=1;
+      break;
+      case 0x15: /* EJECT ICC */
       result=CT__ejectICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     case 0x18: /* Perform Verification */
       result=CT__secureVerify(ctx, dad, sad, apdu, lenr, response);
+      handled=1;
+      break;
+    case 0x19: /* Modify Verification Data */
+      result=CT__secureModify(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     default:
@@ -450,7 +467,6 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
     LC_CLIENT_RESULT res;
     const GWEN_STRINGLIST *sl;
 
-    /* if we have an open card -> reset it */
     res=LC_Card_Open(ctx->card);
     if (res!=LC_Client_ResultOk) {
       CT__showError(ctx->card, res, "CardOpen");
@@ -467,6 +483,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
+      CTAPI_Context_SetCardType(ctx, "rsacard");
     }
     else if (GWEN_StringList_HasString(sl, "ddv1")) {
       res=LC_Card_SelectCardAndApp(ctx->card, "ddv1", "ddv");
@@ -474,6 +491,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
+      CTAPI_Context_SetCardType(ctx, "ddv1");
     }
     else if (GWEN_StringList_HasString(sl, "ddv0")) {
       res=LC_Card_SelectCardAndApp(ctx->card, "ddv0", "ddv");
@@ -481,6 +499,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
+      CTAPI_Context_SetCardType(ctx, "ddv0");
     }
     else if (GWEN_StringList_HasString(sl, "geldkarte")) {
       res=LC_Card_SelectCardAndApp(ctx->card, "geldkarte", "geldkarte");
@@ -488,6 +507,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
+      CTAPI_Context_SetCardType(ctx, "geldkarte");
       /* add other types here */
     }
     else {
@@ -498,6 +518,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
           DBG_INFO(LC_LOGDOMAIN, "here");
           return res;
         }
+        CTAPI_Context_SetCardType(ctx, 0);
       }
       else if ((strcasecmp(LC_Card_GetCardType(ctx->card), "memory")==0) &&
                GWEN_StringList_HasString(sl, "MemoryCard")) {
@@ -506,6 +527,7 @@ LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
           DBG_INFO(LC_LOGDOMAIN, "here");
           return res;
         }
+        CTAPI_Context_SetCardType(ctx, 0);
       }
     }
   }
@@ -790,15 +812,30 @@ char CT__secureVerify(CTAPI_CONTEXT *ctx,
   int j=0;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
+  unsigned char uc;
+  unsigned char sw1, sw2;
 
   DBG_ERROR(CT_API_LOGDOMAIN, "SecureVerify");
+
+  uc=*sad;
+  *sad=*dad;
+  *dad=uc;
+
+  if (ctx->cardType==0 ||
+      !(LC_Card_GetReaderFlags(ctx->card) & LC_CARD_READERFLAGS_KEYPAD)) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "SecureVerify not available");
+    response[0]=0x6d; /* not supported */
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
 
   dbReq=GWEN_DB_Group_new("SecureVerifyPin");
   dbResp=GWEN_DB_Group_new("response");
   res=LC_Card_ExecCommand(ctx->card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(lc_ctapi_client));
   GWEN_DB_Group_free(dbReq);
-
   p=response;
   t=GWEN_DB_GetBinValue(dbResp,
                         "command/response/data",
@@ -822,11 +859,138 @@ char CT__secureVerify(CTAPI_CONTEXT *ctx,
     }
   }
   GWEN_DB_Group_free(dbResp);
+
+  switch(res) {
+  case LC_Client_ResultOk:
+    sw1=0x90;
+    sw2=0x00;
+    break;
+  case LC_Client_ResultWait:
+    sw1=0x64;
+    sw2=0x00;
+    break;
+  case LC_Client_ResultIpcError:
+    GWEN_DB_Group_free(dbResp);
+    DBG_ERROR(CT_API_LOGDOMAIN, "IPC error");
+    return CT_API_RV_ERR_HOST;
+  case LC_Client_ResultCmdError:
+    sw1=LC_Card_GetLastSW1(ctx->card);
+    sw2=LC_Card_GetLastSW2(ctx->card);
+    break;
+  case LC_Client_ResultAborted:
+    sw1=0x64;
+    sw2=0x01;
+    break;
+  default:
+    GWEN_DB_Group_free(dbResp);
+    DBG_ERROR(CT_API_LOGDOMAIN, "CT error");
+    return CT_API_RV_ERR_CT;
+  }
   *dad=*sad;
   *sad=CT_API_AD_CT;
-  *(p++)=0x90;
+  *(p++)=sw1;
   j++;
-  *(p++)=0x00;
+  *(p++)=sw2;
+  j++;
+  *lenr=j;
+  return CT_API_RV_OK;
+}
+
+
+
+char CT__secureModify(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response){
+  LC_CLIENT_RESULT res;
+  unsigned char *p;
+  const unsigned char *t;
+  unsigned int bs;
+  int i;
+  int j=0;
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+  unsigned char uc;
+  unsigned char sw1, sw2;
+
+  DBG_ERROR(CT_API_LOGDOMAIN, "SecureVerify");
+
+  uc=*sad;
+  *sad=*dad;
+  *dad=uc;
+
+  if (ctx->cardType==0 ||
+      !(LC_Card_GetReaderFlags(ctx->card) & LC_CARD_READERFLAGS_KEYPAD)) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "SecureModify not available");
+    response[0]=0x6d; /* not supported */
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
+
+  dbReq=GWEN_DB_Group_new("SecureModifyPin");
+  dbResp=GWEN_DB_Group_new("response");
+  res=LC_Card_ExecCommand(ctx->card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(lc_ctapi_client));
+  GWEN_DB_Group_free(dbReq);
+  p=response;
+  t=GWEN_DB_GetBinValue(dbResp,
+                        "command/response/data",
+                        0,
+                        0, 0,
+                        &bs);
+  if (t && bs) {
+    i=apdu->rlen;
+    if (i==-1)
+      i=bs;
+    if (i>bs)
+      i=bs;
+    if (i>(*lenr)-2) {
+      GWEN_DB_Group_free(dbResp);
+      DBG_ERROR(CT_API_LOGDOMAIN, "Buffer too small");
+      return CT_API_RV_ERR_INVALID;
+    }
+    while(i--) {
+      *(p++)=*(t++);
+      j++;
+    }
+  }
+  GWEN_DB_Group_free(dbResp);
+
+  switch(res) {
+  case LC_Client_ResultOk:
+    sw1=0x90;
+    sw2=0x00;
+    break;
+  case LC_Client_ResultWait:
+    sw1=0x64;
+    sw2=0x00;
+    break;
+  case LC_Client_ResultIpcError:
+    GWEN_DB_Group_free(dbResp);
+    DBG_ERROR(CT_API_LOGDOMAIN, "IPC error");
+    return CT_API_RV_ERR_HOST;
+  case LC_Client_ResultCmdError:
+    sw1=LC_Card_GetLastSW1(ctx->card);
+    sw2=LC_Card_GetLastSW2(ctx->card);
+    break;
+  case LC_Client_ResultAborted:
+    sw1=0x64;
+    sw2=0x01;
+    break;
+  default:
+    GWEN_DB_Group_free(dbResp);
+    DBG_ERROR(CT_API_LOGDOMAIN, "CT error");
+    return CT_API_RV_ERR_CT;
+  }
+  *dad=*sad;
+  *sad=CT_API_AD_CT;
+  *(p++)=sw1;
+  j++;
+  *(p++)=sw2;
   j++;
   *lenr=j;
   return CT_API_RV_OK;

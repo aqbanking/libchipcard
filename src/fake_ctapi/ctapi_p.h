@@ -32,6 +32,7 @@ struct CTAPI_CONTEXT {
   unsigned short port;
   LC_CARD *card;
   int isOpen;
+  char *cardType;
 };
 
 
@@ -39,6 +40,7 @@ struct CTAPI_CONTEXT {
 CTAPI_CONTEXT *CTAPI_Context_new(unsigned short ctn,
 				 unsigned short port);
 void CTAPI_Context_free(CTAPI_CONTEXT *ctx);
+void CTAPI_Context_SetCardType(CTAPI_CONTEXT *ctx, const char *ct);
 
 
 CTAPI_CONTEXT *CTAPI_Context_FindByCtn(unsigned short ctn);
@@ -52,6 +54,13 @@ void CT__showError(LC_CARD *card,
 LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout);
 
 char CT__secureVerify(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response);
+
+char CT__secureModify(CTAPI_CONTEXT *ctx,
                       unsigned char *dad,
                       unsigned char *sad,
                       CTAPI_APDU *apdu,
