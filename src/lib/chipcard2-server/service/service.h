@@ -36,10 +36,12 @@ GWEN_INHERIT_FUNCTION_DEFS(LC_SERVICE);
 
 
 typedef GWEN_TYPE_UINT32 (*LC_SERVICE_OPEN_FN)(LC_SERVICE *d,
-                                               LC_SERVICECLIENT *cl);
+                                               LC_SERVICECLIENT *cl,
+                                               GWEN_DB_NODE *dbData);
 
 typedef GWEN_TYPE_UINT32 (*LC_SERVICE_CLOSE_FN)(LC_SERVICE *d,
-                                                LC_SERVICECLIENT *cl);
+                                                LC_SERVICECLIENT *cl,
+                                                GWEN_DB_NODE *dbData);
 
 typedef GWEN_TYPE_UINT32 (*LC_SERVICE_COMMAND_FN)(LC_SERVICE *d,
                                                   LC_SERVICECLIENT *cl,
@@ -86,10 +88,12 @@ int LC_Service_Work(LC_SERVICE *d);
 
 
 GWEN_TYPE_UINT32 LC_Service_Open(LC_SERVICE *d,
-                                 LC_SERVICECLIENT *cl);
+                                 LC_SERVICECLIENT *cl,
+                                 GWEN_DB_NODE *dbData);
 
 GWEN_TYPE_UINT32 LC_Service_Close(LC_SERVICE *d,
-                                  LC_SERVICECLIENT *cl);
+                                  LC_SERVICECLIENT *cl,
+                                  GWEN_DB_NODE *dbData);
 
 GWEN_TYPE_UINT32 LC_Service_Command(LC_SERVICE *d,
                                     LC_SERVICECLIENT *cl,

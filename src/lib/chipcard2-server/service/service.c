@@ -541,18 +541,20 @@ LC_SERVICECLIENT_LIST *LC_Service_GetClients(const LC_SERVICE *d){
 
 
 
-GWEN_TYPE_UINT32 LC_Service_Open(LC_SERVICE *d, LC_SERVICECLIENT *cl){
+GWEN_TYPE_UINT32 LC_Service_Open(LC_SERVICE *d, LC_SERVICECLIENT *cl,
+                                 GWEN_DB_NODE *dbData){
   assert(d);
   assert(d->openFn);
-  return d->openFn(d, cl);
+  return d->openFn(d, cl, dbData);
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Service_Close(LC_SERVICE *d, LC_SERVICECLIENT *cl){
+GWEN_TYPE_UINT32 LC_Service_Close(LC_SERVICE *d, LC_SERVICECLIENT *cl,
+                                  GWEN_DB_NODE *dbData){
   assert(d);
   assert(d->closeFn);
-  return d->closeFn(d, cl);
+  return d->closeFn(d, cl, dbData);
 }
 
 
@@ -621,9 +623,12 @@ int LC_Service_HandleServiceOpen(LC_SERVICE *d,
   char numbuf[16];
   LC_SERVICECLIENT *cl;
   GWEN_DB_NODE *dbRsp;
+  GWEN_DB_NODE *dbData;
 
   assert(d);
   assert(dbReq);
+  dbData=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                          "body/command");
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/clientId", 0, "0"),
                 "%x",
                 &clientId)) {
@@ -653,7 +658,7 @@ int LC_Service_HandleServiceOpen(LC_SERVICE *d,
     GWEN_TYPE_UINT32 res;
 
     cl=LC_ServiceClient_new(clientId);
-    res=LC_Service_Open(d, cl);
+    res=LC_Service_Open(d, cl, dbData);
     if (res!=0) {
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "ERROR");
@@ -692,9 +697,12 @@ int LC_Service_HandleServiceClose(LC_SERVICE *d,
   char numbuf[16];
   LC_SERVICECLIENT *cl;
   GWEN_DB_NODE *dbRsp;
+  GWEN_DB_NODE *dbData;
 
   assert(d);
   assert(dbReq);
+  dbData=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                          "body/command");
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/clientId", 0, "0"),
                 "%x",
                 &clientId)) {
@@ -723,7 +731,7 @@ int LC_Service_HandleServiceClose(LC_SERVICE *d,
   else {
     GWEN_TYPE_UINT32 res;
 
-    res=LC_Service_Close(d, cl);
+    res=LC_Service_Close(d, cl, dbData);
     if (res!=0) {
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "ERROR");
