@@ -41,6 +41,8 @@ struct LC_FS_MODULE {
   LC_FS_MODULE_WRITEFILE_FN writeFileFn;
   LC_FS_MODULE_LOOKUP_FN lookupFn;
 
+  LC_FS_MODULE_DUMP_FN dumpFn;
+
   GWEN_TYPE_UINT32 flags;
   GWEN_TYPE_UINT32 activeNodes;
   GWEN_TYPE_UINT32 usage;

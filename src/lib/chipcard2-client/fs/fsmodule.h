@@ -108,6 +108,10 @@ typedef int (*LC_FS_MODULE_LOOKUP_FN)(LC_FS_MODULE *fs,
                                       LC_FS_NODE *node,
                                       const char *name,
                                       LC_FS_NODE **nPtr);
+typedef int (*LC_FS_MODULE_DUMP_FN)(LC_FS_MODULE *fs,
+                                    LC_FS_NODE *node,
+                                    FILE *f,
+                                    int indent);
 
 
 
@@ -127,6 +131,8 @@ void LC_FSModule_SetReadFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_READFILE_FN f);
 void LC_FSModule_SetWriteFileFileFn(LC_FS_MODULE *fs,
                                     LC_FS_MODULE_WRITEFILE_FN f);
 void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f);
+
+void LC_FSModule_SetDumpFn(LC_FS_MODULE *fs, LC_FS_MODULE_DUMP_FN f);
 
 
 GWEN_TYPE_UINT32 LC_FSModule_GetFlags(const LC_FS_MODULE *fs);

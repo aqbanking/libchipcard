@@ -21,6 +21,8 @@
 #include <gwenhywfar/debug.h>
 
 
+GWEN_LIST_FUNCTIONS(LC_FS_CLIENT, LC_FSClient)
+
 
 
 LC_FS_CLIENT *LC_FSClient_new(LC_FS *fs, GWEN_TYPE_UINT32 id){

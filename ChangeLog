@@ -1,4 +1,10 @@
 
+2005/01/21: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- debugging of FS code (creating a folder and setting the CWD now works)
+- added preliminary support for libsysfs (not yet enabled, I will have to
+  create M4-macros for configure.ac first) submitted by Thomas Viehmann.
+
 
 2005/01/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------

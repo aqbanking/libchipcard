@@ -16,6 +16,8 @@
 
 
 #include <chipcard2-client/fs/fsmodule.h>
+#include <stdio.h>
+
 
 GWEN_LIST_FUNCTION_DEFS(LC_FS_MODULE, LC_FSModule)
 
@@ -79,6 +81,10 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
                        const char *name,
                        LC_FS_NODE **nPtr);
 
+int LC_FSModule_Dump(LC_FS_MODULE *fs,
+                     LC_FS_NODE *node,
+                     FILE *f,
+                     int indent);
 
 
 

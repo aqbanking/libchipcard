@@ -21,6 +21,10 @@
 #include <gwenhywfar/debug.h>
 
 
+GWEN_LIST_FUNCTIONS(LC_FS_MODULE, LC_FSModule)
+GWEN_INHERIT_FUNCTIONS(LC_FS_MODULE)
+
+
 
 LC_FS_MODULE *LC_FSModule_new() {
   LC_FS_MODULE *fs;
@@ -139,6 +143,62 @@ void LC_FSModule_SetWriteFileFileFn(LC_FS_MODULE *fs,
 void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f){
   assert(fs);
   fs->lookupFn=f;
+}
+
+
+
+void LC_FSModule_SetDumpFn(LC_FS_MODULE *fs, LC_FS_MODULE_DUMP_FN f){
+  assert(fs);
+  fs->dumpFn=f;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_FSModule_GetFlags(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->flags;
+}
+
+
+
+void LC_FSModule_SetFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+  assert(fs);
+  fs->flags=fl;
+}
+
+
+
+void LC_FSModule_AddFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+  assert(fs);
+  fs->flags|=fl;
+}
+
+
+
+void LC_FSModule_SubFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+  assert(fs);
+  fs->flags&=~fl;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_FSModule_GetActiveNodes(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->activeNodes;
+}
+
+
+
+void LC_FSModule_IncActiveNodes(LC_FS_MODULE *fs){
+  assert(fs);
+  fs->activeNodes++;
+}
+
+
+
+void LC_FSModule_DecActiveNodes(LC_FS_MODULE *fs){
+  assert(fs);
+  fs->activeNodes--;
 }
 
 
@@ -278,6 +338,18 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
   if (!fs->lookupFn)
     return LC_FS_ErrorNotSupported;
   return fs->lookupFn(fs, node, name, nPtr);
+}
+
+
+
+int LC_FSModule_Dump(LC_FS_MODULE *fs,
+                     LC_FS_NODE *node,
+                     FILE *f,
+                     int indent){
+  assert(fs);
+  if (!fs->dumpFn)
+    return LC_FS_ErrorNotSupported;
+  return fs->dumpFn(fs, node, f, indent);
 }
 
 

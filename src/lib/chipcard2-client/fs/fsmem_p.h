@@ -16,7 +16,7 @@
 
 
 #include <chipcard2-client/fs/fsmem.h>
-
+#include <stdio.h>
 
 
 struct LC_FSMEM_NODE {
@@ -39,6 +39,7 @@ void LC_FSMemNode_SetName(LC_FS_NODE *n, const char *name);
 
 GWEN_BUFFER *LC_FSMemNode_GetDataBuffer(const LC_FS_NODE *n);
 
+void LC_FSMemNode_Dump(LC_FS_NODE *node, FILE *f, int indent);
 
 
 
@@ -112,6 +113,10 @@ int LC_FSMemModule_Lookup(LC_FS_MODULE *fs,
                           LC_FS_NODE **nPtr);
 
 
+int LC_FSMemModule_Dump(LC_FS_MODULE *fs,
+                        LC_FS_NODE *node,
+                        FILE *f,
+                        int indent);
 
 
 

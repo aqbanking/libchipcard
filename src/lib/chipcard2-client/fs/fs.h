@@ -19,6 +19,7 @@
 
 #include <chipcard2-client/fs/fsnode.h>
 #include <chipcard2-client/fs/fsclient.h>
+#include <stdio.h>
 
 
 typedef struct LC_FS_PATH_CTX LC_FS_PATH_CTX;
@@ -64,6 +65,12 @@ int LC_FS_MkDir(LC_FS *fs,
 int LC_FS_CloseDir(LC_FS *fs,
                    GWEN_TYPE_UINT32 clid,
                    GWEN_TYPE_UINT32 hid);
+
+int LC_FS_Dump(LC_FS *fs,
+               GWEN_TYPE_UINT32 clid,
+               const char *path,
+               FILE *f,
+               int indent);
 
 
 

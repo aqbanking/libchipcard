@@ -27,16 +27,19 @@ GWEN_INHERIT(LC_FS_MODULE, LC_FSMEM_MODULE);
 
 
 
-LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs){
+LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs, const char *name){
   LC_FS_NODE *n;
   LC_FSMEM_NODE *mn;
 
+  assert(fs);
+  assert(name);
   n=LC_FSNode_new(fs);
   GWEN_NEW_OBJECT(LC_FSMEM_NODE, mn);
   GWEN_INHERIT_SETDATA(LC_FS_NODE, LC_FSMEM_NODE,
 		      n, mn, LC_FSMemNode_FreeData);
   mn->children=LC_FSNode_List_new();
   mn->data=GWEN_Buffer_new(0, 1024, 0, 1);
+  mn->name=strdup(name);
 
   return n;
 }
@@ -153,6 +156,76 @@ GWEN_BUFFER *LC_FSMemNode_GetDataBuffer(const LC_FS_NODE *n) {
 
 
 
+void LC_FSMemNode_Dump(LC_FS_NODE *node, FILE *f, int indent){
+  LC_FSMEM_NODE *mn;
+  int i;
+  GWEN_TYPE_UINT32 fl;
+
+  assert(node);
+  mn=GWEN_INHERIT_GETDATA(LC_FS_NODE, LC_FSMEM_NODE, node);
+  assert(mn);
+
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+
+  fprintf(f, "%s ", mn->name);
+  fl=LC_FSNode_GetFileMode(node);
+  if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_FILE)
+    fprintf(f, "-");
+  else if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_DIR)
+    fprintf(f, "d");
+  else {
+    DBG_ERROR(0, "Unknown file type %08x (%08x)\n",
+              fl, fl & LC_FS_NODE_MODE_FTYPE_MASK);
+    fprintf(f, "?");
+  }
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_READ)
+    fprintf(f, "r");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE)
+    fprintf(f, "w");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC)
+    fprintf(f, "x");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_READ)
+    fprintf(f, "r");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE)
+    fprintf(f, "w");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC)
+    fprintf(f, "x");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_READ)
+    fprintf(f, "r");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE)
+    fprintf(f, "w");
+  else
+    fprintf(f, "-");
+  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC)
+    fprintf(f, "x");
+  else
+    fprintf(f, "-");
+
+  fprintf(f, " ");
+
+  fl=LC_FSNode_GetFileSize(node);
+  fprintf(f, GWEN_TYPE_TMPL_UINT32, fl);
+
+  fprintf(f, "\n");
+}
+
+
+
 
 
 
@@ -182,6 +255,7 @@ LC_FS_MODULE *LC_FSMemModule_new(){
   LC_FSModule_SetReadFileFn(mod, LC_FSMemModule_ReadFile);
   LC_FSModule_SetWriteFileFileFn(mod, LC_FSMemModule_WriteFile);
   LC_FSModule_SetLookupFn(mod, LC_FSMemModule_Lookup);
+  LC_FSModule_SetDumpFn(mod, LC_FSMemModule_Dump);
 
   return mod;
 }
@@ -203,6 +277,7 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 				     const char *name){
   LC_FS_NODE *nn;
 
+  DBG_INFO(LC_LOGDOMAIN, "Searching for entry \"%s\"", name);
   nn=LC_FSNode_List_First(LC_FSMemNode_GetChildren(node));
   while(nn) {
     const char *s;
@@ -223,7 +298,7 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 int LC_FSMemModule_Mount(LC_FS_MODULE *fs,
                          GWEN_TYPE_UINT32 flags,
                          LC_FS_NODE **nPtr){
-  *nPtr=LC_FSMemNode_new(fs);
+  *nPtr=LC_FSMemNode_new(fs, "");
   LC_FSNode_Attach(*nPtr);
   return LC_FS_ErrorNone;
 }
@@ -249,6 +324,7 @@ int LC_FSMemModule_OpenDir(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
+  DBG_INFO(LC_LOGDOMAIN, "Opening folder \"%s\"", name);
   n=LC_FSMemModule__FindNode(fs, node, name);
   if (!n) {
     DBG_INFO(0, "here");
@@ -278,12 +354,13 @@ int LC_FSMemModule_MkDir(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
+  DBG_INFO(LC_LOGDOMAIN, "Creating folder \"%s\"", name);
   n=LC_FSMemModule__FindNode(fs, node, name);
   if (n) {
     DBG_INFO(0, "Entry \"%s\" already exists", name);
     return LC_FS_ErrorExists;
   }
-  n=LC_FSMemNode_new(fs);
+  n=LC_FSMemNode_new(fs, name);
   mode&=LC_FS_NODE_MODE_FTYPE_MASK;
   mode|=LC_FS_NODE_MODE_FTYPE_DIR;
   LC_FSNode_SetFileMode(n, mode);
@@ -350,6 +427,8 @@ int LC_FSMemModule_OpenFile(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
+  DBG_INFO(LC_LOGDOMAIN, "Opening file \"%s\"", name);
+
   n=LC_FSMemModule__FindNode(fs, node, name);
   if (!n) {
     DBG_INFO(0, "here");
@@ -379,12 +458,14 @@ int LC_FSMemModule_CreateFile(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
+  DBG_INFO(LC_LOGDOMAIN, "Creating file \"%s\"", name);
+
   n=LC_FSMemModule__FindNode(fs, node, name);
   if (n) {
     DBG_INFO(0, "Entry \"%s\" already exists", name);
     return LC_FS_ErrorExists;
   }
-  n=LC_FSMemNode_new(fs);
+  n=LC_FSMemNode_new(fs, name);
   mode&=LC_FS_NODE_MODE_FTYPE_MASK;
   mode|=LC_FS_NODE_MODE_FTYPE_FILE;
   LC_FSNode_SetFileMode(n, mode);
@@ -501,6 +582,8 @@ int LC_FSMemModule_Lookup(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
+  DBG_INFO(LC_LOGDOMAIN, "Searching for entry \"%s\"", name);
+
   n=LC_FSMemModule__FindNode(fs, node, name);
   if (!n) {
     DBG_INFO(0, "here");
@@ -512,6 +595,27 @@ int LC_FSMemModule_Lookup(LC_FS_MODULE *fs,
 
 
 
+int LC_FSMemModule_Dump(LC_FS_MODULE *fs,
+                        LC_FS_NODE *node,
+                        FILE *f,
+                        int indent) {
+  LC_FSMEM_MODULE *modm;
+  LC_FS_NODE *n;
+
+  assert(fs);
+  modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
+  assert(modm);
+
+  LC_FSMemNode_Dump(node, f, indent);
+
+  n=LC_FSNode_List_First(LC_FSMemNode_GetChildren(node));
+  while(n) {
+    LC_FSMemModule_Dump(fs, n, f, indent+2);
+    n=LC_FSNode_List_Next(n);
+  } /* while */
+
+  return LC_FS_ErrorNone;
+}
 
 
 

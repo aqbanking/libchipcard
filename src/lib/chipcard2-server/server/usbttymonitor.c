@@ -28,11 +28,16 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef USE_LIBSYSFS
+# include <libsysfs.h>
+#endif
 
 GWEN_LIST_FUNCTIONS(LC_USBTTYDEVICE, LC_USBTTYDevice)
 
 
 static const char *lc_usbttymonitor_filename=0;
+static int lc_usbttymonitor_sysfs=0;
+
 
 
 LC_USBTTYDEVICE *LC_USBTTYDevice_new(GWEN_TYPE_UINT32 port,
@@ -90,6 +95,9 @@ GWEN_TYPE_UINT32 LC_USBTTYDevice_GetProductId(const LC_USBTTYDEVICE *ud){
 LC_USBTTYMONITOR *LC_USBTTYMonitor_new() {
   LC_USBTTYMONITOR *um;
   FILE *f;
+#ifdef USE_LIBSYSFS
+  char sysfspath[256];
+#endif
 
   GWEN_NEW_OBJECT(LC_USBTTYMONITOR, um);
   DBG_MEM_INC("LC_USBTTYMONITOR", 0);
@@ -108,8 +116,16 @@ LC_USBTTYMONITOR *LC_USBTTYMonitor_new() {
       fclose(f);
       lc_usbttymonitor_filename=LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL2_6_FILE;
     }
+#ifdef USE_LIBSYSFS
+    else {
+      if (! sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
+        lc_usbttymonitor_sysfs = 1;
+        DBG_DEBUG(0, "Will use sysfs to scan for ttyUSB devices")
+      }
+    }
+#endif
   }
-  if (!f) {
+  if (!f && !lc_usbttymonitor_sysfs) {
     DBG_ERROR(0, "Unable to open USB-serial file: %s",
               strerror(errno));
   }
@@ -131,6 +147,86 @@ void LC_USBTTYMonitor_free(LC_USBTTYMONITOR *um) {
   }
 }
 
+
+
+int LC_USBTTYMonitor_ScanSysFS_UsbSerial(LC_USBTTYDEVICE_LIST *dl) {
+#ifndef USE_LIBSYSFS
+  DBG_INFO(0, "LibSysFS not supported");
+  return -1;
+#else
+  struct sysfs_bus *bus = NULL;
+  struct sysfs_device *curdev = NULL;
+  struct sysfs_device *temp_device = NULL;
+  struct sysfs_device *parent = NULL;
+  struct sysfs_device *child = NULL;
+  struct sysfs_attribute *cur = NULL;
+  struct dlist *devlist = NULL;
+  struct dlist *attributes = NULL;
+  int port, vendorId, productId;
+  LC_USBTTYDEVICE *currentDevice;
+
+  bus = sysfs_open_bus("usb");
+  if (bus == NULL) {
+    DBG_ERROR(0,"Error accessing sysfs");
+    return -1;
+  }
+
+  devlist = sysfs_get_bus_devices(bus);
+  if (devlist != NULL) {
+    dlist_for_each_data(devlist, curdev, 
+                        struct sysfs_device) {
+      /* for each device: look for ttyUSB in children*/
+      port = -1;
+      temp_device = sysfs_open_device_tree(curdev->path);
+      if (temp_device) {
+        if (temp_device->children) {
+          dlist_for_each_data(temp_device->children, child,
+                              struct sysfs_device) {
+            if (strncmp(child->name, "ttyUSB", 6) == 0)
+              port = atoi(&child->name[6]);
+          }
+        }
+        sysfs_close_device_tree(temp_device);
+      }
+      /* found something, well maybe */
+      if (port != -1) {
+	parent = sysfs_get_device_parent(curdev);
+	if (parent) {	
+          attributes = sysfs_get_device_attributes(parent);
+          dlist_for_each_data(attributes, cur, 
+                              struct sysfs_attribute) {
+            if (strcmp(cur->name,"idVendor")==0) {
+              if (cur->value != NULL) {
+                vendorId = strtol(cur->value, NULL, 16);
+              }
+              else
+                DBG_ERROR(0,"idVendor empty");
+            }
+            if (strcmp(cur->name,"idProduct")==0) {
+              if (cur->value != NULL) {
+                productId = strtol(cur->value, NULL, 16);
+              }
+              else
+                DBG_ERROR(0, "idProduct empty");
+            }
+          }
+          currentDevice=LC_USBTTYDevice_new(port, vendorId, productId);
+          DBG_DEBUG(0, "Adding device %d (%04x/%04x)",
+                    port,
+                    vendorId,
+                    productId);
+          LC_USBTTYDevice_List_Add(currentDevice, dl);
+        }
+        else {
+          DBG_ERROR(0,"Error getting device parent for ttyUSB");
+        }
+      }
+    }
+  }
+  sysfs_close_bus(bus);
+  return 0;
+#endif
+}
 
 
 
@@ -324,7 +420,8 @@ int LC_USBTTYMonitor_Scan(LC_USBTTYMONITOR *um) {
   LC_USBTTYDevice_List_Clear(um->lostDevices);
 
   dl=LC_USBTTYDevice_List_new();
-  if (LC_USBTTYMonitor_Read_ProcTtyDriverUsbSerial(dl)) {
+  if ((lc_usbttymonitor_sysfs && LC_USBTTYMonitor_ScanSysFS_UsbSerial(dl)) ||
+      (!lc_usbttymonitor_sysfs && LC_USBTTYMonitor_Read_ProcTtyDriverUsbSerial(dl))) {
     DBG_DEBUG(0, "here");
     LC_USBTTYDevice_List_free(dl);
     return -1;

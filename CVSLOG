@@ -1,14 +1,3 @@
-- started working on first service: cardfs.
-  This service will be part of a small service group which allows to view
-  cards as a file system with special folders for any supported kind of
-  cards.
-- added monitoring for services
-- added open- and close- and command service functions to client library
-- chipcard-tool: now shows services, too. Also, you can now tell this tool
-  *what* you are interested in:
-  --services: if present services are listed
-  --drivers:  if present drivers are listed
-  --readers:  if present readers are listed
-  It neither of these options are given the previous behaviour is selected
-  where drivers and readers are listed.
-- reordered functions in client.h
+- debugging of FS code (creating a folder and setting the CWD now works)
+- added preliminary support for libsysfs (not yet enabled, I will have to
+  create M4-macros for configure.ac first) submitted by Thomas Viehmann.

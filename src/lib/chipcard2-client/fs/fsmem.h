@@ -23,11 +23,11 @@
 typedef struct LC_FSMEM_NODE LC_FSMEM_NODE;
 typedef struct LC_FSMEM_MODULE LC_FSMEM_MODULE;
 
-LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs);
+LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs,
+                             const char *name);
 
 
 LC_FS_MODULE *LC_FSMemModule_new();
-
 
 
 
