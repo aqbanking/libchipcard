@@ -476,7 +476,10 @@ LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
   }
   res=LC_Client_CheckExecCommand(card->client, rqid, dbRsp);
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"execCommand\"");
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "Error response for request \"execCommand\" (%d)", res);
+    DBG_ERROR(LC_LOGDOMAIN, "Request:");
+    GWEN_DB_Dump(dbReq, stderr, 2);
     return LC_Client_ResultCmdError;
   }
 
@@ -840,16 +843,6 @@ void LC_Card_List2_freeAll(LC_CARD_LIST2 *l){
     LC_Card_List2_free(l);
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,1 +1,1 @@
-SUBDIRS=ctapi ifd pcsc
+SUBDIRS=ctapi ifd ifdold pcsc

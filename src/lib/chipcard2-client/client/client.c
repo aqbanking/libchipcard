@@ -63,11 +63,33 @@ LC_CLIENT *LC_Client_new(const char *programName,
   }
 
   if (!GWEN_Logger_Exists(LC_LOGDOMAIN)) {
-      /* only set our logger if not not already has been */
-      GWEN_Logger_Open(LC_LOGDOMAIN, "chipcard2-client", 0,
-                       GWEN_LoggerTypeConsole,
-                       GWEN_LoggerFacilityUser);
-      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelWarning);
+    const char *s;
+
+    /* only set our logger if not not already has been */
+    GWEN_Logger_Open(LC_LOGDOMAIN, "chipcard2-client", 0,
+		     GWEN_LoggerTypeConsole,
+		     GWEN_LoggerFacilityUser);
+    GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelWarning);
+
+    s=getenv("LC_LOGLEVEL");
+    if (s) {
+      GWEN_LOGGER_LEVEL ll;
+
+      ll=GWEN_Logger_Name2Level(s);
+      if (ll!=GWEN_LoggerLevelUnknown) {
+	GWEN_Logger_SetLevel(LC_LOGDOMAIN, ll);
+	DBG_WARN(0,
+		 "Overriding loglevel for Lichipcard-Client with \"%s\"",
+		 s);
+      }
+      else {
+	DBG_ERROR(0, "Unknown loglevel \"%s\"",
+		  s);
+      }
+    }
+    else {
+      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelNotice);
+    }
   }
 
   GWEN_NEW_OBJECT(LC_CLIENT, cl);
@@ -2041,8 +2063,10 @@ LC_Client_CheckExecCommand(LC_CLIENT *cl,
   assert(dbReq);
 
   res=LC_Client_CheckResponse(cl, rid);
-  if (res!=LC_Client_ResultOk)
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "here");
     return res;
+  }
 
   dbRsp=LC_Client_GetNextResponse(cl, rid);
   assert(dbRsp);

@@ -159,13 +159,15 @@ LC_CLIENT_RESULT LC_ProcessorCard_SelectDF(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_ProcessorCard_SelectEF(LC_CARD *card,
                                            const char *fname){
-  GWEN_XMLNODE *n;
+  /*GWEN_XMLNODE *n;*/
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting file \"%s\"", fname);
   assert(card);
+
+  /*
   n=LC_Card_GetEfInfo(card);
   if (n) {
     const char *s;
@@ -178,6 +180,7 @@ LC_CLIENT_RESULT LC_ProcessorCard_SelectEF(LC_CARD *card,
       }
     }
   }
+  */
 
   dbReq=GWEN_DB_Group_new("SelectEF");
   dbResp=GWEN_DB_Group_new("response");

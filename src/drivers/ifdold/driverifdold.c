@@ -16,8 +16,7 @@
 #endif
 #undef BUILDING_LIBCHIPCARD2_DLL
 
-
-#include "driverifd_p.h"
+#include "driverifdold_p.h"
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
@@ -28,12 +27,12 @@
 
 #include <unistd.h>
 
-GWEN_INHERIT(LC_DRIVER, DRIVER_IFD)
+GWEN_INHERIT(LC_DRIVER, DRIVER_IFDOLD)
 
 
 
-LC_DRIVER *DriverIFD_new(int argc, char **argv) {
-  DRIVER_IFD *dct;
+LC_DRIVER *DriverIFDOld_new(int argc, char **argv) {
+  DRIVER_IFDOLD *dct;
   LC_DRIVER *d;
   int rv;
 
@@ -42,20 +41,20 @@ LC_DRIVER *DriverIFD_new(int argc, char **argv) {
     DBG_ERROR(0, "Could not create driver, aborting");
     return 0;
   }
-  GWEN_NEW_OBJECT(DRIVER_IFD, dct);
-  GWEN_INHERIT_SETDATA(LC_DRIVER, DRIVER_IFD,
+  GWEN_NEW_OBJECT(DRIVER_IFDOLD, dct);
+  GWEN_INHERIT_SETDATA(LC_DRIVER, DRIVER_IFDOLD,
                        d, dct,
-                       DriverIFD_freeData);
+                       DriverIFDOld_freeData);
 
-  LC_Driver_SetSendApduFn(d, DriverIFD_SendAPDU);
-  LC_Driver_SetConnectSlotFn(d, DriverIFD_ConnectSlot);
-  LC_Driver_SetDisconnectSlotFn(d, DriverIFD_DisconnectSlot);
-  LC_Driver_SetConnectReaderFn(d, DriverIFD_ConnectReader);
-  LC_Driver_SetDisconnectReaderFn(d, DriverIFD_DisconnectReader);
-  LC_Driver_SetResetSlotFn(d, DriverIFD_ResetSlot);
-  LC_Driver_SetReaderStatusFn(d, DriverIFD_ReaderStatus);
-  LC_Driver_SetReaderInfoFn(d, DriverIFD_ReaderInfo);
-  LC_Driver_SetGetErrorTextFn(d, DriverIFD_GetErrorText);
+  LC_Driver_SetSendApduFn(d, DriverIFDOld_SendAPDU);
+  LC_Driver_SetConnectSlotFn(d, DriverIFDOld_ConnectSlot);
+  LC_Driver_SetDisconnectSlotFn(d, DriverIFDOld_DisconnectSlot);
+  LC_Driver_SetConnectReaderFn(d, DriverIFDOld_ConnectReader);
+  LC_Driver_SetDisconnectReaderFn(d, DriverIFDOld_DisconnectReader);
+  LC_Driver_SetResetSlotFn(d, DriverIFDOld_ResetSlot);
+  LC_Driver_SetReaderStatusFn(d, DriverIFDOld_ReaderStatus);
+  LC_Driver_SetReaderInfoFn(d, DriverIFDOld_ReaderInfo);
+  LC_Driver_SetGetErrorTextFn(d, DriverIFDOld_GetErrorText);
 
   rv=LC_Driver_Init(d, argc, argv);
   if (rv) {
@@ -69,7 +68,7 @@ LC_DRIVER *DriverIFD_new(int argc, char **argv) {
 
 
 
-void DriverIFD_free(DRIVER_IFD *dct) {
+void DriverIFDOld_free(DRIVER_IFDOLD *dct) {
   if (dct) {
     GWEN_LibLoader_free(dct->libLoader);
     GWEN_FREE_OBJECT(dct);
@@ -78,20 +77,20 @@ void DriverIFD_free(DRIVER_IFD *dct) {
 
 
 
-void DriverIFD_freeData(void *bp, void *p) {
-  DRIVER_IFD *dct;
+void DriverIFDOld_freeData(void *bp, void *p) {
+  DRIVER_IFDOLD *dct;
 
-  dct=(DRIVER_IFD*)p;
-  DriverIFD_free(dct);
+  dct=(DRIVER_IFDOLD*)p;
+  DriverIFDOld_free(dct);
 }
 
 
-int DriverIFD_Start(LC_DRIVER *d) {
+int DriverIFDOld_Start(LC_DRIVER *d) {
   GWEN_ERRORCODE err;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
 
@@ -220,12 +219,12 @@ int DriverIFD_Start(LC_DRIVER *d) {
 
 
 
-const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverIFDOld_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
   const char *s;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   switch (err) {
@@ -238,19 +237,19 @@ const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
   case IFD_ICC_NOT_PRESENT:
     s="Card not present";
     break;
-  case DRIVER_IFD_ERROR_BAD_RESPONSE:
+  case DRIVER_IFDOLD_ERROR_BAD_RESPONSE:
     s="Bad response from IFD driver";
     break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED:
+  case DRIVER_IFDOLD_ERROR_NO_SLOTS_CONNECTED:
     s="Could not connect any slot";
     break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED:
+  case DRIVER_IFDOLD_ERROR_NO_SLOTS_DISCONNECTED:
     s="Could not disconnect any slot";
     break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE:
+  case DRIVER_IFDOLD_ERROR_NO_SLOTS_AVAILABLE:
     s="No slot available";
     break;
-  case DRIVER_IFD_ERROR_NOT_SUPPORTED:
+  case DRIVER_IFDOLD_ERROR_NOT_SUPPORTED:
     s="Function not supported";
     break;
   default:
@@ -261,7 +260,7 @@ const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
 
 
 
-int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
+int DriverIFDOld_ExtractProtocolInfo(unsigned char *atr,
                                   unsigned int atrlen) {
   unsigned char *origAtr;
   int c;
@@ -295,7 +294,7 @@ int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
                                     int toReader,
                                     LC_READER *r,
                                     LC_SLOT *slot,
@@ -305,14 +304,13 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
                                     int *bufferlen){
   long retval;
   GWEN_TYPE_UINT32 tmplen;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
   const char *lg;
-  GWEN_TYPE_UINT32 controlCode;
 
   lg=LC_Reader_GetLogger(r);
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   assert(apdu);
@@ -321,30 +319,19 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
 
   tmplen=*bufferlen;
 
-  controlCode=
-      (apdu[0]<<24)+
-      (apdu[1]<<16)+
-      (apdu[2]<<8)+
-      apdu[3];
-
   if (toReader) {
-    assert(apdulen>7);
-    DBG_INFO(lg,
-             "Sending command to reader (ControlCode=%08x):", controlCode);
+    DBG_INFO(lg, "Sending command to reader:");
     GWEN_Text_LogString(apdu, apdulen, lg, GWEN_LoggerLevelInfo);
     retval=dct->controlFn(LC_Slot_GetSlotNum(slot),
-                          controlCode,
-                          apdu+4,
-                          apdulen-4,
+			  apdu,
+                          apdulen,
 			  buffer,
-			  *bufferlen,
-			  &tmplen);
+                          &tmplen);
     *bufferlen=tmplen;
     if (retval==0 && *bufferlen>3) {
       /* special treatment */
       int rlen;
 
-      DBG_INFO(lg, "Found response within response, extracting");
       GWEN_Text_LogString(buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
       rlen=buffer[2];
       if ((rlen+4)==*bufferlen) {
@@ -352,10 +339,11 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
 	unsigned char *pDst;
 
 	/* real response is burried within the complete response */
+	DBG_INFO(lg, "Found response within response, extracting");
 	pSrc=buffer+3;
 	pDst=buffer;
 	memmove(pDst, pSrc, rlen);
-        *bufferlen=rlen;
+	*bufferlen=rlen;
         tmplen=rlen;
       }
     }
@@ -395,7 +383,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
   if (tmplen<2 || tmplen>258) {
     DBG_ERROR(lg,
               "Bad response size (%d)", tmplen);
-    return DRIVER_IFD_ERROR_BAD_RESPONSE;
+    return DRIVER_IFDOLD_ERROR_BAD_RESPONSE;
   }
 
   if ((unsigned char)buffer[tmplen-2]!=0x90) {
@@ -412,15 +400,15 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
   LC_READER *r;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   r=LC_Slot_GetReader(sl);
@@ -452,7 +440,7 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
       LC_Slot_SetAtr(sl, abuf);
     }
 
-    proto=DriverIFD_ExtractProtocolInfo(atrBuffer, atrLen);
+    proto=DriverIFDOld_ExtractProtocolInfo(atrBuffer, atrLen);
     if (proto==0) {
       DBG_NOTICE(LC_Reader_GetLogger(r),
                  "Protocol is 0, assuming memorycard");
@@ -485,14 +473,14 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
 
@@ -522,14 +510,14 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFDOld_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
 
@@ -561,15 +549,15 @@ GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
   LC_SLOT *sl;
   LC_SLOT_LIST *slList;
   long retval;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
   int oks;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   DBG_DEBUG(LC_Reader_GetLogger(r),
@@ -616,19 +604,19 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
   if (!oks) {
     DBG_ERROR(LC_Reader_GetLogger(r),
               "All slots disabled, returning error");
-    return DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE;
+    return DRIVER_IFDOLD_ERROR_NO_SLOTS_AVAILABLE;
   }
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderInfo(LC_DRIVER *d, LC_READER *r,
                                       GWEN_BUFFER *buf) {
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   DBG_DEBUG(LC_Reader_GetLogger(r),
@@ -638,19 +626,19 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
   DBG_WARN(LC_Reader_GetLogger(r),
            "ReaderInfo() not yet supported for IFD drivers");
 
-  return DRIVER_IFD_ERROR_NOT_SUPPORTED;
+  return DRIVER_IFDOLD_ERROR_NOT_SUPPORTED;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r) {
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectReader(LC_DRIVER *d, LC_READER *r) {
   LC_SLOT *sl;
   LC_SLOT_LIST *slotList;
   unsigned int oks;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   assert(r);
@@ -681,21 +669,21 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r) {
   if (!oks) {
     DBG_ERROR(LC_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED;
+    return DRIVER_IFDOLD_ERROR_NO_SLOTS_CONNECTED;
   }
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LC_DRIVER *d, LC_READER *r) {
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectReader(LC_DRIVER *d, LC_READER *r) {
   LC_SLOT *sl;
   LC_SLOT_LIST *slotList;
   unsigned int oks;
-  DRIVER_IFD *dct;
+  DRIVER_IFDOLD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFDOLD, d);
   assert(dct);
 
   assert(r);
@@ -720,7 +708,7 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LC_DRIVER *d, LC_READER *r) {
   if (!oks) {
     DBG_ERROR(LC_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED;
+    return DRIVER_IFDOLD_ERROR_NO_SLOTS_DISCONNECTED;
   }
   return 0;
 }

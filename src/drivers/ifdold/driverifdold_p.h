@@ -11,10 +11,10 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_DRIVER_IFD_P_H
-#define CHIPCARD_DRIVER_IFD_P_H
+#ifndef CHIPCARD_DRIVER_IFDOLD_P_H
+#define CHIPCARD_DRIVER_IFDOLD_P_H
 
-#include "driverifd.h"
+#include "driverifdold.h"
 
 #include <gwenhywfar/libloader.h>
 #include <chipcard2-server/driver/driver.h>
@@ -24,11 +24,11 @@
 #define IFD_POWER_DOWN         501
 #define IFD_RESET              502
 
-#define DRIVER_IFD_ERROR_BAD_RESPONSE          0x80000001
-#define DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED    0x80000002
-#define DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED 0x80000003
-#define DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE    0x80000004
-#define DRIVER_IFD_ERROR_NOT_SUPPORTED         0x80000005
+#define DRIVER_IFDOLD_ERROR_BAD_RESPONSE          0x80000001
+#define DRIVER_IFDOLD_ERROR_NO_SLOTS_CONNECTED    0x80000002
+#define DRIVER_IFDOLD_ERROR_NO_SLOTS_DISCONNECTED 0x80000003
+#define DRIVER_IFDOLD_ERROR_NO_SLOTS_AVAILABLE    0x80000004
+#define DRIVER_IFDOLD_ERROR_NOT_SUPPORTED         0x80000005
 
 #define IFD_ERROR_NOT_SUPPORTED	606
 #define IFD_ERROR_POWER_ACTION  608
@@ -59,21 +59,11 @@ typedef long (*IFDTRANSMIT_PTR)(GWEN_TYPE_UINT32 lun,
                                 GWEN_TYPE_UINT32 *RxBufferLen,
                                 SCARD_IO_HEADER *RxPci);
 
-#ifdef IFD_OLD
 typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
                                const unsigned char *TxBuffer,
                                GWEN_TYPE_UINT32 TxBufferLen,
                                unsigned char *RxBuffer,
                                GWEN_TYPE_UINT32 *RxBufferLen);
-#else
-typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
-                               GWEN_TYPE_UINT32 controlCode,
-                               const unsigned char *TxBuffer,
-                               GWEN_TYPE_UINT32 TxBufferLen,
-                               unsigned char *RxBuffer,
-                               GWEN_TYPE_UINT32 RxBufferLen,
-                               GWEN_TYPE_UINT32 *pdwBytesReturned);
-#endif
 
 typedef long (*IFDPRESENCE_PTR)(GWEN_TYPE_UINT32 lun);
 
@@ -83,7 +73,7 @@ typedef long (*IFDGETCAPS_PTR)(GWEN_TYPE_UINT32 lun,
                                unsigned char *pvalue);
 
 
-struct DRIVER_IFD {
+struct DRIVER_IFDOLD {
   GWEN_LIBLOADER *libLoader;
 
   IFDCREATECHANNEL_PTR createChannelFn;
@@ -96,15 +86,13 @@ struct DRIVER_IFD {
 };
 
 
-#ifdef IFD_OLD
-#else
-void DriverIFD_freeData(void *bp, void *p);
+void DriverIFDOld_freeData(void *bp, void *p);
 
-int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
+int DriverIFDOld_ExtractProtocolInfo(unsigned char *atr,
                                   unsigned int atrlen);
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
                                     int toReader,
                                     LC_READER *r,
                                     LC_SLOT *slot,
@@ -112,25 +100,24 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
                                     unsigned int apdulen,
                                     unsigned char *buffer,
                                     int *bufferlen);
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectReader(LC_DRIVER *d, LC_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectReader(LC_DRIVER *d, LC_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderStatus(LC_DRIVER *d, LC_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderInfo(LC_DRIVER *d, LC_READER *r,
                                       GWEN_BUFFER *buf);
 
-const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
-#endif
+const char *DriverIFDOld_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 
 
-#endif /* CHIPCARD_DRIVER_IFD_P_H */
+#endif /* CHIPCARD_DRIVER_IFDOLD_P_H */
 
 
 

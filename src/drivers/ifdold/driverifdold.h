@@ -11,10 +11,10 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_DRIVER_IFD_H
-#define CHIPCARD_DRIVER_IFD_H
+#ifndef CHIPCARD_DRIVER_IFDOLD_H
+#define CHIPCARD_DRIVER_IFDOLD_H
 
-typedef struct DRIVER_IFD DRIVER_IFD;
+typedef struct DRIVER_IFDOLD DRIVER_IFDOLD;
 
 
 #include <gwenhywfar/libloader.h>
@@ -23,13 +23,7 @@ typedef struct DRIVER_IFD DRIVER_IFD;
 LC_DRIVER *DriverIFDOld_new(int argc, char **argv);
 int DriverIFDOld_Start(LC_DRIVER *d);
 
-LC_DRIVER *DriverIFD_new(int argc, char **argv);
-int DriverIFD_Start(LC_DRIVER *d);
-
-
-
-
-#endif /* CHIPCARD_DRIVER_IFD_H */
+#endif /* CHIPCARD_DRIVER_IFDOLD_H */
 
 
 

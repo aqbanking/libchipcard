@@ -151,6 +151,7 @@ LC_CLIENT_RESULT LC_Card_WriteBinary2(LC_CARD *card,
                                       const char *ptr,
                                       unsigned int size);
 
+
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_GetDriverVar(LC_CARD *card,
                                       const char *varName,

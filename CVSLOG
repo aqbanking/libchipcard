@@ -1,11 +1,1 @@
-- switched from SCM driver to open source CCID driver for SCM readers.
-  This has been tested with an SPR532 reader.
-  For Libchipcard2 to be able to use this driver you'll have to compile the
-  driver yourself:
-    ./configure --disable-pcsclite
-    make
-    make install
-- added support for old AND new IFD interface. This allows supporting old
-  and new IFD drivers. Libchipcard2 now supports both CCID and SCM drivers
-  for SCM SPR532. Whichever driver exists will be used.
-- added missing files
+- split off driver for old IFD interface (has now a folder of its own)
