@@ -25,6 +25,7 @@ struct LCM_READER {
   char *driverId;
   char *readerType;
   char *readerName;
+  char *readerInfo;
   char *shortDescr;
   int readerPort;
   GWEN_TYPE_UINT32 readerFlags;

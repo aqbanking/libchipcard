@@ -200,6 +200,9 @@ int LCM_Monitor_HandleReaderNotification(LCM_MONITOR *mm,
     s=GWEN_DB_GetCharValue(dbData, "readerName", 0, 0);
     assert(s);
     LCM_Reader_SetReaderName(mr, s);
+    s=GWEN_DB_GetCharValue(dbData, "readerInfo", 0, 0);
+    if (s)
+      LCM_Reader_SetReaderInfo(mr, s);
     LCM_Reader_SetReaderPort(mr,
                              GWEN_DB_GetIntValue(dbData, "readerPort", 0, 0));
     s=GWEN_DB_GetCharValue(dbData, "shortDescr", 0, 0);
@@ -224,6 +227,13 @@ int LCM_Monitor_HandleReaderNotification(LCM_MONITOR *mm,
     LCM_Reader_List_Add(mr, LCM_Server_GetReaders(ms));
     mm->lastChangeTime=time(0);
     DBG_INFO(0, "Reader added");
+  }
+  else {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbData, "readerInfo", 0, 0);
+    if (s)
+      LCM_Reader_SetReaderInfo(mr, s);
   }
 
   if (strcasecmp(ncode, LC_NOTIFY_CODE_READER_START)==0) {

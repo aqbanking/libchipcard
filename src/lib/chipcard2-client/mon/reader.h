@@ -54,6 +54,9 @@ void LCM_Reader_SetReaderType(LCM_READER *mr, const char *s);
 const char *LCM_Reader_GetReaderName(const LCM_READER *mr);
 void LCM_Reader_SetReaderName(LCM_READER *mr, const char *s);
 
+const char *LCM_Reader_GetReaderInfo(const LCM_READER *mr);
+void LCM_Reader_SetReaderInfo(LCM_READER *mr, const char *s);
+
 int LCM_Reader_GetReaderPort(const LCM_READER *mr);
 void LCM_Reader_SetReaderPort(LCM_READER *mr, int i);
 

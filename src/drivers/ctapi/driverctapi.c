@@ -24,6 +24,7 @@
 #include <chipcard2-server/chipcard2.h>
 
 #include <unistd.h>
+#include <ctype.h>
 
 
 GWEN_INHERIT(LC_DRIVER, DRIVER_CTAPI)
@@ -50,6 +51,7 @@ LC_DRIVER *DriverCTAPI_new(int argc, char **argv) {
   LC_Driver_SetDisconnectReaderFn(d, DriverCTAPI_DisconnectReader);
   LC_Driver_SetResetSlotFn(d, DriverCTAPI_ResetSlot);
   LC_Driver_SetReaderStatusFn(d, DriverCTAPI_ReaderStatus);
+  LC_Driver_SetReaderInfoFn(d, DriverCTAPI_ReaderInfo);
   LC_Driver_SetGetErrorTextFn(d, DriverCTAPI_GetErrorText);
 
   return d;
@@ -193,6 +195,9 @@ const char *DriverCTAPI_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
     break;
   case DRIVER_CTAPI_ERROR_NO_SLOTS_AVAILABLE:
     s="No slots available";
+    break;
+  case DRIVER_CTAPI_ERROR_GENERIC:
+    s="Generic error";
     break;
   default:
     s="Unknow error code";
@@ -488,6 +493,92 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
 
   return 0;
 }
+
+
+
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+                                        GWEN_BUFFER *buf) {
+  unsigned char apdu[]={0x20, 0x13, 0x00, 0x46, 0x00};
+  unsigned char responseBuffer[300];
+  int lr;
+  unsigned char *p;
+  int i;
+  DRIVER_CTAPI *dct;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  assert(dct);
+
+  DBG_NOTICE(LC_Reader_GetLogger(r),
+             "Requesting information about reader \"%08x\"",
+             LC_Reader_GetReaderId(r));
+
+  lr=sizeof(responseBuffer);
+  if (LC_Driver_SendAPDU(d, 1,
+                         0, apdu, sizeof(apdu), responseBuffer, &lr)){
+    DBG_ERROR(LC_Reader_GetLogger(r),
+              "Error sending APDU");
+    return DRIVER_CTAPI_ERROR_GENERIC;
+  }
+
+  if (lr<17) {
+    DBG_ERROR(LC_Reader_GetLogger(r),
+              "Too short response when requesting reader information");
+    GWEN_Text_LogString(responseBuffer, lr,
+                        LC_Reader_GetLogger(r),
+                        GWEN_LoggerLevelError);
+    return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
+  }
+
+  /* check whether a complete tag is returned */
+  if (responseBuffer[0]!=0x46 ||
+      responseBuffer[1]!=lr-4) {
+    DBG_WARN(LC_Reader_GetLogger(r),
+             "No/bad tag received when requesting reader information (%02x)",
+             responseBuffer[0]);
+    GWEN_Text_LogString(responseBuffer, lr,
+                        LC_Reader_GetLogger(r),
+                        GWEN_LoggerLevelError);
+    p=responseBuffer;
+  }
+  else
+    p=responseBuffer+2;
+
+  /* CTM (CT manufacturer) */
+  if (!isspace(*p)) {
+    GWEN_Buffer_AppendString(buf, "Manufacturer=");
+    for (i=0; i<5; i++) {
+      if (isspace(p[i]))
+        break;
+      GWEN_Buffer_AppendByte(buf, p[i]);
+    } /* for */
+  }
+
+  /* CTT (CT type) */
+  p+=5;
+  if (!isspace(*p)) {
+    GWEN_Buffer_AppendString(buf, ";Terminal=");
+    for (i=0; i<5; i++) {
+      if (isspace(p[i]))
+        break;
+      GWEN_Buffer_AppendByte(buf, p[i]);
+    } /* for */
+  }
+
+  /* CTSV (CT software version) */
+  p+=5;
+  if (!isspace(*p)) {
+    GWEN_Buffer_AppendString(buf, ";Version=");
+    for (i=0; i<5; i++) {
+      if (isspace(p[i]))
+        break;
+      GWEN_Buffer_AppendByte(buf, p[i]);
+    } /* for */
+  }
+
+  return 0;
+}
+
 
 
 

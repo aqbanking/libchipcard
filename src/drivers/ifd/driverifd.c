@@ -50,6 +50,7 @@ LC_DRIVER *DriverIFD_new(int argc, char **argv) {
   LC_Driver_SetDisconnectReaderFn(d, DriverIFD_DisconnectReader);
   LC_Driver_SetResetSlotFn(d, DriverIFD_ResetSlot);
   LC_Driver_SetReaderStatusFn(d, DriverIFD_ReaderStatus);
+  LC_Driver_SetReaderInfoFn(d, DriverIFD_ReaderInfo);
   LC_Driver_SetGetErrorTextFn(d, DriverIFD_GetErrorText);
 
   return d;
@@ -223,6 +224,9 @@ const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
     break;
   case DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE:
     s="No slot available";
+    break;
+  case DRIVER_IFD_ERROR_NOT_SUPPORTED:
+    s="Function not supported";
     break;
   default:
     s="Unknow error code";
@@ -554,6 +558,26 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
     return DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE;
   }
   return 0;
+}
+
+
+
+GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+                                      GWEN_BUFFER *buf) {
+  DRIVER_IFD *dct;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  assert(dct);
+
+  DBG_DEBUG(LC_Reader_GetLogger(r),
+            "Requesting information about reader \"%08x\"",
+            LC_Reader_GetReaderId(r));
+
+  DBG_WARN(LC_Reader_GetLogger(r),
+           "ReaderInfo() not yet supported for IFD drivers");
+
+  return DRIVER_IFD_ERROR_NOT_SUPPORTED;
 }
 
 

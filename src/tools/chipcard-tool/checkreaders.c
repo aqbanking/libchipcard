@@ -121,6 +121,9 @@ void _checkReaders_show(LCM_MONITOR *mon, int showAll) {
               LCM_Reader_GetReaderName(mr),
               ds,
               LCM_Reader_GetReaderPort(mr));
+      ds=LCM_Reader_GetReaderInfo(mr);
+      if (ds)
+        fprintf(stdout, ", %s", ds);
       rflags=LCM_Reader_GetReaderFlags(mr);
       if (rflags) {
         if (rflags & LC_CARD_READERFLAGS_KEYPAD)

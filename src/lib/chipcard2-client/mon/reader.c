@@ -50,6 +50,7 @@ void LCM_Reader_free(LCM_READER *mr){
     free(mr->readerId);
     free(mr->driverId);
     free(mr->readerName);
+    free(mr->readerInfo);
     free(mr->shortDescr);
     GWEN_Buffer_free(mr->logBuffer);
     GWEN_FREE_OBJECT(mr);
@@ -128,6 +129,23 @@ void LCM_Reader_SetReaderName(LCM_READER *mr, const char *s){
   free(mr->readerName);
   if (s) mr->readerName=strdup(s);
   else mr->readerName=0;
+  mr->lastChangeTime=time(0);
+}
+
+
+
+const char *LCM_Reader_GetReaderInfo(const LCM_READER *mr){
+  assert(mr);
+  return mr->readerInfo;
+}
+
+
+
+void LCM_Reader_SetReaderInfo(LCM_READER *mr, const char *s){
+  assert(mr);
+  free(mr->readerInfo);
+  if (s) mr->readerInfo=strdup(s);
+  else mr->readerInfo=0;
   mr->lastChangeTime=time(0);
 }
 

@@ -60,6 +60,10 @@ void LC_Reader_SetReaderType(LC_READER *r, const char *s);
 const char *LC_Reader_GetReaderName(const LC_READER *r);
 void LC_Reader_SetReaderName(LC_READER *r, const char *s);
 
+
+const char *LC_Reader_GetReaderInfo(const LC_READER *r);
+void LC_Reader_SetReaderInfo(LC_READER *r, const char *s);
+
 GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r);
 
 LC_READER_STATUS LC_Reader_GetStatus(const LC_READER *r);

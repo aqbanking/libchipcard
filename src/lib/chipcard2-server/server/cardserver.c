@@ -1019,9 +1019,20 @@ int LC_CardServer_CheckReader(LC_CARDSERVER *cs, LC_READER *r) {
           return -1;
         }
         else {
-          DBG_NOTICE(0, "Reader \"%s\" is up (%s)",
-                     LC_Reader_GetReaderName(r),
-                     e?e:"no result text");
+          const char *readerInfo;
+
+          readerInfo=GWEN_DB_GetCharValue(dbRsp, "body/info", 0, 0);
+          if (readerInfo) {
+            DBG_NOTICE(0, "Reader \"%s\" is up (%s), info: %s",
+                       LC_Reader_GetReaderName(r),
+                       e?e:"no result text", readerInfo);
+            LC_Reader_SetReaderInfo(r, readerInfo);
+          }
+          else {
+            DBG_NOTICE(0, "Reader \"%s\" is up (%s), no info",
+                       LC_Reader_GetReaderName(r),
+                       e?e:"no result text");
+          }
           LC_Reader_SetStatus(r, LC_ReaderStatusUp);
           LC_CardServer_SendReaderNotification(cs, 0,
                                                LC_NOTIFY_CODE_READER_UP,
@@ -7312,6 +7323,11 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
   if (flags & LC_READER_FLAGS_DISPLAY)
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_DEFAULT,
                          "readerflags", "DISPLAY");
+
+  s=LC_Reader_GetReaderInfo(r);
+  if (s)
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "readerInfo", s);
 
   if (info)
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,

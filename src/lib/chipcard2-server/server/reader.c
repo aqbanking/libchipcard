@@ -155,6 +155,7 @@ void LC_Reader_free(LC_READER *r){
     free(r->readerName);
     free(r->comType);
     free(r->shortDescr);
+    free(r->readerInfo);
     GWEN_FREE_OBJECT(r);
   }
 }
@@ -248,6 +249,25 @@ void LC_Reader_SetReaderName(LC_READER *r, const char *s){
   free(r->readerName);
   r->readerName=strdup(s);
 }
+
+
+
+const char *LC_Reader_GetReaderInfo(const LC_READER *r){
+  assert(r);
+  return r->readerInfo;
+}
+
+
+
+void LC_Reader_SetReaderInfo(LC_READER *r, const char *s){
+  assert(r);
+  free(r->readerInfo);
+  if (s)
+    r->readerInfo=strdup(s);
+  else
+    r->readerInfo=0;
+}
+
 
 
 

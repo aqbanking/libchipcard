@@ -31,6 +31,7 @@
 #define DRIVER_CTAPI_ERROR_NO_SLOTS_DISCONNECTED 3
 #define DRIVER_CTAPI_ERROR_NO_SLOTS_AVAILABLE    4
 #define DRIVER_CTAPI_ERROR_READER_INIT           5
+#define DRIVER_CTAPI_ERROR_GENERIC               6
 
 
 typedef char (*CTAPIINITPTR) (unsigned short Ctn, unsigned short pn);
@@ -79,6 +80,9 @@ GWEN_TYPE_UINT32  DriverCTAPI_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
 
 GWEN_TYPE_UINT32  DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r);
 const char *DriverCTAPI_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
+
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+                                        GWEN_BUFFER *buf);
 
 
 #endif /* CHIPCARD_DRIVER_CTAPI_P_H */

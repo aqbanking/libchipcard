@@ -60,6 +60,7 @@ struct LC_DRIVER {
   LC_DRIVER_RESETSLOT_FN resetSlotFn;
   LC_DRIVER_READERSTATUS_FN readerStatusFn;
   LC_DRIVER_GETERRORTEXT_FN getErrorTextFn;
+  LC_DRIVER_READERINFO_FN readerInfoFn;
 };
 
 

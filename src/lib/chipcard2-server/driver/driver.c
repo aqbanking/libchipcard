@@ -761,6 +761,16 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderStatus(LC_DRIVER *d, LC_READER *r){
 
 
 
+GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
+                                      LC_READER *r,
+                                      GWEN_BUFFER *buf){
+  assert(d);
+  assert(d->readerInfoFn);
+  return d->readerInfoFn(d, r, buf);
+}
+
+
+
 const char *LC_Driver_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err){
   assert(d);
   assert(d->getErrorTextFn);
@@ -818,6 +828,14 @@ void LC_Driver_SetReaderStatusFn(LC_DRIVER *d,
                                  LC_DRIVER_READERSTATUS_FN fn){
   assert(d);
   d->readerStatusFn=fn;
+}
+
+
+
+void LC_Driver_SetReaderInfoFn(LC_DRIVER *d,
+                               LC_DRIVER_READERINFO_FN fn){
+  assert(d);
+  d->readerInfoFn=fn;
 }
 
 
@@ -1082,6 +1100,22 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                            LC_Driver_GetErrorText(d, retval));
     }
     else {
+      GWEN_BUFFER *ibuf;
+      GWEN_TYPE_UINT32 rv;
+
+      ibuf=GWEN_Buffer_new(0, 256, 0, 1);
+      rv=LC_Driver_ReaderInfo(d, r, ibuf);
+      if (rv) {
+        DBG_WARN(0, "ReaderInfo not available (%s)",
+                 LC_Driver_GetErrorText(d, rv));
+      }
+      else {
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "info",
+                             GWEN_Buffer_GetStart(ibuf));
+      }
+      GWEN_Buffer_free(ibuf);
+
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "OK");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1157,6 +1191,24 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                            LC_Driver_GetErrorText(d, retval));
     }
     else {
+      GWEN_BUFFER *ibuf;
+      GWEN_TYPE_UINT32 rv;
+
+      ibuf=GWEN_Buffer_new(0, 256, 0, 1);
+      rv=LC_Driver_ReaderInfo(d, r, ibuf);
+      if (rv) {
+        DBG_WARN(0, "ReaderInfo not available (%s)",
+                 LC_Driver_GetErrorText(d, rv));
+      }
+      else {
+        DBG_NOTICE(LC_Reader_GetLogger(r), "ReaderInfo: %s",
+                   GWEN_Buffer_GetStart(ibuf));
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "info",
+                             GWEN_Buffer_GetStart(ibuf));
+      }
+      GWEN_Buffer_free(ibuf);
+
       DBG_NOTICE(LC_Reader_GetLogger(r), "Reader up and waiting");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "OK");

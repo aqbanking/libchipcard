@@ -57,6 +57,11 @@ typedef GWEN_TYPE_UINT32 (*LC_DRIVER_RESETSLOT_FN)(LC_DRIVER *d,
 typedef GWEN_TYPE_UINT32 (*LC_DRIVER_READERSTATUS_FN)(LC_DRIVER *d,
                                                       LC_READER *r);
 
+typedef GWEN_TYPE_UINT32 (*LC_DRIVER_READERINFO_FN)(LC_DRIVER *d,
+                                                    LC_READER *r,
+                                                    GWEN_BUFFER *buf);
+
+
 typedef const char* (*LC_DRIVER_GETERRORTEXT_FN)(LC_DRIVER *d,
                                                  GWEN_TYPE_UINT32 err);
 
@@ -138,6 +143,9 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderStatus(LC_DRIVER *d, LC_READER *r);
 
 const char *LC_Driver_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
 
+GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
+                                      LC_READER *r,
+                                      GWEN_BUFFER *buf);
 
 
 void LC_Driver_SetSendApduFn(LC_DRIVER *d, LC_DRIVER_SENDAPDU_FN fn);
@@ -151,6 +159,8 @@ void LC_Driver_SetDisconnectReaderFn(LC_DRIVER *d,
 void LC_Driver_SetResetSlotFn(LC_DRIVER *d, LC_DRIVER_RESETSLOT_FN fn);
 void LC_Driver_SetReaderStatusFn(LC_DRIVER *d,
                                  LC_DRIVER_READERSTATUS_FN fn);
+void LC_Driver_SetReaderInfoFn(LC_DRIVER *d,
+                               LC_DRIVER_READERINFO_FN fn);
 void LC_Driver_SetGetErrorTextFn(LC_DRIVER *d,
                                  LC_DRIVER_GETERRORTEXT_FN fn);
 
