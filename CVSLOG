@@ -1,9 +1,3 @@
-- added command "CardCheck" which checks whether a card has been removed
-- added command "CardReset" 
-- added an ATR database: When a card is inserted the server checks the list of
-  known cards for ATRs. If any of them matches the corresponding card type is 
-  added to the list of possible card types. "chipcard-tool atr" should now show
-  this.
-  However, this only lists the *possible* card types, e.g. there is no way to
-  tell an EC (Euro Cheque) card from a DDV card by ATR.
-- started working on a fake CTAPI
+- started working on a fake CTAPI: It is now able to tell MoneyPlex that a
+  Cyberjack reader is connected while in fact a completely other reader might
+  be present (even tested with a SCM 532 which only comes with an IFD driver).

@@ -22,6 +22,7 @@
 
 
 typedef struct CTAPI_CONTEXT CTAPI_CONTEXT;
+typedef struct CTAPI_APDU CTAPI_APDU;
 GWEN_LIST_FUNCTION_DEFS(CTAPI_CONTEXT, CTAPI_Context)
 
 
@@ -32,6 +33,8 @@ struct CTAPI_CONTEXT {
   LC_CARD *card;
   int isOpen;
 };
+
+
 
 CTAPI_CONTEXT *CTAPI_Context_new(unsigned short ctn,
 				 unsigned short port);
@@ -46,6 +49,64 @@ void CT__showError(LC_CARD *card,
 		   LC_CLIENT_RESULT res,
 		   const char *failedCommand);
 
+LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout);
+
+char CT__secureVerify(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response);
+
+
+char CT__requestICC(CTAPI_CONTEXT *ctx,
+                    unsigned char *dad,
+                    unsigned char *sad,
+                    CTAPI_APDU *apdu,
+                    unsigned short *lenr,
+                    unsigned char *response);
+
+
+
+char CT__getStatusICC(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response);
+
+
+
+char CT__ejectICC(CTAPI_CONTEXT *ctx,
+                  unsigned char *dad,
+                  unsigned char *sad,
+                  CTAPI_APDU *apdu,
+                  unsigned short *lenr,
+                  unsigned char *response);
+
+
+
+char CT__resetICC(CTAPI_CONTEXT *ctx,
+                  unsigned char *dad,
+                  unsigned char *sad,
+                  CTAPI_APDU *apdu,
+                  unsigned short *lenr,
+                  unsigned char *response);
+
+
+
+struct CTAPI_APDU {
+  int cla;
+  int ins;
+  int p1;
+  int p2;
+  int dlen;
+  unsigned char *data;
+  int rlen;
+};
+
+CTAPI_APDU *CTAPI_APDU_new(unsigned char *cmd, int len);
+void CTAPI_APDU_free(CTAPI_APDU *apdu);
 
 
 #endif

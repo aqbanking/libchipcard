@@ -18,6 +18,7 @@
 #include "ctapi_p.h"
 
 #include <gwenhywfar/debug.h>
+#include <gwenhywfar/text.h>
 
 
 GWEN_LIST_FUNCTIONS(CTAPI_CONTEXT, CTAPI_Context)
@@ -87,6 +88,54 @@ CTAPI_CONTEXT *CTAPI_Context_FindByPort(unsigned short port){
 
 
 
+CTAPI_APDU *CTAPI_APDU_new(unsigned char *cmd, int len){
+  CTAPI_APDU *apdu;
+
+  if (len<4) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "Invalid APDU, too few bytes");
+    return 0;
+  }
+  GWEN_NEW_OBJECT(CTAPI_APDU, apdu);
+  apdu->cla=*(cmd++); len--;
+  apdu->ins=*(cmd++); len--;
+  apdu->p1=*(cmd++); len--;
+  apdu->p2=*(cmd++); len--;
+  if (len) {
+    if (len>1) {
+      /* data follows */
+      apdu->dlen=*(cmd++); len--;
+      apdu->data=(unsigned char*)malloc(apdu->dlen);
+      cmd+=apdu->dlen;
+      len-=apdu->dlen;
+    }
+    if (len) {
+      apdu->rlen=*(cmd++); len--;
+      if (apdu->rlen==0)
+        apdu->rlen=-1;
+    }
+    if (len) {
+      /* still bytes ? */
+      DBG_ERROR(CT_API_LOGDOMAIN, "Invalid APDU, too many bytes");
+      CTAPI_APDU_free(apdu);
+      return 0;
+    }
+  }
+
+  return apdu;
+}
+
+
+
+void CTAPI_APDU_free(CTAPI_APDU *apdu){
+  if (apdu) {
+    free(apdu->data);
+    GWEN_FREE_OBJECT(apdu);
+  }
+}
+
+
+
+
 void CT__showError(LC_CARD *card,
                    LC_CLIENT_RESULT res,
                    const char *failedCommand) {
@@ -126,7 +175,7 @@ void CT__showError(LC_CARD *card,
   }
 
   DBG_ERROR(CT_API_LOGDOMAIN, "Error in \"%s\": %s\n", failedCommand, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (res==LC_Client_ResultCmdError && card) {
     int sw1;
     int sw2;
 
@@ -153,6 +202,8 @@ void CT__showError(LC_CARD *card,
 char CT_init(unsigned short ctn, unsigned short pn){
   CTAPI_CONTEXT *ctx;
 
+  GWEN_Logger_SetLevel(CT_API_LOGDOMAIN, GWEN_LoggerLevelInfo);
+
   /* first find by ctn */
   ctx=CTAPI_Context_FindByCtn(ctn);
   if (ctx) {
@@ -169,6 +220,7 @@ char CT_init(unsigned short ctn, unsigned short pn){
 
   if (lc_ctapi_initcount==0) {
     int rv;
+    LC_CLIENT_RESULT res;
 
     /* init libchipcard2-client */
     lc_ctapi_client=LC_Client_new("fake-ctapi", "1.0", 0);
@@ -178,6 +230,15 @@ char CT_init(unsigned short ctn, unsigned short pn){
       DBG_INFO(CT_API_LOGDOMAIN, "here");
       LC_Client_free(lc_ctapi_client);
       lc_ctapi_client=0;
+      return CT_API_RV_ERR_HOST;
+    }
+    res=LC_Client_StartWait(lc_ctapi_client, 0, 0);
+    if (res!=LC_Client_ResultOk) {
+      CT__showError(0, res, "StartWait");
+      DBG_INFO(CT_API_LOGDOMAIN, "here");
+      LC_Client_free(lc_ctapi_client);
+      lc_ctapi_client=0;
+      return CT_API_RV_ERR_HOST;
     }
     lc_ctapi_contexts=CTAPI_Context_List_new();
   }
@@ -198,7 +259,9 @@ char CT_data(unsigned short ctn,
              unsigned short *lenr,
              unsigned char *response){
   CTAPI_CONTEXT *ctx;
+  CTAPI_APDU *apdu;
   int handled=0;
+  char result;
 
   if (lc_ctapi_initcount<1) {
     DBG_ERROR(CT_API_LOGDOMAIN, "You MUST call CT_open before CT_data");
@@ -231,19 +294,37 @@ char CT_data(unsigned short ctn,
     return CT_API_RV_ERR_INVALID;
   }
 
+  DBG_ERROR(CT_API_LOGDOMAIN, "Sending APDU:");
+  GWEN_Text_LogString(command, lenc,
+                      CT_API_LOGDOMAIN, GWEN_LoggerLevelError);
+  apdu=CTAPI_APDU_new(command, lenc);
+  if (!apdu) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Invalid APDU");
+    return CT_API_RV_ERR_INVALID;
+  }
+  result=CT_API_RV_OK;
   if (command[0]==0x20) {
     /* terminal commands */
     switch(command[1]) {
     case 0x11: /* RESET ICC */
+      result=CT__resetICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     case 0x12: /* REQUEST ICC */
+      result=CT__requestICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     case 0x13: /* GET STATUS */
+      result=CT__getStatusICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     case 0x15: /* EJECT ICC */
+      result=CT__ejectICC(ctx, dad, sad, apdu, lenr, response);
+      handled=1;
+      break;
+    case 0x18: /* Perform Verification */
+      result=CT__secureVerify(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
     default:
@@ -253,9 +334,63 @@ char CT_data(unsigned short ctn,
 
   if (!handled) {
     /* normal APDU, send it to the card if we have any */
+    if (ctx->isOpen && ctx->card) {
+      LC_CLIENT_RESULT res;
+      GWEN_BUFFER *rbuf;
+      int i;
+
+      rbuf=GWEN_Buffer_new(0, 300, 0, 1);
+      res=LC_Card_ExecAPDU(ctx->card,
+                           command, lenc,
+                           rbuf,
+                           (*dad==CT)?LC_Client_CmdTargetReader:
+                           LC_Client_CmdTargetCard,
+                           60);
+      i=GWEN_Buffer_GetUsedBytes(rbuf);
+      if (i) {
+        if (i>*lenr) {
+          DBG_ERROR(CT_API_LOGDOMAIN, "Buffer too small");
+          result=CT_API_RV_ERR_MEMORY;
+        }
+        else {
+          DBG_NOTICE(CT_API_LOGDOMAIN, "Response received: ");
+          GWEN_Buffer_Dump(rbuf, stderr, 4);
+          *sad=*dad;
+          memmove(response, GWEN_Buffer_GetStart(rbuf), i);
+          *lenr=i;
+          result=CT_API_RV_OK;
+        }
+      }
+      else {
+        if (res!=LC_Client_ResultOk) {
+          CT__showError(ctx->card, res, "LC_Card_ExecAPDU");
+          result=CT_API_RV_ERR_HOST;
+        }
+        else {
+          /* nothing returned */
+          DBG_ERROR(CT_API_LOGDOMAIN, "Nothing returned");
+          result=CT_API_RV_ERR_HOST;
+        }
+      } /* if buffer filled */
+      GWEN_Buffer_free(rbuf);
+    } /* if open */
+    else {
+      *sad=CT_API_AD_CT;
+      response[0]=0x62; /* no card */
+      response[1]=0x00;
+      *lenr=2;
+      result=CT_API_RV_OK;
+    }
   }
 
-  return CT_API_RV_OK;
+  CTAPI_APDU_free(apdu);
+  DBG_ERROR(CT_API_LOGDOMAIN, "CTAPI-Result: %d", result);
+  if (result==CT_API_RV_OK) {
+    GWEN_Text_LogString(response, *lenr,
+                        CT_API_LOGDOMAIN, GWEN_LoggerLevelError);
+  }
+
+  return result;
 }
 
 
@@ -298,6 +433,404 @@ char CT_close(unsigned short ctn){
   return rv;
 }
 
+
+LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout) {
+
+  if (!ctx->card) {
+    /* no card, wait for one */
+    /* TODO: check for TLV 0x80 (waiting time in seconds) */
+    ctx->card=LC_Client_WaitForNextCard(lc_ctapi_client, timeout);
+    if (!ctx->card) {
+      DBG_ERROR(CT_API_LOGDOMAIN, "No card");
+      return LC_Client_ResultWait;
+    }
+  }
+
+  if (!ctx->isOpen) {
+    LC_CLIENT_RESULT res;
+    const GWEN_STRINGLIST *sl;
+
+    /* if we have an open card -> reset it */
+    res=LC_Card_Open(ctx->card);
+    if (res!=LC_Client_ResultOk) {
+      CT__showError(ctx->card, res, "CardOpen");
+      return res;
+    }
+    DBG_ERROR(CT_API_LOGDOMAIN, "Card is open");
+    ctx->isOpen=1;
+
+    sl=LC_Card_GetCardTypes(ctx->card);
+    assert(sl);
+    if (GWEN_StringList_HasString(sl, "rsacard")) {
+      res=LC_Card_SelectCardAndApp(ctx->card, "rsacard", "rsacard");
+      if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here");
+        return res;
+      }
+    }
+    else if (GWEN_StringList_HasString(sl, "ddv1")) {
+      res=LC_Card_SelectCardAndApp(ctx->card, "ddv1", "ddv");
+      if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here");
+        return res;
+      }
+    }
+    else if (GWEN_StringList_HasString(sl, "ddv0")) {
+      res=LC_Card_SelectCardAndApp(ctx->card, "ddv0", "ddv");
+      if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here");
+        return res;
+      }
+    }
+    else if (GWEN_StringList_HasString(sl, "geldkarte")) {
+      res=LC_Card_SelectCardAndApp(ctx->card, "geldkarte", "geldkarte");
+      if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here");
+        return res;
+      }
+      /* add other types here */
+    }
+    else {
+      if ((strcasecmp(LC_Card_GetCardType(ctx->card), "processor")==0) &&
+          GWEN_StringList_HasString(sl, "processorCard")) {
+        res=LC_Card_SelectCardAndApp(ctx->card, "ProcessorCard", "ProcessorCard");
+        if (res!=LC_Client_ResultOk) {
+          DBG_INFO(LC_LOGDOMAIN, "here");
+          return res;
+        }
+      }
+      else if ((strcasecmp(LC_Card_GetCardType(ctx->card), "memory")==0) &&
+               GWEN_StringList_HasString(sl, "MemoryCard")) {
+        res=LC_Card_SelectCardAndApp(ctx->card, "MemoryCard", "MemoryCard");
+        if (res!=LC_Client_ResultOk) {
+          DBG_INFO(LC_LOGDOMAIN, "here");
+          return res;
+        }
+      }
+    }
+  }
+  return LC_Client_ResultOk;
+}
+
+
+
+char CT__requestICC(CTAPI_CONTEXT *ctx,
+                    unsigned char *dad,
+                    unsigned char *sad,
+                    CTAPI_APDU *apdu,
+                    unsigned short *lenr,
+                    unsigned char *response){
+  GWEN_BUFFER *atr;
+  unsigned char *p;
+  unsigned char *t;
+  int i;
+  int j=0;
+  LC_CLIENT_RESULT res;
+
+  DBG_ERROR(CT_API_LOGDOMAIN, "REQUEST ICC");
+
+  if (apdu->p1!=0x01) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "Only one slot supported (%d)", apdu->p1);
+    return CT_API_RV_ERR_CT;
+  }
+
+  res=CT__openCard(ctx, 30);
+  if (res==LC_Client_ResultWait) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "No card");
+    *dad=*sad;
+    *sad=CT_API_AD_CT;
+    response[0]=0x62; /* no card */
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
+  else if (res!=LC_Client_ResultOk) {
+    return CT_API_RV_ERR_CT;
+  }
+
+  *sad=*dad;
+  p=response;
+
+  if ((apdu->p2 & 0xf)==0x00) {
+    /* no response */
+  }
+  else if ((apdu->p2 & 0xf)==0x01) {
+    /* return full ATR */
+    atr=LC_Card_GetAtr(ctx->card);
+    if (atr) {
+      i=apdu->rlen;
+      if (i==-1)
+        i=GWEN_Buffer_GetUsedBytes(atr);
+      if (i>GWEN_Buffer_GetUsedBytes(atr))
+        i=GWEN_Buffer_GetUsedBytes(atr);
+      if (i>(*lenr)-2) {
+        return CT_API_RV_ERR_INVALID;
+      }
+      t=(unsigned char*)GWEN_Buffer_GetStart(atr);
+      while(i--) {
+        *(p++)=*(t++);
+        j++;
+      }
+    }
+  }
+  else if ((apdu->p2 & 0xf)==0x02) {
+    /* only return historic bytes */
+    /* TODO */
+  }
+  *(p++)=0x90;
+  j++;
+  if (strcasecmp(LC_Card_GetCardType(ctx->card), "processor")==0)
+    *(p++)=0x01;
+  else
+    *(p++)=0x00;
+  j++;
+  *lenr=j;
+  return CT_API_RV_OK;
+}
+
+
+
+char CT__getStatusICC(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response){
+  LC_CLIENT_RESULT res;
+
+  if (apdu->p1!=0x00) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "Bad P1 (%d)", apdu->p1);
+    return CT_API_RV_ERR_INVALID;
+  }
+
+  res=CT__openCard(ctx, 5);
+  if (res==LC_Client_ResultWait) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "No card");
+    *dad=*sad;
+    *sad=CT_API_AD_CT;
+    response[0]=0x62; /* no card */
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
+  else if (res==LC_Client_ResultOk) {
+    return CT_API_RV_ERR_CT;
+  }
+
+  *sad=*dad;
+
+  switch(apdu->p2) {
+  case 0x80:
+    /* reader status */
+    if (*lenr<5) {
+      DBG_ERROR(CT_API_LOGDOMAIN, "Response buffer too small");
+      return CT_API_RV_ERR_MEMORY;
+    }
+
+    response[0]=0x80;
+    response[1]=0x01;
+    response[2]=0x00;
+    response[3]=0x90;
+    response[4]=0x00;
+    *lenr=5;
+
+    if (ctx->card) {
+      response[2]|=1;
+      if (ctx->isOpen) {
+        response[2]|=0x4;
+      }
+    }
+    return CT_API_RV_OK;
+
+  case 0x46:
+    /* manufacturer info */
+    /* TODO */
+    break;
+
+  default:
+    break;
+  }
+
+  return CT_API_RV_ERR_INVALID;
+}
+
+
+
+char CT__ejectICC(CTAPI_CONTEXT *ctx,
+                  unsigned char *dad,
+                  unsigned char *sad,
+                  CTAPI_APDU *apdu,
+                  unsigned short *lenr,
+                  unsigned char *response){
+
+  DBG_ERROR(CT_API_LOGDOMAIN, "EJECT ICC");
+
+  if (ctx->isOpen && ctx->card) {
+    LC_CLIENT_RESULT res;
+
+    res=LC_Card_Close(ctx->card);
+    if (res!=LC_Client_ResultOk) {
+      CT__showError(ctx->card, res, "CardClose");
+      LC_Card_free(ctx->card);
+      ctx->card=0;
+      ctx->isOpen=0;
+      return CT_API_RV_ERR_CT;
+    }
+    LC_Card_free(ctx->card);
+    ctx->card=0;
+    ctx->isOpen=0;
+  }
+  *sad=CT_API_AD_CT;
+  response[0]=0x90;
+  response[1]=0x00;
+  *lenr=2;
+  return CT_API_RV_OK;
+}
+
+
+
+char CT__resetICC(CTAPI_CONTEXT *ctx,
+                  unsigned char *dad,
+                  unsigned char *sad,
+                  CTAPI_APDU *apdu,
+                  unsigned short *lenr,
+                  unsigned char *response){
+  LC_CLIENT_RESULT res;
+  unsigned char *p;
+  int j=0;
+
+  DBG_ERROR(CT_API_LOGDOMAIN, "RESET ICC");
+
+  if (apdu->p1==0x00) {
+    /* reset CT */
+    *sad=CT_API_AD_CT;
+    response[0]=0x90;
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
+  else if (apdu->p1!=0x01) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "Only one slot supported (%d)", apdu->p1);
+    return CT_API_RV_ERR_CT;
+  }
+
+  res=CT__openCard(ctx, 30);
+  if (res==LC_Client_ResultWait) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "No card");
+    *dad=*sad;
+    *sad=CT_API_AD_CT;
+    response[0]=0x62; /* no card */
+    response[1]=0x00;
+    *lenr=2;
+    return CT_API_RV_OK;
+  }
+  else if (res!=LC_Client_ResultOk) {
+    return CT_API_RV_ERR_CT;
+  }
+
+  p=response;
+
+  if (apdu->p2==0x00) {
+    /* no response */
+  }
+  else if (apdu->p2==0x01) {
+    GWEN_BUFFER *atr;
+    unsigned char *t;
+    int i;
+
+    /* return full ATR */
+    atr=LC_Card_GetAtr(ctx->card);
+    if (atr) {
+      i=apdu->rlen;
+      if (i==-1)
+        i=GWEN_Buffer_GetUsedBytes(atr);
+      if (i>GWEN_Buffer_GetUsedBytes(atr))
+        i=GWEN_Buffer_GetUsedBytes(atr);
+      if (i>(*lenr)-2) {
+        return CT_API_RV_ERR_INVALID;
+      }
+      t=(unsigned char*)GWEN_Buffer_GetStart(atr);
+      while(i--) {
+        *(p++)=*(t++);
+        j++;
+      }
+    }
+  }
+  else if (apdu->p2==0x02) {
+    /* only return historic bytes */
+    /* TODO */
+  }
+  *p=0x90;
+  j++;
+  if (strcasecmp(LC_Card_GetCardType(ctx->card), "processor")==0)
+    *p=0x01;
+  else
+    *p=0x00;
+  j++;
+  *lenr=j;
+
+  *dad=*sad;
+  *sad=CT_API_AD_CT;
+  return CT_API_RV_OK;
+}
+
+
+
+char CT__secureVerify(CTAPI_CONTEXT *ctx,
+                      unsigned char *dad,
+                      unsigned char *sad,
+                      CTAPI_APDU *apdu,
+                      unsigned short *lenr,
+                      unsigned char *response){
+  LC_CLIENT_RESULT res;
+  unsigned char *p;
+  const unsigned char *t;
+  unsigned int bs;
+  int i;
+  int j=0;
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+
+  DBG_ERROR(CT_API_LOGDOMAIN, "SecureVerify");
+
+  dbReq=GWEN_DB_Group_new("SecureVerifyPin");
+  dbResp=GWEN_DB_Group_new("response");
+  res=LC_Card_ExecCommand(ctx->card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(lc_ctapi_client));
+  GWEN_DB_Group_free(dbReq);
+
+  p=response;
+  t=GWEN_DB_GetBinValue(dbResp,
+                        "command/response/data",
+                        0,
+                        0, 0,
+                        &bs);
+  if (t && bs) {
+    i=apdu->rlen;
+    if (i==-1)
+      i=bs;
+    if (i>bs)
+      i=bs;
+    if (i>(*lenr)-2) {
+      GWEN_DB_Group_free(dbResp);
+      DBG_ERROR(CT_API_LOGDOMAIN, "Buffer too small");
+      return CT_API_RV_ERR_INVALID;
+    }
+    while(i--) {
+      *(p++)=*(t++);
+      j++;
+    }
+  }
+  GWEN_DB_Group_free(dbResp);
+  *dad=*sad;
+  *sad=CT_API_AD_CT;
+  *(p++)=0x90;
+  j++;
+  *(p++)=0x00;
+  j++;
+  *lenr=j;
+  return CT_API_RV_OK;
+}
 
 
 
