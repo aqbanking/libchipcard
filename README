@@ -127,6 +127,12 @@ This file contains a description of the chipcard2 servers to connect to.
 
 
 
+6. Using Libchipcard2 in your own Projects
+==========================================
+
+Please have a look at the file in tutorials/. They pretty much explain how
+Libchipcard2 can be used.
+
 
 Martin Preuss, Hamburg/Germany, 2005/01/26
 

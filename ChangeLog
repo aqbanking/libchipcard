@@ -3,6 +3,9 @@
 ------------------------------------------------
 - "Happy Birthday" to my sister ;-)
 - applied patch by Thomas Viehmann for LibSysFS support. Thanks Thomas !
+- added tutorial3 and an example card type
+- added function LC_Card_SelectApp()
+- fixed some XML files for Cyberjack readers
 
 
 2005/01/25: Martin Preuss<martin@libchipcard.de>

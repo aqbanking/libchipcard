@@ -169,12 +169,9 @@
       <!-- Select Master File -->
       <command name="SelectMF" driver="cyberjack_ctapi">
       	<send>
-	  			<APDU lr="255" >
-  	    		<ELEM type="dword">0x00a40000</ELEM>
+	  			<APDU >
+  	    		<ELEM type="dword">0x00a4000c</ELEM>
 	  			</APDU>
-	  			<DATA>
-	    			<ELEM type="word">0x3f00</ELEM>
-	  			</DATA>
 				</send>
 				<results>
       		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>

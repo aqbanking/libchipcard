@@ -112,12 +112,14 @@ typedef enum {
 #define LC_NOTIFY_CODE_DRIVER_UP        "up"
 #define LC_NOTIFY_CODE_DRIVER_DOWN      "down"
 #define LC_NOTIFY_CODE_DRIVER_ERROR     "error"
+#define LC_NOTIFY_CODE_DRIVER_REMOVED   "removed"
 
 #define LC_NOTIFY_TYPE_READER           "reader"
 #define LC_NOTIFY_CODE_READER_START     "start"
 #define LC_NOTIFY_CODE_READER_UP        "up"
 #define LC_NOTIFY_CODE_READER_DOWN      "down"
 #define LC_NOTIFY_CODE_READER_ERROR     "error"
+#define LC_NOTIFY_CODE_READER_REMOVED   "removed"
 
 #define LC_NOTIFY_TYPE_SERVICE          "service"
 #define LC_NOTIFY_CODE_SERVICE_START    "start"
@@ -388,6 +390,9 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
 
 
 /*@}*/
+
+
+
 
 #ifdef __cplusplus
 }

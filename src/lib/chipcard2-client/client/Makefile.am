@@ -10,6 +10,7 @@ noinst_LTLIBRARIES=libclient.la
 noinst_HEADERS=\
   card_l.h \
   card_p.h \
+  client_l.h \
   client_p.h \
   msgengine_l.h \
   msgengine_p.h \

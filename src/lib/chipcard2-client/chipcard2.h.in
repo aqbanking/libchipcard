@@ -11,17 +11,17 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_CLIENT_CHIPCARD2_H
-#define CHIPCARD_CLIENT_CHIPCARD2_H
+#ifndef CHIPCARD_CHIPCARD2_H
+#define CHIPCARD_CHIPCARD2_H
 
 #ifdef __declspec
 # if BUILDING_LIBCHIPCARD2_DLL
-#  define LC_CLIENT_API __declspec (dllexport)
+#  define CHIPCARD2_API __declspec (dllexport)
 # else /* BUILDING_LIBCHIPCARD2_DLL */
-#  define LC_CLIENT_API __declspec (dllimport)
+#  define CHIPCARD2_API __declspec (dllimport)
 # endif /* Not BUILDING_LIBCHIPCARD2_DLL */
 #else
-# define LC_CLIENT_API
+# define CHIPCARD2_API
 #endif
 
 
@@ -41,7 +41,7 @@
 #define LC_ERROR_SETUP              0x00000006
 #define LC_ERROR_NO_DATA            0x00000007
 
-#define LC_LOGDOMAIN "ccclient"
+#define LC_LOGDOMAIN "chipcard2"
 
 
-#endif /* CHIPCARD_CLIENT_CHIPCARD2_H */
+#endif /* CHIPCARD_CHIPCARD2_H */

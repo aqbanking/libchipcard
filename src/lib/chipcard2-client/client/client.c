@@ -867,6 +867,24 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl, const char *fname){
 
 
 
+int LC_Client_SelectApp(LC_CLIENT *cl,
+                        LC_CARD *cd,
+                        const char *appName){
+  LC_CARDCONTEXT *ctx;
+
+  ctx=LC_CardMgr_SelectApp(cl->cardMgr, appName);
+  if (!ctx) {
+    DBG_ERROR(LC_LOGDOMAIN, "Unknown application \"%s\"", appName);
+    return -1;
+  }
+  LC_Card_SetContext(cd, ctx);
+
+  return 0;
+}
+
+
+
+
 LC_REQUEST *LC_Client_PeekNextRequest(LC_CLIENT *cl,
                                       GWEN_TYPE_UINT32 serverId){
   LC_REQUEST *rq;

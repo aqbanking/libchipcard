@@ -28,13 +28,14 @@
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/ipc.h>
 #include <gwenhywfar/nettransportssl.h>
-#include <chipcard2-client/client/client.h>
 #include <chipcard2-client/client/notifications.h>
 #include <chipcard2-client/client/lowlevel/server.h>
 #include <chipcard2-client/client/lowlevel/request.h>
+#include "client_l.h"
 #include "card_l.h"
 #include "notifications_l.h"
 #include "apps/cardmgr_l.h"
+
 
 struct LC_CLIENT {
   GWEN_INHERIT_ELEMENT(LC_CLIENT)

@@ -17,6 +17,7 @@
 
 
 #include "card_p.h"
+#include "client_l.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
@@ -401,6 +402,22 @@ LC_CLIENT_RESULT LC_Card_SelectCardAndApp(LC_CARD *card,
 
   return LC_Client_ResultOk;
 }
+
+
+
+int LC_Card_SelectApp(LC_CARD *card, const char *appName){
+  int rv;
+
+  assert(card);
+  assert(appName);
+  rv=LC_Client_SelectApp(card->client, card, appName);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return rv;
+  }
+  return 0;
+}
+
 
 
 LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,

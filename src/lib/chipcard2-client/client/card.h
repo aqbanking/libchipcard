@@ -66,6 +66,8 @@ void LC_Card_SetCloseFn(LC_CARD *card, LC_CARD_CLOSE_FN fn);
 LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
 LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
 
+int LC_Card_SelectApp(LC_CARD *card, const char *appName);
+
 LC_CLIENT_RESULT LC_Card_SelectCardAndApp(LC_CARD *card,
                                           const char *cardName,
                                           const char *appName);

@@ -1,0 +1,38 @@
+<!-- 
+  This file only contains an description for an ExampleCard.
+ -->
+ 
+<apps>
+  <app name="ExampleCard" >
+  
+    <formats>
+  
+      <format name="ExampleData">
+        <ELEM name="SomeText" type="ascii" />
+      </format>
+    </formats>
+  
+  
+    <files>
+  
+      <df name="DF_BOERSE" sid="0xa200" >
+        <files>
+  
+          <ef name="EF_BETRAG" sid="0x0104"
+              type="record" mode="linear" 
+              size="0" minnum="1" maxnum="1">
+            <record>
+              <ELEM name="loaded" type="bcd" size="3" />
+              <ELEM name="maxload" type="bcd" size="3" />
+              <ELEM name="maxtrans" type="bcd" size="3" />
+            </record>
+          </ef>
+  
+        </files>
+      </df>
+        
+    </files>
+
+  </app>
+</apps>
+

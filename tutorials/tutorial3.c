@@ -10,14 +10,14 @@
  *          Please see toplevel file COPYING for license details           *
  ***************************************************************************/
 
-/** @file tutorial2.c
- * @brief Extended Usage of Libchipcard2
+/** @file tutorial3.c
+ * @brief Extending Basic Cards in Libchipcard2
  */
 
 
-/** @defgroup MOD_TUTORIAL2 Tutorial 2 (Extended Usage of Libchipcard2)
+/** @defgroup MOD_TUTORIAL3 Tutorial 3 (Extending Basic Cards in Libchipcard2)
  * @ingroup MOD_TUTORIALS
- * @brief Extended usage of Libchipcard2
+ * @brief Extending Basic Cards in Libchipcard2
  *
  */
 /*@{*/
@@ -30,21 +30,32 @@
 
 #include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
-#include <chipcard2-client/cards/kvkcard.h>
+#include "examplecard.h"
 
 
 /*
- * While tutorial1 only works with base classes we are now to understand how
- * more complex card classes can be used.
- * This tutorial waits for a German medical card to be inserted, reads the
- * information stored on the card and prints it to the standard output
- * channel.
+ * While tutorial1 only works with base classes and tutorial2 only *uses*
+ * derived cards we are now to understand how more complex card classes can be
+ * created.
  *
- * The only parts which differ a marked below by lines of equation marks,
- * the rest is pretty much the same as in the other tutorials.
+ * Now we define a card ourselves. The new card type is called "ExampleCard"
+ * and it is a processor card. Its definition can be found in the files
+ * examplecard.h, examplecard_p.h, examplecard.c and examplecard.xml.
+ *
+ * The file "examplecard.xml" defines which "files" (called "DF" and "EF" on
+ * chip cards) exist on such a card. It may also define data formats used
+ * by the card which can be used with the functions LC_Card_ParseData() and
+ * LC_Card_CreateData(). This file is not needed for card types which are
+ * derived from other types (via an _ExtendCard() function) and which do not
+ * have additional files/formats.
+ * But for this tutorial we show a complete setup.
+ *
+ * Please note that you have to do "make install" before executing this
+ * tutorial because the XML file needs to be installed in Libchipcard2's
+ * data folder to be found.
  *
  * Usage:
- *   tutorial2
+ *   tutorial3
  */
 
 
@@ -112,9 +123,9 @@ int main(int argc, char **argv) {
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   int rv;
-  GWEN_DB_NODE *dbData;
+  int i;
 
-  cl=LC_Client_new("tutorial2", "1.0", 0);
+  cl=LC_Client_new("tutorial3", "1.0", 0);
   if (LC_Client_ReadConfigFile(cl, 0)){
     fprintf(stderr, "ERROR: Error reading configuration.\n");
     LC_Client_free(cl);
@@ -128,7 +139,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  fprintf(stderr, "Please insert a German medical card.\n");
+  fprintf(stderr, "Please insert an EC card or a GeldKarte.\n");
   card=LC_Client_WaitForNextCard(cl, 30);
   if (!card) {
     fprintf(stderr, "ERROR: No card found.\n");
@@ -147,7 +158,7 @@ int main(int argc, char **argv) {
   /* ======================================================================
    * Until now we only handled basic card functions as the other tutorials
    * did.
-   * The inserted card is supposed to be a German medical card, so we need
+   * The inserted card is supposed to be an EC card or a GeldKarte, so we need
    * to tell Libchipcard2 that we want to use it as such. This makes sure that
    * the correct card commands for the reader/card combination is used
    * internally.
@@ -155,34 +166,23 @@ int main(int argc, char **argv) {
    * card type to be called internally upon LC_Card_Open() and
    * LC_Card_Close(), so we need to call the _ExtendCard() function before
    * the function LC_Card_Open() !
-   * The specific open() function for a German medical card for example reads
-   * the known fields from the card.
-   * This function seldomly fails, however, you should always be prepared
-   * that it could.
    *
-   * If you later want to use the card as a memory card you can just
-   * unextend the card (LC_KVKCard_UnextendCard()) and then extend it as
-   * a memory card, like in:
-   *    LC_KVKCard_UnextentCard(card);
-   *    LC_MemoryCard_ExtendCard(card);
    * Please always remember to unextend an extended card before extending it
    * as a different type.
-   *
-   * By the way: Since a German medical card basically is a memory card you
-   * would in this case not need to unextend it, since internally the function
-   * LC_KVKCard_ExtendCard() also extends it as such.
    *
    * This is a fine example of the heritage model used in Libchipcard2:
    * You could also create your own card type by extending an existing one.
    */
-  rv=LC_KVKCard_ExtendCard(card);
+  rv=ExampleCard_ExtendCard(card);
   if (rv) {
-    fprintf(stderr, "Could not extend card as German medical card\n");
+    fprintf(stderr, "Could not extend card as ExampleCard\n");
     return 2;
   }
 
   /* open card */
   fprintf(stderr, "INFO: Opening card.\n");
+
+  /* This now internally calls the ExampleCard_Open() function */
   res=LC_Card_Open(card);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr,
@@ -191,30 +191,18 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  /* Since the card has been extended as a German medical card we can now
+  /* Since the card has been extended as an ExampleCard we can now
    * use the functions of that module.
    * In this case we retrieve the user information stored on the card.
-   * Please note that there is no data if the card is corrupted (e.g. a bad
-   * checksum).
    */
-  dbData=LC_KVKCard_GetCardData(card);
-  if (!dbData) {
-    fprintf(stderr, "ERROR: No card data available.\n");
-    LC_Card_Close(card);
-    return 2;
-  }
-
-  /* The data returned is stored in a GWEN_DB which we now present to the
-   * user (see the API documentation in Gwenhywfar for a description of
-   * a GWEN_DB, search for GWEN_DB_NODE).
-   */
-  fprintf(stderr, "INFO: I got this card:\n");
-  GWEN_DB_Dump(dbData, stderr, 2);
+  i=ExampleCard_GetExampleData(card);
+  fprintf(stderr, "Example Data: %d\n", i);
 
   /* ====================================================================== */
 
   /* close card */
   fprintf(stderr, "INFO: Closing card.\n");
+  /* This now internally calls the ExampleCard_Close() function */
   res=LC_Card_Close(card);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "CardClose");
