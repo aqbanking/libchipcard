@@ -130,6 +130,10 @@ LC_SERVICE_LOGLEVEL
 Loglevel to be used for services.
 
 
+LC_CTAPI_LOGLEVEL
+Loglevel to be used by the fake CTAPI.
+
+
 
 6. Client Setup
 ===============

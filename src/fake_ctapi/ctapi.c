@@ -19,6 +19,7 @@
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
+#include <stdlib.h>
 
 
 GWEN_LIST_FUNCTIONS(CTAPI_CONTEXT, CTAPI_Context)
@@ -211,8 +212,6 @@ void CT__showError(LC_CARD *card,
 char CT_init(unsigned short ctn, unsigned short pn){
   CTAPI_CONTEXT *ctx;
 
-  GWEN_Logger_SetLevel(CT_API_LOGDOMAIN, GWEN_LoggerLevelInfo);
-
   /* first find by ctn */
   ctx=CTAPI_Context_FindByCtn(ctn);
   if (ctx) {
@@ -230,6 +229,15 @@ char CT_init(unsigned short ctn, unsigned short pn){
   if (lc_ctapi_initcount==0) {
     int rv;
     LC_CLIENT_RESULT res;
+    const char *s;
+    GWEN_LOGGER_LEVEL lv;
+
+    /* get and set log level */
+    s=getenv("LC_CTAPI_LOGLEVEL");
+    if (!s)
+      s="critical";
+    lv=GWEN_Logger_Name2Level(s);
+    GWEN_Logger_SetLevel(CT_API_LOGDOMAIN, lv);
 
     /* init libchipcard2-client */
     lc_ctapi_client=LC_Client_new("fake-ctapi", "1.0", 0);
@@ -832,8 +840,23 @@ char CT__secureVerify(CTAPI_CONTEXT *ctx,
     return CT_API_RV_OK;
   }
 
+  if (apdu->dlen<8) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Bad APDU: Too few data bytes in APDU (only %d bytes)",
+              apdu->dlen);
+    return CT_API_RV_ERR_INVALID;
+  }
+  if (apdu->data[0]!=0x52) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Bad APDU: Should begin with a 0x52 tag (is %02x)",
+              apdu->data[0]);
+    return CT_API_RV_ERR_INVALID;
+  }
+  i=apdu->data[7];
+
   dbReq=GWEN_DB_Group_new("SecureVerifyPin");
   dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS, "pid", i);
   res=LC_Card_ExecCommand(ctx->card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(lc_ctapi_client));
   GWEN_DB_Group_free(dbReq);
@@ -932,8 +955,23 @@ char CT__secureModify(CTAPI_CONTEXT *ctx,
     return CT_API_RV_OK;
   }
 
+  if (apdu->dlen<8) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Bad APDU: Too few data bytes in APDU (only %d bytes)",
+              apdu->dlen);
+    return CT_API_RV_ERR_INVALID;
+  }
+  if (apdu->data[0]!=0x52) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Bad APDU: Should begin with a 0x52 tag (is %02x)",
+              apdu->data[0]);
+    return CT_API_RV_ERR_INVALID;
+  }
+  i=apdu->data[7];
+
   dbReq=GWEN_DB_Group_new("SecureModifyPin");
   dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS, "pid", i);
   res=LC_Card_ExecCommand(ctx->card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(lc_ctapi_client));
   GWEN_DB_Group_free(dbReq);

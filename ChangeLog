@@ -1,4 +1,12 @@
 
+2005/02/13: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- work on fake CTAPI:
+  - added environment variable "LC_CTAPI_LOGLEVEL"
+  - made it less verbous per default
+  - fixed usage of PIN id for SecureVerifyPin/ModifyPin commands
+
+
 2005/02/12: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - prepared server/driver code to let a driver send a list of supported 
