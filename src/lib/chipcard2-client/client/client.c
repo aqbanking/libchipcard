@@ -58,7 +58,7 @@ LC_CLIENT *LC_Client_new(const char *programName,
 
   err=GWEN_Init();
   if (!GWEN_Error_IsOk(err)) {
-    DBG_ERROR_ERR(LC_LOGDOMAIN);
+    DBG_ERROR_ERR(LC_LOGDOMAIN, err);
     abort();
   }
 
@@ -143,7 +143,7 @@ void LC_Client_free(LC_CLIENT *cl) {
 
     err=GWEN_Fini();
     if (!GWEN_Error_IsOk(err)) {
-      DBG_ERROR_ERR(LC_LOGDOMAIN);
+      DBG_ERROR_ERR(LC_LOGDOMAIN, err);
     }
   }
 }

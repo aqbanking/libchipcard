@@ -54,7 +54,18 @@ if test "$enable_opensc" != "no"; then
   else
       AC_MSG_RESULT($opensc_dir)
       AC_MSG_CHECKING(for opensc includes)
+      
       opensc_includes="`$opensc_dir/bin/opensc-config --cflags`"
+      #oix="`$opensc_dir/bin/opensc-config --cflags`"
+      #case $oix in
+      #  */opensc)
+      #    oix="${oix}X"
+      #    opensc_includes="`echo $oix | sed -e s:/openscX::`"
+      #    ;;
+      #  *)
+      #    opensc_includes="$oix"
+      #    ;;
+      #esac
       AC_MSG_RESULT($opensc_includes)
       AC_MSG_CHECKING(for opensc libs)
       opensc_libs="`$opensc_dir/bin/opensc-config --libs`"
