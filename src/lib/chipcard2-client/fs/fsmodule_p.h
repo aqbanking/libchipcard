@@ -44,7 +44,6 @@ struct LC_FS_MODULE {
   GWEN_TYPE_UINT32 flags;
   GWEN_TYPE_UINT32 activeNodes;
   GWEN_TYPE_UINT32 usage;
-
 };
 
 

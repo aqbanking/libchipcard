@@ -146,20 +146,22 @@ void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f){
 
 
 
-int LC_FSModule_Mount(LC_FS_MODULE *fs){
+int LC_FSModule_Mount(LC_FS_MODULE *fs,
+                      GWEN_TYPE_UINT32 flags,
+                      LC_FS_NODE **nPtr){
   assert(fs);
   if (!fs->mountFn)
     return LC_FS_ErrorNotSupported;
-  return fs->mountFn(fs);
+  return fs->mountFn(fs, flags, nPtr);
 }
 
 
 
-int LC_FSModule_Unmount(LC_FS_MODULE *fs){
+int LC_FSModule_Unmount(LC_FS_MODULE *fs, LC_FS_NODE *node){
   assert(fs);
   if (!fs->unmountFn)
     return LC_FS_ErrorNotSupported;
-  return fs->unmountFn(fs);
+  return fs->unmountFn(fs, node);
 }
 
 
@@ -277,10 +279,6 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
     return LC_FS_ErrorNotSupported;
   return fs->lookupFn(fs, node, name, nPtr);
 }
-
-
-
-
 
 
 

@@ -173,7 +173,6 @@ LC_FS_MODULE *LC_FSMemModule_new(){
   LC_FSModule_SetWriteFileFileFn(mod, LC_FSMemModule_WriteFile);
   LC_FSModule_SetLookupFn(mod, LC_FSMemModule_Lookup);
 
-  modm->root=LC_FSMemNode_new(mod);
   return mod;
 }
 
@@ -183,7 +182,6 @@ void LC_FSMemModule_FreeData(void *bp, void *p){
   LC_FSMEM_MODULE *modm;
 
   modm=(LC_FSMEM_MODULE*)p;
-  LC_FSNode_free(modm->root);
   GWEN_FREE_OBJECT(modm);
 }
 
@@ -212,13 +210,19 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 
 
 
-int LC_FSMemModule_Mount(LC_FS_MODULE *fs){
+int LC_FSMemModule_Mount(LC_FS_MODULE *fs,
+                         GWEN_TYPE_UINT32 flags,
+                         LC_FS_NODE **nPtr){
+  *nPtr=LC_FSMemNode_new(fs);
+  LC_FSNode_Attach(*nPtr);
   return LC_FS_ErrorNone;
 }
 
 
 
-int LC_FSMemModule_Unmount(LC_FS_MODULE *fs){
+int LC_FSMemModule_Unmount(LC_FS_MODULE *fs,
+                           LC_FS_NODE *node){
+  LC_FSNode_free(node);
   return LC_FS_ErrorNone;
 }
 
@@ -470,6 +474,7 @@ int LC_FSMemModule_WriteFile(LC_FS_MODULE *fs,
   }
   GWEN_Buffer_SetPos(nbuf, offset);
   GWEN_Buffer_AppendBuffer(nbuf, buf);
+  LC_FSNode_SetFileSize(node, GWEN_Buffer_GetUsedBytes(nbuf));
   return LC_FS_ErrorNone;
 }
 

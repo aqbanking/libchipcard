@@ -50,8 +50,11 @@ void LC_FSModule_Attach(LC_FS_MODULE *fs);
 
 
 
-typedef int (*LC_FS_MODULE_MOUNT_FN)(LC_FS_MODULE *fs);
-typedef int (*LC_FS_MODULE_UNMOUNT_FN)(LC_FS_MODULE *fs);
+typedef int (*LC_FS_MODULE_MOUNT_FN)(LC_FS_MODULE *fs,
+                                     GWEN_TYPE_UINT32 flags,
+                                     LC_FS_NODE **nPtr);
+typedef int (*LC_FS_MODULE_UNMOUNT_FN)(LC_FS_MODULE *fs,
+                                       LC_FS_NODE *node);
 
 
 typedef int (*LC_FS_MODULE_OPENDIR_FN)(LC_FS_MODULE *fs,
@@ -132,7 +135,6 @@ void LC_FSModule_SubFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl);
 GWEN_TYPE_UINT32 LC_FSModule_GetActiveNodes(const LC_FS_MODULE *fs);
 void LC_FSModule_IncActiveNodes(LC_FS_MODULE *fs);
 void LC_FSModule_DecActiveNodes(LC_FS_MODULE *fs);
-
 
 
 #endif /* LC_FS_MODULE_H */

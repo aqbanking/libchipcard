@@ -20,9 +20,12 @@
 GWEN_LIST_FUNCTION_DEFS(LC_FS_MODULE, LC_FSModule)
 
 
-int LC_FSModule_Mount(LC_FS_MODULE *fs);
+int LC_FSModule_Mount(LC_FS_MODULE *fs,
+                      GWEN_TYPE_UINT32 flags,
+                      LC_FS_NODE **nPtr);
 
-int LC_FSModule_Unmount(LC_FS_MODULE *fs);
+int LC_FSModule_Unmount(LC_FS_MODULE *fs,
+                        LC_FS_NODE *node);
 
 
 int LC_FSModule_OpenDir(LC_FS_MODULE *fs,

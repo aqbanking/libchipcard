@@ -47,7 +47,6 @@ GWEN_BUFFER *LC_FSMemNode_GetDataBuffer(const LC_FS_NODE *n);
 
 typedef struct LC_FSMEM_MODULE LC_FSMEM_MODULE;
 struct LC_FSMEM_MODULE {
-  LC_FS_NODE *root;
 };
 
 LC_FS_MODULE *LC_FSMemModule_new();
@@ -59,9 +58,11 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
                                      const char *name);
 
 
-int LC_FSMemModule_Mount(LC_FS_MODULE *fs);
+int LC_FSMemModule_Mount(LC_FS_MODULE *fs,
+                         GWEN_TYPE_UINT32 flags,
+                         LC_FS_NODE **nPtr);
 
-int LC_FSMemModule_Unmount(LC_FS_MODULE *fs);
+int LC_FSMemModule_Unmount(LC_FS_MODULE *fs, LC_FS_NODE *node);
 
 
 int LC_FSMemModule_OpenDir(LC_FS_MODULE *fs,
