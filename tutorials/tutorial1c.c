@@ -120,6 +120,7 @@ int main(int argc, char **argv) {
   res=LC_Client_StartWait(cl, 0, 0);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -128,6 +129,7 @@ int main(int argc, char **argv) {
   if (!card) {
     fprintf(stderr, "ERROR: No card found.\n");
     LC_Client_StopWait(cl);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -136,6 +138,7 @@ int main(int argc, char **argv) {
   res=LC_Client_StopWait(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StopWait");
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -146,6 +149,7 @@ int main(int argc, char **argv) {
     fprintf(stderr,
             "ERROR: Error executing command CardOpen (%d).\n",
             res);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -159,6 +163,7 @@ int main(int argc, char **argv) {
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "CardClose");
     LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
   fprintf(stderr, "INFO: Card closed.\n");

@@ -1,4 +1,1 @@
-- now GWEN_Init() and GWEN_Fini() are called from within the constructor and
-  destructor functons of LC_Client.
-  This is a workaround for systems which do not honour the constructor/
-  destructor attributes in the source code of gwen.
+- fixed a memory leak in tutorial1c.c
