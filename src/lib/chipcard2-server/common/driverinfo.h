@@ -39,6 +39,12 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
                               GWEN_DB_NODE *dbDrivers,
                               int availOnly);
 
+GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromDb(GWEN_DB_NODE *db,
+                                                 const char *name);
+GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromXml(GWEN_XMLNODE *node,
+                                                  const char *name);
+
+
 
 
 

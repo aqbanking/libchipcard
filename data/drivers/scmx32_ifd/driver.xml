@@ -1,5 +1,5 @@
 
-<driver name="scmx32_ifd" type="ifd">
+<driver name="scmx32_ifd" type="ifdold">
   <short>Driver for Towitoko/SCM USB Readers</short>
   <manufacturer>
     <name>SCM Microsystems</name>
@@ -34,7 +34,6 @@
       </flags>
       <image>scm_pinpadX32.jpg</image>
     </reader>
-    
     
   </readers>
 

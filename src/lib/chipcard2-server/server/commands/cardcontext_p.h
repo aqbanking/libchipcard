@@ -87,6 +87,15 @@ LC_CARDMGR_RESULT LC_CardContext__CheckCmd(LC_CARDCONTEXT *ctx,
                                            GWEN_DB_NODE *dbDriverRsp,
                                            GWEN_DB_NODE *dbRsp);
 
+GWEN_XMLNODE *LC_CardContext__FindFlags(GWEN_XMLNODE *node,
+                                        const char *driverType,
+                                        const char *readerType);
+GWEN_XMLNODE *LC_CardContext_FindFlags(LC_CARDCONTEXT *ctx,
+                                       const char *driverType,
+                                       const char *readerType);
+
+GWEN_TYPE_UINT32 LC_CardContext_GetReaderFlags(LC_CARD *card);
+
 
 #endif /* CHIPCARD_SERVER_CARDCONTEXT_P_H */
 

@@ -1,4 +1,4 @@
-INCLUDES=@all_includes@
+INCLUDES=-I.. @all_includes@
 
 noinst_LTLIBRARIES=libcommands.la
 

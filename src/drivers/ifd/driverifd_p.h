@@ -59,13 +59,28 @@ typedef long (*IFDTRANSMIT_PTR)(GWEN_TYPE_UINT32 lun,
                                 GWEN_TYPE_UINT32 *RxBufferLen,
                                 SCARD_IO_HEADER *RxPci);
 
+#ifdef IFD_OLD
 typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
                                const unsigned char *TxBuffer,
                                GWEN_TYPE_UINT32 TxBufferLen,
                                unsigned char *RxBuffer,
                                GWEN_TYPE_UINT32 *RxBufferLen);
+#else
+typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
+                               GWEN_TYPE_UINT32 controlCode,
+                               const unsigned char *TxBuffer,
+                               GWEN_TYPE_UINT32 TxBufferLen,
+                               unsigned char *RxBuffer,
+                               GWEN_TYPE_UINT32 RxBufferLen,
+                               GWEN_TYPE_UINT32 *pdwBytesReturned);
+#endif
+
 typedef long (*IFDPRESENCE_PTR)(GWEN_TYPE_UINT32 lun);
 
+typedef long (*IFDGETCAPS_PTR)(GWEN_TYPE_UINT32 lun,
+                               GWEN_TYPE_UINT32 tag,
+                               GWEN_TYPE_UINT32 *plen,
+                               unsigned char *pvalue);
 
 
 struct DRIVER_IFD {
@@ -77,6 +92,7 @@ struct DRIVER_IFD {
   IFDTRANSMIT_PTR transmitFn;
   IFDCONTROL_PTR controlFn;
   IFDPRESENCE_PTR presenceFn;
+  IFDGETCAPS_PTR getCapsFn;
 };
 
 

@@ -782,35 +782,6 @@ int LC_CardServer_SendErrorResponse(LC_CARDSERVER *cs,
 
 
 
-GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db,
-                                        const char *vname){
-  unsigned int i;
-  GWEN_TYPE_UINT32 f;
-
-  f=0;
-  for (i=0; ; i++) {
-    const char *p;
-
-    p=GWEN_DB_GetCharValue(db, vname, i, 0);
-    if (!p)
-      break;
-    if (strcasecmp(p, "KEYPAD")==0)
-      f|=LC_READER_FLAGS_KEYPAD;
-    else if (strcasecmp(p, "DISPLAY")==0)
-      f|=LC_READER_FLAGS_DISPLAY;
-    else if (strcasecmp(p, "NOINFO")==0)
-      f|=LC_READER_FLAGS_NOINFO;
-    else if (strcasecmp(p, "REMOTE")==0)
-      f|=LC_READER_FLAGS_REMOTE;
-    else if (strcasecmp(p, "AUTO")==0)
-      f|=LC_READER_FLAGS_AUTO;
-  } /* for */
-
-  return f;
-}
-
-
-
 int LC_CardServer_HandleClientReady(LC_CARDSERVER *cs,
 				    GWEN_TYPE_UINT32 rid,
 				    GWEN_DB_NODE *dbReq){

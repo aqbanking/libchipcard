@@ -37,15 +37,44 @@
       <command name="SecureVerifyPin" target="reader" driver="ccid_ifd">
         <send>
 	  			<APDU>
-            <ELEM type="dword" bigEndian="0" >0x31202c</ELEM>
-            <ELEM type="byte">0x8b</ELEM>
-  	    		<ELEM type="dword">0x20180100</ELEM>
-	  			</APDU>
-	  			<DATA>
+            <!-- use the following values: 
+              0x42000001  IFD_EXCHANGE
+              0x42000002: VERIFY_PIN
+              0x42000003: MODIFY_PIN
+              0x42000004: TRANSFER_PIN
+            -->
+            <ELEM type="dword" bigEndian="1" >0x42000002</ELEM>
+              <!--
+                00                       bTimeOut
+                81                       bmFormatString: bytes, pos 0, 
+                                         left justify, BCD
+                04                       bmPINBlockString (PIN length)
+                00                       bmPINLengthFormat
+                08                       wPINMaxExtraDigit: max
+                04                       wPINMaxExtraDigit: min
+                02                       bEntryValidationCondition
+                00                       bNumberMessage
+                04 09                    wLangId
+                00                       bMsgIndex
+                00 00 00                 bTeoPrologue
+                00 20 00 00              APDU
+                08 ff ff ff ff ff ff ff  lc, data (omit for SPR 532!)
+              -->
 	    			<ELEM type="bytes" storedAs="bytes" >
-              52 0f 02 06 00 20 00 81 08 25 ff ff ff ff ff ff ff
+              00
+              21
+              48
+              04
+              0c
+              04
+              02
+              00
+              00 00
+              00 
+              00 00 00 
+              00 20 00 81
             </ELEM>
-          </DATA>
+	  			</APDU>
 				</send>
 				<results>
       		<result sw1="0x90" type="success" >

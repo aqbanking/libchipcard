@@ -16,6 +16,8 @@
 #endif
 
 #include "cardcontext_p.h"
+#include <chipcard2-server/common/driverinfo.h>
+#include "card_l.h"
 #include "cardmgr_l.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
@@ -870,6 +872,123 @@ int LC_CardContext_CreateGenericCommand(LC_CARDCONTEXT *ctx,
 
 
 
+GWEN_XMLNODE *LC_CardContext__FindFlags(GWEN_XMLNODE *node,
+                                        const char *driverType,
+                                        const char *readerType){
+  GWEN_XMLNODE *n;
+
+  DBG_DEBUG(0, "Searching in \"%s\"",
+            GWEN_XMLNode_GetProperty(node, "name", "(noname)"));
+
+  /* first try exact match */
+  if (driverType && readerType) {
+    DBG_DEBUG(0, "Searching for %s/%s",
+              driverType, readerType);
+    n=GWEN_XMLNode_FindFirstTag(node, "flags", 0, 0);
+    while(n) {
+      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
+                     driverType)==0 &&
+          strcasecmp(GWEN_XMLNode_GetProperty(n, "reader", ""),
+                     readerType)==0) {
+        DBG_DEBUG(0, "Found flags in %s/%s", driverType, readerType);
+        return n;
+      }
+      n=GWEN_XMLNode_FindNextTag(n, "flags", 0, 0);
+    } /* while */
+  }
+
+  if (driverType) {
+    /* try match of driver only */
+    DBG_DEBUG(0, "Searching for %s", driverType);
+    n=GWEN_XMLNode_FindFirstTag(node, "flags", 0, 0);
+    while(n) {
+      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
+                     driverType)==0) {
+        DBG_DEBUG(0, "Found command in %s", driverType);
+        return n;
+      }
+      n=GWEN_XMLNode_FindNextTag(n, "flags", 0, 0);
+    } /* while */
+  }
+
+  /* try match of command name only */
+  DBG_DEBUG(0, "Searching for global card flags");
+  n=GWEN_XMLNode_FindFirstTag(node, "flags", 0, 0);
+  while(n) {
+    if (!GWEN_XMLNode_GetProperty(n, "driver", 0))
+      return n;
+    n=GWEN_XMLNode_FindNextTag(n, "flags", 0, 0);
+  } /* while */
+
+  return n;
+}
+
+
+
+GWEN_XMLNODE *LC_CardContext_FindFlags(LC_CARDCONTEXT *ctx,
+                                       const char *driverType,
+                                       const char *readerType){
+  GWEN_XMLNODE *node;
+
+  node=ctx->cardNode;
+  assert(node);
+
+  while(node) {
+    GWEN_XMLNODE *n;
+    const char *parent;
+
+    n=LC_CardContext__FindFlags(node, driverType, readerType);
+    if (n) {
+      return n;
+    }
+    parent=GWEN_XMLNode_GetProperty(node, "extends", 0);
+    if (!parent)
+      break;
+    node=LC_CardMgr_FindCardNode(ctx->mgr, parent);
+    if (!node) {
+      DBG_WARN(0, "Extended card \"%s\" not found", parent);
+      break;
+    }
+    DBG_DEBUG(0, "Searching in parent \"%s\"", parent);
+  } /* while */
+
+  DBG_DEBUG(0, "Flags not found");
+  return 0;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_CardContext_GetReaderFlags(LC_CARD *card) {
+  GWEN_XMLNODE *nflags;
+  LC_CARDCONTEXT *ctx;
+  LC_READER *r;
+  LC_DRIVER *d;
+  GWEN_TYPE_UINT32 flags;
+
+  r=LC_Card_GetReader(card);
+  assert(r);
+  d=LC_Reader_GetDriver(r);
+  assert(d);
+
+  ctx=LC_Card_GetContext(card);
+  if (!ctx) {
+    DBG_INFO(0, "No context for this card, returning default flags");
+    return LC_Reader_GetFlags(r);
+  }
+
+
+  nflags=LC_CardContext_FindFlags(ctx,
+                                  LC_Driver_GetDriverName(d),
+                                  LC_Reader_GetReaderType(r));
+  if (!nflags) {
+    DBG_INFO(0, "No flags for this card, returning default flags");
+    return LC_Reader_GetFlags(r);
+  }
+
+  flags=LC_DriverInfo_ReaderFlagsFromXml(nflags, "flag");
+
+  return flags;
+}
 
 
 

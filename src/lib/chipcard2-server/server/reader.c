@@ -16,6 +16,7 @@
 
 
 #include "reader_p.h"
+#include <chipcard2-server/common/driverinfo.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
@@ -91,7 +92,6 @@ LC_READER *LC_Reader_Instantiate(LC_DRIVER *d, LC_READER *r){
 LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
   LC_READER *r;
   const char *p;
-  unsigned int i;
 
   assert(d);
 
@@ -131,24 +131,7 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
   r->vendorId=GWEN_DB_GetIntValue(db, "vendorId", 0, 0);
   r->productId=GWEN_DB_GetIntValue(db, "productId", 0, 0);
 
-  for (i=0; ; i++) {
-    p=GWEN_DB_GetCharValue(db, "flags", i, 0);
-    if (!p)
-      break;
-    if (strcasecmp(p, "keypad")==0)
-      r->flags|=LC_READER_FLAGS_KEYPAD;
-    else if (strcasecmp(p, "display")==0)
-      r->flags|=LC_READER_FLAGS_DISPLAY;
-    else if (strcasecmp(p, "noinfo")==0)
-      r->flags|=LC_READER_FLAGS_NOINFO;
-    else if (strcasecmp(p, "remote")==0)
-      r->flags|=LC_READER_FLAGS_REMOTE;
-    else if (strcasecmp(p, "auto")==0)
-      r->flags|=LC_READER_FLAGS_AUTO;
-    else {
-      DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
-    }
-  } /* for */
+  r->flags=LC_DriverInfo_ReaderFlagsFromDb(db, "flags");
 
   r->idleSince=time(0);
 

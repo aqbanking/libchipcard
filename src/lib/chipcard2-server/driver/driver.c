@@ -1838,18 +1838,27 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
     readerError=retval;
   }
   else {
-    /* init ok */
-    DBG_DEBUG(LC_Reader_GetLogger(r), "Command succeeded");
-    GWEN_Text_LogString(rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
+    if (rsplen<2) {
+      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "code", "ERROR");
+      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "text", "Too short answer");
+      readerError=-1;
+    }
+    else {
+      /* init ok */
+      DBG_DEBUG(LC_Reader_GetLogger(r), "Command succeeded");
+      GWEN_Text_LogString(rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
 
-    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                         "code", "OK");
-    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                         "text", "Command executed");
-    assert(rsplen);
-    GWEN_DB_SetBinValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "data", rspbuffer, rsplen);
-    readerError=0;
+      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "code", "OK");
+      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "text", "Command executed");
+      assert(rsplen);
+      GWEN_DB_SetBinValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "data", rspbuffer, rsplen);
+      readerError=0;
+    }
   }
 
   /* create response */

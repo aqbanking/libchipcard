@@ -30,6 +30,7 @@
 #include <chipcard2/chipcard2.h>
 #include <chipcard2-server/common/usbmonitor.h>
 #include <chipcard2-server/common/usbttymonitor.h>
+#include <chipcard2-server/common/driverinfo.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -791,8 +792,8 @@ int LC_CardServer_HandleStartWait(LC_CARDSERVER *cs,
   /* allow all cards to be seen */
   LC_Client_DelAllCards(cl);
 
-  flags=LC_CardServer_GetFlags(dbReq, "body/flags");
-  mask=LC_CardServer_GetFlags(dbReq, "body/mask");
+  flags=LC_DriverInfo_ReaderFlagsFromDb(dbReq, "body/flags");
+  mask=LC_DriverInfo_ReaderFlagsFromDb(dbReq, "body/mask");
 
   readers=0;
   r=LC_Reader_List_First(cs->readers);

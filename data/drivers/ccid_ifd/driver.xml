@@ -8,14 +8,12 @@
 
   <lib>
     <names>
-      <name>libccid.so.0.9.2</name>
-      <name>libccid.so.0.9.1</name>
-      <name>libccid.so.0.9</name>
-      <name>libccid.so.0</name>
-      <name>libccid.so</name>
+      <name>libccid.so.0.9.3</name>
     </names>
     
     <locations>
+      <loc>/usr/local/lib/chipcard2-server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/lib/chipcard2-server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
       <loc>/lib</loc>
       <loc>/usr/lib</loc>
       <loc>/usr/local/lib</loc>
@@ -151,6 +149,14 @@
           <flag>keypad</flag>
         </flags>
       -->
+    </reader>
+
+    <reader name="scm_x32" com="USB" vendor="0x04e6" product="0xe003" >
+      <short>SCM Chipdrive Pinpad X32</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      <image>scm_pinpadX32.jpg</image>
     </reader>
     
   </readers>

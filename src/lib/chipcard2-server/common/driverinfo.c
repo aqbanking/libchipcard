@@ -16,6 +16,8 @@
 
 
 #include "driverinfo.h"
+#include <chipcard2/chipcard2.h>
+
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/debug.h>
@@ -547,5 +549,77 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
   GWEN_StringList_free(sl);
   return rv;
 }
+
+
+
+GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromDb(GWEN_DB_NODE *db,
+                                                 const char *name) {
+  int i;
+  const char *p;
+  GWEN_TYPE_UINT32 flags=0;
+
+  for (i=0; ; i++) {
+    p=GWEN_DB_GetCharValue(db, name, i, 0);
+    if (!p)
+      break;
+    if (strcasecmp(p, "keypad")==0)
+      flags|=LC_READER_FLAGS_KEYPAD;
+    else if (strcasecmp(p, "display")==0)
+      flags|=LC_READER_FLAGS_DISPLAY;
+    else if (strcasecmp(p, "noinfo")==0)
+      flags|=LC_READER_FLAGS_NOINFO;
+    else if (strcasecmp(p, "remote")==0)
+      flags|=LC_READER_FLAGS_REMOTE;
+    else if (strcasecmp(p, "auto")==0)
+      flags|=LC_READER_FLAGS_AUTO;
+    else {
+      DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
+    }
+  } /* for */
+
+  return flags;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromXml(GWEN_XMLNODE *node,
+                                                  const char *name) {
+  const char *p;
+  GWEN_TYPE_UINT32 flags=0;
+  GWEN_XMLNODE *n;
+
+  n=GWEN_XMLNode_FindFirstTag(node, name, 0, 0);
+  while(n) {
+    GWEN_XMLNODE *nn;
+
+    nn=GWEN_XMLNode_GetFirstData(n);
+    if (nn) {
+      p=GWEN_XMLNode_GetData(nn);
+      assert(p);
+
+      if (strcasecmp(p, "keypad")==0)
+        flags|=LC_READER_FLAGS_KEYPAD;
+      else if (strcasecmp(p, "display")==0)
+        flags|=LC_READER_FLAGS_DISPLAY;
+      else if (strcasecmp(p, "noinfo")==0)
+        flags|=LC_READER_FLAGS_NOINFO;
+      else if (strcasecmp(p, "remote")==0)
+        flags|=LC_READER_FLAGS_REMOTE;
+      else if (strcasecmp(p, "auto")==0)
+        flags|=LC_READER_FLAGS_AUTO;
+      else {
+        DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
+      }
+    }
+    n=GWEN_XMLNode_FindNextTag(n, name, 0, 0);
+  } /* while */
+
+  return flags;
+}
+
+
+
+
+
 
 

@@ -16,6 +16,7 @@
 #endif
 #undef BUILDING_LIBCHIPCARD2_DLL
 
+#define IFD_OLD
 
 #include "driverifd_p.h"
 
@@ -307,7 +308,6 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
   GWEN_TYPE_UINT32 tmplen;
   DRIVER_IFD *dct;
   const char *lg;
-  GWEN_TYPE_UINT32 controlCode;
 
   lg=LC_Reader_GetLogger(r);
 
@@ -321,23 +321,14 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
 
   tmplen=*bufferlen;
 
-  controlCode=
-      (apdu[0]<<24)+
-      (apdu[1]<<16)+
-      (apdu[2]<<8)+
-      apdu[3];
-
   if (toReader) {
     assert(apdulen>7);
-    DBG_INFO(lg,
-             "Sending command to reader (ControlCode=%08x):", controlCode);
+    DBG_INFO(lg, "Sending command to reader:");
     GWEN_Text_LogString(apdu, apdulen, lg, GWEN_LoggerLevelInfo);
     retval=dct->controlFn(LC_Slot_GetSlotNum(slot),
-                          controlCode,
                           apdu+4,
                           apdulen-4,
 			  buffer,
-			  *bufferlen,
 			  &tmplen);
     *bufferlen=tmplen;
     if (*bufferlen>3) {

@@ -1,6 +1,6 @@
 
                                  Content
-                 -------------------------------------------
+                 --------------------------------------------
                  1. Introduction
                  2. Needed Components
                  3. Server Setup
@@ -11,7 +11,8 @@
                  8. Remote Drivers
                  9. Using OpenSC with Libchipcard2
                  10. Using Libchipcard2 With MacOS
-                 -------------------------------------------
+                 11. Using the OpenSource Generic CCID Driver
+                 --------------------------------------------
 
 
 
@@ -234,8 +235,33 @@ The configuration files are then expected in /sw/chipcard2-server.
 
 
 
+11. Using the OpenSource Generic CCID Driver
+============================================
 
-Martin Preuss, Hamburg/Germany, 2005/03/04
+Libchipcard2 1.9.12beta and later has improved support for this GPL licensed
+driver. However, since Libchipcard2 uses this driver directly (i.e. without
+using PC/SC) you will have to compile the driver youself.
+I suggest using version ccid-0.9.3 or better. To *compile* the driver you need
+libpcsclite (but don't install the pcscd if you want to work with 
+Libchipcard2). After compiling the driver you can safely uninstall
+libpcsclite and still use the driver with libchipcard2.
+
+------------------------------------------------------------- X8
+./configure (all in one line)
+  --disable-pcsclite 
+  --enable-usbdropdir=/usr/lib/chipcard2-server/lowlevel/ifd
+  --enable-ccidtwindir=/usr/lib/chipcard2-server/lowlevel/ifd
+make
+make install
+------------------------------------------------------------- X8
+
+This allows parallel installation of the non-PCSC version of the driver and
+the PCSC version. Libchipcard2 always searches for the CCID driver in its
+own lowlevel/ifd folder.
+
+
+
+Martin Preuss, Hamburg/Germany, 2005/03/15
 
 
 

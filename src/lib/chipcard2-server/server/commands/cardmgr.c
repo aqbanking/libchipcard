@@ -56,10 +56,8 @@ LC_CARDMGR *LC_CardMgr_new(const GWEN_STRINGLIST *paths){
   LC_CardMgr_SampleFiles(mgr, paths);
   LC_CardMgr_LoadAllCards(mgr);
 
-  /*
   GWEN_XMLNode_WriteFile(mgr->xmlCards, "/tmp/cards.xml",
                          GWEN_XML_FLAGS_DEFAULT | GWEN_XML_FLAGS_SIMPLE);
-  */
   return mgr;
 }
 
