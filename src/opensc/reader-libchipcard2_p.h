@@ -31,7 +31,6 @@
  * prototypes here.
  */
 int _sc_add_reader(struct sc_context *ctx, struct sc_reader *reader);
-int _sc_parse_atr(struct sc_context *ctx, struct sc_slot_info *slot);
 int ctbcs_pin_cmd(struct sc_reader *, sc_slot_info_t *, struct sc_pin_cmd_data *);
 
 

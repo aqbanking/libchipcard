@@ -107,7 +107,7 @@ Please refer to the file doc/CERTIFICATES for details.
 3.2. Adding Readers
 -------------------
 
-#>chipcardd2 addreader --rname ARG [--dtype ARG] [--rtype ARG] [--rport ARG]
+#>chipcardd2 addreader --rname ARG --dtype ARG --rtype ARG --rport ARG
 
 Adds a reader to the configuration. Please see "chipcardd2 --help".
 
@@ -153,6 +153,11 @@ Loglevel to be used for services.
 LC_CTAPI_LOGLEVEL
 -----------------
 Loglevel to be used by the fake CTAPI.
+
+
+OPENSC_LOGLEVEL
+-----------------
+Loglevel to be used by the OpenSC reader driver.
 
 
 
