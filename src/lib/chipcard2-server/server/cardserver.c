@@ -97,6 +97,44 @@ LC_CARDSERVER *LC_CardServer_new(const char *dataDir){
 
 void LC_CardServer_free(LC_CARDSERVER *cs){
   if (cs) {
+    LC_DRIVER *d;
+    LC_CLIENT *cl;
+    int rv;
+
+    /* remove IPC nodes of all clients */
+    cl=LC_Client_List_First(cs->clients);
+    while(cl) {
+      GWEN_TYPE_UINT32 nid;
+    
+      /* remove the IPC node of this client */
+      nid=LC_Client_GetClientId(cl);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Client_GetClientId(cl));
+        }
+      }
+      cl=LC_Client_List_Next(cl);
+    }
+
+    /* remove IPC nodes of all drivers */
+    d=LC_Driver_List_First(cs->drivers);
+    while(d) {
+      GWEN_TYPE_UINT32 nid;
+    
+      /* remove the IPC node of this driver */
+      nid=LC_Driver_GetIpcId(d);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+      }
+      d=LC_Driver_List_Next(d);
+    }
+
     LC_USBTTYMonitor_free(cs->usbTtyMonitor);
     LC_USBMonitor_free(cs->usbMonitor);
     LC_CardMgr_free(cs->cardManager);
@@ -1778,8 +1816,10 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
                                        LC_Request_GetInRequestId(rq),
                                        dbClientResponse)) {
         DBG_ERROR(0, "Could not send CommandCard response");
+        GWEN_DB_Group_free(dbDriverResponse);
         return -1;
       }
+      GWEN_DB_Group_free(dbDriverResponse);
       return 0;
     }
     else {
@@ -1831,8 +1871,10 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
                                          LC_Request_GetInRequestId(rq),
                                          dbClientResponse)) {
           DBG_ERROR(0, "Could not send ExecCommand response");
+          GWEN_DB_Group_free(dbDriverResponse);
           return -1;
         }
+        GWEN_DB_Group_free(dbDriverResponse);
         return 0;
       } /* if ok */
       else if (res==LC_CardMgr_ResultNeedMore) {
@@ -1848,8 +1890,10 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
              "NeedMore not yet supported")
            ) {
           DBG_ERROR(0, "Could not send ExecCommand response");
+          GWEN_DB_Group_free(dbDriverResponse);
           return -1;
         }
+        GWEN_DB_Group_free(dbDriverResponse);
         return 0;
       } /* if need more */
       else if (res==LC_CardMgr_ResultError ||
@@ -1865,9 +1909,11 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
         if (LC_CardServer_SendErrorResponse(cs, rqid, code, text)) {
           DBG_ERROR(0, "Could not send ExecCommand response");
           GWEN_DB_Group_free(dbRsp);
+          GWEN_DB_Group_free(dbDriverResponse);
           return -1;
         }
         GWEN_DB_Group_free(dbRsp);
+        GWEN_DB_Group_free(dbDriverResponse);
         return 0;
       } /* if error */
     } /* if driverResponse */
@@ -2016,8 +2062,10 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
                                        LC_Request_GetInRequestId(rq),
                                        dbClientResponse)) {
         DBG_ERROR(0, "Could not send ServiceCommand response");
+        GWEN_DB_Group_free(dbServiceResponse);
         return -1;
       }
+      GWEN_DB_Group_free(dbServiceResponse);
       return 0;
     } /* if serviceResponse */
   } /* ServiceOpen */
@@ -2156,6 +2204,7 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
         LC_Client_DelService(LC_Request_GetClient(rq),
                              LC_Service_GetServiceId(sv));
         LC_Service_DecActiveClientsCount(sv);
+        GWEN_DB_Group_free(dbServiceResponse);
         return -1;
       }
 
@@ -2163,6 +2212,7 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
       LC_Client_DelService(LC_Request_GetClient(rq),
                            LC_Service_GetServiceId(sv));
       LC_Service_DecActiveClientsCount(sv);
+      GWEN_DB_Group_free(dbServiceResponse);
       return 0;
     } /* if serviceResponse */
   } /* ServiceClose */
@@ -2280,8 +2330,10 @@ int LC_CardServer_CheckRequest(LC_CARDSERVER *cs, LC_REQUEST *rq) {
                                        LC_Request_GetInRequestId(rq),
                                        dbClientResponse)) {
         DBG_ERROR(0, "Could not send ExecCommand response");
+        GWEN_DB_Group_free(dbServiceResponse);
         return -1;
       }
+      GWEN_DB_Group_free(dbServiceResponse);
       return 0;
     } /* if serviceResponse */
   } /* ServiceCommand */
@@ -4172,6 +4224,7 @@ int LC_CardServer_HandleExecCommand(LC_CARDSERVER *cs,
                                dbRsp);
   if (res==LC_CardMgr_ResultOk) {
     DBG_DEBUG(0, "Command enqueued");
+    GWEN_DB_Group_free(dbRsp);
   }
   else if (res==LC_CardMgr_ResultImmediateResponse) {
     GWEN_DB_SetIntValue(dbRsp,

@@ -121,6 +121,7 @@ int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
 
 GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db, const char *vname);
 
+/** takes over cl */
 void LC_CardServer_ClientDown(LC_CARDSERVER *cs, LC_CLIENT *cl);
 
 int LC_CardServer_CheckCards(LC_CARDSERVER *cs);

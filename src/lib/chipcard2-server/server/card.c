@@ -61,6 +61,7 @@ void LC_Card_free(LC_CARD *cd){
     GWEN_LIST_FINI(LC_CARD, cd);
     GWEN_Buffer_free(cd->atr);
     GWEN_IdList_free(cd->waitingClients);
+    LC_CardContext_free(cd->cardContext);
     GWEN_FREE_OBJECT(cd);
   }
 }
