@@ -33,6 +33,7 @@
 
 GWEN_LIST_FUNCTIONS(LC_CARD, LC_Card)
 GWEN_INHERIT_FUNCTIONS(LC_CARD)
+GWEN_LIST2_FUNCTIONS(LC_CARD, LC_Card)
 
 
 LC_CARD *LC_Card_new(LC_CLIENT *cl,
@@ -814,6 +815,30 @@ LC_CLIENT_RESULT LC_Card_GetDriverVar(LC_CARD *card,
                          varName, GWEN_Buffer_GetStart(vbuf));
 
   return LC_Client_ResultOk;
+}
+
+
+
+void LC_Card_List2_freeAll(LC_CARD_LIST2 *l){
+  if (l) {
+    LC_CARD_LIST2_ITERATOR *cit;
+
+    cit=LC_Card_List2_First(l);
+    if (cit) {
+      LC_CARD *card;
+
+      card=LC_Card_List2Iterator_Data(cit);
+      while(card) {
+        LC_CARD *next;
+
+        next=LC_Card_List2Iterator_Next(cit);
+        LC_Card_free(card);
+        card=next;
+      } /* while */
+      LC_Card_List2Iterator_free(cit);
+    }
+    LC_Card_List2_free(l);
+  }
 }
 
 

@@ -491,6 +491,18 @@ void LC_Service_SetGetErrorTextFn(LC_CLIENT *cl,
 
 
 
+void LC_Service_SetWorkFn(LC_CLIENT *cl, LC_SERVICE_WORK_FN fn){
+  LC_SERVICE_CLIENT *sv;
+
+  assert(cl);
+  sv=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_SERVICE_CLIENT, cl);
+  assert(sv);
+  
+  sv->workFn=fn;
+}
+
+
+
 int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
                                  GWEN_TYPE_UINT32 rid,
                                  GWEN_DB_NODE *dbReq){
@@ -788,13 +800,29 @@ int LC_Service_Work(LC_CLIENT *cl) {
   while(!sv->stopService) {
     LC_CLIENT_RESULT res;
 
-    /* work for 10 seconds */
+    /* let service work as long as possible */
+    if (sv->workFn) {
+      int rv;
+
+      for (;;) {
+        rv=sv->workFn(cl);
+        if (rv<0) {
+          DBG_ERROR(0, "Error in services' work function (%d)", rv);
+          return 3;
+        }
+        else if (rv>0)
+          break;
+      } /* for */
+    } /* if work function available */
+
+    /* wait for up to 2 seconds */
     res=LC_Client_Work_Wait(cl, 10);
     if (res!=LC_Client_ResultOk &&
         res!=LC_Client_ResultWait) {
       DBG_ERROR(0, "Error while working (%d)", res);
       return 2;
     }
+
   } /* while service is not to be stopped */
   return 0;
 }

@@ -1,1 +1,1 @@
-SUBDIRS=cardfs
+SUBDIRS=cardfs kvks

@@ -199,10 +199,7 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
 
   /* take over connection */
   conn=GWEN_IPCManager_GetConnection(cs->ipcManager, nodeId);
-  LC_ServerConn_TakeOver(conn);
-  LC_ServerConn_SetCardServer(conn, cs);
   LC_ServerConn_SetService(conn, as);
-  LC_ServerConn_SetType(conn, LC_ServerConn_TypeService);
 
   /* check code */
   code=GWEN_DB_GetCharValue(dbReq, "body/code", 0, "<none>");

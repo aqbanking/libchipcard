@@ -1,4 +1,24 @@
 
+2005/02/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed some bugs
+- added service: "KVKs". This is the replacement for libchipcard1s' "kvkd".
+  It is now implemented as a service to Libchipcard2. It monitors all
+  inserted cards, and if a memory card is found it tries to read that card.
+  If the card is a KVK card its data is written to a file (same format as
+  for kvkd).
+  To start this service you have to add a "service" section to your
+  chipcardd2.conf file:
+  
+  service {
+    char serviceName="kvks"
+    char serviceDataDir="YOUR_DATA_FOLDER"
+    char logFile="YOUR_LOGFILE" # or omit this for reasonable defaults
+    char flags="autoload" # this make the server load this service upon
+                          # its own start
+  } # service
+
+
 2005/02/02: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug spotted by Thomas Viehmann (concerning driver names)

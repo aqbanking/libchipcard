@@ -56,6 +56,7 @@ LC_CLIENT *LC_Client_new(const char *programName,
   }
 
   GWEN_NEW_OBJECT(LC_CLIENT, cl);
+  GWEN_INHERIT_INIT(LC_CLIENT, cl);
   cl->servers=LC_Server_List_new();
   cl->waitingRequests=LC_Request_List_new();
   cl->workingRequests=LC_Request_List_new();
@@ -99,6 +100,7 @@ LC_CLIENT *LC_Client_new(const char *programName,
 
 void LC_Client_free(LC_CLIENT *cl) {
   if (cl) {
+    GWEN_INHERIT_FINI(LC_CLIENT, cl);
     free(cl->programName);
     free(cl->programVersion);
     free(cl->dataDir);
@@ -230,6 +232,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
   assert(sv);
   handled=0;
   done=0;
+
   if (LC_Server_GetStatus(sv)==LC_ServerStatusUnconnected) {
     handled=1;
     rq=LC_Client_PeekNextRequest(cl, LC_Server_GetServerId(sv));
@@ -296,7 +299,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
       int rv;
 
       /* there is an incoming request */
-      DBG_INFO(LC_LOGDOMAIN, "Got an incoming request");
+      DBG_DEBUG(LC_LOGDOMAIN, "Got an incoming request");
       done++;
       dbReq=GWEN_IPCManager_GetInRequestData(cl->ipcManager, rid);
       assert(dbReq);
@@ -376,6 +379,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
     DBG_ERROR(LC_LOGDOMAIN, "Unknown status %d", LC_Server_GetStatus(sv));
     return -1;
   }
+
   return done?0:1;
 }
 
@@ -433,8 +437,8 @@ int LC_Client__Work(LC_CLIENT *cl, int maxmsg){
     }
   }
 
-  if (done)
-    return 0;
+  //if (done)
+  //  return 0;
 
   while(1) {
     rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
@@ -503,15 +507,18 @@ LC_CLIENT_RESULT LC_Client_Work_Wait(LC_CLIENT *cl, int timeout) {
     while(1) {
       int rv;
 
-      rv=LC_Client_Work(cl, 0);
+      rv=LC_Client__Work(cl, 0);
       if (rv==-1) {
         DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
         GWEN_WaitCallback_Leave();
         return LC_Client_ResultGeneric;
       }
-      else if (rv==1)
+      else if (rv==1) {
+        DBG_VERBOUS(0, "Nothing done");
         break;
+      }
       else if (rv==0) {
+        DBG_VERBOUS(0, "Something done");
         didSomething=1;
         break;
       }
@@ -543,7 +550,8 @@ LC_CLIENT_RESULT LC_Client_Work_Wait(LC_CLIENT *cl, int timeout) {
       if (timeout!=GWEN_NETCONNECTION_TIMEOUT_FOREVER) {
         if (timeout==GWEN_NETCONNECTION_TIMEOUT_NONE ||
             difftime(time(0), startt)>timeout) {
-          DBG_INFO(LC_LOGDOMAIN, "Could not read within %d seconds, giving up",
+          DBG_INFO(LC_LOGDOMAIN,
+                   "Could not read within %d seconds, giving up",
                    timeout);
           GWEN_WaitCallback_Leave();
           return LC_Client_ResultWait;
@@ -1861,6 +1869,10 @@ LC_Client_CheckCommandCard(LC_CLIENT *cl,
 
   rq=LC_Client_FindWorkingRequest(cl, rid);
   if (!rq) {
+    if (LC_Client_FindWaitingRequest(cl, rid)) {
+      DBG_INFO(LC_LOGDOMAIN, "Request not yet sent");
+      return LC_Client_ResultWait;
+    }
     DBG_ERROR(LC_LOGDOMAIN, "Request not found");
     return LC_Client_ResultIpcError;
   }
@@ -1976,6 +1988,10 @@ LC_Client_CheckExecCommand(LC_CLIENT *cl,
 
   rq=LC_Client_FindWorkingRequest(cl, rid);
   if (!rq) {
+    if (LC_Client_FindWaitingRequest(cl, rid)) {
+      DBG_INFO(LC_LOGDOMAIN, "Request not yet sent");
+      return LC_Client_ResultWait;
+    }
     DBG_ERROR(LC_LOGDOMAIN, "Request not found");
     return LC_Client_ResultIpcError;
   }
@@ -2632,7 +2648,7 @@ LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_Client_CardReset(LC_CLIENT *cl,
-                                     LC_CARD *card){
+				     LC_CARD *card){
   GWEN_TYPE_UINT32 rqid;
   LC_CLIENT_RESULT res;
 

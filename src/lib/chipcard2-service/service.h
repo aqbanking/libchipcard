@@ -46,6 +46,8 @@ typedef GWEN_TYPE_UINT32 (*LC_SERVICE_COMMAND_FN)(LC_CLIENT *cl,
                                                   GWEN_DB_NODE *dbRequest,
                                                   GWEN_DB_NODE *dbResponse);
 
+typedef int (*LC_SERVICE_WORK_FN)(LC_CLIENT *cl);
+
 typedef const char* (*LC_SERVICE_GETERRORTEXT_FN)(LC_CLIENT *cl,
                                                   GWEN_TYPE_UINT32 err);
 
@@ -88,6 +90,7 @@ void LC_Service_SetCloseFn(LC_CLIENT *d, LC_SERVICE_CLOSE_FN fn);
 void LC_Service_SetCommandFn(LC_CLIENT *d, LC_SERVICE_COMMAND_FN fn);
 void LC_Service_SetGetErrorTextFn(LC_CLIENT *d,
                                   LC_SERVICE_GETERRORTEXT_FN fn);
+void LC_Service_SetWorkFn(LC_CLIENT *d, LC_SERVICE_WORK_FN fn);
 
 
 

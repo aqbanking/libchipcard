@@ -32,14 +32,18 @@ typedef struct LC_CARD LC_CARD;
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/xml.h>
+#include <gwenhywfar/list2.h>
 #include <stdio.h>
 
 
 GWEN_INHERIT_FUNCTION_DEFS(LC_CARD)
+GWEN_LIST2_FUNCTION_DEFS(LC_CARD, LC_Card)
 
 
 typedef LC_CLIENT_RESULT (*LC_CARD_OPEN_FN)(LC_CARD *card);
 typedef LC_CLIENT_RESULT (*LC_CARD_CLOSE_FN)(LC_CARD *card);
+
+void LC_Card_List2_freeAll(LC_CARD_LIST2 *l);
 
 
 void LC_Card_free(LC_CARD *cd);

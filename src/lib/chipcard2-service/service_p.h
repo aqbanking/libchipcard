@@ -46,6 +46,7 @@ struct LC_SERVICE_CLIENT {
   LC_SERVICE_CLOSE_FN closeFn;
   LC_SERVICE_COMMAND_FN commandFn;
   LC_SERVICE_GETERRORTEXT_FN getErrorTextFn;
+  LC_SERVICE_WORK_FN workFn;
 };
 void LC_Service_freeData(void *bp, void *p);
 

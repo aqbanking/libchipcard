@@ -16,7 +16,7 @@
 #endif
 
 
-#include "examplecard_p.h"
+#include "kvkscard_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
@@ -29,7 +29,7 @@
  * types involved to speed up the lookup of type specific data in a base type
  * object.
  */
-GWEN_INHERIT(LC_CARD, EXAMPLE_CARD)
+GWEN_INHERIT(LC_CARD, KVKS_CARD)
 
 
 /* This function establishes the heritage and sets its own Open() and Close()
@@ -37,8 +37,8 @@ GWEN_INHERIT(LC_CARD, EXAMPLE_CARD)
  * Also, this function must be called before using any other function of the
  * inheriting type.
  */
-int ExampleCard_ExtendCard(LC_CARD *card){
-  EXAMPLE_CARD *xc;
+int KVKSCard_ExtendCard(LC_CARD *card){
+  KVKS_CARD *xc;
   int rv;
 
   rv=LC_ProcessorCard_ExtendCard(card);
@@ -47,37 +47,42 @@ int ExampleCard_ExtendCard(LC_CARD *card){
     return rv;
   }
 
-  GWEN_NEW_OBJECT(EXAMPLE_CARD, xc);
+  GWEN_NEW_OBJECT(KVKS_CARD, xc);
 
   xc->openFn=LC_Card_GetOpenFn(card);
   xc->closeFn=LC_Card_GetCloseFn(card);
-  LC_Card_SetOpenFn(card, ExampleCard_Open);
-  LC_Card_SetCloseFn(card, ExampleCard_Close);
+  LC_Card_SetOpenFn(card, KVKSCard_Open);
+  LC_Card_SetCloseFn(card, KVKSCard_Close);
 
-  GWEN_INHERIT_SETDATA(LC_CARD, EXAMPLE_CARD, card, xc,
-                       ExampleCard_freeData);
+  xc->dataBuffer=GWEN_Buffer_new(0, 256, 0, 1);
+
+  GWEN_INHERIT_SETDATA(LC_CARD, KVKS_CARD, card, xc,
+                       KVKSCard_freeData);
   return 0;
 }
 
 
 
 /* This function can be used to resolve the heritage established via
- * ExampleCard_ExtendCard(). After this function has been called no other
- * ExampleCard function (except ExampleCard_ExtendCard()) my be called.
+ * KVKSCard_ExtendCard(). After this function has been called no other
+ * KVKSCard function (except KVKSCard_ExtendCard()) my be called.
  * Please note that this function resets the cards' internal Open() and
  * Close() function pointers to the values found upon execution of
- * ExampleCard_ExtendCard(), so after that the function ExampleCard_Close()
+ * KVKSCard_ExtendCard(), so after that the function KVKSCard_Close()
  * will no longer be called internally by LC_Card_Close().
  */
-int ExampleCard_UnextendCard(LC_CARD *card){
-  EXAMPLE_CARD *xc;
+int KVKSCard_UnextendCard(LC_CARD *card){
+  KVKS_CARD *xc;
   int rv;
 
-  xc=GWEN_INHERIT_GETDATA(LC_CARD, EXAMPLE_CARD, card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
   assert(xc);
   LC_Card_SetOpenFn(card, xc->openFn);
   LC_Card_SetCloseFn(card, xc->closeFn);
-  GWEN_INHERIT_UNLINK(LC_CARD, EXAMPLE_CARD, card);
+  GWEN_INHERIT_UNLINK(LC_CARD, KVKS_CARD, card);
+
+  GWEN_Buffer_free(xc->dataBuffer);
+  GWEN_DB_Group_free(xc->dbCardData);
   GWEN_FREE_OBJECT(xc);
 
   rv=LC_ProcessorCard_UnextendCard(card);
@@ -89,40 +94,42 @@ int ExampleCard_UnextendCard(LC_CARD *card){
 
 
 /* This function is called internally by LC_Card_free() if the card is still
- * extended as an ExampleCard. It should free all data associated with the
- * LC_CARD object concerning ExampleCard data.
+ * extended as an KVKSCard. It should free all data associated with the
+ * LC_CARD object concerning KVKSCard data.
  * bp is a pointer to the lowest base type (in this case LC_CARD) and p is
- * a pointer to the derived type (in this case EXAMPLE_CARD). You need to cast
+ * a pointer to the derived type (in this case KVKS_CARD). You need to cast
  * these pointers to their real types respectively.
  */
-void ExampleCard_freeData(void *bp, void *p){
-  EXAMPLE_CARD *xc;
+void KVKSCard_freeData(void *bp, void *p){
+  KVKS_CARD *xc;
 
   assert(bp);
   assert(p);
-  xc=(EXAMPLE_CARD*)p;
+  xc=(KVKS_CARD*)p;
+  GWEN_Buffer_free(xc->dataBuffer);
+  GWEN_DB_Group_free(xc->dbCardData);
   GWEN_FREE_OBJECT(xc);
 }
 
 
 /* This function is called internally by LC_Card_Open(). It is always a good
- * idea to call the Open() function found upon ExampleCard_ExtendCard(),
+ * idea to call the Open() function found upon KVKSCard_ExtendCard(),
  * first. After that you can do whatever your card needs to be done.
  * Well, in the case of this example here we simply select the MasterFile
  * (otherwise called "root" in disk file systems).
  * Also, it is best to split the card specific stuff off into an extra
- * function called _Reopen() (in this case ExampleCard_Reopen), so that it
+ * function called _Reopen() (in this case KVKSCard_Reopen), so that it
  * may later be used again, because the function LC_Card_Open() also does
  * the connection work and must therefore only be called *once*.
  */
-LC_CLIENT_RESULT ExampleCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT KVKSCard_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
-  EXAMPLE_CARD *xc;
+  KVKS_CARD *xc;
 
-  DBG_DEBUG(LC_LOGDOMAIN, "Opening card as ExampleCard");
+  DBG_DEBUG(LC_LOGDOMAIN, "Opening card as KVKSCard");
 
   assert(card);
-  xc=GWEN_INHERIT_GETDATA(LC_CARD, EXAMPLE_CARD, card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
   assert(xc);
 
   res=xc->openFn(card);
@@ -131,7 +138,7 @@ LC_CLIENT_RESULT ExampleCard_Open(LC_CARD *card){
     return res;
   }
 
-  res=ExampleCard_Reopen(card);
+  res=KVKSCard_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     xc->closeFn(card);
@@ -143,18 +150,18 @@ LC_CLIENT_RESULT ExampleCard_Open(LC_CARD *card){
 
 
 /* As discussed above this is the card specific setup. */
-LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT KVKSCard_Reopen(LC_CARD *card){
   LC_CLIENT_RESULT res;
-  EXAMPLE_CARD *xc;
+  KVKS_CARD *xc;
 
-  DBG_DEBUG(LC_LOGDOMAIN, "Opening ExampleCard");
+  DBG_DEBUG(LC_LOGDOMAIN, "Opening KVKSCard");
 
   assert(card);
-  xc=GWEN_INHERIT_GETDATA(LC_CARD, EXAMPLE_CARD, card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
   assert(xc);
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting Example card application");
-  res=LC_Card_SelectApp(card, "ExampleCard");
+  res=LC_Card_SelectApp(card, "KVKSCard");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -172,17 +179,17 @@ LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card){
 
 
 /* This function is called internally upon LC_Card_Close().
- * It *must* call the function found upon ExampleCard_ExtendCard() otherwise
+ * It *must* call the function found upon KVKSCard_ExtendCard() otherwise
  * the card is not released !
  * Additionally, you can do your own deinit stuff here before actually
  * releasing the card.
  */
-LC_CLIENT_RESULT ExampleCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT KVKSCard_Close(LC_CARD *card){
   LC_CLIENT_RESULT res;
-  EXAMPLE_CARD *xc;
+  KVKS_CARD *xc;
 
   assert(card);
-  xc=GWEN_INHERIT_GETDATA(LC_CARD, EXAMPLE_CARD, card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
   assert(xc);
 
   res=xc->closeFn(card);
@@ -195,18 +202,125 @@ LC_CLIENT_RESULT ExampleCard_Close(LC_CARD *card){
 }
 
 
-/* This is just an example of how to access data stored in the card type
- * extension
- */
-int ExampleCard_GetExampleData(const LC_CARD *card){
-  EXAMPLE_CARD *xc;
+
+KVKS_STATUS KVKSCard_GetStatus(const LC_CARD *card){
+  KVKS_CARD *xc;
 
   assert(card);
-  xc=GWEN_INHERIT_GETDATA(LC_CARD, EXAMPLE_CARD, card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
   assert(xc);
 
-  return xc->exampleData;
+  return xc->status;
 }
+
+
+
+void KVKSCard_SetStatus(LC_CARD *card, KVKS_STATUS st){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  xc->status=st;
+}
+
+
+
+GWEN_BUFFER *KVKSCard_GetBuffer(const LC_CARD *card){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  return xc->dataBuffer;
+}
+
+
+
+GWEN_TYPE_UINT32 KVKSCard_GetCurrentRequest(const LC_CARD *card){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  return xc->currentRequest;
+}
+
+
+
+void KVKSCard_SetCurrentRequest(LC_CARD *card, GWEN_TYPE_UINT32 i){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  xc->currentRequest=i;
+}
+
+
+
+GWEN_DB_NODE *KVKSCard_GetDbCardData(const LC_CARD *card){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  return xc->dbCardData;
+}
+
+
+
+void KVKSCard_SetDbCardData(LC_CARD *card, GWEN_DB_NODE *db){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  GWEN_DB_Group_free(xc->dbCardData);
+  xc->dbCardData=db;
+}
+
+
+
+int KVKSCard_GetCheckSumOk(const LC_CARD *card){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  return xc->checkSumOk;
+}
+
+
+
+void KVKSCard_SetCheckSumOk(LC_CARD *card, int b){
+  KVKS_CARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, KVKS_CARD, card);
+  assert(xc);
+
+  xc->checkSumOk=b;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

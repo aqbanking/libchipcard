@@ -84,7 +84,7 @@ LC_SERVICE *LC_Service_FromDb(GWEN_DB_NODE *db){
 
   flags=0;
   for (i=0; ; i++) {
-    p=GWEN_DB_GetCharValue(db, "flags", 0, 0);
+    p=GWEN_DB_GetCharValue(db, "flags", i, 0);
     if (!p)
       break;
     if (strcasecmp(p, "autoload")==0)
