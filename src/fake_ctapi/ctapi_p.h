@@ -117,5 +117,7 @@ struct CTAPI_APDU {
 CTAPI_APDU *CTAPI_APDU_new(unsigned char *cmd, int len);
 void CTAPI_APDU_free(CTAPI_APDU *apdu);
 
+int CT__getPinId(CTAPI_APDU *apdu);
+
 
 #endif

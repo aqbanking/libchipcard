@@ -1,4 +1,9 @@
 
+2005/02/16: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in fake CTAPI
+
+
 2005/02/15: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - moved usb stuff to a convenience library of its own, to be used by drivers

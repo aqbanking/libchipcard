@@ -20,6 +20,7 @@
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
+#include <gwenhywfar/tlv.h>
 #include <stdlib.h>
 
 
@@ -116,6 +117,7 @@ CTAPI_APDU *CTAPI_APDU_new(unsigned char *cmd, int len){
       /* data follows */
       apdu->dlen=*(cmd++); len--;
       apdu->data=(unsigned char*)malloc(apdu->dlen);
+      memmove(apdu->data, cmd, apdu->dlen);
       cmd+=apdu->dlen;
       len-=apdu->dlen;
     }
@@ -141,6 +143,21 @@ void CTAPI_APDU_free(CTAPI_APDU *apdu){
   if (apdu) {
     free(apdu->data);
     GWEN_FREE_OBJECT(apdu);
+  }
+}
+
+
+
+void CTAPI_APDU_Dump(CTAPI_APDU *apdu){
+  fprintf(stderr, "APDU: CLA=%02x, INS=%02x, P1=%02x, P2=%02x\n",
+          apdu->cla, apdu->ins, apdu->p1, apdu->p2);
+  if (apdu->dlen) {
+    GWEN_BUFFER *tbuf;
+
+    tbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    fprintf(stderr, "Data (%d bytes):\n", apdu->dlen);
+    GWEN_Text_DumpString2Buffer(apdu->data, apdu->dlen, tbuf, 2);
+    GWEN_Buffer_free(tbuf);
   }
 }
 
@@ -379,8 +396,9 @@ char CT_data(unsigned short ctn,
           result=CT_API_RV_ERR_MEMORY;
         }
         else {
-          DBG_NOTICE(CT_API_LOGDOMAIN, "Response received: ");
-          GWEN_Buffer_Dump(rbuf, stderr, 4);
+          DBG_INFO(CT_API_LOGDOMAIN, "Response received: ");
+          if (GWEN_Logger_GetLevel(CT_API_LOGDOMAIN)>=GWEN_LoggerLevelInfo)
+            GWEN_Buffer_Dump(rbuf, stderr, 4);
           *sad=*dad;
           memmove(response, GWEN_Buffer_GetStart(rbuf), i);
           *lenr=i;
@@ -808,6 +826,51 @@ char CT__resetICC(CTAPI_CONTEXT *ctx,
 
 
 
+int CT__getPinId(CTAPI_APDU *apdu) {
+  GWEN_BUFFER *dbuf;
+  GWEN_TLV *tlv=0;
+  const unsigned char *p;
+  int i;
+
+  if (apdu->dlen<8) {
+    DBG_ERROR(CT_API_LOGDOMAIN,
+              "Bad APDU: Too few data bytes in APDU (only %d bytes)",
+              apdu->dlen);
+    return -1;
+  }
+
+  dbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  GWEN_Buffer_AppendBytes(dbuf, apdu->data, apdu->dlen);
+  GWEN_Buffer_Rewind(dbuf);
+
+  /* find tag 0x52 */
+  while(GWEN_Buffer_GetBytesLeft(dbuf)) {
+    tlv=GWEN_TLV_fromBuffer(dbuf, 0);
+    if (!tlv)
+      break;
+    if (GWEN_TLV_GetTagType(tlv)==0x52)
+      break;
+  } /* while */
+
+  if (!tlv) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "TLV 0x52 not found");
+    return -1;
+  }
+
+  if (GWEN_TLV_GetTagLength(tlv)<6) {
+    DBG_ERROR(CT_API_LOGDOMAIN, "TLV 0x52 too small");
+    GWEN_TLV_free(tlv);
+    return -1;
+  }
+  p=(const unsigned char*)GWEN_TLV_GetTagData(tlv);
+
+  i=(int)p[5];
+  GWEN_TLV_free(tlv);
+  return i;
+}
+
+
+
 char CT__secureVerify(CTAPI_CONTEXT *ctx,
                       unsigned char *dad,
                       unsigned char *sad,
@@ -841,19 +904,9 @@ char CT__secureVerify(CTAPI_CONTEXT *ctx,
     return CT_API_RV_OK;
   }
 
-  if (apdu->dlen<8) {
-    DBG_ERROR(CT_API_LOGDOMAIN,
-              "Bad APDU: Too few data bytes in APDU (only %d bytes)",
-              apdu->dlen);
+  i=CT__getPinId(apdu);
+  if (i<0)
     return CT_API_RV_ERR_INVALID;
-  }
-  if (apdu->data[0]!=0x52) {
-    DBG_ERROR(CT_API_LOGDOMAIN,
-              "Bad APDU: Should begin with a 0x52 tag (is %02x)",
-              apdu->data[0]);
-    return CT_API_RV_ERR_INVALID;
-  }
-  i=apdu->data[7];
 
   dbReq=GWEN_DB_Group_new("SecureVerifyPin");
   dbResp=GWEN_DB_Group_new("response");
@@ -956,19 +1009,9 @@ char CT__secureModify(CTAPI_CONTEXT *ctx,
     return CT_API_RV_OK;
   }
 
-  if (apdu->dlen<8) {
-    DBG_ERROR(CT_API_LOGDOMAIN,
-              "Bad APDU: Too few data bytes in APDU (only %d bytes)",
-              apdu->dlen);
+  i=CT__getPinId(apdu);
+  if (i<0)
     return CT_API_RV_ERR_INVALID;
-  }
-  if (apdu->data[0]!=0x52) {
-    DBG_ERROR(CT_API_LOGDOMAIN,
-              "Bad APDU: Should begin with a 0x52 tag (is %02x)",
-              apdu->data[0]);
-    return CT_API_RV_ERR_INVALID;
-  }
-  i=apdu->data[7];
 
   dbReq=GWEN_DB_Group_new("SecureModifyPin");
   dbResp=GWEN_DB_Group_new("response");
