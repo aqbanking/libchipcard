@@ -54,7 +54,8 @@ struct LC_CLIENT {
 
   LCM_MONITOR *monitor;
 
-  LC_CLIENT_HANDLE_INREQUEST handleInRequestFn;
+  LC_CLIENT_HANDLE_INREQUEST_FN handleInRequestFn;
+  LC_CLIENT_SERVER_DOWN_FN serverDownFn;
 };
 
 

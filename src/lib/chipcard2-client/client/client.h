@@ -147,9 +147,12 @@ typedef enum {
 
 
 
-typedef int (*LC_CLIENT_HANDLE_INREQUEST)(LC_CLIENT *cl,
-					  GWEN_TYPE_UINT32 rid,
-					  GWEN_DB_NODE *dbReq);
+typedef int (*LC_CLIENT_HANDLE_INREQUEST_FN)(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid,
+                                             GWEN_DB_NODE *dbReq);
+
+typedef void (*LC_CLIENT_SERVER_DOWN_FN)(LC_CLIENT *cl,
+                                         GWEN_TYPE_UINT32 serverId);
 
 
 /** @name Constructor, Destructor, Setup
@@ -174,7 +177,9 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl,
  */
 /*@{*/
 void LC_Client_SetHandleInRequestFn(LC_CLIENT *cl,
-				    LC_CLIENT_HANDLE_INREQUEST fn);
+                                    LC_CLIENT_HANDLE_INREQUEST_FN fn);
+void LC_Client_SetServerDownFn(LC_CLIENT *cl,
+                               LC_CLIENT_SERVER_DOWN_FN fn);
 int LC_Client_SendResponse(LC_CLIENT *cl,
 			   GWEN_TYPE_UINT32 rid,
 			   GWEN_DB_NODE *dbCommand);

@@ -176,6 +176,9 @@ int LC_Client_ServerDown(LC_CLIENT *cl, LC_SERVER *sv) {
   assert(cl);
   assert(sv);
 
+  if (cl->serverDownFn)
+    cl->serverDownFn(cl, LC_Server_GetServerId(sv));
+
   cd=LC_Card_List_First(cl->cards);
   while(cd) {
     LC_CARD *next;
@@ -2788,9 +2791,17 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
 
 
 void LC_Client_SetHandleInRequestFn(LC_CLIENT *cl,
-                                    LC_CLIENT_HANDLE_INREQUEST fn){
+                                    LC_CLIENT_HANDLE_INREQUEST_FN fn){
   assert(cl);
   cl->handleInRequestFn=fn;
+}
+
+
+
+void LC_Client_SetServerDownFn(LC_CLIENT *cl,
+                               LC_CLIENT_SERVER_DOWN_FN fn){
+  assert(cl);
+  cl->serverDownFn=fn;
 }
 
 
