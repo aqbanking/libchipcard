@@ -10,11 +10,11 @@ EXTRA_DIST=chipcard2.h.in version.h.in
 lib_LTLIBRARIES=libchipcard2s.la libchipcard2d.la
 
 libchipcard2s_la_SOURCES=dummy.c
-libchipcard2s_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ \
+libchipcard2s_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@\
   server/libserver.la
 
 
 libchipcard2d_la_SOURCES=dummy.c
-libchipcard2d_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@\
+libchipcard2d_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@\
   driver/libdriver.la
 

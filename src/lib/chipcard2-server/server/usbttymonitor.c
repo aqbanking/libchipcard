@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #ifdef USE_LIBSYSFS
-# include <libsysfs.h>
+# include <sysfs/libsysfs.h>
 #endif
 
 GWEN_LIST_FUNCTIONS(LC_USBTTYDEVICE, LC_USBTTYDevice)
@@ -109,18 +109,22 @@ LC_USBTTYMONITOR *LC_USBTTYMonitor_new() {
   if (f) {
     fclose(f);
     lc_usbttymonitor_filename=LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL_FILE;
+    DBG_NOTICE(0,
+               "USB: Using proc file for kernel <2.6 for ttyUSB support");
   }
   else {
     f=fopen(LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL2_6_FILE, "r");
     if (f) {
       fclose(f);
       lc_usbttymonitor_filename=LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL2_6_FILE;
+      DBG_NOTICE(0,
+                 "USB: Using proc file for kernel >=2.6 for ttyUSB support");
     }
 #ifdef USE_LIBSYSFS
     else {
       if (! sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
         lc_usbttymonitor_sysfs = 1;
-        DBG_DEBUG(0, "Will use sysfs to scan for ttyUSB devices")
+        DBG_NOTICE(0, "Will use sysfs to scan for ttyUSB devices")
       }
     }
 #endif
@@ -163,7 +167,7 @@ int LC_USBTTYMonitor_ScanSysFS_UsbSerial(LC_USBTTYDEVICE_LIST *dl) {
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
-  int port, vendorId, productId;
+  int port=0, vendorId=0, productId=0;
   LC_USBTTYDEVICE *currentDevice;
 
   bus = sysfs_open_bus("usb");

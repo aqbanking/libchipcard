@@ -1,6 +1,6 @@
 # $Id$
 # (c) 2002 Martin Preuss<martin@libchipcard.de>
-# This function checks for liblibusb
+# This function checks for libusb
 
 AC_DEFUN([AC_LIBUSB], [
 dnl searches for libusb

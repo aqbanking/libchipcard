@@ -1,6 +1,6 @@
 # $Id$
 # (c) 2002 Martin Preuss<martin@libchipcard.de>
-# This function check if PC/SC is wanted
+# This function checks if PC/SC is wanted
 
 AC_DEFUN([AQ_CHECK_PCSC],[
 dnl PREREQUISITES:

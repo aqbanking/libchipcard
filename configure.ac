@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=13
+CHIPCARD_VERSION_BUILD=14
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -169,6 +169,17 @@ else
     all_libraries="$all_libraries $libusb_libs"
     AC_DEFINE(USE_LIBUSB, 1, [whether libUSB is to be used])
     AC_MSG_RESULT(yes)
+fi
+
+# ---------------------------------------------------------------------------
+# check for libsysfs
+#
+
+AC_LIBSYSFS
+if test "$have_libsysfs" == "yes" ; then
+    all_includes="$all_includes $libsysfs_includes"
+    all_libraries="$all_libraries $libsysfs_libs"
+    AC_DEFINE(USE_LIBSYSFS, 1, [whether libsysfs is to be used])
 fi
 
 

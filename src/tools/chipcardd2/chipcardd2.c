@@ -715,9 +715,16 @@ int server(ARGUMENTS *args) {
 
   DBG_NOTICE(0, "Chipcardd v"CHIPCARD_VERSION_FULL_STRING" started.");
 #ifdef USE_LIBUSB
-  DBG_NOTICE(0, "USB scanning supported (using LibUSB).");
-#else
-  DBG_WARNING(0, "USB scanning not supported (LibUSB not available).");
+  DBG_NOTICE(0, "LibUSB supported.");
+#endif
+#ifdef USE_LIBSYSFS
+  DBG_NOTICE(0, "LibSYSFS supported.");
+#endif
+
+#if !defined(USE_LIBUSB) && !defined(USE_LIBSYSFS)
+  DBG_WARNING(0,
+              "USB scanning not supported "
+              "(neither LibUSB nor LibSYSFS is available).");
 #endif
 
 #ifdef HAVE_FORK

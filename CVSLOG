@@ -1,7 +1,1 @@
-- some fixes
-- services are now based on clients (since services basically *are* clients
-  which serve other clients)
-- removed "OfferService" command
-- added reader flags: NOINFO, REMOTE and AUTO
-- reconnecting to a server now works
-- unplugged readers are now removed (if they have been autocreated)
+- applied patch by Thomas Viehmann for LibSysFS support. Thanks Thomas !
