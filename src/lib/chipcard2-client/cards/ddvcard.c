@@ -112,6 +112,7 @@ LC_CLIENT_RESULT LC_DDVCard_Open(LC_CARD *card){
   res=LC_DDVCard_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    ddv->closeFn(card);
     return res;
   }
 

@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=12
+CHIPCARD_VERSION_BUILD=13
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -192,7 +192,7 @@ fi
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,4,0,0)
+AC_GWENHYWFAR(1,6,0,3)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -547,6 +547,7 @@ done
 AC_CONFIG_FILES([Makefile
                  chipcard2-client-config.in
                  chipcard2-server-config.in
+                 chipcard2.spec
                  bin/Makefile
                  bin/prepare.sh.in
                  data/Makefile

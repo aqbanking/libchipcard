@@ -60,6 +60,9 @@ LC_CARD *LC_Card_new(LC_READER *r, unsigned int slot,
 void LC_Card_free(LC_CARD *cd){
   if (cd) {
     DBG_MEM_DEC("LC_CARD");
+    while(cd->waitingClientCount--) {
+      LC_Reader_DecUsageCount(cd->reader);
+    }
     GWEN_LIST_FINI(LC_CARD, cd);
     GWEN_Buffer_free(cd->atr);
     GWEN_IdList_free(cd->waitingClients);
@@ -130,6 +133,10 @@ void LC_Card_SetClient(LC_CARD *cd, LC_CLIENT *cl){
   assert(cd);
   if (cd->client!=cl) {
     cd->busySince=time(0);
+    if (cl)
+      LC_Reader_IncUsageCount(cd->reader);
+    if (cd->client)
+      LC_Reader_DecUsageCount(cd->reader);
     cd->client=cl;
   }
 }
@@ -157,16 +164,44 @@ GWEN_TYPE_UINT32 LC_Card_GetFirstWaitingClient(const LC_CARD *cd){
 
 
 
-void LC_Card_AddWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id){
+int LC_Card_AddWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id){
   assert(cd);
-  GWEN_IdList_AddId(cd->waitingClients, id);
+  if (!GWEN_IdList_AddId(cd->waitingClients, id)) {
+    cd->waitingClientCount++;
+    LC_Reader_IncUsageCount(cd->reader);
+    return 0;
+  }
+  return -1;
 }
 
 
 
-void LC_Card_DelWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id){
+int LC_Card_DelWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id){
   assert(cd);
-  GWEN_IdList_DelId(cd->waitingClients, id);
+  if (!GWEN_IdList_DelId(cd->waitingClients, id)) {
+    cd->waitingClientCount--;
+    LC_Reader_DecUsageCount(cd->reader);
+    return 0;
+  }
+  return -1;
+}
+
+
+
+void LC_Card_ClearWaitingClients(LC_CARD *cd){
+  assert(cd);
+  GWEN_IdList_Clear(cd->waitingClients);
+  while(cd->waitingClientCount--) {
+    LC_Reader_DecUsageCount(cd->reader);
+  }
+  cd->waitingClientCount=0;
+}
+
+
+
+int LC_Card_WaitingClientCount(const LC_CARD *cd){
+  assert(cd);
+  return cd->waitingClientCount;
 }
 
 
@@ -186,10 +221,56 @@ void LC_Card_SetContext(LC_CARD *cd, LC_CARDCONTEXT *ctx){
 
 
 
+void LC_Card_Dump(const LC_CARD *cd, FILE *f, int indent) {
+  int i;
 
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "--------------------------\n");
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Card\n");
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Id : %08x\n", cd->cardId);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Type : ");
+  switch(cd->type) {
+  case LC_CardTypeProcessor: fprintf(f, "processor\n"); break;
+  case LC_CardTypeMemory:    fprintf(f, "memory\n"); break;
+  default:                   fprintf(f, "unknown (%d)\n", cd->type);
+  }
 
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Status : ");
+  switch(cd->status) {
+  case LC_CardStatusInserted: fprintf(f, "inserted\n"); break;
+  case LC_CardStatusRemoved:  fprintf(f, "removed\n"); break;
+  case LC_CardStatusOrphaned: fprintf(f, "orphaned\n"); break;
+  default:                    fprintf(f, "unknown (%d)\n", cd->status);
+  }
 
+  if (cd->client) {
+    for (i=0; i<indent; i++)
+      fprintf(f, " ");
+    fprintf(f, "UsedBy : %08x\n",
+            LC_Client_GetClientId(cd->client));
+  }
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Reader : %s (%08x)\n",
+          LC_Reader_GetReaderName(cd->reader),
+          LC_Reader_GetReaderId(cd->reader));
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Slot : %d\n", cd->slot);
 
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Waiting Clients : %d\n", cd->waitingClientCount);
+}
 
 
 

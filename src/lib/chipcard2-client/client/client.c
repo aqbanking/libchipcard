@@ -169,6 +169,53 @@ int LC_Client_CheckForError(GWEN_DB_NODE *db) {
 
 
 
+int LC_Client_ServerDown(LC_CLIENT *cl, LC_SERVER *sv) {
+  LC_CARD *cd;
+  LC_REQUEST *rq;
+
+  assert(cl);
+  assert(sv);
+
+  cd=LC_Card_List_First(cl->cards);
+  while(cd) {
+    LC_CARD *next;
+
+    next=LC_Card_List_Next(cd);
+    if (LC_Card_GetServerId(cd)==LC_Server_GetServerId(sv)) {
+      LC_Card_ResetCardId(cd);
+      LC_Card_List_Del(cd);
+      LC_Card_free(cd);
+    }
+    cd=next;
+  } /* while */
+
+  /* TODO: remove cards from monitor */
+
+  /* check every request in the working list */
+  rq=LC_Request_List_First(cl->workingRequests);
+  while(rq) {
+    if (!LC_Request_GetIsAborted(rq)) {
+      if (LC_Request_GetRequestId(rq)==LC_Server_GetServerId(sv)) {
+        GWEN_IPCManager_RemoveRequest(cl->ipcManager,
+                                      LC_Request_GetIpcRequestId(rq),
+                                      1);
+        LC_Request_SetIpcRequestId(rq, 0);
+        /* mark request as aborted */
+        LC_Request_SetIsAborted(rq, 1);
+      } /* if request id matches */
+    }
+    rq=LC_Request_List_Next(rq);
+  } /* while */
+
+  LC_Server_SetStatus(sv, LC_ServerStatusUnconnected);
+  LC_Server_SetCurrentCommand(sv, 0);
+  GWEN_IPCManager_Disconnect(cl->ipcManager, LC_Server_GetServerId(sv));
+
+  return 0;
+}
+
+
+
 int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
   GWEN_TYPE_UINT32 rid;
   LC_REQUEST *rq;
@@ -232,6 +279,8 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
   }
 
   if (LC_Server_GetStatus(sv)==LC_ServerStatusConnected) {
+    LC_REQUEST *rq;
+
     handled=1;
     /* check for incoming command */
     DBG_DEBUG(LC_LOGDOMAIN, "Checking for incoming requests");
@@ -273,42 +322,31 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
       } /* if not externally handled */
     } /* if incoming request */
 
-    /* check for current command */
-    rid=LC_Server_GetCurrentCommand(sv);
-    if (rid!=0) {
+    /* check for outbound requests */
+    rq=LC_Client_PeekNextRequest(cl, LC_Server_GetServerId(sv));
+    if (rq) {
       GWEN_DB_NODE *dbReq;
+      GWEN_NETTRANSPORT_STATUS nst;
 
-      /* there is a current command */
-      dbReq=GWEN_IPCManager_PeekResponseData(cl->ipcManager,
-                                             rid);
-      if (dbReq) {
-        /* request has been answered */
-        LC_Server_SetCurrentCommand(sv, 0);
-        rid=0;
+      /* we have a waiting request */
+
+      /* check for server status */
+      nst=GWEN_IPCManager_CheckConnection(cl->ipcManager,
+                                          LC_Server_GetServerId(sv));
+      if (nst!=GWEN_NetTransportStatusLConnected) {
+        /* server is no longer connected */
+        DBG_NOTICE(LC_LOGDOMAIN, "Server is down");
+        LC_Client_ServerDown(cl, sv);
         done++;
       }
       else {
-        /* TODO: Check timeout */
-        DBG_INFO(LC_LOGDOMAIN, "No response yet");
-      }
-    }
-    if (rid==0) {
-      LC_REQUEST *rq;
-
-      DBG_VERBOUS(LC_LOGDOMAIN, "No current request, checking server %08x",
-                  LC_Server_GetServerId(sv));
-      rq=LC_Client_PeekNextRequest(cl, LC_Server_GetServerId(sv));
-      if (rq) {
-        GWEN_DB_NODE *dbReq;
-
-        /* we have a waiting request */
-        done++;
         dbReq=LC_Request_GetRequestData(rq);
         assert(dbReq);
         DBG_DEBUG(LC_LOGDOMAIN, "Sending waiting request %08x",
                   LC_Request_GetRequestId(rq));
         if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelDebug)
           GWEN_DB_Dump(dbReq, stderr, 4);
+        done++;
         rid=GWEN_IPCManager_SendRequest(cl->ipcManager,
                                         LC_Server_GetServerId(sv),
                                         GWEN_DB_Group_dup(dbReq));
@@ -318,14 +356,12 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
           return -1;
         }
         LC_Request_SetIpcRequestId(rq, rid);
+        /* above we only called the peek function, now we remove the
+         * request */
         rq=LC_Client_GetNextRequest(cl, LC_Server_GetServerId(sv));
-        LC_Server_SetCurrentCommand(sv, rid);
-      } /* if there is a request */
-      else {
-        DBG_DEBUG(LC_LOGDOMAIN, "No waiting request for this server");
       }
-    }
-  }
+    } /* if there is a request */
+  } /* if connected */
 
   if (LC_Server_GetStatus(sv)==LC_ServerStatusAborted) {
     handled=1;
@@ -375,21 +411,6 @@ int LC_Client__Work(LC_CLIENT *cl, int maxmsg){
   assert(cl);
 
   done=0;
-  while(1) {
-    rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
-    if (rv==-1) {
-      DBG_INFO(LC_LOGDOMAIN, "Error on WorkIO");
-      return -1;
-    }
-    else if (rv==0)
-      done++;
-    else
-      break;
-    if (done>256) {
-      DBG_ERROR(LC_LOGDOMAIN,
-                "EMERGENCY BRAKE !!! Exiting from endless loop");
-    }
-  }
 
   while(1) {
     rv=LC_Client_Walk(cl);
@@ -404,8 +425,12 @@ int LC_Client__Work(LC_CLIENT *cl, int maxmsg){
     if (done>256) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "EMERGENCY BRAKE !!! Exiting from endless loop");
+      break;
     }
   }
+
+  if (done)
+    return 0;
 
   while(1) {
     rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
@@ -420,6 +445,7 @@ int LC_Client__Work(LC_CLIENT *cl, int maxmsg){
     if (done>256) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "EMERGENCY BRAKE !!! Exiting from endless loop");
+      break;
     }
   }
 
@@ -637,6 +663,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
                                  )
                                 );
         tr=GWEN_NetTransportSocket_new(sk, 1);
+        GWEN_NetTransport_AddFlags(tr, GWEN_NETTRANSPORT_FLAGS_RESTARTABLE);
       }
       else if (strcasecmp(typ, "public")==0) {
         /* HTTP over TCP */
@@ -654,6 +681,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
                                                   "port", 0,
                                                   LC_DEFAULT_PORT));
         tr=GWEN_NetTransportSocket_new(sk, 1);
+        GWEN_NetTransport_AddFlags(tr, GWEN_NETTRANSPORT_FLAGS_RESTARTABLE);
       }
       else {
         const char *certDir;
@@ -711,6 +739,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
                                       0,
                                       0,
                                       1);
+          GWEN_NetTransport_AddFlags(tr, GWEN_NETTRANSPORT_FLAGS_RESTARTABLE);
         }
         else if (strcasecmp(typ, "secure")==0) {
           /* HTTP over SSL with certificates */
@@ -722,6 +751,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
                                       0,
                                       1,
                                       1);
+          GWEN_NetTransport_AddFlags(tr, GWEN_NETTRANSPORT_FLAGS_RESTARTABLE);
         }
         else {
           DBG_ERROR(LC_LOGDOMAIN, "Unknown mode \"%s\"", typ);
@@ -1160,6 +1190,9 @@ GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
   if (rflags & LC_CARD_READERFLAGS_REMOTE)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "flags", "REMOTE");
+  if (rflags & LC_CARD_READERFLAGS_AUTO)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "flags", "AUTO");
 
   /* set rmask */
   if (rmask & LC_CARD_READERFLAGS_KEYPAD)
@@ -1174,6 +1207,9 @@ GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
   if (rmask & LC_CARD_READERFLAGS_REMOTE)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "mask", "REMOTE");
+  if (rmask & LC_CARD_READERFLAGS_AUTO)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         "mask", "AUTO");
 
 
   /* send request */
@@ -1328,6 +1364,12 @@ int LC_Client_HandleCardAvailable(LC_CLIENT *cl, GWEN_DB_NODE *dbReq){
       rflags|=LC_CARD_READERFLAGS_KEYPAD;
     else if (strcasecmp(s, "DISPLAY")==0)
       rflags|=LC_CARD_READERFLAGS_DISPLAY;
+    else if (strcasecmp(s, "NOINFO")==0)
+      rflags|=LC_CARD_READERFLAGS_NOINFO;
+    else if (strcasecmp(s, "REMOTE")==0)
+      rflags|=LC_CARD_READERFLAGS_REMOTE;
+    else if (strcasecmp(s, "AUTO")==0)
+      rflags|=LC_CARD_READERFLAGS_AUTO;
     else {
       DBG_WARN(LC_LOGDOMAIN, "Unknown reader flag \"%s\"", s);
     }
@@ -1524,6 +1566,12 @@ LC_Client_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
       if (dbRsp) {
         DBG_DEBUG(LC_LOGDOMAIN, "Got a response to request %08x", rid);
         return LC_Client_ResultOk;
+      }
+      else {
+        if (LC_Request_GetIsAborted(rq)) {
+          DBG_ERROR(LC_LOGDOMAIN, "Request was aborted (server down?)");
+          return LC_Client_ResultIpcError;
+        }
       }
     } /* if request id matches */
     rq=LC_Request_List_Next(rq);

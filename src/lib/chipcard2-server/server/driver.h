@@ -25,7 +25,8 @@ typedef struct LC_DRIVER LC_DRIVER;
 #include <time.h>
 
 /** driver is a remote driver, not started by the server */
-#define LC_DRIVER_FLAGS_REMOTE 0x00000001
+#define LC_DRIVER_FLAGS_AUTO   0x00000001
+#define LC_DRIVER_FLAGS_REMOTE 0x00000002
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_DRIVER, LC_Driver);

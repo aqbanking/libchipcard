@@ -1,7 +1,5 @@
 INCLUDES=@all_includes@
 
-EXTRA_DIST=chipcard2.h.in version.h.in
-
 lib_LTLIBRARIES=libchipcard2sv.la
 
 noinst_HEADERS=\

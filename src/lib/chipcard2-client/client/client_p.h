@@ -91,6 +91,7 @@ int LC_Client__GetPassword(GWEN_NETTRANSPORT *tr,
 int LC_Client_HandleInRequest(LC_CLIENT *cl,
                               GWEN_TYPE_UINT32 rid,
                               GWEN_DB_NODE *dbReq);
+int LC_Client_ServerDown(LC_CLIENT *cl, LC_SERVER *sv);
 
 
 

@@ -225,6 +225,8 @@ int LCM_Monitor_HandleReaderNotification(LCM_MONITOR *mm,
         f|=LC_CARD_READERFLAGS_NOINFO;
       else if (strcasecmp(p, "REMOTE")==0)
         f|=LC_CARD_READERFLAGS_REMOTE;
+      else if (strcasecmp(p, "AUTO")==0)
+        f|=LC_CARD_READERFLAGS_AUTO;
     } /* for */
     LCM_Reader_SetReaderFlags(mr, f);
 

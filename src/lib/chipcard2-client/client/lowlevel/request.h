@@ -46,6 +46,10 @@ GWEN_TYPE_UINT32 LC_Request_GetServerId(const LC_REQUEST *rq);
 LC_CARD *LC_Request_GetCard(const LC_REQUEST *rq);
 
 
+int LC_Request_GetIsAborted(const LC_REQUEST *rq);
+void LC_Request_SetIsAborted(LC_REQUEST *rq, int b);
+
+
 #endif /* CHIPCARD_CLIENT_REQUEST_H */
 
 

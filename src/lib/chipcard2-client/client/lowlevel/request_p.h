@@ -27,6 +27,7 @@ struct LC_REQUEST {
   GWEN_TYPE_UINT32 requestId;
   GWEN_TYPE_UINT32 ipcRequestId;
   GWEN_TYPE_UINT32 serverId;
+  int aborted;
   LC_CARD *card;
 };
 

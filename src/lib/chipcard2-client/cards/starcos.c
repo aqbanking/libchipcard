@@ -127,6 +127,7 @@ LC_CLIENT_RESULT LC_Starcos_Open(LC_CARD *card){
   res=LC_Starcos_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    scos->closeFn(card);
     return res;
   }
 

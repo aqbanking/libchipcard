@@ -122,6 +122,20 @@ LC_CARD *LC_Request_GetCard(const LC_REQUEST *rq){
 
 
 
+int LC_Request_GetIsAborted(const LC_REQUEST *rq){
+  assert(rq);
+  return rq->aborted;
+}
+
+
+
+void LC_Request_SetIsAborted(LC_REQUEST *rq, int b){
+  assert(rq);
+  rq->aborted=1;
+}
+
+
+
 
 
 

@@ -31,6 +31,8 @@ LC_CARD *LC_Card_new(LC_CLIENT *cl,
 LC_CARDCONTEXT *LC_Card_GetContext(const LC_CARD *cd);
 void LC_Card_SetContext(LC_CARD *cd, LC_CARDCONTEXT *ctx);
 
+void LC_Card_ResetCardId(LC_CARD *cd);
+
 GWEN_TYPE_UINT32 LC_Card_GetServerId(const LC_CARD *cd);
 void LC_Card_SetCardType(LC_CARD *cd, const char *ct);
 

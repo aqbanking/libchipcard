@@ -214,6 +214,13 @@ void LC_Card_SetContext(LC_CARD *cd, LC_CARDCONTEXT *ctx){
 
 
 
+void LC_Card_ResetCardId(LC_CARD *cd){
+  assert(cd);
+  cd->cardId=0;
+}
+
+
+
 void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
   int k;
 
@@ -247,6 +254,8 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
     fprintf(f, " noinfo");
   if (cd->readerFlags & LC_CARD_READERFLAGS_REMOTE)
     fprintf(f, " remote");
+  if (cd->readerFlags & LC_CARD_READERFLAGS_AUTO)
+    fprintf(f, " auto");
   fprintf(f, "\n");
   if (cd->atr) {
     for (k=0; k<insert; k++)

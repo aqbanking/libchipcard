@@ -141,6 +141,8 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
       r->flags|=LC_READER_FLAGS_NOINFO;
     else if (strcasecmp(p, "remote")==0)
       r->flags|=LC_READER_FLAGS_REMOTE;
+    else if (strcasecmp(p, "auto")==0)
+      r->flags|=LC_READER_FLAGS_AUTO;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -587,10 +589,10 @@ void LC_Reader_Dump(const LC_READER *r, FILE *f, int indent) {
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Reader\n");
+  fprintf(f, "--------------------------\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "--------------------------\n");
+  fprintf(f, "Reader\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
   fprintf(f, "Name : %s\n", r->readerName);

@@ -34,6 +34,7 @@ struct LC_CARD {
   time_t busySince;
   GWEN_BUFFER *atr;
   GWEN_IDLIST *waitingClients;
+  int waitingClientCount;
   LC_CARDCONTEXT *cardContext;
 };
 

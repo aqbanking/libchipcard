@@ -44,6 +44,11 @@ iheader_HEADERS=\
 libserver_la_SOURCES=\
   card.c \
   cardserver.c \
+  cs_cards.c \
+  cs_driver.c \
+  cs_request.c \
+  cs_service.c \
+  cs_usb.c \
   client.c \
   driver.c \
   reader.c \

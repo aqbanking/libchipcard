@@ -114,15 +114,12 @@ struct LC_CARDSERVER {
 
 
 void LC_CardServer_CollectCommands(LC_CARDSERVER *cs);
-int LC_CardServer_RemoveCardsForReader(LC_CARDSERVER *cs, LC_READER *r);
 int LC_CardServer_RemoveCardsAt(LC_CARDSERVER *cs,
                                 LC_READER *r,
                                 unsigned int slotNum);
 
 GWEN_TYPE_UINT32 LC_CardServer_GetFlags(GWEN_DB_NODE *db, const char *vname);
 
-/** takes over cl */
-void LC_CardServer_ClientDown(LC_CARDSERVER *cs, LC_CLIENT *cl);
 
 int LC_CardServer_CheckCards(LC_CARDSERVER *cs);
 int LC_CardServer_CheckClient(LC_CARDSERVER *cs, LC_CLIENT *cl);
@@ -327,6 +324,21 @@ int LC_CardServer__USBTTYDeviceToDB(LC_USBTTYDEVICE *ud,
                                     GWEN_DB_NODE *dbDrivers,
                                     GWEN_DB_NODE *dbDriverStore,
                                     GWEN_DB_NODE *dbReaderStore);
+
+int LC_CardServer_CheckRequests(LC_CARDSERVER *cs);
+
+
+/** takes over cl */
+void LC_CardServer_ClientDown(LC_CARDSERVER *cs, LC_CLIENT *cl);
+void LC_CardServer_ReaderDown(LC_CARDSERVER *cs, LC_READER *r,
+                              LC_READER_STATUS newReaderStatus,
+                              const char *reason);
+void LC_CardServer_DriverDown(LC_CARDSERVER *cs, LC_DRIVER *d,
+                              LC_DRIVER_STATUS newDriverStatus,
+                              const char *reason);
+void LC_CardServer_CardDown(LC_CARDSERVER *cs, LC_CARD *card,
+                            LC_CARD_STATUS newCardStatus,
+                            const char *reason);
 
 
 

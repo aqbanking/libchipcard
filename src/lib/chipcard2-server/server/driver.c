@@ -525,10 +525,10 @@ void LC_Driver_Dump(const LC_DRIVER *d, FILE *f, int indent) {
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Driver\n");
+  fprintf(f, "--------------------------\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "--------------------------\n");
+  fprintf(f, "Driver\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
   fprintf(f, "Type : %s\n", d->driverType);

@@ -119,6 +119,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Open(LC_CARD *card){
   res=LC_GeldKarte_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    gk->closeFn(card);
     return res;
   }
 

@@ -300,6 +300,7 @@ LC_CLIENT_RESULT LC_KVKCard_Open(LC_CARD *card){
   res=LC_KVKCard_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    kvk->closeFn(card);
     return res;
   }
 

@@ -91,6 +91,7 @@ LC_CLIENT_RESULT LC_MemoryCard_Open(LC_CARD *card){
   res=LC_MemoryCard_Reopen(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    mc->closeFn(card);
     return res;
   }
 

@@ -25,6 +25,7 @@ typedef struct LC_CARD LC_CARD;
 #include <chipcard2-server/server/client.h>
 
 #include <time.h>
+#include <stdio.h>
 
 
 typedef enum {
@@ -76,9 +77,13 @@ GWEN_BUFFER *LC_Card_GetAtr(const LC_CARD *cd);
 LC_CARD_TYPE LC_Card_GetType(const LC_CARD *cd);
 
 GWEN_TYPE_UINT32 LC_Card_GetFirstWaitingClient(const LC_CARD *cd);
-void LC_Card_AddWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id);
-void LC_Card_DelWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id);
+int LC_Card_AddWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id);
+int LC_Card_DelWaitingClient(LC_CARD *cd, GWEN_TYPE_UINT32 id);
+void LC_Card_ClearWaitingClients(LC_CARD *cd);
+int LC_Card_WaitingClientCount(const LC_CARD *cd);
 
+
+void LC_Card_Dump(const LC_CARD *cd, FILE *f, int indent);
 
 
 #endif /* CHIPCARD_SERVER_CARD_H */
