@@ -18,7 +18,13 @@
 extern "C" {
 #endif
 
+#include <gwenhywfar/inherit.h>
+
+
 typedef struct LC_CLIENT LC_CLIENT;
+
+GWEN_INHERIT_FUNCTION_DEFS(LC_CLIENT)
+
 
 typedef enum {
   LC_Client_ResultOk=0,
@@ -139,6 +145,11 @@ typedef enum {
 
 
 
+typedef int (*LC_CLIENT_HANDLE_INREQUEST)(LC_CLIENT *cl,
+					  GWEN_TYPE_UINT32 rid,
+					  GWEN_DB_NODE *dbReq);
+
+
 /** @name Constructor, Destructor, Setup
  *
  */
@@ -154,6 +165,34 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl,
                              const char *fname);
 
 /*@}*/
+
+
+/** @name Functions For Inheritors
+ *
+ */
+/*@{*/
+void LC_Client_SetHandleInRequestFn(LC_CLIENT *cl,
+				    LC_CLIENT_HANDLE_INREQUEST fn);
+int LC_Client_SendResponse(LC_CLIENT *cl,
+			   GWEN_TYPE_UINT32 rid,
+			   GWEN_DB_NODE *dbCommand);
+void LC_Client_RemoveInRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid);
+
+GWEN_DB_NODE *LC_Client_GetNextResponse(LC_CLIENT *cl,
+                                        GWEN_TYPE_UINT32 rqid);
+GWEN_DB_NODE *LC_Client_WaitForNextResponse(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rqid,
+                                            int timeout);
+
+int LC_Client_CheckForError(GWEN_DB_NODE *db);
+
+GWEN_TYPE_UINT32 LC_Client_SendRequest(LC_CLIENT *cl,
+                                       LC_CARD *card,
+				       GWEN_TYPE_UINT32 serverId,
+				       GWEN_DB_NODE *dbReq);
+
+/*@}*/
+
 
 
 /** @name Informational Functions

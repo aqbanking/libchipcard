@@ -28,18 +28,18 @@ struct SERVICE_CARDFS {
 };
 
 
-LC_SERVICE *ServiceCardFS_new(int argc, char **argv);
-int ServiceCardFS_Start(LC_SERVICE *sv);
+LC_CLIENT *ServiceCardFS_new(int argc, char **argv);
+int ServiceCardFS_Start(LC_CLIENT *sv);
 
 
 void ServiceCardFS_freeData(void *bp, void *p);
 
 
-const char *ServiceCardFS_GetErrorText(LC_SERVICE *d, GWEN_TYPE_UINT32 err);
+const char *ServiceCardFS_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err);
 
 
-GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_SERVICE *d,
-                                       LC_SERVICECLIENT *cl,
+GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_CLIENT *cl,
+                                       LC_SERVICECLIENT *scl,
                                        GWEN_DB_NODE *dbRequest,
                                        GWEN_DB_NODE *dbResponse);
 

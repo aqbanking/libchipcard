@@ -21,25 +21,25 @@
 #include <unistd.h>
 
 
-GWEN_INHERIT(LC_SERVICE, SERVICE_CARDFS)
+GWEN_INHERIT(LC_CLIENT, SERVICE_CARDFS)
 
 
 
-LC_SERVICE *ServiceCardFS_new(int argc, char **argv){
+LC_CLIENT *ServiceCardFS_new(int argc, char **argv){
   SERVICE_CARDFS *cardfs;
-  LC_SERVICE *d;
+  LC_CLIENT *cl;
 
-  d=LC_Service_new(argc, argv);
-  if (!d) {
+  cl=LC_Service_new(argc, argv);
+  if (!cl) {
     DBG_ERROR(0, "Could not create service, aborting");
     return 0;
   }
   GWEN_NEW_OBJECT(SERVICE_CARDFS, cardfs);
-  GWEN_INHERIT_SETDATA(LC_SERVICE, SERVICE_CARDFS,
-                       d, cardfs,
+  GWEN_INHERIT_SETDATA(LC_CLIENT, SERVICE_CARDFS,
+                       cl, cardfs,
                        ServiceCardFS_freeData);
-  LC_Service_SetCommandFn(d, ServiceCardFS_Command);
-  return d;
+  LC_Service_SetCommandFn(cl, ServiceCardFS_Command);
+  return cl;
 }
 
 
@@ -53,15 +53,15 @@ void ServiceCardFS_freeData(void *bp, void *p) {
 
 
 
-int ServiceCardFS_Start(LC_SERVICE *d){
+int ServiceCardFS_Start(LC_CLIENT *cl){
   SERVICE_CARDFS *cardfs;
 
-  assert(d);
-  cardfs=GWEN_INHERIT_GETDATA(LC_SERVICE, SERVICE_CARDFS, d);
+  assert(cl);
+  cardfs=GWEN_INHERIT_GETDATA(LC_CLIENT, SERVICE_CARDFS, cl);
   assert(cardfs);
 
   /* send status report to server */
-  if (LC_Service_Connect(d, "OK", "Service started")) {
+  if (LC_Service_Connect(cl, "OK", "Service started")) {
     DBG_ERROR(0, "Error communicating with the server");
     return -1;
   }
@@ -71,7 +71,7 @@ int ServiceCardFS_Start(LC_SERVICE *d){
 
 
 
-const char *ServiceCardFS_GetErrorText(LC_SERVICE *d, GWEN_TYPE_UINT32 err){
+const char *ServiceCardFS_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err){
   const char *s;
 
   switch(err) {
@@ -86,8 +86,8 @@ const char *ServiceCardFS_GetErrorText(LC_SERVICE *d, GWEN_TYPE_UINT32 err){
 
 
 
-GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_SERVICE *d,
-                                       LC_SERVICECLIENT *cl,
+GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_CLIENT *cl,
+                                       LC_SERVICECLIENT *scl,
                                        GWEN_DB_NODE *dbRequest,
                                        GWEN_DB_NODE *dbResponse) {
 
@@ -100,7 +100,7 @@ GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_SERVICE *d,
 
 
 int main(int argc, char **argv) {
-  LC_SERVICE *sv;
+  LC_CLIENT *sv;
 
   sv=ServiceCardFS_new(argc, argv);
   if (!sv) {
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 
   if (ServiceCardFS_Start(sv)) {
     DBG_ERROR(0, "Could not start service");
-    LC_Service_free(sv);
+    LC_Client_free(sv);
     return 1;
   }
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
   DBG_NOTICE(0, "Stopping service \"%s\"", argv[0]);
   sleep(1);
 
-  LC_Service_free(sv);
+  LC_Client_free(sv);
   return 0;
 }
 

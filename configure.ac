@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=11
+CHIPCARD_VERSION_BUILD=12
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -579,7 +579,6 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-server/server/Makefile
                  src/lib/chipcard2-server/server/commands/Makefile
                  src/lib/chipcard2-service/Makefile
-                 src/lib/chipcard2-service/version.h
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ifd/Makefile

@@ -25,7 +25,6 @@
 #define LC_CLIENT_DATADIR ".chipcard2"
 #define LC_CLIENT_CERTDIR "certificates"
 
-
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/ipc.h>
 #include <gwenhywfar/nettransportssl.h>
@@ -38,6 +37,7 @@
 #include "apps/cardmgr_l.h"
 
 struct LC_CLIENT {
+  GWEN_INHERIT_ELEMENT(LC_CLIENT)
   char *programName;
   char *programVersion;
   char *dataDir;
@@ -52,13 +52,11 @@ struct LC_CLIENT {
   int veryLongTimeout;
 
   LCM_MONITOR *monitor;
+
+  LC_CLIENT_HANDLE_INREQUEST handleInRequestFn;
 };
 
 
-LC_REQUEST *LC_Client_PeekNextRequest(LC_CLIENT *cl,
-                                      GWEN_TYPE_UINT32 serverId);
-LC_REQUEST *LC_Client_GetNextRequest(LC_CLIENT *cl,
-                                     GWEN_TYPE_UINT32 serverId);
 LC_REQUEST *LC_Client_FindWaitingRequest(LC_CLIENT *cl,
                                          GWEN_TYPE_UINT32 requestId);
 LC_REQUEST *LC_Client_FindWorkingRequest(LC_CLIENT *cl,
@@ -70,24 +68,18 @@ LC_SERVER *LC_Client_FindServer(LC_CLIENT *cl, GWEN_TYPE_UINT32 serverId);
 int LC_Client_StartConnect(LC_CLIENT *cl, LC_SERVER *sv);
 
 
-int LC_Client_Walk(LC_CLIENT *cl);
-
 int LC_Client_HandleCardAvailable(LC_CLIENT *cl, GWEN_DB_NODE *dbReq);
 int LC_Client_HandleNotification(LC_CLIENT *cl, GWEN_DB_NODE *dbReq);
 
+LC_REQUEST *LC_Client_PeekNextRequest(LC_CLIENT *cl,
+                                      GWEN_TYPE_UINT32 serverId);
+LC_REQUEST *LC_Client_GetNextRequest(LC_CLIENT *cl,
+                                     GWEN_TYPE_UINT32 serverId);
 
-GWEN_DB_NODE *LC_Client_GetNextResponse(LC_CLIENT *cl,
-                                        GWEN_TYPE_UINT32 rqid);
-GWEN_DB_NODE *LC_Client_WaitForNextResponse(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 rqid,
-                                            int timeout);
+int LC_Client_StartConnect(LC_CLIENT *cl, LC_SERVER *sv);
 
-int LC_Client_CheckForError(GWEN_DB_NODE *db);
+int LC_Client_Walk(LC_CLIENT *cl);
 
-GWEN_TYPE_UINT32 LC_Client_SendRequest(LC_CLIENT *cl,
-                                       LC_CARD *card,
-                                       GWEN_TYPE_UINT32 serverId,
-                                       GWEN_DB_NODE *dbReq);
 
 GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
   LC_Client__AskAddCert(GWEN_NETTRANSPORT *tr,
@@ -95,6 +87,10 @@ GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
 int LC_Client__GetPassword(GWEN_NETTRANSPORT *tr,
                            char *buffer, int num,
                            int rwflag);
+
+int LC_Client_HandleInRequest(LC_CLIENT *cl,
+                              GWEN_TYPE_UINT32 rid,
+                              GWEN_DB_NODE *dbReq);
 
 
 

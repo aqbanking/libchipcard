@@ -1,4 +1,3 @@
-- added support for new Cyberjack driver 2.0.6
-- now uses a single chipcard2.h and version.h file for all sublibraries
-- moved service code from chipcard2-server/service to chipcard2-service
-
+- some fixes
+- services are now based on clients (since services basically *are* clients
+  which serve other clients)

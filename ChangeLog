@@ -1,4 +1,11 @@
 
+2005/01/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- some fixes
+- services are now based on clients (since services basically *are* clients
+  which serve other clients)
+
+
 2005/01/24: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - now uses a single chipcard2.h and version.h file for all sublibraries

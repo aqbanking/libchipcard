@@ -12,8 +12,7 @@ noinst_HEADERS=\
 iheaderdir=${includedir}/chipcard2-service
 iheader_HEADERS=\
   client.h \
-  service.h \
-  version.h
+  service.h
 
 libchipcard2sv_la_SOURCES=\
   client.c \

@@ -16,17 +16,12 @@
 
 #define LC_SERVICE_STARTTIMEOUT 20
 
-#define LC_SERVICE_MARK_SERVICE 1
-
-#define LC_SERVICE_IPC_MAXWORK 256
-
 #include <gwenhywfar/logger.h>
 #include <chipcard2-service/service.h>
 
 
-
-struct LC_SERVICE {
-  GWEN_INHERIT_ELEMENT(LC_SERVICE)
+typedef struct LC_SERVICE_CLIENT LC_SERVICE_CLIENT;
+struct LC_SERVICE_CLIENT {
   /* arguments */
   int verbous;                   /* -v */
   int secure;                    /* --secure */
@@ -44,8 +39,6 @@ struct LC_SERVICE {
 
   /* runtime data */
   int stopService;
-  GWEN_IPCMANAGER *ipcManager;
-  GWEN_TYPE_UINT32 ipcId;
 
   LC_SERVICECLIENT_LIST *clients;
 
@@ -54,24 +47,25 @@ struct LC_SERVICE {
   LC_SERVICE_COMMAND_FN commandFn;
   LC_SERVICE_GETERRORTEXT_FN getErrorTextFn;
 };
+void LC_Service_freeData(void *bp, void *p);
 
 
-int LC_Service__Work(LC_SERVICE *d, int timeout, int maxMsg);
-
-
-LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_SERVICE *d,
+LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
                                                  int argc, char **argv);
 
 
-int LC_Service_HandleServiceOpen(LC_SERVICE *d,
+int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
                                  GWEN_TYPE_UINT32 rid,
                                  GWEN_DB_NODE *dbReq);
-int LC_Service_HandleServiceClose(LC_SERVICE *d,
+int LC_Service_HandleServiceClose(LC_CLIENT *cl,
                                   GWEN_TYPE_UINT32 rid,
                                   GWEN_DB_NODE *dbReq);
-int LC_Service_HandleServiceCommand(LC_SERVICE *d,
+int LC_Service_HandleServiceCommand(LC_CLIENT *cl,
                                     GWEN_TYPE_UINT32 rid,
                                     GWEN_DB_NODE *dbReq);
+int LC_Service_HandleInRequest(LC_CLIENT *cl,
+                               GWEN_TYPE_UINT32 rid,
+                               GWEN_DB_NODE *dbReq);
 
 
 #endif /* CHIPCARD_SERVICE_SERVICE_P_H */

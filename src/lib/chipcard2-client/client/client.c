@@ -36,6 +36,10 @@
 #include <time.h>
 
 
+GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
+
+
+
 LC_CLIENT *LC_Client_new(const char *programName,
                          const char *programVersion,
                          const char *dataDir) {
@@ -236,6 +240,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
     if (rid) {
       GWEN_DB_NODE *dbReq;
       const char *name;
+      int rv;
 
       /* there is an incoming request */
       DBG_INFO(LC_LOGDOMAIN, "Got an incoming request");
@@ -243,27 +248,30 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
       dbReq=GWEN_IPCManager_GetInRequestData(cl->ipcManager, rid);
       assert(dbReq);
       name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
-      if (strcasecmp(name, "CardAvailable")==0) {
-        DBG_DEBUG(LC_LOGDOMAIN, "A card seems to be available");
-        if (LC_Client_HandleCardAvailable(cl, dbReq)) {
-          DBG_WARN(LC_LOGDOMAIN, "Error handling CardAvailable message");
+      rv=LC_Client_HandleInRequest(cl, rid, dbReq);
+      if (rv==1) {
+        if (strcasecmp(name, "CardAvailable")==0) {
+          DBG_DEBUG(LC_LOGDOMAIN, "A card seems to be available");
+          if (LC_Client_HandleCardAvailable(cl, dbReq)) {
+            DBG_WARN(LC_LOGDOMAIN, "Error handling CardAvailable message");
+          }
         }
-      }
-      else if (strcasecmp(name, "Notification")==0) {
-        DBG_NOTICE(LC_LOGDOMAIN, "Notification received");
-        if (LC_Client_HandleNotification(cl, dbReq)) {
-          DBG_WARN(LC_LOGDOMAIN, "Error handling Notification message");
+        else if (strcasecmp(name, "Notification")==0) {
+          DBG_NOTICE(LC_LOGDOMAIN, "Notification received");
+          if (LC_Client_HandleNotification(cl, dbReq)) {
+            DBG_WARN(LC_LOGDOMAIN, "Error handling Notification message");
+          }
         }
-      }
-      else {
-        DBG_NOTICE(LC_LOGDOMAIN, "Unknown incoming request:");
-        if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelNotice) {
-          GWEN_DB_Dump(dbReq, stderr, 2);
+        else {
+          DBG_NOTICE(LC_LOGDOMAIN, "Unhandled incoming request:");
+          if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelNotice) {
+            GWEN_DB_Dump(dbReq, stderr, 2);
+          }
         }
-      }
-      DBG_DEBUG(LC_LOGDOMAIN, "Removing incoming request");
-      GWEN_IPCManager_RemoveRequest(cl->ipcManager, rid, 0);
-    }
+        DBG_DEBUG(LC_LOGDOMAIN, "Removing incoming request");
+        GWEN_IPCManager_RemoveRequest(cl->ipcManager, rid, 0);
+      } /* if not externally handled */
+    } /* if incoming request */
 
     /* check for current command */
     rid=LC_Server_GetCurrentCommand(sv);
@@ -2699,6 +2707,44 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
 }
 
 
+
+void LC_Client_SetHandleInRequestFn(LC_CLIENT *cl,
+                                    LC_CLIENT_HANDLE_INREQUEST fn){
+  assert(cl);
+  cl->handleInRequestFn=fn;
+}
+
+
+
+int LC_Client_HandleInRequest(LC_CLIENT *cl,
+                              GWEN_TYPE_UINT32 rid,
+                              GWEN_DB_NODE *dbReq){
+  assert(cl);
+  if (cl->handleInRequestFn)
+    return cl->handleInRequestFn(cl, rid, dbReq);
+  else {
+    /* not handled */
+    return 1;
+  }
+}
+
+
+
+int LC_Client_SendResponse(LC_CLIENT *cl,
+                           GWEN_TYPE_UINT32 rid,
+                           GWEN_DB_NODE *dbCommand) {
+  assert(cl);
+  return GWEN_IPCManager_SendResponse(cl->ipcManager,
+                                      rid,
+                                      dbCommand);
+}
+
+
+
+void LC_Client_RemoveInRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
+  assert(cl);
+  GWEN_IPCManager_RemoveRequest(cl->ipcManager, rid, 0);
+}
 
 
 
