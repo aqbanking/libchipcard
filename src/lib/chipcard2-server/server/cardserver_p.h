@@ -265,11 +265,6 @@ int LC_CardServer_HandleServiceNotification(LC_CARDSERVER *cs,
                                             GWEN_TYPE_UINT32 rid,
                                             GWEN_DB_NODE *dbReq);
 
-/* a client offering a service */
-int LC_CardServer_HandleOfferService(LC_CARDSERVER *cs,
-                                     GWEN_TYPE_UINT32 rid,
-                                     GWEN_DB_NODE *dbReq);
-
 
 /*@}*/
 

@@ -4,6 +4,7 @@
 - some fixes
 - services are now based on clients (since services basically *are* clients
   which serve other clients)
+- removed "OfferService" command
 
 
 2005/01/24: Martin Preuss<martin@libchipcard.de>

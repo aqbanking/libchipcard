@@ -3103,91 +3103,6 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
 
 
 
-int LC_CardServer_HandleOfferService(LC_CARDSERVER *cs,
-                                     GWEN_TYPE_UINT32 rid,
-                                     GWEN_DB_NODE *dbReq){
-  GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 serviceId=0;
-  const char *serviceName;
-  LC_SERVICE *sv;
-  const char *text=0;
-
-  assert(dbReq);
-
-  clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
-  if (!clientId) {
-    DBG_ERROR(0, "Invalid node id");
-    if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
-      DBG_WARN(0, "Could not remove request");
-    }
-    return -1;
-  }
-
-  DBG_NOTICE(0, "Client %08x: OfferService", clientId);
-  serviceName=GWEN_DB_GetCharValue(dbReq, "body/serviceName", 0, 0);
-  if (serviceName==0) {
-    DBG_ERROR(0, "Missing service name");
-    LC_CardServer_SendErrorResponse(cs, rid,
-                                    LC_ERROR_INVALID,
-                                    "Missing service name");
-    return -1;
-  }
-
-  /* search for service */
-  sv=LC_Service_List_First(cs->services);
-  while(sv) {
-    const char *sn;
-
-    sn=LC_Service_GetServiceName(sv);
-    if (sn)
-      if (strcasecmp(sn, serviceName)==0)
-        break;
-    sv=LC_Service_List_Next(sv);
-  }
-  if (sv) {
-    DBG_ERROR(0, "Service \"%s\" already exists", serviceName);
-    LC_CardServer_SendErrorResponse(cs, rid,
-                                    LC_ERROR_INVALID,
-                                    "Service already exists");
-    return -1;
-  }
-
-  /* create new client-service, add it */
-  sv=LC_Service_new();
-  LC_Service_SetServiceName(sv, serviceName);
-  LC_Service_AddFlags(sv, LC_SERVICE_FLAGS_CLIENT);
-  LC_Service_SetIpcId(sv, clientId);
-  LC_Service_List_Add(sv, cs->services);
-
-  DBG_NOTICE(0, "Service \"%08x\" is up (%s)", serviceId, text);
-  LC_Service_SetStatus(sv, LC_ServiceStatusUp);
-  LC_CardServer_SendServiceNotification(cs, 0,
-                                        LC_NOTIFY_CODE_SERVICE_UP,
-                                        sv,
-                                        "Service provided by client is up.");
-
-  /* send response */
-  dbRsp=GWEN_DB_Group_new("OfferServiceResponse");
-  GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "code", LC_ERROR_NONE);
-  GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "text", "Service registered");
-  if (GWEN_IPCManager_SendResponse(cs->ipcManager, rid, dbRsp)) {
-    DBG_ERROR(0, "Could not send response");
-    return -1;
-  }
-
-  /* remove request */
-  if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
-    DBG_WARN(0, "Could not remove request");
-  }
-
-  return 0;
-}
-
-
-
 int LC_CardServer_HandleGetDriverVar(LC_CARDSERVER *cs,
 				     GWEN_TYPE_UINT32 rid,
 				     GWEN_DB_NODE *dbReq){
@@ -5289,9 +5204,6 @@ int LC_CardServer_HandleNextCommand(LC_CARDSERVER *cs) {
     }
     else if (strcasecmp(name, "ServiceReady")==0) {
       rv=LC_CardServer_HandleServiceReady(cs, ridNext, dbReq);
-    }
-    else if (strcasecmp(name, "OfferService")==0) {
-      rv=LC_CardServer_HandleOfferService(cs, ridNext, dbReq);
     }
     else if (strcasecmp(name, "ServiceNotification")==0) {
       rv=LC_CardServer_HandleServiceNotification(cs, ridNext, dbReq);
