@@ -733,7 +733,6 @@ int server(ARGUMENTS *args) {
     else if (rv!=0) {
       /* father process, does nothing more */
       DBG_DEBUG(0, "Daemon forked, father exiting");
-      remove(pidfile);
       return 0;
     }
   } /* if daemon mode */

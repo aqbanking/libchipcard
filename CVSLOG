@@ -1,3 +1,2 @@
-- debugging of FS code (creating a folder and setting the CWD now works)
-- added preliminary support for libsysfs (not yet enabled, I will have to
-  create M4-macros for configure.ac first) submitted by Thomas Viehmann.
+- fixed a bug which caused the nanny to remove the pid file of the child
+  (patch submitted by Thomas Viehmann)
