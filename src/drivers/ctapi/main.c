@@ -49,9 +49,9 @@ int main(int argc, char **argv) {
     }
 
     DBG_NOTICE(0, "Stopping driver \"%s\"", argv[0]);
+    sleep(1);
   }
 
-  sleep(2);
   LC_Driver_free(d);
   return 0;
 }

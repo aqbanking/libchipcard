@@ -71,10 +71,10 @@ int LC_FSModule_WriteFile(LC_FS_MODULE *fs,
                           GWEN_TYPE_UINT32 offset,
                           GWEN_BUFFER *buf);
 
-int LC_FSModule_Stat(LC_FS_MODULE *fs,
-                     LC_FS_NODE *node,
-                     const char *name,
-                     LC_FS_STAT *st);
+int LC_FSModule_Lookup(LC_FS_MODULE *fs,
+                       LC_FS_NODE *node,
+                       const char *name,
+                       LC_FS_NODE **nPtr);
 
 
 

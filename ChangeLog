@@ -1,4 +1,16 @@
 
+
+2005/01/13: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- valgrind session, fixed memory leaks in:
+  - LC_CardServer__SampleDrivers()
+  - LC_CardMgr_SampleFiles()
+  - LC_Client_free()
+- added function LC_Reader_DelClientRequests()
+- when a driver goes down: delete its IPC client
+- when client goes down: delete clients' requests
+
+
 2005/01/05: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added code which retrieves reader information via CTAPI. This information is

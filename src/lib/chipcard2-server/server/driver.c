@@ -119,8 +119,10 @@ void LC_Driver_free(LC_DRIVER *d){
     free(d->driverType);
     free(d->driverName);
     free(d->driverDataDir);
+    free(d->logFile);
     free(d->customerId);
     free(d->libraryFile);
+    GWEN_Process_free(d->process);
     GWEN_FREE_OBJECT(d);
   }
 }

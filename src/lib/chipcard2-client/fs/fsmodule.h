@@ -31,7 +31,6 @@ enum LC_FS_ERROR {
 
 
 
-typedef struct LC_FS_STAT LC_FS_STAT;
 typedef struct LC_FS_MODULE LC_FS_MODULE;
 
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_FS_MODULE, LC_CLIENT_API)
@@ -96,10 +95,10 @@ typedef int (*LC_FS_MODULE_WRITEFILE_FN)(LC_FS_MODULE *fs,
                                          GWEN_TYPE_UINT32 offset,
                                          GWEN_BUFFER *buf);
 
-typedef int (*LC_FS_MODULE_STAT_FN)(LC_FS_MODULE *fs,
-                                    LC_FS_NODE *node,
-                                    const char *name,
-                                    LC_FS_STAT *st);
+typedef int (*LC_FS_MODULE_LOOKUP_FN)(LC_FS_MODULE *fs,
+                                      LC_FS_NODE *node,
+                                      const char *name,
+                                      LC_FS_NODE **nPtr);
 
 
 
@@ -116,7 +115,16 @@ void LC_FSModule_SetCloseFileFn(LC_FS_MODULE *fs,
 void LC_FSModule_SetReadFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_READFILE_FN f);
 void LC_FSModule_SetWriteFileFileFn(LC_FS_MODULE *fs,
                                     LC_FS_MODULE_WRITEFILE_FN f);
-void LC_FSModule_SetStatFn(LC_FS_MODULE *fs, LC_FS_MODULE_STAT_FN f);
+void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f);
+
+
+GWEN_TYPE_UINT32 LC_FSModule_GetFlags(const LC_FS_MODULE *fs);
+void LC_FSModule_SetFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl);
+void LC_FSModule_AddFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl);
+void LC_FSModule_SubFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl);
+GWEN_TYPE_UINT32 LC_FSModule_GetActiveNodes(const LC_FS_MODULE *fs);
+void LC_FSModule_IncActiveNodes(LC_FS_MODULE *fs);
+void LC_FSModule_DecActiveNodes(LC_FS_MODULE *fs);
 
 
 

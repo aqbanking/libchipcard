@@ -122,6 +122,7 @@ ARGUMENTS *Arguments_new() {
   ar->logType=GWEN_LoggerTypeFile;
 #endif
   ar->exitOnSetupError=0;
+  ar->runOnce=0;
 
   return ar;
 }
@@ -207,6 +208,8 @@ void usage(const char *name) {
 	       "                     warning, notice, info and debug\n"
 	       "                    Default is \"notice\".\n"
                " --exit-on-error  - makes chipcardd2 exit on setup errors\n"
+               " --runonce        - makes chipcardd2 exit after serving "
+               "one client\n"
                "\n"
                " The following options apply to commands init and mkcert:\n"
                " --certfile FILE  - name of the certificate file to write\n"
@@ -313,6 +316,9 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
     }
     else if (strcmp(argv[i],"--exit-on-error")==0) {
       args->exitOnSetupError=1;
+    }
+    else if (strcmp(argv[i],"--runonce")==0) {
+      args->runOnce=1;
     }
 
     else if (strcmp(argv[i],"--accept-all-certs")==0) {
@@ -949,6 +955,12 @@ int server(ARGUMENTS *args) {
     return RETURNVALUE_NOSTART;
   }
 
+  if (args->runOnce) {
+    DBG_NOTICE(0, "ChipCard daemon will only serve one client.");
+    fprintf(stderr,
+            I18N("ChipCard daemon will only serve one client."));
+  }
+
   DBG_INFO(0, "Will now initialize server.");
   cardServer=LC_CardServer_new(0);
   if (LC_CardServer_ReadConfig(cardServer, db)) {
@@ -966,6 +978,9 @@ int server(ARGUMENTS *args) {
     int rv;
 
     while(1) {
+      int clientsBefore;
+
+      clientsBefore=LC_CardServer_GetClientCount(cardServer);
       rv=LC_CardServer_Work(cardServer);
       if (rv==-1) {
         DBG_INFO(0,
@@ -974,6 +989,12 @@ int server(ARGUMENTS *args) {
       }
       else if (rv==1)
         break;
+      if (args->runOnce && clientsBefore)
+        if (LC_CardServer_GetClientCount(cardServer)==0) {
+          DBG_NOTICE(0, "One client served, going down.");
+          ChipcardDaemonStop=1;
+          break;
+        }
     }
     res=GWEN_Net_HeartBeat(2000);
     if (res==GWEN_NetConnectionWorkResult_Error) {

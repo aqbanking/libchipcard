@@ -26,6 +26,7 @@ typedef struct LC_READER LC_READER;
 
 #include <chipcard2-server/server/driver.h>
 #include <chipcard2-server/server/request.h>
+#include <chipcard2-server/server/client.h>
 
 #include <time.h>
 
@@ -101,6 +102,7 @@ int LC_Reader_HasNextRequest(const LC_READER *r);
 LC_REQUEST *LC_Reader_GetNextRequest(LC_READER *r);
 void LC_Reader_AddRequest(LC_READER *r, LC_REQUEST *rq);
 void LC_Reader_ClearRequests(LC_READER *r);
+void LC_Reader_DelClientRequests(LC_READER *r, LC_CLIENT *cl);
 
 
 GWEN_TYPE_UINT32 LC_Reader_GetVendorId(const LC_READER *r);

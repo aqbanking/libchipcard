@@ -22,12 +22,6 @@
 #include "fsmodule_l.h"
 
 
-struct LC_FS_STAT {
-  GWEN_TYPE_UINT32 flags;
-  GWEN_TYPE_UINT32 length;
-};
-
-
 struct LC_FS_MODULE {
   GWEN_INHERIT_ELEMENT(LC_FS_MODULE);
   GWEN_LIST_ELEMENT(LC_FS_MODULE);
@@ -45,7 +39,7 @@ struct LC_FS_MODULE {
   LC_FS_MODULE_CLOSEFILE_FN closeFileFn;
   LC_FS_MODULE_READFILE_FN readFileFn;
   LC_FS_MODULE_WRITEFILE_FN writeFileFn;
-  LC_FS_MODULE_STAT_FN statFn;
+  LC_FS_MODULE_LOOKUP_FN lookupFn;
 
   GWEN_TYPE_UINT32 flags;
   GWEN_TYPE_UINT32 activeNodes;

@@ -128,9 +128,9 @@ void LC_FSModule_SetWriteFileFileFn(LC_FS_MODULE *fs,
 
 
 
-void LC_FSModule_SetStatFn(LC_FS_MODULE *fs, LC_FS_MODULE_STAT_FN f){
+void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f){
   assert(fs);
-  fs->statFn=f;
+  fs->lookupFn=f;
 }
 
 
@@ -260,14 +260,14 @@ int LC_FSModule_WriteFile(LC_FS_MODULE *fs,
 
 
 
-int LC_FSModule_Stat(LC_FS_MODULE *fs,
-                     LC_FS_NODE *node,
-                     const char *name,
-                     LC_FS_STAT *st){
+int LC_FSModule_Lookup(LC_FS_MODULE *fs,
+                       LC_FS_NODE *node,
+                       const char *name,
+                       LC_FS_NODE **nPtr) {
   assert(fs);
-  if (!fs->statFn)
+  if (!fs->lookupFn)
     return LC_FS_ErrorNotSupported;
-  return fs->statFn(fs, node, name, st);
+  return fs->lookupFn(fs, node, name, nPtr);
 }
 
 

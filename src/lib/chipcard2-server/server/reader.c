@@ -603,6 +603,25 @@ void LC_Reader_Dump(const LC_READER *r, FILE *f, int indent) {
 
 
 
+void LC_Reader_DelClientRequests(LC_READER *r, LC_CLIENT *cl){
+  LC_REQUEST *rq;
+
+  /* remove all requests of the given client */
+  rq=LC_Request_List_First(r->requests);
+  while(rq) {
+    LC_REQUEST *next;
+
+    next=LC_Request_List_Next(rq);
+    if (LC_Request_GetClient(rq)==cl) {
+      LC_Request_List_Del(rq);
+      LC_Request_free(rq);
+    }
+    rq=next;
+  } /* while */
+}
+
+
+
 
 
 

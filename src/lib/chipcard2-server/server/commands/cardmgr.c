@@ -167,6 +167,7 @@ void LC_CardMgr_SampleFiles(LC_CARDMGR *mgr,
     LC_CardMgr__SampleFiles(mgr, GWEN_StringListEntry_Data(se));
     se=GWEN_StringListEntry_Next(se);
   } /* while */
+  GWEN_Buffer_free(buf);
 }
 
 

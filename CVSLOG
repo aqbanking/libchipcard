@@ -1,4 +1,7 @@
-- added code which retrieves reader information via CTAPI. This information is
-  now shown by "chipcard-tool check".
-- started working on card file system
-- combined chipcard2-client and chipcard2-server to form the new libchipcard2.
+- valgrind session, fixed memory leaks in:
+  - LC_CardServer__SampleDrivers()
+  - LC_CardMgr_SampleFiles()
+  - LC_Client_free()
+- added function LC_Reader_DelClientRequests()
+- when a driver goes down: delete its IPC client
+- when client goes down: delete clients' requests

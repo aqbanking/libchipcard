@@ -55,6 +55,7 @@ struct _S_ARGS {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   int exitOnSetupError;
+  int runOnce;
 
   const char *certFile;
   const char *dhFile;

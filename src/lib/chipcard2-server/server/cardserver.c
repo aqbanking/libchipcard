@@ -178,7 +178,21 @@ void LC_CardServer_ClientDown(LC_CARDSERVER *cs, LC_CLIENT *cl) {
   LC_CARD *card;
   LC_READER *r;
   LC_SERVICE *as;
+  LC_REQUEST *rq;
   int rv;
+
+  /* remove all requests of this client */
+  rq=LC_Request_List_First(cs->requests);
+  while(rq) {
+    LC_REQUEST *next;
+
+    next=LC_Request_List_Next(rq);
+    if (LC_Request_GetClient(rq)==cl) {
+      LC_Request_List_Del(rq);
+      LC_Request_free(rq);
+    }
+    rq=next;
+  } /* while */
 
   /* release all cards used by this client */
   card=LC_Card_List_First(cs->activeCards);
@@ -232,6 +246,8 @@ void LC_CardServer_ClientDown(LC_CARDSERVER *cs, LC_CLIENT *cl) {
   /* release all readers currently in use by the client */
   r=LC_Reader_List_First(cs->readers);
   while(r) {
+    /* remove all requests of the given client */
+    LC_Reader_DelClientRequests(r, cl);
     if (LC_Client_HasReader(cl, LC_Reader_GetReaderId(r))) {
       DBG_NOTICE(0, "Reader \"%s\" in use by client \"%08x\"",
                  LC_Reader_GetReaderName(r), LC_Client_GetClientId(cl));
@@ -433,11 +449,17 @@ int LC_CardServer_StopDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
 
 int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
   int done;
+  GWEN_TYPE_UINT32 nid;
+  int rv;
 
   assert(cs);
   assert(d);
 
   done=0;
+
+
+  nid=LC_Driver_GetIpcId(d);
+
   if (LC_Driver_GetStatus(d)==LC_DriverStatusAborted) {
     if (cs->driverRestartTime &&
         difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
@@ -472,6 +494,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         }
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_ERROR,
 					     d,
@@ -489,6 +519,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       DBG_WARN(0, "Driver terminated normally");
       LC_Driver_SetProcess(d, 0);
       LC_Driver_SetStatus(d, LC_DriverStatusDown);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+        LC_Driver_SetIpcId(d, nid);
+      }
       LC_CardServer_SendDriverNotification(cs, 0,
 					   LC_NOTIFY_CODE_DRIVER_DOWN,
                                            d, "Driver terminated normally");
@@ -498,6 +536,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       DBG_WARN(0, "Driver terminated abnormally");
       LC_Driver_SetProcess(d, 0);
       LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+        LC_Driver_SetIpcId(d, nid);
+      }
       LC_CardServer_SendDriverNotification(cs, 0,
 					   LC_NOTIFY_CODE_DRIVER_ERROR,
                                            d, "Driver terminated abnormally");
@@ -510,6 +556,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       }
       LC_Driver_SetProcess(d, 0);
       LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+        LC_Driver_SetIpcId(d, nid);
+      }
       LC_CardServer_SendDriverNotification(cs, 0,
 					   LC_NOTIFY_CODE_DRIVER_ERROR,
 					   d,
@@ -524,6 +578,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       }
       LC_Driver_SetProcess(d, 0);
       LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+        LC_Driver_SetIpcId(d, nid);
+      }
       LC_CardServer_SendDriverNotification(cs, 0,
 					   LC_NOTIFY_CODE_DRIVER_ERROR,
 					   d,
@@ -556,6 +618,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         }
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_ERROR,
 					     d,
@@ -568,6 +638,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         DBG_WARN(0, "Driver terminated normally");
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusDown);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_DOWN,
                                              d, "Driver terminated normally");
@@ -577,6 +655,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         DBG_WARN(0, "Driver terminated abnormally");
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_ERROR,
 					     d,
@@ -590,6 +676,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         }
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_ERROR,
 					     d,
@@ -604,6 +698,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         }
         LC_Driver_SetProcess(d, 0);
         LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+        if (nid) {
+          rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+          if (rv) {
+            DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                     LC_Driver_GetDriverId(d));
+          }
+          LC_Driver_SetIpcId(d, nid);
+        }
 	LC_CardServer_SendDriverNotification(cs, 0,
 					     LC_NOTIFY_CODE_DRIVER_ERROR,
 					     d,
@@ -632,6 +734,14 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       GWEN_Process_Terminate(p);
       LC_Driver_SetProcess(d, 0);
       LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+      if (nid) {
+        rv=GWEN_IPCManager_RemoveClient(cs->ipcManager, nid);
+        if (rv) {
+          DBG_WARN(0, "Error removing IPC node of driver \"%08x\"",
+                   LC_Driver_GetDriverId(d));
+        }
+        LC_Driver_SetIpcId(d, nid);
+      }
       LC_CardServer_SendDriverNotification(cs, 0,
 					   LC_NOTIFY_CODE_DRIVER_ERROR,
 					   d,
@@ -4338,6 +4448,7 @@ int LC_CardServer_HandleSetNotify(LC_CARDSERVER *cs,
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", "Notification types/codes ok");
   }
+  GWEN_Buffer_free(ebuf);
 
   DBG_NOTICE(0, "Setting notify flags %08x", flags);
   LC_Client_SetNotifyFlags(cl, flags);
@@ -6262,12 +6373,16 @@ int LC_CardServer__SampleDrivers(GWEN_STRINGLIST *sl,
             }
             GWEN_DB_AddGroup(dbDrivers, dbDriver);
           }
+          else {
+            GWEN_DB_Group_free(dbDriver);
+          }
 	}
       }
     }
     GWEN_XMLNode_free(nFile);
     e=GWEN_StringListEntry_Next(e);
   } /* while eDirs */
+  GWEN_Buffer_free(nbuf);
 
   return 0;
 }
@@ -7365,6 +7480,13 @@ void LC_CardServer_DumpState(LC_CARDSERVER *cs) {
   }
 
 
+}
+
+
+
+int LC_CardServer_GetClientCount(const LC_CARDSERVER *cs){
+  assert(cs);
+  return LC_Client_List_GetCount(cs->clients);
 }
 
 

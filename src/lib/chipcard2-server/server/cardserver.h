@@ -57,6 +57,8 @@ int LC_CardServer_GetUSBDevices(GWEN_DB_NODE *dbKnownDrivers,
                                 GWEN_DB_NODE *dbReaders);
 
 
+int LC_CardServer_GetClientCount(const LC_CARDSERVER *cs);
+
 #endif /* CHIPCARD_SERVER_CARDSERVER_H */
 
 

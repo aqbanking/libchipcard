@@ -231,6 +231,7 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
     GWEN_BUFFER *mbuf;
 
     if (strstr(d->logFile, "@reader@")) {
+      free(d->readerLogFile);
       d->readerLogFile=strdup(d->logFile);
       mbuf=GWEN_Buffer_new(0, 256, 0, 1);
       LC_Driver_ReplaceVar(d->logFile, "reader", "driver", mbuf);
@@ -359,6 +360,7 @@ void LC_Driver_free(LC_DRIVER *d) {
     LC_Reader_List_free(d->readers);
     GWEN_IPCManager_free(d->ipcManager);
     free(d->logFile);
+    free(d->readerLogFile);
     GWEN_FREE_OBJECT(d);
   }
 }

@@ -57,6 +57,7 @@ void LC_Client_free(LC_CLIENT *cl){
     GWEN_IdList_free(cl->selectedReaders);
     GWEN_IdList_free(cl->openServices);
     free(cl->userName);
+    free(cl->appName);
     GWEN_FREE_OBJECT(cl);
   }
 }
