@@ -261,3 +261,32 @@ driver.inactive {
 } # driver
 
 
+
+# ===========================================================================
+# Services
+#
+# A service basically is a chipcard client which is automatically started
+# by the chipcard server. It can be started on a users' demand (if a user
+# wants to use a service) or upon start of the server (if the flag "autoload"
+# is given in the service section).
+
+
+# ---------------------------------------------------------------------------
+# Service section for German Medical Card Service
+#
+# This service is used by GnuMed to sample inserted German medical cards.
+# It is started when the chipcard server is started (due to the "autoload"
+# flag given below)
+
+service {
+  char serviceName="kvks"
+  char serviceDataDir="/var/spool/gnumed"
+  char flags="autoload" # this makes the server load this service upon
+                        # its own start
+} # service
+
+
+
+
+
+

@@ -125,6 +125,11 @@ LC_DRIVER_LOGLEVEL
 Loglevel to be used for drivers.
 
 
+LC_SERVICE_LOGLEVEL
+------------------
+Loglevel to be used for services.
+
+
 
 6. Client Setup
 ===============

@@ -493,6 +493,21 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
       as=LC_Service_FromDb(gr);
       assert(as);
       DBG_INFO(0, "Adding service \"%s\"", LC_Service_GetServiceName(as));
+
+      /* preset logfile if none given */
+      if (!LC_Service_GetLogFile(as)) {
+        GWEN_BUFFER *lbuf;
+
+        lbuf=GWEN_Buffer_new(0, 256, 0, 1);
+        LC_CardServer_ReplaceVar(LC_DEFAULT_LOGDIR
+                                 "/services/@service@.log",
+                                 "service",
+                                 LC_Service_GetServiceName(as),
+                                 lbuf);
+        LC_Service_SetLogFile(as, GWEN_Buffer_GetStart(lbuf));
+        GWEN_Buffer_free(lbuf);
+      }
+
       LC_Service_List_Add(as, cs->services);
     }
     else if (strcasecmp(GWEN_DB_GroupName(gr), "server")==0) {

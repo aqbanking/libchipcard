@@ -829,6 +829,13 @@ int LC_CardServer_StartService(LC_CARDSERVER *cs, LC_SERVICE *as) {
     GWEN_Buffer_AppendString(abuf, s);
   }
 
+  s=getenv("LC_SERVICE_LOGLEVEL");
+  if (s) {
+    GWEN_Buffer_AppendString(abuf, " --loglevel ");
+    GWEN_Buffer_AppendString(abuf, s);
+  }
+
+
   if (cs->typeForDrivers) {
     GWEN_Buffer_AppendString(abuf, " -t ");
     GWEN_Buffer_AppendString(abuf, cs->typeForDrivers);

@@ -14,9 +14,11 @@
     char serviceName="kvks"
     char serviceDataDir="YOUR_DATA_FOLDER"
     char logFile="YOUR_LOGFILE" # or omit this for reasonable defaults
-    char flags="autoload" # this make the server load this service upon
+    char flags="autoload" # this makes the server load this service upon
                           # its own start
   } # service
+- services now use a default log file (like drivers do) if none provided in
+  the config file
 
 
 2005/02/02: Martin Preuss<martin@libchipcard.de>
