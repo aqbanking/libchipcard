@@ -1,4 +1,9 @@
 
+===========================================================================
+MARK: released version 1.9.10beta (2005/02/19)
+===========================================================================
+
+
 2005/02/19: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added a driver for OpenSC. This allows OpenSC to use Libchipcard instead of

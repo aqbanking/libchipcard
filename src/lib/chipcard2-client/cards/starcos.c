@@ -201,6 +201,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
     return LC_Client_ResultDataError;
   }
 
+#if 1
   /* select banking DF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_BANKING...");
   res=LC_ProcessorCard_SelectDF(card, "DF_BANKING");
@@ -210,6 +211,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
     GWEN_Buffer_free(mbuf);
     return res;
   }
+#endif
 
   scos->db_ef_gd_0=dbData;
   scos->bin_ef_gd_0=mbuf;

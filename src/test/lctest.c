@@ -3868,6 +3868,94 @@ int testFS4(int argc, char **argv) {
 
 
 
+int test33(int argc, char **argv) {
+  LC_CLIENT *cl;
+  LC_CARD *card;
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbData;
+  int maxErrors;
+  int currentErrors;
+  int i;
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfigFile(cl, 0)) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  fprintf(stderr, "INFO: Sending StartWait\n");
+  res=LC_Client_StartWait(cl, 0, 0);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "INFO: Waiting for card\n");
+  card=LC_Client_WaitForNextCard(cl, 30000);
+  if (!card) {
+    fprintf(stderr, "ERROR: No card found.\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: We got this card:\n");
+  LC_Card_Dump(card, stderr, 2);
+
+  if (LC_Starcos_ExtendCard(card)) {
+    fprintf(stderr, "Could not extend card as STARCOS card\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: Opening card\n");
+  res=LC_Card_Open(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  dbData=LC_Starcos_GetCardDataAsDb(card);
+  GWEN_DB_Dump(dbData, stderr, 2);
+
+  fprintf(stderr, "Stopping wait\n");
+  res=LC_Client_StopWait(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Getting pin status...\n");
+  for (i=0; i<256; i++) {
+    fprintf(stderr, "Trying %3d (%02x)...\n", i, i);
+    res=LC_Starcos_GetPinStatus(card, i, &maxErrors, &currentErrors);
+    if (res==LC_Client_ResultOk) {
+      fprintf(stderr, "Got it: %d (%02x)\n", i, i);
+      break;
+    }
+  }
+
+  fprintf(stderr, "Pin Status: MaxErrors=%d, CurrentErrors=%d\n",
+          maxErrors, currentErrors);
+
+  fprintf(stderr, "INFO: Closing card\n");
+  res=LC_Card_Close(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Sleeping...\n");
+  sleep(5);
+
+  LC_Client_free(cl);
+  return 0;
+}
+
+
+
 int main(int argc, char **argv) {
 
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelNotice);
@@ -3953,6 +4041,8 @@ int main(int argc, char **argv) {
     return testFS3(argc, argv);
   else if (strcasecmp(argv[1], "fs4")==0)
     return testFS4(argc, argv);
+  else if (strcasecmp(argv[1], "test33")==0)
+    return test33(argc, argv);
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", argv[1]);
     return 1;
