@@ -196,8 +196,18 @@ LC_CLIENT *LC_Service_new(int argc, char **argv) {
   LC_SERVICE_CHECKARGS_RESULT res;
   GWEN_DB_NODE *dbConfig;
   GWEN_DB_NODE *dbServer;
+  const char *p;
 
-  cl=LC_Client_new(argv[0], "0", 0);
+#ifdef OS_WIN32
+  p=strchr(argv[0], '\\');
+  if (!p)
+    p=strchr(argv[0], '/');
+#else
+  p=strchr(argv[0], '/');
+#endif
+  if (!p)
+    p=argv[0];
+  cl=LC_Client_new(p, "0", 0);
   GWEN_NEW_OBJECT(LC_SERVICE_CLIENT, sv);
   GWEN_INHERIT_SETDATA(LC_CLIENT, LC_SERVICE_CLIENT, cl, sv,
                        LC_Service_freeData);
@@ -267,6 +277,7 @@ const char *LC_Service_GetServiceDataDir(const LC_CLIENT *cl){
   assert(cl);
   sv=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_SERVICE_CLIENT, cl);
   assert(sv);
+
   return sv->serviceDataDir;
 }
 
@@ -742,14 +753,16 @@ int LC_Service_HandleInRequest(LC_CLIENT *cl,
     LC_Client_RemoveInRequest(cl, rid);
     return -1;
   }
-  DBG_NOTICE(0, "Incoming request \"%s\"", name);
   if (strcasecmp(name, "ServiceOpen")==0) {
+    DBG_NOTICE(0, "Incoming request \"%s\"", name);
     rv=LC_Service_HandleServiceOpen(cl, rid, dbReq);
   }
   else if (strcasecmp(name, "ServiceClose")==0) {
+    DBG_NOTICE(0, "Incoming request \"%s\"", name);
     rv=LC_Service_HandleServiceClose(cl, rid, dbReq);
   }
   else if (strcasecmp(name, "ServiceCommand")==0) {
+    DBG_NOTICE(0, "Incoming request \"%s\"", name);
     rv=LC_Service_HandleServiceCommand(cl, rid, dbReq);
   }
   else {
