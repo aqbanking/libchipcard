@@ -11,20 +11,12 @@
  ***************************************************************************/
 
 
-#ifndef LC_MON_SERVER_P_H
-#define LC_MON_SERVER_P_H
+#ifndef LC_MON_SERVICE_L_H
+#define LC_MON_SERVICE_L_H
 
 
-#include "server_l.h"
+#include <chipcard2-client/mon/service.h>
 
-struct LCM_SERVER {
-  GWEN_LIST_ELEMENT(LCM_SERVER)
-  GWEN_TYPE_UINT32 serverId;
-  char *clientId;
-  LCM_DRIVER_LIST *drivers;
-  LCM_READER_LIST *readers;
-  LCM_SERVICE_LIST *services;
-};
 
 
 #endif

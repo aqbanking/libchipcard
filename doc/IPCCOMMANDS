@@ -240,7 +240,8 @@ DriverReadyResponse {
 4.1.1. Request
 
 ServiceOpen {
-  char serviceName="serviceName"
+  char serviceId="12345678"       # either serviceId *or*
+  char serviceName="serviceName"  # serviceName must be given (XOR)
   
   command {
     # this group contains service specific data

@@ -1,0 +1,11 @@
+<service name="cardfs" autostart="0" silent="0" >
+  <short>CardFS Service</short>
+  <author>
+    <name>Martin Preuss</name>
+    <email>martin@aquamaniac.de</email>
+    <url>http://www.libchipcard.de/</url>
+  </author>
+  <version>@CHIPCARD_VERSION_RELEASE_STRING@</version>
+  <descr>
+  </descr>
+</service>

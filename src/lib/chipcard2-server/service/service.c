@@ -589,6 +589,13 @@ void LC_Service_SetCloseFn(LC_SERVICE *d, LC_SERVICE_CLOSE_FN fn){
 
 
 
+void LC_Service_SetCommandFn(LC_SERVICE *d, LC_SERVICE_COMMAND_FN fn){
+  assert(d);
+  d->commandFn=fn;
+}
+
+
+
 void LC_Service_SetGetErrorTextFn(LC_SERVICE *d,
                                   LC_SERVICE_GETERRORTEXT_FN fn){
   assert(d);
@@ -838,45 +845,102 @@ int LC_Service_HandleServiceCommand(LC_SERVICE *d,
 
 
 
-int LC_Service_Work(LC_SERVICE *d, int timeout, int maxmsg) {
-  GWEN_TYPE_UINT32 rid;
+int LC_Service_Work(LC_SERVICE *d) {
 
-  DBG_VERBOUS(0, "Service working");
-  if (LC_Service__Work(d, timeout, maxmsg)==-1) {
-    DBG_ERROR(0, "Error in service's work function");
-    return -1;
-  }
-  rid=LC_Service_GetNextInRequest(d);
-  if (rid) {
-    GWEN_DB_NODE *dbReq;
-    const char *name;
+  while(!d->stopService) {
+    GWEN_NETCONNECTION_WORKRESULT res;
+    GWEN_TYPE_UINT32 rid;
+    int needHeartbeat;
 
-    dbReq=LC_Service_GetInRequestData(d, rid);
-    assert(dbReq);
+    res=GWEN_Net_HeartBeat(750);
+    if (res==GWEN_NetConnectionWorkResult_Error) {
+      DBG_ERROR(0, "Network error");
+      return -1;
+    }
+    else if (res==GWEN_NetConnectionWorkResult_NoChange) {
+      DBG_VERBOUS(0, "No activity");
+    }
 
-    /* we have an incoming message */
-    name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
-    if (!name) {
-      DBG_ERROR(0, "Bad IPC command (no command name), discarding");
-      LC_Service_RemoveCommand(d, rid, 0);
-    }
-    DBG_NOTICE(0, "Incoming request \"%s\"", name);
-    if (strcasecmp(name, "ServiceOpen")==0) {
-      LC_Service_HandleServiceOpen(d, rid, dbReq);
-    }
-    else if (strcasecmp(name, "ServiceClose")==0) {
-      LC_Service_HandleServiceClose(d, rid, dbReq);
-    }
-    else if (strcasecmp(name, "ServiceCommand")==0) {
-      LC_Service_HandleServiceCommand(d, rid, dbReq);
-    }
-    else {
-      DBG_WARN(0, "Unknown command \"%s\", discarding", name);
-    }
-  }
+    needHeartbeat=0;
+    while(!needHeartbeat) {
+      int j;
 
+      for(j=0; ; j++) {
+        int rv;
+
+        if (j>LC_SERVICE_IPC_MAXWORK) {
+          DBG_ERROR(0, "IPC running wild, aborting service");
+          return -1;
+        }
+
+        /* work as long as possible */
+        rv=GWEN_IPCManager_Work(d->ipcManager, 10);
+        if (rv==-1) {
+          DBG_ERROR(0, "Error while working with IPC");
+          return -1;
+        }
+        else if (rv==1)
+          break;
+      }
+
+      rid=LC_Service_GetNextInRequest(d);
+      if (rid) {
+        GWEN_DB_NODE *dbReq;
+        const char *name;
+        int didWhat;
+
+        dbReq=LC_Service_GetInRequestData(d, rid);
+        assert(dbReq);
+
+        /* we have an incoming message */
+        didWhat=1;
+        name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
+        if (!name) {
+          DBG_ERROR(0, "Bad IPC command (no command name), discarding");
+          LC_Service_RemoveCommand(d, rid, 0);
+        }
+        DBG_NOTICE(0, "Incoming request \"%s\"", name);
+        if (strcasecmp(name, "ServiceOpen")==0) {
+          LC_Service_HandleServiceOpen(d, rid, dbReq);
+        }
+        else if (strcasecmp(name, "ServiceClose")==0) {
+          LC_Service_HandleServiceClose(d, rid, dbReq);
+        }
+        else if (strcasecmp(name, "ServiceCommand")==0) {
+          LC_Service_HandleServiceCommand(d, rid, dbReq);
+        }
+        else {
+          DBG_WARN(0, "Unknown command \"%s\", discarding", name);
+          didWhat=0;
+        }
+
+        if (didWhat) {
+          for(j=0; ; j++) {
+            int rv;
+
+            if (j>LC_SERVICE_IPC_MAXWORK) {
+              DBG_ERROR(0, "IPC running wild, aborting service");
+              return -1;
+            }
+
+            /* work as long as possible (flush responses) */
+            rv=GWEN_IPCManager_Work(d->ipcManager, 10);
+            if (rv==-1) {
+              DBG_ERROR(0, "Error while working with IPC");
+              return -1;
+            }
+            else if (rv==1)
+              break;
+          }
+        } /* if didWhat */
+      } /* if incoming request */
+      else
+        needHeartbeat=1;
+    } /* while !needHeartbeat */
+  } /* while service is not to be stopped */
   return 0;
 }
+
 
 
 

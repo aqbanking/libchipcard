@@ -189,7 +189,7 @@ LC_CLIENT_RESULT LC_Client_Work_Wait(LC_CLIENT *cl, int timeout);
 /*@}*/
 
 
-/** @name Commands
+/** @name Commands: Asynchronous API
  *
  * <p>
  * This group contains commands to be send to a chipcard daemon.
@@ -204,8 +204,6 @@ LC_CLIENT_RESULT LC_Client_Work_Wait(LC_CLIENT *cl, int timeout);
  */
 /*@{*/
 
-
-
 GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
                                          GWEN_TYPE_UINT32 rflags,
                                          GWEN_TYPE_UINT32 rmask);
@@ -213,69 +211,55 @@ LC_CLIENT_RESULT
   LC_Client_CheckStartWait(LC_CLIENT *cl,
                            GWEN_TYPE_UINT32 rid);
 
-LC_CLIENT_RESULT LC_Client_StartWait(LC_CLIENT *cl,
-                                     GWEN_TYPE_UINT32 rflags,
-                                     GWEN_TYPE_UINT32 rmask);
-
 
 
 GWEN_TYPE_UINT32 LC_Client_SendStopWait(LC_CLIENT *cl);
 LC_CLIENT_RESULT
   LC_Client_CheckStopWait(LC_CLIENT *cl,
                           GWEN_TYPE_UINT32 rid);
-LC_CLIENT_RESULT LC_Client_StopWait(LC_CLIENT *cl);
 
 
 LC_CARD *LC_Client_GetNextCard(LC_CLIENT *cl);
 LC_CARD *LC_Client_PeekNextCard(LC_CLIENT *cl);
 
-LC_CARD *LC_Client_WaitForNextCard(LC_CLIENT *cl, int timeout);
-
 
 GWEN_TYPE_UINT32 LC_Client_SendTakeCard(LC_CLIENT *cl, LC_CARD *cd);
-LC_CLIENT_RESULT
-  LC_Client_CheckTakeCard(LC_CLIENT *cl,
-                          GWEN_TYPE_UINT32 rid);
+LC_CLIENT_RESULT LC_Client_CheckTakeCard(LC_CLIENT *cl,
+                                         GWEN_TYPE_UINT32 rid);
 
 GWEN_TYPE_UINT32 LC_Client_SendReleaseCard(LC_CLIENT *cl, LC_CARD *cd);
-LC_CLIENT_RESULT
-  LC_Client_CheckReleaseCard(LC_CLIENT *cl,
-                             GWEN_TYPE_UINT32 rid);
+LC_CLIENT_RESULT LC_Client_CheckReleaseCard(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid);
 
 GWEN_TYPE_UINT32 LC_Client_SendCommandCard(LC_CLIENT *cl,
                                            LC_CARD *cd,
                                            const char *apdu,
                                            unsigned int len,
                                            LC_CLIENT_CMDTARGET t);
-LC_CLIENT_RESULT
-  LC_Client_CheckCommandCard(LC_CLIENT *cl,
-                             GWEN_TYPE_UINT32 rid,
-                             GWEN_BUFFER *data);
+LC_CLIENT_RESULT LC_Client_CheckCommandCard(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid,
+                                            GWEN_BUFFER *data);
 
 
 GWEN_TYPE_UINT32 LC_Client_SendSelectCardApp(LC_CLIENT *cl,
                                              LC_CARD *cd,
                                              const char *cardName,
                                              const char *appName);
-LC_CLIENT_RESULT
-  LC_Client_CheckSelectCardApp(LC_CLIENT *cl,
-                               GWEN_TYPE_UINT32 rid);
+LC_CLIENT_RESULT LC_Client_CheckSelectCardApp(LC_CLIENT *cl,
+                                              GWEN_TYPE_UINT32 rid);
 
 
 GWEN_TYPE_UINT32 LC_Client_SendExecCommand(LC_CLIENT *cl,
                                            LC_CARD *cd,
                                            GWEN_DB_NODE *dbCmd);
-LC_CLIENT_RESULT
-  LC_Client_CheckExecCommand(LC_CLIENT *cl,
-                             GWEN_TYPE_UINT32 rid,
-                             GWEN_DB_NODE *dbRsp);
+LC_CLIENT_RESULT LC_Client_CheckExecCommand(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid,
+                                            GWEN_DB_NODE *dbRsp);
 
 GWEN_TYPE_UINT32 LC_Client_SendSetNotify(LC_CLIENT *cl,
                                          GWEN_TYPE_UINT32 flags);
-LC_CLIENT_RESULT
-  LC_Client_CheckSetNotify(LC_CLIENT *cl,
-                           GWEN_TYPE_UINT32 rid);
-LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags);
+LC_CLIENT_RESULT LC_Client_CheckSetNotify(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
 
 
 
@@ -283,20 +267,88 @@ GWEN_TYPE_UINT32 LC_Client_SendGetDriverVar(LC_CLIENT *cl,
                                             LC_CARD *cd,
                                             const char *vname);
 
-LC_CLIENT_RESULT
-  LC_Client_CheckGetDriverVar(LC_CLIENT *cl,
-                              GWEN_TYPE_UINT32 rid,
-                              GWEN_BUFFER *vbuf);
+LC_CLIENT_RESULT LC_Client_CheckGetDriverVar(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid,
+                                             GWEN_BUFFER *vbuf);
 
-LC_CLIENT_RESULT
-  LC_Client_GetDriverVar(LC_CLIENT *cl,
-                         LC_CARD *card,
-                         const char *vname,
-                         GWEN_BUFFER *vbuf);
+
+GWEN_TYPE_UINT32 LC_Client_SendOpenService(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 serverId,
+                                           GWEN_TYPE_UINT32 svid,
+                                           GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckOpenService(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCloseService(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 svid,
+                                            GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckCloseService(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendServiceCommand(LC_CLIENT *cl,
+                                              GWEN_TYPE_UINT32 serverId,
+                                              GWEN_TYPE_UINT32 svid,
+                                              GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckServiceCommand(LC_CLIENT *cl,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_DB_NODE *dbCmdResp);
 
 
 /*@}*/
 
+
+/** @name Commands: Synchronous API
+ *
+ * <p>
+ * Functions in this group wait until the server finished the execution
+ * of a command.
+ * </p>
+ * <p>
+ * This API is simpler than the asynchronous API. Please note that special
+ * card commands are described in @ref LC_CARD and classes derived thereof.
+ * </p>
+ */
+/*@{*/
+
+LC_CARD *LC_Client_WaitForNextCard(LC_CLIENT *cl, int timeout);
+
+LC_CLIENT_RESULT LC_Client_StartWait(LC_CLIENT *cl,
+                                     GWEN_TYPE_UINT32 rflags,
+                                     GWEN_TYPE_UINT32 rmask);
+LC_CLIENT_RESULT LC_Client_StopWait(LC_CLIENT *cl);
+
+LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags);
+
+LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
+                                        LC_CARD *card,
+                                        const char *vname,
+                                        GWEN_BUFFER *vbuf);
+
+
+LC_CLIENT_RESULT LC_Client_OpenService(LC_CLIENT *cl,
+                                       GWEN_TYPE_UINT32 serverId,
+                                       GWEN_TYPE_UINT32 svid,
+                                       GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CloseService(LC_CLIENT *cl,
+                                        GWEN_TYPE_UINT32 serverId,
+                                        GWEN_TYPE_UINT32 svid,
+                                        GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 serverId,
+                                          GWEN_TYPE_UINT32 svid,
+                                          GWEN_DB_NODE *dbData,
+                                          GWEN_DB_NODE *dbCmdResp);
+
+
+/*@}*/
 
 #ifdef __cplusplus
 }

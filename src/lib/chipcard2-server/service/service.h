@@ -63,7 +63,7 @@ LC_SERVICECLIENT_LIST *LC_Service_GetClients(const LC_SERVICE *d);
 
 
 GWEN_TYPE_UINT32 LC_Service_SendCommand(LC_SERVICE *d,
-                                       GWEN_DB_NODE *dbCommand);
+                                        GWEN_DB_NODE *dbCommand);
 int LC_Service_SendResponse(LC_SERVICE *d,
                            GWEN_TYPE_UINT32 rid,
                            GWEN_DB_NODE *dbCommand);
@@ -82,7 +82,7 @@ GWEN_TYPE_UINT32 LC_Service_GetNextInRequest(LC_SERVICE *d);
 GWEN_DB_NODE *LC_Service_GetInRequestData(LC_SERVICE *d,
                                          GWEN_TYPE_UINT32 rid);
 
-int LC_Service_Work(LC_SERVICE *d, int timeout, int maxmsg);
+int LC_Service_Work(LC_SERVICE *d);
 
 
 GWEN_TYPE_UINT32 LC_Service_Open(LC_SERVICE *d,
@@ -102,6 +102,7 @@ const char *LC_Service_GetErrorText(LC_SERVICE *d,
 
 void LC_Service_SetOpenFn(LC_SERVICE *d, LC_SERVICE_OPEN_FN fn);
 void LC_Service_SetCloseFn(LC_SERVICE *d, LC_SERVICE_CLOSE_FN fn);
+void LC_Service_SetCommandFn(LC_SERVICE *d, LC_SERVICE_COMMAND_FN fn);
 void LC_Service_SetGetErrorTextFn(LC_SERVICE *d,
                                   LC_SERVICE_GETERRORTEXT_FN fn);
 
@@ -109,7 +110,7 @@ void LC_Service_SetGetErrorTextFn(LC_SERVICE *d,
 
 
 LC_SERVICECLIENT *LC_Service_FindClientById(const LC_SERVICE *d,
-                                     GWEN_TYPE_UINT32 id);
+                                            GWEN_TYPE_UINT32 id);
 
 void LC_Service_AddClient(LC_SERVICE *d, LC_SERVICECLIENT *cl);
 void LC_Service_DelClient(LC_SERVICE *d, LC_SERVICECLIENT *cl);

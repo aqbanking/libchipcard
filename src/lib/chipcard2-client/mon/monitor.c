@@ -270,6 +270,76 @@ int LCM_Monitor_HandleReaderNotification(LCM_MONITOR *mm,
 
 
 
+int LCM_Monitor_HandleServiceNotification(LCM_MONITOR *mm,
+                                          LCM_SERVER *ms,
+                                          const LC_NOTIFICATION *n){
+  const char *ncode;
+  GWEN_DB_NODE *dbData;
+  LCM_SERVICE *md;
+  GWEN_TYPE_UINT32 serviceId;
+  const char *t;
+
+  assert(mm);
+  assert(ms);
+  ncode=LC_Notification_GetCode(n);
+  assert(ncode);
+  dbData=LC_Notification_GetData(n);
+  assert(dbData);
+  serviceId=0;
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbData, "serviceId", 0, "0"),
+                "%x", &serviceId)) {
+    DBG_ERROR(0, "Bad IPC message: Bad service id");
+    abort();
+  }
+  assert(serviceId);
+  t=GWEN_DB_GetCharValue(dbData, "info", 0, 0);
+
+  md=LCM_Service_List_First(LCM_Server_GetServices(ms));
+  while(md) {
+    if (serviceId==LCM_Service_GetServiceId(md))
+      break;
+    md=LCM_Service_List_Next(md);
+  }
+  if (!md) {
+    md=LCM_Service_new(LCM_Server_GetServerId(ms),
+                       serviceId,
+                       GWEN_DB_GetCharValue(dbData, "serviceName", 0, 0));
+    LCM_Service_List_Add(md, LCM_Server_GetServices(ms));
+    mm->lastChangeTime=time(0);
+    DBG_INFO(0, "Service added");
+  }
+
+  if (strcasecmp(ncode, LC_NOTIFY_CODE_SERVICE_START)==0) {
+    if (!t)
+      t="service started";
+  }
+  else if (strcasecmp(ncode, LC_NOTIFY_CODE_SERVICE_UP)==0) {
+    if (!t)
+      t="service up";
+  }
+  else if (strcasecmp(ncode, LC_NOTIFY_CODE_SERVICE_DOWN)==0) {
+    if (!t)
+      t="service down";
+  }
+  else if (strcasecmp(ncode, LC_NOTIFY_CODE_SERVICE_ERROR)==0) {
+    if (!t)
+      t="service error";
+  }
+  else {
+    DBG_ERROR(0, "Unhandled service notification \"%s\"", ncode);
+    return -1;
+  }
+
+  LCM_Service_SetStatus(md, ncode);
+  LCM_Monitor__LogToBuffer(LCM_Service_GetLogBuffer(md), t);
+  DBG_INFO(0, "Got a service notification: %s - %s",
+           LCM_Service_GetServiceName(md), t);
+
+  return 0;
+}
+
+
+
 
 int LCM_Monitor_HandleNotification(LCM_MONITOR *mm,
                                    const LC_NOTIFICATION *n){
@@ -302,6 +372,8 @@ int LCM_Monitor_HandleNotification(LCM_MONITOR *mm,
     rv=LCM_Monitor_HandleDriverNotification(mm, ms, n);
   else if (strcasecmp(ntype, LC_NOTIFY_TYPE_READER)==0)
     rv=LCM_Monitor_HandleReaderNotification(mm, ms, n);
+  else if (strcasecmp(ntype, LC_NOTIFY_TYPE_SERVICE)==0)
+    rv=LCM_Monitor_HandleServiceNotification(mm, ms, n);
   else {
     DBG_ERROR(0, "Unhandled notification type \"%s\"", ntype);
     rv=-1;

@@ -3055,6 +3055,10 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
   }
   DBG_NOTICE(0, "Service \"%08x\" is up (%s)", serviceId, text);
   LC_Service_SetStatus(as, LC_ServiceStatusUp);
+  LC_CardServer_SendServiceNotification(cs, 0,
+                                        LC_NOTIFY_CODE_SERVICE_UP,
+                                        as,
+                                        "Service up.");
 
   dbRsp=GWEN_DB_Group_new("ServiceReadyResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -3136,6 +3140,10 @@ int LC_CardServer_HandleOfferService(LC_CARDSERVER *cs,
 
   DBG_NOTICE(0, "Service \"%08x\" is up (%s)", serviceId, text);
   LC_Service_SetStatus(sv, LC_ServiceStatusUp);
+  LC_CardServer_SendServiceNotification(cs, 0,
+                                        LC_NOTIFY_CODE_SERVICE_UP,
+                                        sv,
+                                        "Service provided by client is up.");
 
   /* send response */
   dbRsp=GWEN_DB_Group_new("OfferServiceResponse");
@@ -4512,7 +4520,57 @@ int LC_CardServer_HandleSetNotify(LC_CARDSERVER *cs,
   }
 
   if (flags & LC_NOTIFY_FLAGS_SERVICE_MASK) {
-    /* TODO */
+    LC_SERVICE *as;
+
+    as=LC_Service_List_First(cs->services);
+    while(as) {
+      switch(LC_Service_GetStatus(as)) {
+      case LC_ServiceStatusStarted:
+        if (flags & LC_NOTIFY_FLAGS_SERVICE_START) {
+          LC_CardServer_SendServiceNotification(cs, cl,
+                                                LC_NOTIFY_CODE_SERVICE_START,
+                                                as,
+                                                "Service started");
+        }
+        break;
+      case LC_ServiceStatusStopping:
+      case LC_ServiceStatusUp:
+        if (flags & LC_NOTIFY_FLAGS_SERVICE_UP) {
+          LC_CardServer_SendServiceNotification(cs, cl,
+                                                LC_NOTIFY_CODE_SERVICE_UP,
+                                                as,
+                                                "Service is up");
+        }
+        break;
+      case LC_ServiceStatusDown:
+        if (flags & LC_NOTIFY_FLAGS_SERVICE_DOWN) {
+          LC_CardServer_SendServiceNotification(cs, cl,
+                                                LC_NOTIFY_CODE_SERVICE_UP,
+                                                as,
+                                                "Service is down");
+        }
+        break;
+      case LC_ServiceStatusAborted:
+        if (flags & LC_NOTIFY_FLAGS_SERVICE_ERROR) {
+          LC_CardServer_SendServiceNotification(cs, cl,
+                                                LC_NOTIFY_CODE_SERVICE_UP,
+                                                as,
+                                                "Service aborted");
+        }
+        break;
+      case LC_ServiceStatusDisabled:
+        if (flags & LC_NOTIFY_FLAGS_SERVICE_ERROR) {
+          LC_CardServer_SendServiceNotification(cs, cl,
+                                                LC_NOTIFY_CODE_SERVICE_UP,
+                                                as,
+                                                "Service disabled");
+        }
+        break;
+      default:
+        break;
+      } /* switch */
+      as=LC_Service_List_Next(as);
+    }
   }
 
   if (flags & LC_NOTIFY_FLAGS_DRIVER_MASK) {
@@ -4655,6 +4713,7 @@ int LC_CardServer_HandleServiceOpen(LC_CARDSERVER *cs,
   GWEN_TYPE_UINT32 clientId;
   LC_SERVICE *sv;
   const char *serviceName;
+  GWEN_TYPE_UINT32 serviceId;
   GWEN_DB_NODE *dbServiceReq;
   GWEN_DB_NODE *dbT;
   char numbuf[32];
@@ -4685,31 +4744,53 @@ int LC_CardServer_HandleServiceOpen(LC_CARDSERVER *cs,
 
   /* get service name */
   serviceName=GWEN_DB_GetCharValue(dbReq, "body/serviceName", 0, 0);
-  if (!serviceName) {
-    DBG_ERROR(0, "No service name");
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/serviceId", 0, "0"),
+                "%x", &serviceId)) {
+    DBG_ERROR(0, "Invalid service id given");
     LC_CardServer_SendErrorResponse(cs, rid,
                                     LC_ERROR_INVALID,
-                                    "No service name");
+                                    "Invalid service id");
+    return -1;
+  }
+  if ((serviceName!=0) ^  (serviceId!=0)) {
+    DBG_ERROR(0, "Either service name *or* service id must be given");
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Need service name *or* id");
     return -1;
   }
 
   /* search for service */
   sv=LC_Service_List_First(cs->services);
   while(sv) {
-    const char *sn;
+    if (serviceId) {
+      GWEN_TYPE_UINT32 sid;
 
-    sn=LC_Service_GetServiceName(sv);
-    if (sn)
-      if (strcasecmp(sn, serviceName)==0)
+      sid=LC_Service_GetIpcId(sv);
+      if (sid==serviceId)
         break;
+    }
+    else {
+      const char *sn;
+
+      sn=LC_Service_GetServiceName(sv);
+      if (sn)
+        if (strcasecmp(sn, serviceName)==0)
+          break;
+    }
     sv=LC_Service_List_Next(sv);
   }
   if (!sv) {
-    DBG_ERROR(0, "Service \"%s\" not found", serviceName);
+    if (serviceId) {
+      DBG_ERROR(0, "Service with id \"%08x\" not found", serviceId);
+    }
+    else {
+      DBG_ERROR(0, "Service with name \"%s\" not found", serviceName);
+    }
     /* Send SegResult */
     LC_CardServer_SendErrorResponse(cs, rid,
                                     LC_ERROR_INVALID,
-                                    "Unknown service name");
+                                    "Unknown service");
     return -1;
   }
 
@@ -5718,6 +5799,10 @@ int LC_CardServer_StartService(LC_CARDSERVER *cs, LC_SERVICE *as) {
   GWEN_Buffer_free(abuf);
   LC_Service_SetProcess(as, p);
   LC_Service_SetStatus(as, LC_ServiceStatusStarted);
+  LC_CardServer_SendServiceNotification(cs, 0,
+                                        LC_NOTIFY_CODE_SERVICE_START,
+                                        as,
+                                        "Service started.");
   return 0;
 }
 
@@ -5737,6 +5822,10 @@ int LC_CardServer_StopService(LC_CARDSERVER *cs, LC_SERVICE *as) {
     DBG_ERROR(0, "Could not send StopService command for service \"%s\"",
               LC_Service_GetServiceName(as));
     LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+    LC_CardServer_SendServiceNotification(cs, 0,
+                                          LC_NOTIFY_CODE_SERVICE_ERROR,
+                                          as,
+                                          "Service IPC error.");
     return -1;
   }
   DBG_DEBUG(0, "Sent StopService command for service \"%s\"",
@@ -5780,6 +5869,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
           LC_Service_SetStatus(as, LC_ServiceStatusSilentRunning);
           DBG_NOTICE(0, "Silent service \"%s\" is running",
                      LC_Service_GetServiceName(as));
+          LC_CardServer_SendServiceNotification(cs, 0,
+                                                LC_NOTIFY_CODE_SERVICE_UP,
+                                                as,
+                                                "Service running silently.");
           return 1;
         }
         else {
@@ -5791,6 +5884,11 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
           }
           LC_Service_SetProcess(as, 0);
           LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+          LC_CardServer_SendServiceNotification(cs, 0,
+                                                LC_NOTIFY_CODE_SERVICE_ERROR,
+                                                as,
+                                                "Service not ready, "
+                                                "killing it");
           return -1;
         }
       }
@@ -5798,12 +5896,20 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         DBG_WARN(0, "Service terminated normally");
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusDown);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_DOWN,
+                                              as,
+                                              "Service terminated normally.");
         done++;
       }
       else if (pst==GWEN_ProcessStateAborted) {
         DBG_WARN(0, "Service terminated abnormally");
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Service terminated abnormally");
         return -1;
       }
       else if (pst==GWEN_ProcessStateStopped) {
@@ -5813,6 +5919,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         }
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Service stopped, killed.");
         return -1;
       }
       else {
@@ -5822,6 +5932,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         }
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Unknown status, killed.");
         return -1;
       }
     }
@@ -5850,6 +5964,11 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         }
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Service still running, "
+                                              "killing it");
         return -1;
       }
       else {
@@ -5862,6 +5981,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
       DBG_WARN(0, "Service terminated normally");
       LC_Service_SetProcess(as, 0);
       LC_Service_SetStatus(as, LC_ServiceStatusDown);
+      LC_CardServer_SendServiceNotification(cs, 0,
+                                            LC_NOTIFY_CODE_SERVICE_DOWN,
+                                            as,
+                                            "Service terminated normally.");
       done++;
       /* no return here, we want to continue below */
     }
@@ -5869,6 +5992,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
       DBG_WARN(0, "Service terminated abnormally");
       LC_Service_SetProcess(as, 0);
       LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+      LC_CardServer_SendServiceNotification(cs, 0,
+                                            LC_NOTIFY_CODE_SERVICE_ERROR,
+                                            as,
+                                            "Service terminated abnormally.");
       return 0;
     }
     else if (pst==GWEN_ProcessStateStopped) {
@@ -5878,6 +6005,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
       }
       LC_Service_SetProcess(as, 0);
       LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+      LC_CardServer_SendServiceNotification(cs, 0,
+                                            LC_NOTIFY_CODE_SERVICE_ERROR,
+                                            as,
+                                            "Service stopped, killed.");
       return 0;
     }
     else {
@@ -5887,6 +6018,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
       }
       LC_Service_SetProcess(as, 0);
       LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+      LC_CardServer_SendServiceNotification(cs, 0,
+                                            LC_NOTIFY_CODE_SERVICE_ERROR,
+                                            as,
+                                            "Unknown status, killed.");
       return 0;
     }
   } /* if stopping */
@@ -5898,10 +6033,17 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         DBG_ERROR(0, "Could not start service \"%08x\"",
                   LC_Service_GetServiceId(as));
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Could not start service");
       }
       else {
         DBG_NOTICE(0, "Started service \"%08x\"",
                    LC_Service_GetServiceId(as));
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_START,
+                                              as, "Service started");
       }
     }
   }
@@ -5923,6 +6065,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
         GWEN_Process_Terminate(p);
         LC_Service_SetProcess(as, 0);
         LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+        LC_CardServer_SendServiceNotification(cs, 0,
+                                              LC_NOTIFY_CODE_SERVICE_ERROR,
+                                              as,
+                                              "Service lost.");
         /* TODO: send error responses for all listed requests */
 
         return -1;
@@ -5948,6 +6094,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
           DBG_WARN(0, "Service \"%s\" timed out",
                    LC_Service_GetServiceName(as));
           LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+          LC_CardServer_SendServiceNotification(cs, 0,
+                                                LC_NOTIFY_CODE_SERVICE_ERROR,
+                                                as,
+                                                "Service timed out.");
           GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 1);
           LC_Service_SetCurrentRequestId(as, 0);
           return -1;
@@ -5988,6 +6138,10 @@ int LC_CardServer_CheckService(LC_CARDSERVER *cs, LC_SERVICE *as) {
                     cmdName,
                     LC_Service_GetServiceName(as));
           LC_Service_SetStatus(as, LC_ServiceStatusAborted);
+          LC_CardServer_SendServiceNotification(cs, 0,
+                                                LC_NOTIFY_CODE_SERVICE_ERROR,
+                                                as,
+                                                "Service IPC error, aborted");
           return -1;
         }
         DBG_DEBUG(0, "Sent request \"%s\" for service \"%s\" (%08x)",
@@ -7502,6 +7656,48 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
                          "info", info);
   rv=LC_CardServer_SendNotification(cs, cl,
                                     LC_NOTIFY_TYPE_READER,
+                                    ncode, dbData);
+  GWEN_DB_Group_free(dbData);
+  if (rv) {
+    DBG_INFO(0, "here");
+    return rv;
+  }
+  return 0;
+}
+
+
+
+int LC_CardServer_SendServiceNotification(LC_CARDSERVER *cs,
+                                          LC_CLIENT *cl,
+                                          const char *ncode,
+                                          const LC_SERVICE *sv,
+                                          const char *info){
+  GWEN_DB_NODE *dbData;
+  const char *s;
+  char numbuf[16];
+  int rv;
+
+  assert(cs);
+  assert(ncode);
+  assert(sv);
+  dbData=GWEN_DB_Group_new("serviceData");
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Service_GetServiceId(sv));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "serviceId", numbuf);
+
+  s=LC_Service_GetServiceName(sv);
+  if (s)
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "serviceName", s);
+  if (info)
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "info", info);
+  rv=LC_CardServer_SendNotification(cs, cl,
+                                    LC_NOTIFY_TYPE_SERVICE,
                                     ncode, dbData);
   GWEN_DB_Group_free(dbData);
   if (rv) {

@@ -367,29 +367,53 @@ int LC_Client__Work(LC_CLIENT *cl, int maxmsg){
   assert(cl);
 
   done=0;
-  rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
-  if (rv==-1) {
-    DBG_INFO(LC_LOGDOMAIN, "Error on WorkIO");
-    return -1;
+  while(1) {
+    rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
+    if (rv==-1) {
+      DBG_INFO(LC_LOGDOMAIN, "Error on WorkIO");
+      return -1;
+    }
+    else if (rv==0)
+      done++;
+    else
+      break;
+    if (done>256) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "EMERGENCY BRAKE !!! Exiting from endless loop");
+    }
   }
-  else if (rv==0)
-    done++;
 
-  rv=LC_Client_Walk(cl);
-  if (rv==-1) {
-    DBG_INFO(LC_LOGDOMAIN, "Error on Walk");
-    return -1;
+  while(1) {
+    rv=LC_Client_Walk(cl);
+    if (rv==-1) {
+      DBG_INFO(LC_LOGDOMAIN, "Error on Walk");
+      return -1;
+    }
+    else if (rv==0)
+      done++;
+    else
+      break;
+    if (done>256) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "EMERGENCY BRAKE !!! Exiting from endless loop");
+    }
   }
-  else if (rv==0)
-    done++;
 
-  rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
-  if (rv==-1) {
-    DBG_INFO(LC_LOGDOMAIN, "Error on WorkIO");
-    return -1;
+  while(1) {
+    rv=GWEN_IPCManager_Work(cl->ipcManager, maxmsg);
+    if (rv==-1) {
+      DBG_INFO(LC_LOGDOMAIN, "Error on WorkIO");
+      return -1;
+    }
+    else if (rv==0)
+      done++;
+    else
+      break;
+    if (done>256) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "EMERGENCY BRAKE !!! Exiting from endless loop");
+    }
   }
-  else if (rv==0)
-    done++;
 
   return done?0:1;
 }
@@ -2335,7 +2359,344 @@ LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
 
 
 
+GWEN_TYPE_UINT32 LC_Client_SendOpenService(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 serverId,
+                                           GWEN_TYPE_UINT32 svid,
+                                           GWEN_DB_NODE *dbData){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
 
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  dbReq=GWEN_DB_Group_new("OpenService");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "serviceId", numbuf);
+  if (dbData) {
+    GWEN_DB_NODE *dbOpenCommand;
+
+    dbOpenCommand=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                                   "command");
+    GWEN_DB_AddGroupChildren(dbOpenCommand, dbData);
+  }
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT
+LC_Client_CheckOpenService(LC_CLIENT *cl,
+                           GWEN_TYPE_UINT32 rid){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  GWEN_DB_Group_free(dbRsp);
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT
+LC_Client_OpenService(LC_CLIENT *cl,
+                      GWEN_TYPE_UINT32 serverId,
+                      GWEN_TYPE_UINT32 svid,
+                      GWEN_DB_NODE *dbData){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  rqid=LC_Client_SendOpenService(cl, serverId, svid, dbData);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"OpenService\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"OpenService\"");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    return res;
+  }
+  res=LC_Client_CheckOpenService(cl, rqid);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"OpenService\"");
+    LC_Client_DeleteRequest(cl, rqid);
+    return LC_Client_ResultCmdError;
+  }
+
+  LC_Client_DeleteRequest(cl, rqid);
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCloseService(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 svid,
+                                            GWEN_DB_NODE *dbData){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  dbReq=GWEN_DB_Group_new("CloseService");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "serviceId", numbuf);
+  if (dbData) {
+    GWEN_DB_NODE *dbCloseCommand;
+
+    dbCloseCommand=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                                   "command");
+    GWEN_DB_AddGroupChildren(dbCloseCommand, dbData);
+  }
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckCloseService(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  GWEN_DB_Group_free(dbRsp);
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CloseService(LC_CLIENT *cl,
+                                        GWEN_TYPE_UINT32 serverId,
+                                        GWEN_TYPE_UINT32 svid,
+                                        GWEN_DB_NODE *dbData){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  rqid=LC_Client_SendCloseService(cl, serverId, svid, dbData);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"CloseService\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"CloseService\"");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    return res;
+  }
+  res=LC_Client_CheckCloseService(cl, rqid);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CloseService\"");
+    LC_Client_DeleteRequest(cl, rqid);
+    return LC_Client_ResultCmdError;
+  }
+
+  LC_Client_DeleteRequest(cl, rqid);
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendServiceCommand(LC_CLIENT *cl,
+                                              GWEN_TYPE_UINT32 serverId,
+                                              GWEN_TYPE_UINT32 svid,
+                                              GWEN_DB_NODE *dbData){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  dbReq=GWEN_DB_Group_new("ServiceCommand");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "serviceId", numbuf);
+  if (dbData) {
+    GWEN_DB_NODE *dbCommandCommand;
+
+    dbCommandCommand=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                                   "command");
+    GWEN_DB_AddGroupChildren(dbCommandCommand, dbData);
+  }
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckServiceCommand(LC_CLIENT *cl,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_DB_NODE *dbCmdResp){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+  else {
+    if (dbCmdResp) {
+      GWEN_DB_NODE *dbAnswer;
+
+      dbAnswer=GWEN_DB_GetGroup(dbRsp, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                                "body/command");
+      if (dbAnswer)
+        GWEN_DB_AddGroupChildren(dbCmdResp, dbAnswer);
+    }
+  }
+
+  GWEN_DB_Group_free(dbRsp);
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 serverId,
+                                          GWEN_TYPE_UINT32 svid,
+                                          GWEN_DB_NODE *dbData,
+                                          GWEN_DB_NODE *dbCmdResp) {
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  rqid=LC_Client_SendServiceCommand(cl, serverId, svid, dbData);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"ServiceCommand\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"ServiceCommand\"");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    return res;
+  }
+  res=LC_Client_CheckServiceCommand(cl, rqid, dbCmdResp);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"ServiceCommand\"");
+    LC_Client_DeleteRequest(cl, rqid);
+    return LC_Client_ResultCmdError;
+  }
+
+  LC_Client_DeleteRequest(cl, rqid);
+  return LC_Client_ResultOk;
+}
 
 
 

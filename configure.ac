@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=4
+CHIPCARD_VERSION_BUILD=5
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -555,6 +555,9 @@ AC_CONFIG_FILES([Makefile
                  src/tools/chipcard-tool/Makefile
                  src/tools/kvkcard/Makefile
                  src/tools/cardcommander/Makefile
+                 src/services/Makefile
+                 src/services/cardfs/Makefile
+                 src/services/cardfs/cardfs.xml
                  src/test/Makefile
                  tutorials/Makefile
                  m4/Makefile

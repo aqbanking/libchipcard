@@ -1,2 +1,2 @@
-SUBDIRS=lib drivers tools test
+SUBDIRS=lib drivers tools services test
 

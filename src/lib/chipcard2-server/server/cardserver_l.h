@@ -15,6 +15,7 @@
 #define CHIPCARD_SERVER_CARDSERVER_L_H
 
 #include <chipcard2-server/server/cardserver.h>
+#include <chipcard2-server/server/service.h>
 
 
 
@@ -54,6 +55,12 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
                                          const char *ncode,
                                          const LC_READER *r,
                                          const char *info);
+
+int LC_CardServer_SendServiceNotification(LC_CARDSERVER *cs,
+                                          LC_CLIENT *cl,
+                                          const char *ncode,
+                                          const LC_SERVICE *sv,
+                                          const char *info);
 
 void LC_CardServer_DumpState(LC_CARDSERVER *cs);
 

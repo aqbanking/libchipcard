@@ -38,10 +38,11 @@ LCM_SERVER *LCM_Server_new(GWEN_TYPE_UINT32 serverId){
   LCM_SERVER *ms;
 
   GWEN_NEW_OBJECT(LCM_SERVER, ms);
+  GWEN_LIST_INIT(LC_SERVER, ms);
   ms->serverId=serverId;
   ms->readers=LCM_Reader_List_new();
   ms->drivers=LCM_Driver_List_new();
-
+  ms->services=LCM_Service_List_new();
   return ms;
 }
 
@@ -50,8 +51,10 @@ LCM_SERVER *LCM_Server_new(GWEN_TYPE_UINT32 serverId){
 void LCM_Server_free(LCM_SERVER *ms){
   if (ms) {
     free(ms->clientId);
+    LCM_Service_List_free(ms->services);
     LCM_Reader_List_free(ms->readers);
     LCM_Driver_List_free(ms->drivers);
+    GWEN_LIST_FINI(LCM_SERVER, ms);
     GWEN_FREE_OBJECT(ms);
   }
 }
@@ -91,6 +94,13 @@ LCM_DRIVER_LIST *LCM_Server_GetDrivers(const LCM_SERVER *ms){
 LCM_READER_LIST *LCM_Server_GetReaders(const LCM_SERVER *ms){
   assert(ms);
   return ms->readers;
+}
+
+
+
+LCM_SERVICE_LIST *LCM_Server_GetServices(const LCM_SERVER *ms){
+  assert(ms);
+  return ms->services;
 }
 
 

@@ -102,5 +102,3 @@ int LC_Client__GetPassword(GWEN_NETTRANSPORT *tr,
 
 
 
-
-

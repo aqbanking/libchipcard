@@ -11,21 +11,27 @@
  ***************************************************************************/
 
 
-#ifndef LC_MON_SERVER_P_H
-#define LC_MON_SERVER_P_H
+#ifndef LC_FS_P_H
+#define LC_FS_P_H
+
+#include <chipcard2-client/fs/fsnode.h>
+#include <gwenhywfar/buffer.h>
 
 
-#include "server_l.h"
-
-struct LCM_SERVER {
-  GWEN_LIST_ELEMENT(LCM_SERVER)
-  GWEN_TYPE_UINT32 serverId;
-  char *clientId;
-  LCM_DRIVER_LIST *drivers;
-  LCM_READER_LIST *readers;
-  LCM_SERVICE_LIST *services;
+typedef struct LC_FS_PATH_CTX LC_FS_PATH_CTX;
+struct LC_FS_PATH_CTX {
+  GWEN_BUFFER *path;
+  LC_FS_NODE *node;
 };
 
 
-#endif
 
+struct LC_FS {
+  LC_FS_MODULE *rootFsModule;
+  LC_FS_NODE *rootFsNode;
+};
+
+
+
+
+#endif /* LC_FS_P_H */

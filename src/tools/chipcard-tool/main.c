@@ -113,6 +113,39 @@ const GWEN_ARGS prg_args[]={
   "Set the total timeout for check command."
 },
 {
+  0,                            /* flags */
+  GWEN_ArgsTypeInt,             /* type */
+  "readers",                    /* name */
+  0,                            /* minnum */
+  1,                            /* maxnum */
+  0,                            /* short option */
+  "readers",                    /* long option */
+  "Show readers",               /* short description */
+  "Show readers."
+},
+{
+  0,                            /* flags */
+  GWEN_ArgsTypeInt,             /* type */
+  "drivers",                    /* name */
+  0,                            /* minnum */
+  1,                            /* maxnum */
+  0,                            /* short option */
+  "drivers",                    /* long option */
+  "Show drivers",               /* short description */
+  "Show drivers."
+},
+{
+  0,                            /* flags */
+  GWEN_ArgsTypeInt,             /* type */
+  "services",                   /* name */
+  0,                            /* minnum */
+  1,                            /* maxnum */
+  0,                            /* short option */
+  "services",                   /* long option */
+  "Show services",              /* short description */
+  "Show services."
+},
+{
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
   GWEN_ArgsTypeInt,             /* type */
   "help",                       /* name */

@@ -73,77 +73,115 @@ int _checkReaders_check(LCM_MONITOR *mon) {
 
 
 
-void _checkReaders_show(LCM_MONITOR *mon, int showAll) {
+void _checkReaders_show(LCM_MONITOR *mon,
+                        GWEN_DB_NODE *dbArgs) {
   LCM_SERVER *ms;
+  int showReaders;
+  int showDrivers;
+  int showServices;
+  int showDetailed;
 
   assert(mon);
+
+  showDetailed=GWEN_DB_GetIntValue(dbArgs, "showAll", 0, 0);
+  showDrivers=GWEN_DB_GetIntValue(dbArgs, "drivers", 0, 0);
+  showServices=GWEN_DB_GetIntValue(dbArgs, "services", 0, 0);
+  showReaders=GWEN_DB_GetIntValue(dbArgs, "readers", 0, 0);
+  if (!showDrivers && !showServices)
+    showReaders=1;
+
   ms=LCM_Server_List_First(LCM_Monitor_GetServers(mon));
   while(ms) {
-    LCM_DRIVER *md;
-    LCM_READER *mr;
+    if (showServices) {
+      LCM_SERVICE *mss;
 
-    /* show drivers */
-    md=LCM_Driver_List_First(LCM_Server_GetDrivers(ms));
-    fprintf(stdout, "Drivers:\n");
-    while(md) {
-      fprintf(stdout,
-              "- %s (%s, %s): %s\n",
-              LCM_Driver_GetDriverName(md),
-              LCM_Driver_GetDriverType(md),
-              LCM_Driver_GetLibraryFile(md),
-              LCM_Driver_GetStatus(md));
-      if (strcasecmp(LCM_Driver_GetStatus(md),
-                     LC_NOTIFY_CODE_DRIVER_ERROR)==0 || showAll) {
-	GWEN_BUFFER *lbuf;
+      /* show services */
+      mss=LCM_Service_List_First(LCM_Server_GetServices(ms));
+      fprintf(stdout, "  Services:\n");
+      while(mss) {
+        fprintf(stdout,
+                "  - %s (%0x8): %s\n",
+                LCM_Service_GetServiceName(mss),
+                LCM_Service_GetServiceId(mss),
+                LCM_Service_GetStatus(mss));
+        if (strcasecmp(LCM_Service_GetStatus(mss),
+                       LC_NOTIFY_CODE_SERVICE_ERROR)==0 || showDetailed) {
+          GWEN_BUFFER *lbuf;
 
-        lbuf=LCM_Driver_GetLogBuffer(md);
-        assert(lbuf);
-        fprintf(stdout, "Event log:\n");
-        fprintf(stdout, "%s", GWEN_Buffer_GetStart(lbuf));
-      }
+          lbuf=LCM_Service_GetLogBuffer(mss);
+          assert(lbuf);
+          fprintf(stdout, "Event log:\n");
+          fprintf(stdout, "%s", GWEN_Buffer_GetStart(lbuf));
+        }
+        mss=LCM_Service_List_Next(mss);
+      } /* while mss */
+    } /* if showServices */
 
-      md=LCM_Driver_List_Next(md);
-    }
+    if (showDrivers) {
+      LCM_DRIVER *md;
 
-    /* show readers */
-    mr=LCM_Reader_List_First(LCM_Server_GetReaders(ms));
-    fprintf(stdout, "Readers:\n");
-    while(mr) {
-      const char *ds;
-      GWEN_TYPE_UINT32 rflags;
+      /* show drivers */
+      md=LCM_Driver_List_First(LCM_Server_GetDrivers(ms));
+      fprintf(stdout, "  Drivers:\n");
+      while(md) {
+        fprintf(stdout,
+                "  - %s (%s, %s): %s\n",
+                LCM_Driver_GetDriverName(md),
+                LCM_Driver_GetDriverType(md),
+                LCM_Driver_GetLibraryFile(md),
+                LCM_Driver_GetStatus(md));
+        if (strcasecmp(LCM_Driver_GetStatus(md),
+                       LC_NOTIFY_CODE_DRIVER_ERROR)==0 || showDetailed) {
+          GWEN_BUFFER *lbuf;
 
-      ds=LCM_Reader_GetShortDescr(mr);
-      if (!ds)
-        ds=LCM_Reader_GetReaderType(mr);
+          lbuf=LCM_Driver_GetLogBuffer(md);
+          assert(lbuf);
+          fprintf(stdout, "Event log:\n");
+          fprintf(stdout, "%s", GWEN_Buffer_GetStart(lbuf));
+        }
+        md=LCM_Driver_List_Next(md);
+      } /* while md */
+    } /* if showReaders */
 
-      fprintf(stdout,
-              "- %s (%s, port %d",
-              LCM_Reader_GetReaderName(mr),
-              ds,
-              LCM_Reader_GetReaderPort(mr));
-      ds=LCM_Reader_GetReaderInfo(mr);
-      if (ds)
-        fprintf(stdout, ", %s", ds);
-      rflags=LCM_Reader_GetReaderFlags(mr);
-      if (rflags) {
-        if (rflags & LC_CARD_READERFLAGS_KEYPAD)
-          fprintf(stdout, ", keypad");
-        if (rflags & LC_CARD_READERFLAGS_DISPLAY)
-          fprintf(stdout, ", display");
-      }
-      fprintf(stdout, "): %s\n", LCM_Reader_GetStatus(mr));
+    if (showReaders) {
+      LCM_READER *mr;
 
-      if (strcasecmp(LCM_Reader_GetStatus(mr),
-                     LC_NOTIFY_CODE_READER_ERROR)==0 || showAll) {
-        GWEN_BUFFER *lbuf;
+      /* show readers */
+      mr=LCM_Reader_List_First(LCM_Server_GetReaders(ms));
+      fprintf(stdout, "  Readers:\n");
+      while(mr) {
+        const char *ds;
+        GWEN_TYPE_UINT32 rflags;
 
-        lbuf=LCM_Reader_GetLogBuffer(mr);
-        assert(lbuf);
-        fprintf(stdout, "Event log:\n");
-        fprintf(stdout, "%s", GWEN_Buffer_GetStart(lbuf));
-      }
-      mr=LCM_Reader_List_Next(mr);
-    }
+        ds=LCM_Reader_GetShortDescr(mr);
+        if (!ds)
+          ds=LCM_Reader_GetReaderType(mr);
+
+        fprintf(stdout,
+                "  - %s (%s, port %d",
+                LCM_Reader_GetReaderName(mr),
+                ds,
+                LCM_Reader_GetReaderPort(mr));
+        rflags=LCM_Reader_GetReaderFlags(mr);
+        if (rflags) {
+          if (rflags & LC_CARD_READERFLAGS_KEYPAD)
+            fprintf(stdout, ", keypad");
+          if (rflags & LC_CARD_READERFLAGS_DISPLAY)
+            fprintf(stdout, ", display");
+        }
+        fprintf(stdout, "): %s\n", LCM_Reader_GetStatus(mr));
+        if (strcasecmp(LCM_Reader_GetStatus(mr),
+                       LC_NOTIFY_CODE_READER_ERROR)==0 || showDetailed) {
+          GWEN_BUFFER *lbuf;
+
+          lbuf=LCM_Reader_GetLogBuffer(mr);
+          assert(lbuf);
+          fprintf(stdout, "Event log:\n");
+          fprintf(stdout, "%s", GWEN_Buffer_GetStart(lbuf));
+        }
+        mr=LCM_Reader_List_Next(mr);
+      } /* while mr */
+    } /* if showReaders */
 
     ms=LCM_Server_List_Next(ms);
   }
@@ -157,12 +195,10 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   LCM_MONITOR *mon;
   int timeOut;
   int doWait;
-  int logAll;
   GWEN_TYPE_UINT32 swId;
 
   doWait=GWEN_DB_VariableExists(dbArgs, "timeout");
   timeOut=GWEN_DB_GetIntValue(dbArgs, "timeout", 0, CHECKREADERS_TIMEOUT);
-  logAll=GWEN_DB_GetIntValue(dbArgs, "showAll", 0, 0);
 
   res=LC_Client_SetNotify(cl,
                           LC_NOTIFY_FLAGS_READER_START|
@@ -199,7 +235,7 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       }
       else {
 	/* finished */
-	_checkReaders_show(mon, logAll);
+        _checkReaders_show(mon, dbArgs);
 	return 0;
       }
     }
@@ -210,7 +246,7 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       rv=_checkReaders_check(mon);
       if (rv==0 && !doWait) {
         /* finished */
-        _checkReaders_show(mon, logAll);
+        _checkReaders_show(mon, dbArgs);
         return 0;
       }
       else if (rv==-1) {

@@ -11,19 +11,21 @@
  ***************************************************************************/
 
 
-#ifndef LC_MON_SERVER_P_H
-#define LC_MON_SERVER_P_H
+#ifndef LC_MON_SERVICE_P_H
+#define LC_MON_SERVICE_P_H
 
 
-#include "server_l.h"
+#include "service_l.h"
 
-struct LCM_SERVER {
-  GWEN_LIST_ELEMENT(LCM_SERVER)
+struct LCM_SERVICE {
+  GWEN_LIST_ELEMENT(LCM_SERVICE)
+  GWEN_TYPE_UINT32 serviceId;
+  char *serviceName;
   GWEN_TYPE_UINT32 serverId;
-  char *clientId;
-  LCM_DRIVER_LIST *drivers;
-  LCM_READER_LIST *readers;
-  LCM_SERVICE_LIST *services;
+  char *status;
+  GWEN_BUFFER *logBuffer;
+  time_t lastChangeTime;
+
 };
 
 

@@ -13,7 +13,9 @@ noinst_HEADERS=\
  reader_l.h \
  reader_p.h \
  server_l.h \
- server_p.h
+ server_p.h \
+ service_l.h \
+ service_p.h
 
 iheaderdir=${includedir}/chipcard2-client/mon
 iheader_HEADERS=\
@@ -21,13 +23,15 @@ iheader_HEADERS=\
  driver.h \
  monitor.h \
  reader.h \
- server.h
+ server.h \
+ service.h
 
 libmon_la_SOURCES=\
  client.c \
  driver.c \
  monitor.c \
  reader.c \
- server.c
+ server.c \
+ service.c
 
 

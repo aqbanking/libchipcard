@@ -21,6 +21,7 @@ typedef struct LCM_SERVER LCM_SERVER;
 #include <chipcard2-client/chipcard2.h>
 #include <chipcard2-client/mon/reader.h>
 #include <chipcard2-client/mon/driver.h>
+#include <chipcard2-client/mon/service.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>
@@ -59,6 +60,11 @@ LCM_DRIVER_LIST *LCM_Server_GetDrivers(const LCM_SERVER *ms);
  */
 LCM_READER_LIST *LCM_Server_GetReaders(const LCM_SERVER *ms);
 
+
+/**
+ * Returns the list of services the monitor knows of the server.
+ */
+LCM_SERVICE_LIST *LCM_Server_GetServices(const LCM_SERVER *ms);
 
 #endif
 
