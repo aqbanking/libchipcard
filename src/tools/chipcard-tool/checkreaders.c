@@ -169,6 +169,10 @@ void _checkReaders_show(LCM_MONITOR *mon,
           if (rflags & LC_CARD_READERFLAGS_DISPLAY)
             fprintf(stdout, ", display");
         }
+        ds=LCM_Reader_GetReaderInfo(mr);
+        if (ds) {
+          fprintf(stdout, ", %s", ds);
+        }
         fprintf(stdout, "): %s\n", LCM_Reader_GetStatus(mr));
         if (strcasecmp(LCM_Reader_GetStatus(mr),
                        LC_NOTIFY_CODE_READER_ERROR)==0 || showDetailed) {
