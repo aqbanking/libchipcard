@@ -401,7 +401,7 @@ int LC_FS_OpenDir(LC_FS *fs,
   }
 
   /* create file handle */
-  hdl=LC_FSNodeHandle_new(p, node, LC_FSClient_GetNextHandleId(fcl));
+  hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
   LC_FSClient_AddNodeHandle(fcl, hdl);
   *pHid=LC_FSNodeHandle_GetId(hdl);
   LC_FSPathCtx_free(ctx);
@@ -484,7 +484,7 @@ int LC_FS_MkDir(LC_FS *fs,
   }
 
   /* create file handle */
-  hdl=LC_FSNodeHandle_new(p, node, LC_FSClient_GetNextHandleId(fcl));
+  hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
   LC_FSClient_AddNodeHandle(fcl, hdl);
   *pHid=LC_FSNodeHandle_GetId(hdl);
   LC_FSPathCtx_free(ctx);
