@@ -60,7 +60,7 @@ int _checkReaders_check(LCM_MONITOR *mon) {
                      LC_NOTIFY_CODE_READER_UP)!=0 &&
           strcasecmp(LCM_Reader_GetStatus(mr),
                      LC_NOTIFY_CODE_READER_ERROR)!=0) {
-        DBG_ERROR(0, "Reader still down/started");
+        DBG_INFO(0, "Reader still not up");
         return 1;
       }
       mr=LCM_Reader_List_Next(mr);

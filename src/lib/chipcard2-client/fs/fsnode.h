@@ -64,6 +64,12 @@ void LC_FSNode_SetFlags(LC_FS_NODE *fn, GWEN_TYPE_UINT32 fl);
 void LC_FSNode_AddFlags(LC_FS_NODE *fn, GWEN_TYPE_UINT32 fl);
 void LC_FSNode_SubFlags(LC_FS_NODE *fn, GWEN_TYPE_UINT32 fl);
 
+GWEN_TYPE_UINT32 LC_FSNode_GetFileMode(const LC_FS_NODE *fn);
+void LC_FSNode_SetFileMode(LC_FS_NODE *fn, GWEN_TYPE_UINT32 m);
+
+GWEN_TYPE_UINT32 LC_FSNode_GetFileSize(const LC_FS_NODE *fn);
+void LC_FSNode_SetFileSize(LC_FS_NODE *fn, GWEN_TYPE_UINT32 s);
+
 LC_FS_NODE *LC_FSNode_GetMounted(const LC_FS_NODE *fn);
 void LC_FSNode_SetMounted(LC_FS_NODE *fn, LC_FS_NODE *n);
 LC_FS_MODULE *LC_FSNode_GetFileSystem(const LC_FS_NODE *fn);

@@ -41,6 +41,7 @@ LC_REQUEST *LC_Request_new(LC_CLIENT *cl,
 
   assert(inRequestData);
   GWEN_NEW_OBJECT(LC_REQUEST, rq);
+  DBG_MEM_INC("LC_REQUEST", 0);
   GWEN_LIST_INIT(LC_REQUEST, rq);
   rq->client=cl;
   rq->inRequestData=inRequestData;
@@ -59,6 +60,7 @@ LC_REQUEST *LC_Request_new(LC_CLIENT *cl,
 
 void LC_Request_free(LC_REQUEST *rq){
   if (rq) {
+    DBG_MEM_DEC("LC_REQUEST");
     assert(rq->usage);
     if (--(rq->usage)==0) {
       GWEN_LIST_FINI(LC_REQUEST, rq);

@@ -138,6 +138,37 @@ void LC_FSNode_SetFileSystem(LC_FS_NODE *fn, LC_FS_MODULE *fs){
 
 
 
+GWEN_TYPE_UINT32 LC_FSNode_GetFileMode(const LC_FS_NODE *fn){
+  assert(fn);
+  return fn->fileMode;
+}
+
+
+
+void LC_FSNode_SetFileMode(LC_FS_NODE *fn, GWEN_TYPE_UINT32 m){
+  assert(fn);
+  fn->fileMode=m;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_FSNode_GetFileSize(const LC_FS_NODE *fn){
+  assert(fn);
+  return fn->fileSize;
+}
+
+
+
+void LC_FSNode_SetFileSize(LC_FS_NODE *fn, GWEN_TYPE_UINT32 s){
+  assert(fn);
+  fn->fileSize=s;
+}
+
+
+
+
+
+
 
 
 

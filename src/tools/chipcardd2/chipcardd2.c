@@ -16,7 +16,7 @@
 #endif
 
 /* define this to dump the server state upon reception of signal USR1 */
-/*#define USR1_DUMPS 1 */
+#define USR1_DUMPS 1
 
 /* Internationalization */
 #ifdef HAVE_GETTEXT_ENVIRONMENT
@@ -190,7 +190,7 @@ void usage(const char *name) {
 	       " --logfile FILE   - use given FILE as log file\n"
 	       " --logtype TYPE   - use given TYPE as log type\n"
 	       "                    These are the valid types:\n"
-	       "                     stderr (log to standard error channel)\n"
+	       "                     console (log to standard error channel)\n"
 	       "                     file   (log to the file given by --logfile)\n"),
 #ifdef HAVE_SYSLOG_H
 	  I18N("                     syslog (log via syslog)\n"),
@@ -208,8 +208,8 @@ void usage(const char *name) {
 	       "                     warning, notice, info and debug\n"
 	       "                    Default is \"notice\".\n"
                " --exit-on-error  - makes chipcardd2 exit on setup errors\n"
-               " --runonce        - makes chipcardd2 exit after serving "
-               "one client\n"
+               " --runonce ARG    - makes chipcardd2 exit after serving "
+               "ARG clients\n"
                "\n"
                " The following options apply to commands init and mkcert:\n"
                " --certfile FILE  - name of the certificate file to write\n"
@@ -318,7 +318,10 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
       args->exitOnSetupError=1;
     }
     else if (strcmp(argv[i],"--runonce")==0) {
-      args->runOnce=1;
+      i++;
+      if (i>=argc)
+        return RETURNVALUE_PARAM;
+      args->runOnce=atoi(argv[i]);
     }
 
     else if (strcmp(argv[i],"--accept-all-certs")==0) {
@@ -487,6 +490,8 @@ void familySignalHandler(int s, int child) {
 #ifdef USR1_DUMPS
     if (cardServer)
       LC_CardServer_DumpState(cardServer);
+    GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
+    GWEN_Net_Dump();
 #else
     if (GWEN_Logger_GetLevel(0)<GWEN_LoggerLevelDebug) {
       DBG_NOTICE(0, "Got signal USR1, will increase log level");
@@ -700,6 +705,7 @@ int server(ARGUMENTS *args) {
   const char *pidfile;
   int rv;
   int enabled;
+  int loopCount;
   GWEN_DB_NODE *db;
 
   GWEN_NetTransportSSL_SetGetPasswordFn(getPassword);
@@ -849,10 +855,10 @@ int server(ARGUMENTS *args) {
 		DBG_NOTICE(0, "Daemon suspended.");
 	      }
 	      else {
-		if (WEXITSTATUS(status)==RETURNVALUE_HANGUP) {
-		  DBG_NOTICE(0, "Restarting daemon");
-		  break;
-		}
+                if (WEXITSTATUS(status)==RETURNVALUE_HANGUP) {
+                  DBG_NOTICE(0, "Restarting daemon");
+                  break;
+                }
 		else if ((WEXITSTATUS(status)==RETURNVALUE_SETUP ||
 			  WEXITSTATUS(status)==RETURNVALUE_NOSTART) &&
 			 args->exitOnSetupError) {
@@ -884,6 +890,11 @@ int server(ARGUMENTS *args) {
 		DBG_ERROR(0, "Daemon died due to uncaught "
 			  "signal %d.",
 			  WTERMSIG(status));
+                if (args->daemonMode==0) {
+                  remove(pidfile);
+                  return 0;
+                }
+
 		/* check for respawn frequency, don't make the daemon
 		 * eat all the processor power */
 		if (difftime(LastFailedTime, lft)<2) {
@@ -956,9 +967,11 @@ int server(ARGUMENTS *args) {
   }
 
   if (args->runOnce) {
-    DBG_NOTICE(0, "ChipCard daemon will only serve one client.");
+    DBG_NOTICE(0, "ChipCard daemon will only serve %d client(s).",
+               args->runOnce);
     fprintf(stderr,
-            I18N("ChipCard daemon will only serve one client."));
+            I18N("ChipCard daemon will only serve %d client(s)."),
+            args->runOnce);
   }
 
   DBG_INFO(0, "Will now initialize server.");
@@ -973,6 +986,7 @@ int server(ARGUMENTS *args) {
 
   /* loop */
   DBG_INFO(0, "Ready to service requests.");
+  loopCount=0;
   while (ChipcardDaemonStop==0 && ChipcardDaemonHangup==0) {
     GWEN_NETCONNECTION_WORKRESULT res;
     int rv;
@@ -991,9 +1005,16 @@ int server(ARGUMENTS *args) {
         break;
       if (args->runOnce && clientsBefore)
         if (LC_CardServer_GetClientCount(cardServer)==0) {
-          DBG_NOTICE(0, "One client served, going down.");
-          ChipcardDaemonStop=1;
-          break;
+          loopCount++;
+          LC_CardServer_DumpState(cardServer);
+          GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
+          GWEN_Net_Dump();
+
+          if (loopCount>=args->runOnce) {
+            DBG_NOTICE(0, "%d client(s) served, going down.", loopCount);
+            ChipcardDaemonStop=1;
+            break;
+          }
         }
     }
     res=GWEN_Net_HeartBeat(2000);

@@ -105,6 +105,14 @@ void LC_FSModule_SetOpenFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_OPENFILE_FN f){
 
 
 
+void LC_FSModule_SetCreateFileFn(LC_FS_MODULE *fs,
+                                 LC_FS_MODULE_CREATEFILE_FN f){
+  assert(fs);
+  fs->createFileFn=f;
+}
+
+
+
 void LC_FSModule_SetCloseFileFn(LC_FS_MODULE *fs,
                                 LC_FS_MODULE_CLOSEFILE_FN f){
   assert(fs);

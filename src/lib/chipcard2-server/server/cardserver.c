@@ -7532,7 +7532,8 @@ void LC_CardServer_DumpState(LC_CARDSERVER *cs) {
     r=LC_Reader_List_Next(r);
   }
 
-
+  fprintf(stderr, "  IPC:\n");
+  GWEN_IPCManager_Dump(cs->ipcManager, stderr, 2);
 }
 
 

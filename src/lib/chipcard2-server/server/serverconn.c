@@ -35,6 +35,7 @@ void LC_ServerConn_TakeOver(GWEN_NETCONNECTION *conn){
   LC_SERVERCONN *sc;
 
   GWEN_NEW_OBJECT(LC_SERVERCONN, sc);
+  DBG_MEM_INC("LC_SERVERCONN", 0);
   GWEN_INHERIT_SETDATA(GWEN_NETCONNECTION, LC_SERVERCONN,
                        conn, sc,
                        LC_ServerConn_FreeData);
@@ -103,7 +104,7 @@ void LC_ServerConn_FreeData(void *bp, void *p) {
   sc=(LC_SERVERCONN*)p;
 
   GWEN_FREE_OBJECT(sc);
-
+  DBG_MEM_DEC("LC_SERVERCONN");
 }
 
 

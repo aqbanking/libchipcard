@@ -25,6 +25,7 @@ struct LC_CARDCONTEXT {
   LC_CARDMGR *mgr;
   GWEN_XMLNODE *cardNode;
   GWEN_XMLNODE *cmdNode;
+  GWEN_TYPE_UINT32 usage;
 };
 
 

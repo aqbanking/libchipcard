@@ -34,13 +34,13 @@ GWEN_LIST_FUNCTIONS(LC_CARDCONTEXT, LC_CardContext);
 GWEN_INHERIT_FUNCTIONS(LC_CARDCONTEXT);
 
 
-
-
 LC_CARDCONTEXT *LC_CardContext_new(LC_CARDMGR *mgr){
   LC_CARDCONTEXT *ctx;
 
   assert(mgr);
   GWEN_NEW_OBJECT(LC_CARDCONTEXT, ctx);
+  DBG_MEM_INC("LC_CARDCONTEXT", 0);
+  ctx->usage=1;
   GWEN_INHERIT_INIT(LC_CARDCONTEXT, ctx);
   GWEN_LIST_INIT(LC_CARDCONTEXT, ctx);
   ctx->mgr=mgr;
@@ -55,10 +55,14 @@ LC_CARDCONTEXT *LC_CardContext_new(LC_CARDMGR *mgr){
 
 void LC_CardContext_free(LC_CARDCONTEXT *ctx){
   if (ctx) {
-    GWEN_INHERIT_FINI(LC_CARDCONTEXT, ctx);
-    LC_CardMgr_free(ctx->mgr);
-    GWEN_LIST_FINI(LC_CARDCONTEXT, ctx);
-    GWEN_FREE_OBJECT(ctx);
+    assert(ctx->usage);
+    DBG_MEM_DEC("LC_CARDCONTEXT");
+    if (--(ctx->usage)==0) {
+      GWEN_INHERIT_FINI(LC_CARDCONTEXT, ctx);
+      LC_CardMgr_free(ctx->mgr);
+      GWEN_LIST_FINI(LC_CARDCONTEXT, ctx);
+      GWEN_FREE_OBJECT(ctx);
+    }
   }
 }
 

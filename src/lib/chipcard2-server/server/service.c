@@ -36,6 +36,7 @@ LC_SERVICE *LC_Service_new(){
   LC_SERVICE *as;
 
   GWEN_NEW_OBJECT(LC_SERVICE, as);
+  DBG_MEM_INC("LC_SERVICE", 0);
   GWEN_LIST_INIT(LC_SERVICE, as);
 
   as->idleSince=time(0);
@@ -58,6 +59,7 @@ LC_SERVICE *LC_Service_FromDb(GWEN_DB_NODE *db){
   int i;
 
   GWEN_NEW_OBJECT(LC_SERVICE, as);
+  DBG_MEM_INC("LC_SERVICE", 0);
   GWEN_LIST_INIT(LC_SERVICE, as);
 
   /* assign unique id */
@@ -102,6 +104,7 @@ LC_SERVICE *LC_Service_FromDb(GWEN_DB_NODE *db){
 
 void LC_Service_free(LC_SERVICE *as){
   if (as) {
+    DBG_MEM_DEC("LC_SERVICE");
     GWEN_LIST_FINI(LC_SERVICE, as);
     LC_Request_List_free(as->requests);
     free(as->serviceName);

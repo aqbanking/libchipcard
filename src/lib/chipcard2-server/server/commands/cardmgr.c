@@ -42,6 +42,7 @@ LC_CARDMGR *LC_CardMgr_new(const GWEN_STRINGLIST *paths){
   LC_CARDMGR *mgr;
 
   GWEN_NEW_OBJECT(LC_CARDMGR, mgr);
+  DBG_MEM_INC("LC_CARDMGR", 0);
   mgr->contexts=LC_CardContext_List_new();
   mgr->paths=GWEN_StringList_dup(paths);
   mgr->cardFiles=GWEN_StringList_new();
@@ -61,6 +62,7 @@ LC_CARDMGR *LC_CardMgr_new(const GWEN_STRINGLIST *paths){
 
 void LC_CardMgr_free(LC_CARDMGR *mgr){
   if (mgr) {
+    DBG_MEM_DEC("LC_CARDMGR");
     assert(mgr->usage);
     if (--(mgr->usage)==0) {
       LC_CardContext_List_free(mgr->contexts);
@@ -81,6 +83,7 @@ void LC_CardMgr_free(LC_CARDMGR *mgr){
 
 void LC_CardMgr_Attach(LC_CARDMGR *mgr){
   assert(mgr);
+  DBG_MEM_INC("LC_CARDMGR", 1);
   mgr->usage++;
 }
 
@@ -418,6 +421,7 @@ int LC_CardMgr_SelectCard(LC_CARDMGR *mgr,
 
   /* set context */
   LC_Card_SetContext(card, ctx);
+  /* FIXME LC_CardContext_free(ctx); */
   return 0;
 }
 

@@ -39,3 +39,11 @@ mp:
 	automake --add-missing
 	autoconf
 	CFLAGS="-ggdb -Wall -O" CXXFLAGS="-ggdb -Wall -O" ./configure --enable-maintainer-mode
+
+mp-debug:
+	libtoolize -f --automake
+	aclocal -I ./m4
+	autoheader
+	automake --add-missing
+	autoconf
+	CFLAGS="-ggdb -Wall -O" CXXFLAGS="-ggdb -Wall -O" ./configure --enable-maintainer-mode --enable-memtrace

@@ -41,6 +41,7 @@ LC_USBTTYDEVICE *LC_USBTTYDevice_new(GWEN_TYPE_UINT32 port,
   LC_USBTTYDEVICE *ud;
 
   GWEN_NEW_OBJECT(LC_USBTTYDEVICE, ud);
+  DBG_MEM_INC("LC_USBTTYDEVICE", 0);
   GWEN_LIST_INIT(LC_USBTTYDEVICE, ud);
 
   ud->port=port;
@@ -56,6 +57,7 @@ void LC_USBTTYDevice_free(LC_USBTTYDEVICE *ud) {
   if (ud) {
     GWEN_LIST_FINI(LC_USBTTYDEVICE, ud);
     GWEN_FREE_OBJECT(ud);
+    DBG_MEM_DEC("LC_USBTTYDEVICE");
   }
 }
 
@@ -90,6 +92,7 @@ LC_USBTTYMONITOR *LC_USBTTYMonitor_new() {
   FILE *f;
 
   GWEN_NEW_OBJECT(LC_USBTTYMONITOR, um);
+  DBG_MEM_INC("LC_USBTTYMONITOR", 0);
   um->currentDevices=LC_USBTTYDevice_List_new();
   um->newDevices=LC_USBTTYDevice_List_new();
   um->lostDevices=LC_USBTTYDevice_List_new();
@@ -124,6 +127,7 @@ void LC_USBTTYMonitor_free(LC_USBTTYMONITOR *um) {
     LC_USBTTYDevice_List_free(um->newDevices);
     LC_USBTTYDevice_List_free(um->lostDevices);
     GWEN_FREE_OBJECT(um);
+    DBG_MEM_DEC("LC_USBTTYMONITOR");
   }
 }
 

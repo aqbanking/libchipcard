@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=3
+CHIPCARD_VERSION_BUILD=4
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -176,15 +176,15 @@ fi
 # check for PC/SC
 #
 
-AQ_CHECK_PCSC
-AC_MSG_CHECKING(if PC/SC might be used)
-if test "$have_pcsc" != "yes" ; then
-    AC_MSG_WARN(No pcsc libraries found, SCard driver will not be available.)
-else
-    all_includes="$all_includes $pcsc_includes"
-    AC_DEFINE(USE_PCSC, 1, [whether PC/SC is to be used])
-    AC_MSG_RESULT(yes)
-fi
+#AQ_CHECK_PCSC
+#AC_MSG_CHECKING(if PC/SC might be used)
+#if test "$have_pcsc" != "yes" ; then
+#    AC_MSG_WARN(No pcsc libraries found, SCard driver will not be available.)
+#else
+#    all_includes="$all_includes $pcsc_includes"
+#    AC_DEFINE(USE_PCSC, 1, [whether PC/SC is to be used])
+#    AC_MSG_RESULT(yes)
+#fi
 
 
 
@@ -351,6 +351,24 @@ if test "$XGETTEXT" != "missing"; then
   fi
 fi
 AC_SUBST(I18N_CATALOG)
+
+
+
+###-------------------------------------------------------------------------
+#
+# check for MEMTRACE
+#
+AC_MSG_CHECKING(if MEMTRACE is wanted)
+AC_ARG_ENABLE(memtrace,
+  [  --enable-memtrace             enable memory trace (default=no)],
+  enable_memtrace="$enableval",
+  enable_memtrace="no")
+AC_MSG_RESULT($enable_memtrace)
+
+if test "$enable_memtrace" != "no"; then
+  AC_DEFINE(GWEN_MEMORY_DEBUG, 1, [if memory debugging is wanted])
+fi
+
 
 
 ###-------------------------------------------------------------------------

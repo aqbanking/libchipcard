@@ -26,7 +26,12 @@
 enum LC_FS_ERROR {
   LC_FS_ErrorNone=0,
   LC_FS_ErrorGeneric,
-  LC_FS_ErrorNotSupported
+  LC_FS_ErrorNotSupported,
+  LC_FS_ErrorNotFound,
+  LC_FS_ErrorNotFile,
+  LC_FS_ErrorNotDir,
+  LC_FS_ErrorExists,
+  LC_FS_ErrorFull
 };
 
 
@@ -110,6 +115,8 @@ void LC_FSModule_SetReadDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_READDIR_FN f);
 void LC_FSModule_SetCloseDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_CLOSEDIR_FN f);
 
 void LC_FSModule_SetOpenFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_OPENFILE_FN f);
+void LC_FSModule_SetCreateFileFn(LC_FS_MODULE *fs,
+                                 LC_FS_MODULE_CREATEFILE_FN f);
 void LC_FSModule_SetCloseFileFn(LC_FS_MODULE *fs,
                                 LC_FS_MODULE_CLOSEFILE_FN f);
 void LC_FSModule_SetReadFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_READFILE_FN f);

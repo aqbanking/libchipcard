@@ -38,6 +38,7 @@ LC_READER *LC_Reader_new(LC_DRIVER *d){
   assert(d);
 
   GWEN_NEW_OBJECT(LC_READER, r);
+  DBG_MEM_INC("LC_READER", 0);
   GWEN_LIST_INIT(LC_READER, r);
 
   r->driver=d;
@@ -95,6 +96,7 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
   assert(d);
 
   GWEN_NEW_OBJECT(LC_READER, r);
+  DBG_MEM_INC("LC_READER", 0);
   GWEN_LIST_INIT(LC_READER, r);
 
   r->driver=d;
@@ -149,6 +151,7 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
 
 void LC_Reader_free(LC_READER *r){
   if (r) {
+    DBG_MEM_DEC("LC_READER");
     GWEN_LIST_FINI(LC_READER, r);
     LC_Request_List_free(r->requests);
     free(r->readerType);

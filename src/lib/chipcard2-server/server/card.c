@@ -40,6 +40,7 @@ LC_CARD *LC_Card_new(LC_READER *r, unsigned int slot,
   assert(r);
   assert(readersCardId);
   GWEN_NEW_OBJECT(LC_CARD, cd);
+  DBG_MEM_INC("LC_CARD", 0);
   GWEN_LIST_INIT(LC_CARD, cd);
   cd->type=ct;
   cd->reader=r;
@@ -58,6 +59,7 @@ LC_CARD *LC_Card_new(LC_READER *r, unsigned int slot,
 
 void LC_Card_free(LC_CARD *cd){
   if (cd) {
+    DBG_MEM_DEC("LC_CARD");
     GWEN_LIST_FINI(LC_CARD, cd);
     GWEN_Buffer_free(cd->atr);
     GWEN_IdList_free(cd->waitingClients);

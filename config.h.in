@@ -30,6 +30,9 @@
 /* tag */
 #undef CHIPCARD_VERSION_TAG
 
+/* if memory debugging is wanted */
+#undef GWEN_MEMORY_DEBUG
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
@@ -161,9 +164,6 @@
 
 /* whether libUSB is to be used */
 #undef USE_LIBUSB
-
-/* whether PC/SC is to be used */
-#undef USE_PCSC
 
 /* Version number of package */
 #undef VERSION

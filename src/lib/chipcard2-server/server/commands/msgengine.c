@@ -39,6 +39,7 @@ GWEN_MSGENGINE *LC_MsgEngine_new(){
 
   e=GWEN_MsgEngine_new();
   GWEN_NEW_OBJECT(LC_MSGENGINE, le);
+  DBG_MEM_INC("LC_MSGENGINE", 0);
   GWEN_INHERIT_SETDATA(GWEN_MSGENGINE, LC_MSGENGINE,
                        e, le, LC_MsgEngine_FreeData);
   GWEN_MsgEngine_SetTypeReadFunction(e, LC_MsgEngine_TypeRead);
@@ -66,6 +67,7 @@ void LC_MsgEngine_FreeData(void *bp, void *p){
   /* free all objects inside LC_MsgEngine */
 
   free(le);
+  DBG_MEM_DEC("LC_MSGENGINE");
 }
 
 

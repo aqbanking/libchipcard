@@ -32,6 +32,7 @@ LC_CLIENT *LC_Client_new(GWEN_TYPE_UINT32 id){
   LC_CLIENT *cl;
 
   GWEN_NEW_OBJECT(LC_CLIENT, cl);
+  DBG_MEM_INC("LC_CLIENT", 0);
   GWEN_LIST_INIT(LC_CLIENT, cl);
 
   cl->seenCards=GWEN_IdList_new();
@@ -52,6 +53,7 @@ LC_CLIENT *LC_Client_new(GWEN_TYPE_UINT32 id){
 
 void LC_Client_free(LC_CLIENT *cl){
   if (cl) {
+    DBG_MEM_DEC("LC_CLIENT");
     GWEN_LIST_FINI(LC_CLIENT, cl);
     GWEN_IdList_free(cl->seenCards);
     GWEN_IdList_free(cl->selectedReaders);

@@ -36,6 +36,7 @@ LC_DRIVER *LC_Driver_new(){
   LC_DRIVER *d;
 
   GWEN_NEW_OBJECT(LC_DRIVER, d);
+  DBG_MEM_INC("LC_DRIVER", 0);
   GWEN_LIST_INIT(LC_DRIVER, d);
 
   d->idleSince=time(0);
@@ -60,6 +61,7 @@ LC_DRIVER *LC_Driver_FromDb(GWEN_DB_NODE *db){
   GWEN_DB_NODE *dbT;
 
   GWEN_NEW_OBJECT(LC_DRIVER, d);
+  DBG_MEM_INC("LC_DRIVER", 0);
   GWEN_LIST_INIT(LC_DRIVER, d);
 
   /* assign unique id */
@@ -114,6 +116,7 @@ LC_DRIVER *LC_Driver_FromDb(GWEN_DB_NODE *db){
 
 void LC_Driver_free(LC_DRIVER *d){
   if (d) {
+    DBG_MEM_DEC("LC_DRIVER");
     GWEN_LIST_FINI(LC_DRIVER, d);
     GWEN_DB_Group_free(d->driverVars);
     free(d->driverType);

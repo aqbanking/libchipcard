@@ -5,3 +5,4 @@
 - added function LC_Reader_DelClientRequests()
 - when a driver goes down: delete its IPC client
 - when client goes down: delete clients' requests
+- more work on FS
