@@ -4,8 +4,6 @@ AM_CFLAGS=\
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 
-EXTRA_DIST=chipcard2.h.in version.h.in
-
 lib_LTLIBRARIES=libchipcard2c.la
 
 libchipcard2c_la_SOURCES=dummy.c

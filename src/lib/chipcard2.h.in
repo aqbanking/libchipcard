@@ -16,12 +16,12 @@
 
 #ifdef __declspec
 # if BUILDING_LIBCHIPCARD2_DLL
-#  define LC_CLIENT_API __declspec (dllexport)
+#  define CHIPCARD_API __declspec (dllexport)
 # else /* BUILDING_LIBCHIPCARD2_DLL */
-#  define LC_CLIENT_API __declspec (dllimport)
+#  define CHIPCARD_API __declspec (dllimport)
 # endif /* Not BUILDING_LIBCHIPCARD2_DLL */
 #else
-# define LC_CLIENT_API
+# define CHIPCARD_API
 #endif
 
 

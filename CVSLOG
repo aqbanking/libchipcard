@@ -1,1 +1,1 @@
-- "chipcardd2 addreader" can now also list available ports ("--rport list")
+- fixed a bug spotted by Thomas Viehmann (concerning driver names)

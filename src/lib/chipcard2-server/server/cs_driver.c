@@ -1675,7 +1675,7 @@ GWEN_DB_NODE *LC_CardServer_DriverDbFromXml(GWEN_XMLNODE *node) {
 	GWEN_StringList_AppendString(slNames,
 				     p, 0, 1);
     }
-    n=GWEN_XMLNode_FindNextTag(n, "loc", 0, 0);
+    n=GWEN_XMLNode_FindNextTag(n, "name", 0, 0);
   } /* while */
 
   nbuf=GWEN_Buffer_new(0, 256, 0, 1);
