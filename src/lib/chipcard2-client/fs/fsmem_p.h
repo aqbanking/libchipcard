@@ -15,12 +15,10 @@
 #define LC_FSMEM_P_H
 
 
-#include <chipcard2-client/fs/fsmodule.h>
-#include <chipcard2-client/fs/fsnode.h>
+#include <chipcard2-client/fs/fsmem.h>
 
 
 
-typedef struct LC_FSMEM_NODE LC_FSMEM_NODE;
 struct LC_FSMEM_NODE {
   LC_FS_NODE *parent;
   LC_FS_NODE_LIST *children;
@@ -28,7 +26,6 @@ struct LC_FSMEM_NODE {
   GWEN_BUFFER *data;
 };
 
-LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs);
 void LC_FSMemNode_FreeData(void *bp, void *p);
 
 LC_FS_NODE_LIST *LC_FSMemNode_GetChildren(const LC_FS_NODE *n);
@@ -45,11 +42,9 @@ GWEN_BUFFER *LC_FSMemNode_GetDataBuffer(const LC_FS_NODE *n);
 
 
 
-typedef struct LC_FSMEM_MODULE LC_FSMEM_MODULE;
 struct LC_FSMEM_MODULE {
 };
 
-LC_FS_MODULE *LC_FSMemModule_new();
 void LC_FSMemModule_FreeData(void *bp, void *p);
 
 

@@ -11,19 +11,27 @@
  ***************************************************************************/
 
 
-#ifndef LC_FS_CLIENT_P_H
-#define LC_FS_CLIENT_P_H
+#ifndef LC_FSMEM_H
+#define LC_FSMEM_H
 
 
-#include "fsclient_l.h"
-
-struct LC_FS_CLIENT {
-  GWEN_LIST_ELEMENT(LC_FS_CLIENT);
-  LC_FS *fileSystem;
-  GWEN_TYPE_UINT32 id;
-  LC_FS_NODE_HANDLE_LIST2 *handles;
-  LC_FS_PATH_CTX *workingCtx;
-};
+#include <chipcard2-client/fs/fsmodule.h>
+#include <chipcard2-client/fs/fsnode.h>
 
 
-#endif /* LC_FS_CLIENT_P_H */
+
+typedef struct LC_FSMEM_NODE LC_FSMEM_NODE;
+typedef struct LC_FSMEM_MODULE LC_FSMEM_MODULE;
+
+LC_FS_NODE *LC_FSMemNode_new(LC_FS_MODULE *fs);
+
+
+LC_FS_MODULE *LC_FSMemModule_new();
+
+
+
+
+
+
+#endif
+

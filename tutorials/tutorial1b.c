@@ -39,7 +39,7 @@
  *
  * This tutorial is intended to show the basics only.
  * After studying this tutorial you should advance to the next one, which
- * will explain all the methods used.
+ * will add some error checking.
  *
  * Usage:
  *   tutorial1b

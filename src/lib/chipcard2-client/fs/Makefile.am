@@ -20,6 +20,7 @@ iheader_HEADERS=\
  fsnode.h \
  fsmodule.h \
  fsclient.h \
+ fsmem.h \
  fs.h
 
 libfs_la_SOURCES=\

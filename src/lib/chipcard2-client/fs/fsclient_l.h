@@ -16,17 +16,29 @@
 
 
 #include <chipcard2-client/fs/fsclient.h>
+#include <chipcard2-client/fs/fs.h>
+#include <gwenhywfar/misc.h>
+
 #include "fsnode_l.h"
 
 
-LC_FS_CLIENT *LC_FSClient_new();
+GWEN_LIST_FUNCTION_DEFS(LC_FS_CLIENT, LC_FSClient)
+
+
+LC_FS_CLIENT *LC_FSClient_new(LC_FS *fs, GWEN_TYPE_UINT32 id);
 void LC_FSClient_free(LC_FS_CLIENT *fcl);
+
+LC_FS *LC_FSClient_GetFileSystem(const LC_FS_CLIENT *fcl);
+
 
 GWEN_TYPE_UINT32 LC_FSClient_GetId(const LC_FS_CLIENT *fcl);
 LC_FS_NODE_HANDLE_LIST2 *LC_FSClient_GetHandles(const LC_FS_CLIENT *fcl);
-LC_FS_NODE *LC_FSClient_GetWorkingDirNode(const LC_FS_CLIENT *fcl);
-const char *LC_FSClient_GetWorkingDirPath(const LC_FS_CLIENT *fcl);
+
+LC_FS_PATH_CTX *LC_FSClient_GetWorkingCtx(const LC_FS_CLIENT *fcl);
+void LC_FSClient_SetWorkingCtx(LC_FS_CLIENT *fcl, LC_FS_PATH_CTX *ctx);
 
 
 
 #endif /* LC_FS_CLIENT_L_H */
+
+
