@@ -313,7 +313,7 @@ int addReader(ARGUMENTS *args) {
     if (args->rport==0) {
       fprintf(stderr,
               I18N("ERROR: No port given for serial reader\n"
-                   "Use \"--rport ARG\" to specify it.\n")
+                   "Use \"--rport list\" for a list of available ports.\n")
              );
       GWEN_DB_Group_free(dbKnownDrivers);
       GWEN_DB_Group_free(dbConfig);
@@ -328,7 +328,34 @@ int addReader(ARGUMENTS *args) {
              );
       GWEN_DB_Group_free(dbKnownDrivers);
       GWEN_DB_Group_free(dbConfig);
-      return RETURNVALUE_PARAM;
+      return RETURNVALUE_SETUP;
+    }
+
+    if (strcasecmp(args->rport, "list")==0) {
+      GWEN_DB_NODE *dbPort;
+
+      dbPort=GWEN_DB_GetFirstVar(dbT);
+      if (dbPort) {
+        while(dbPort) {
+          const char *s;
+
+          s=GWEN_DB_VariableName(dbPort);
+          assert(s);
+          fprintf(stdout, " %s", s);
+          dbPort=GWEN_DB_GetNextVar(dbPort);
+        }
+        fprintf(stdout, "\n");
+      }
+      else {
+        fprintf(stderr, "%s",
+                I18N("ERROR: No ports specified in driver XML file\n"));
+        GWEN_DB_Group_free(dbKnownDrivers);
+        GWEN_DB_Group_free(dbConfig);
+        return RETURNVALUE_SETUP;
+      }
+      GWEN_DB_Group_free(dbKnownDrivers);
+      GWEN_DB_Group_free(dbConfig);
+      return 0;
     }
 
     rport=GWEN_DB_GetIntValue(dbT, args->rport, 0, -1);

@@ -13,9 +13,9 @@ AC_CONFIG_HEADER([config.h])
 #
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
-CHIPCARD_VERSION_PATCHLEVEL=8
-CHIPCARD_VERSION_BUILD=4
-CHIPCARD_VERSION_TAG="cvs"
+CHIPCARD_VERSION_PATCHLEVEL=9
+CHIPCARD_VERSION_BUILD=0
+CHIPCARD_VERSION_TAG="beta"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
 
@@ -215,47 +215,47 @@ AQ_CHECK_OS
 
 case "$OS_TYPE" in
     posix)
-        libchipcard2d_libs="-L\$(prefix)/lib -lchipcard2d"
+        libchipcard2d_libs="-L\${prefix}/lib -lchipcard2d"
         
-        libchipcard2s_libs="-L\$(prefix)/lib -lchipcard2s"
-        libchipcard2s_config_am="\$(sysconfdir)/chipcard2-server"
+        libchipcard2s_libs="-L\${prefix}/lib -lchipcard2s"
+        libchipcard2s_config_am="\${sysconfdir}/chipcard2-server"
 
-        libchipcard2sv_libs="-L\$(prefix)/lib -lchipcard2sv"
+        libchipcard2sv_libs="-L\${(prefix}/lib -lchipcard2sv"
         libchipcard2c_libs="-L`eval echo $prefix/lib` -lchipcard2c"
-        libchipcard2c_config_am="\$(sysconfdir)/chipcard2-client"
+        libchipcard2c_config_am="\${sysconfdir}/chipcard2-client"
         chipcard_client_includes="-I`eval echo $prefix/include`"
 
-        libchipcard2_includes="-I\$(prefix)/include"
-        LC_DEVICEDRIVER_PATH="\$(prefix)/lib/chipcard2-server/drivers"
-        LC_LOWLEVELDRIVER_PATH="\$(prefix)/lib/chipcard2-server/lowlevel"
-        LC_SERVICE_PATH="\$(prefix)/lib/chipcard2-server/services"
+        libchipcard2_includes="-I\${prefix}/include"
+        LC_DEVICEDRIVER_PATH="\${prefix}/lib/chipcard2-server/drivers"
+        LC_LOWLEVELDRIVER_PATH="\${prefix}/lib/chipcard2-server/lowlevel"
+        LC_SERVICE_PATH="\${prefix}/lib/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
-        LC_DEFAULT_PIDDIR="\$(localstatedir)/run/chipcard2"
-        LC_DEFAULT_LOGDIR="\$(localstatedir)/log/chipcard2"
-        LC_DEFAULT_NEWCERTDIR="\$(localstatedir)/lib/chipcard2/newcerts"
-        LC_DEFAULT_LIBDIR="\$(prefix)/lib/chipcard2"
+        LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
+        LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
+        LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
+        LC_DEFAULT_LIBDIR="\${prefix}/lib/chipcard2"
     	;;
     windows)
         AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
         
-        libchipcard2d_libs="-L\$(prefix)/lib -lchipcard2d32"
+        libchipcard2d_libs="-L\${prefix}/lib -lchipcard2d32"
         
-        libchipcard2s_libs="-L\$(prefix)/lib -lchipcard2s32"
-        libchipcard2s_config_am="\$(sysconfdir)/chipcard2-server"
+        libchipcard2s_libs="-L\${prefix}/lib -lchipcard2s32"
+        libchipcard2s_config_am="\${sysconfdir}/chipcard2-server"
 
-        libchipcard2sv_libs="-L\$(prefix)/lib -lchipcard2sv"
+        libchipcard2sv_libs="-L\${prefix}/lib -lchipcard2sv"
         
         libchipcard2c_libs="-L`eval echo $prefix/lib` -lchipcard2c"
-        libchipcard2c_config_am="\$(sysconfdir)/chipcard2-client"
-        libchipcard2_includes="-I\$(prefix)/include"
-        LC_DEVICEDRIVER_PATH="\$(prefix)/lib/chipcard2-server/drivers"
-        LC_LOWLEVELDRIVER_PATH="\$(prefix)/lib/chipcard2-server/lowlevel"
-        LC_SERVICE_PATH="\$(prefix)/lib/chipcard2-server/services"
+        libchipcard2c_config_am="\${sysconfdir}/chipcard2-client"
+        libchipcard2_includes="-I\${prefix}/include"
+        LC_DEVICEDRIVER_PATH="\${prefix}/lib/chipcard2-server/drivers"
+        LC_LOWLEVELDRIVER_PATH="\${prefix}/lib/chipcard2-server/lowlevel"
+        LC_SERVICE_PATH="\${prefix}/lib/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
-        LC_DEFAULT_PIDDIR="\$(localstatedir)/run/chipcard2"
-        LC_DEFAULT_LOGDIR="\$(localstatedir)/log/chipcard2"
-        LC_DEFAULT_NEWCERTDIR="\$(localstatedir)/lib/chipcard2/newcerts"
-        LC_DEFAULT_LIBDIR="\$(prefix)/lib/chipcard2"
+        LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
+        LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
+        LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
+        LC_DEFAULT_LIBDIR="\${prefix}/lib/chipcard2"
         
         LIBCHIPCARD_MAKE_DLL_TARGET="dll"
         LIBCHIPCARD_INSTALL_DLL_TARGET="dll-install"
