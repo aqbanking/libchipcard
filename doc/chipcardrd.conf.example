@@ -1,0 +1,182 @@
+# $RCSfile$
+#                             -------------------
+#    cvs         : $Id$
+#    begin       : Mon Mar 01 2004
+#    copyright   : (C) 2004 by Martin Preuss
+#    email       : martin@libchipcard.de
+#
+# ***************************************************************************
+# *          Please see toplevel file COPYING for license details           *
+# ***************************************************************************/
+#
+#
+# This file is used by the chipcard2 driver daemon.
+# Please modify it to your needs and copy it to
+#           $PREFIX/etc/chipcard2-server/chipcardrd.conf
+#
+
+# if this is "0" then the server won't start
+#
+enabled="1"
+
+# ===========================================================================
+# Timout Values
+#
+
+#
+# timeout when starting a driver (in seconds)
+#
+int restartTime="10"
+
+
+# ---------------------------------------------------------------------------
+# private server using SSL secured sockets.
+# New certificates are stored in the folder given by "newcertdir",
+# received certificates are checked against those in "certdir"
+# This is the recommended mode on systems which can't use "local" (e.g.
+# Windows).
+#
+server {
+  typ="private"
+  addr="127.0.0.1"
+  port="55555"
+  certdir="/etc/chipcard2-server/certificates/valid"
+  newcertdir="/var/lib/chipcard2-server/certificates/new"
+  certfile="/etc/chipcard2-server/cert.pem"
+} # server
+
+
+# ---------------------------------------------------------------------------
+# secure server using SSL secured sockets. In addition to mode
+# "private" the certificates of the clients are checked against
+# those stored in the "certdir". If the client certificate could
+# not be found or is invalid the connection is aborted.
+#
+server.inactive {
+  typ="secure"
+  addr="127.0.0.1"
+  port="55555"
+  certdir="/etc/chipcard2-server/certificates/valid"
+  newcertdir="/var/lib/chipcard2-server/certificates/new"
+  certfile="/etc/chipcard2-server/cert.pem"
+} # server
+
+
+
+# ===========================================================================
+# Drivers
+#
+# A driver section contains information about a driver and the readers
+# supported by this driver.
+#
+
+# ---------------------------------------------------------------------------
+# driver section for a Kobil Kaan Professional (serial)
+#
+driver {
+  #
+  # the general type of the driver
+  # Currently available are these:
+  # - ctapi (for CTAPI type drivers)
+  # - ifd (for lowlevel drivers written for PC/SC)
+  #
+  char driverType="ctapi"
+  
+  #
+  # This name should not be modified, since this is the name used to lookup
+  # the format of card commands in the cards XML files
+  #
+  char driverName="kobil_ctapi"
+  
+  #
+  # currently not used by the written drivers, but this is sent to the driver
+  # as a command line argument. New drivers might use this one.
+  #
+  char driverDataDir="/var/lib/chipcard2/drivers/ctapi"
+  
+  #
+  # path and name of the low-level driver file. This is the driver actually
+  # provided by the manufacturer of the card reader
+  #
+  char libraryFile="/usr/lib/kobil/libct.so"
+
+  #
+  # if "1" then a secure connection is requested, which means that the server
+  # has to provide a valid certificate.
+  #
+  int secure="0"
+
+  #
+  # Make the driver accept all certificates (default is not to)
+  #
+  int acceptAllCerts="1"
+
+  #
+  # if server address type is "secure" then the driver needs to send a 
+  # certificate to the server in order to identify itself. 
+  # This file should be in PEM format (see OpenSSL documentation).
+  # When creating a certificate you should set the "commonName" field in the
+  # certificate to the name used to identify the driver to the chipcard2 
+  # server.
+  #
+  char certFile="/etc/chipcard2-driver/drivercert.pem"
+
+  #
+  # folder which contains valid SSL certificates (if the certificate of the
+  # server is amongst those stored there then the connection is regarded as
+  # secure).
+  #
+  certdir="/etc/chipcard2-driver/certificates/valid"
+
+  #
+  # file to be used for driver log messages
+  #
+  char logFile="/var/log/chipcard2/drivers/kobil/driver.log"
+  
+  #
+  #file to be used for reader log messages
+  #
+  char readerLogFile="/var/log/chipcard2/drivers/kobil/kobil1.log"
+  
+  #
+  # loglevel for both driver and reader
+  #
+  char logLevel="error"
+  
+  #
+  # logtype for both driver and reader
+  #
+  char logType="file"
+
+  # This is a sub-section under a driver section.
+  # Only one reader per driver is supported
+  #
+  reader {
+    # you should not alter this name, it is used to lookup the commands
+    # special to this reader in the cards XML files
+    char readerType="kobilpro"
+    
+    # reader name (send to the application and used for logging)
+    char readerName="Kobil1"
+    
+    # normally each reader has one card slot. However, there are some readers
+    # which have two (or might have even more). With chipcard2 the number
+    # of slots is not limited anymore.
+    int slots="1"
+
+    # the meaning of the port value is completely defined by the driver:
+    # - for CTAPI drivers this is the value given as CTN argument to CT_init
+    # - for IFD drivers this value is given as CHANNEL in IFDHCreateChannel
+    # In the case of a Kobil Kaan the value "1" stands for COM1.
+    int port="1"
+    
+    # describes the capabilities of the reader (comma separated list),
+    # currently available are:
+    # - keypad (->reader has a built-in key pad)
+    # - display (->reader has a built-in display)
+    # Only add flags which are supported by your reader.
+    char flags="keypad","display"
+  }
+}
+
+

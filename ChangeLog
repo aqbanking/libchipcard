@@ -14,6 +14,7 @@
 - renamed code files in src/chipcard2-client/mon to not interfere with those
   in src/chipcard2-client/client
 - many minor fixes in Makefile.am's
+- completed chipcard remote driver tool
 
 
 2005/02/13: Martin Preuss<martin@libchipcard.de>

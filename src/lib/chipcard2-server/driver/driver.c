@@ -42,26 +42,27 @@ GWEN_INHERIT_FUNCTIONS(LC_DRIVER)
 void LC_Driver_Usage(const char *prgName) {
   fprintf(stdout,
           "%s [OPTONS] \n"
-          "[-v]              verbous\n"
-          "[--logfile ARG]   name of the logfile\n"
-          "[--logtype ARG]   log type\n"
-          "[--loglevel ARG]  log level\n"
-          "[-d ARG]          driver data folder\n"
-          "-b ARG            server id\n"
-          "[-u ARG]          customer id of this driver\n"
-          "[-a ARG]          server IP address (or hostname)\n"
-          "[-p ARG]          server TCP port\n"
-          "-l ARG            name of the library driver file\n"
-          "-i ARG            driver id for this session\n"
+          "[-v]               verbous\n"
+          "[--logfile ARG]    name of the logfile\n"
+          "[--logtype ARG]    log type\n"
+          "[--loglevel ARG]   log level\n"
+          "[-d ARG]           driver data folder\n"
+          "-b ARG             server id\n"
+          "[-u ARG]           customer id of this driver\n"
+          "[-a ARG]           server IP address (or hostname)\n"
+          "[-p ARG]           server TCP port\n"
+          "-l ARG             name of the library driver file\n"
+          "-i ARG             driver id for this session\n"
           "\n"
           "The following arguments are used in test/remote mode only\n"
-          "--test            enter test mode, check for a given reader\n"
-          "-rp ARG           reader port\n"
-          "-rs ARG           reader slots\n"
-          "-rn ARG           reader name\n"
-          "--remote          driver is in remote mode\n"
-          "[-rt ARG]         reader type (only for remote drivers)\n"
-          "[-dt ARG]         driver type (only for remote drivers)\n"
+          "--test             enter test mode, check for a given reader\n"
+          "-rp ARG            reader port\n"
+          "-rs ARG            reader slots\n"
+          "-rn ARG            reader name\n"
+          "--remote           driver is in remote mode\n"
+          "[-rt ARG]          reader type (only for remote drivers)\n"
+          "[-dt ARG]          driver type (only for remote drivers)\n"
+          "--accept-all-certs accept all server certificates"
           , prgName
          );
 }
@@ -90,6 +91,7 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
   d->certFile=0;
   d->certDir=0;
   d->serverAddr=0;
+  d->acceptAllCerts=0;
 
   i=1;
   while (i<argc){
@@ -119,6 +121,9 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
         DBG_ERROR(0, "Unknown log level \"%s\"\n", argv[i]);
         return LC_DriverCheckArgsResultError;
       }
+    }
+    else if (strcmp(argv[i], "--accept-all-certs")==0) {
+      d->acceptAllCerts=1;
     }
     else if (strcmp(argv[i],"-d")==0) {
       i++;
@@ -403,6 +408,8 @@ LC_DRIVER *LC_Driver_new() {
   GWEN_NEW_OBJECT(LC_DRIVER, d);
   GWEN_INHERIT_INIT(LC_DRIVER, d);
   d->readers=LC_Reader_List_new();
+
+  GWEN_NetTransportSSL_SetAskAddCertFn2(LC_Driver_AskAddCert, (void*)d);
 
   return d;
 }
@@ -2046,6 +2053,21 @@ int LC_Driver_Work(LC_DRIVER *d) {
 
 
 
+GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
+LC_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
+                     void *user_data){
+  LC_DRIVER *d;
+
+  d=(LC_DRIVER*)user_data;
+  if (!d) {
+    DBG_ERROR(0, "No user data in AskAddCert function");
+    return GWEN_NetTransportSSL_AskAddCertResultNo;
+  }
+
+  if (d->acceptAllCerts)
+    return GWEN_NetTransportSSL_AskAddCertResultTmp;
+  return GWEN_NetTransportSSL_AskAddCertResultNo;
+}
 
 
 

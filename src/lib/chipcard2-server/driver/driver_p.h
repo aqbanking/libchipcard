@@ -20,6 +20,7 @@
 
 
 #include <gwenhywfar/logger.h>
+#include <gwenhywfar/nettransportssl.h>
 #include <chipcard2-server/driver/driver.h>
 
 
@@ -39,6 +40,7 @@ struct LC_DRIVER {
   const char *libraryFile;       /* -l ARG */
   const char *driverId;          /* -i ARG */
   const char *typ;               /* -t ARG */
+  int acceptAllCerts;            /* --accept-all-certs */
   const char *certFile;          /* -c ARG */
   const char *certDir;           /* -C ARG */
   int testMode;                  /* --test */
@@ -81,6 +83,10 @@ int LC_Driver_ReplaceVar(const char *path,
                          const char *var,
                          const char *value,
                          GWEN_BUFFER *nbuf);
+
+GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
+  LC_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
+                       void *user_data);
 
 
 int LC_Driver_HandleStartReader(LC_DRIVER *d,

@@ -4,7 +4,8 @@ EXTRA_DIST=\
   IPCCOMMANDS \
   chipcardd2.conf.example \
   chipcardd2.conf.minimal \
-  chipcardc2.conf.example
+  chipcardc2.conf.example \
+  chipcardrd.conf.example
 
 clientconfdir=@libchipcard2c_config_am@
 clientconf_DATA=\
@@ -13,5 +14,6 @@ clientconf_DATA=\
 serverconfdir=@libchipcard2s_config_am@
 serverconf_DATA=\
   chipcardd2.conf.example \
-  chipcardd2.conf.minimal
+  chipcardd2.conf.minimal \
+  chipcardrd.conf.example
 

@@ -415,8 +415,7 @@ int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT _askAddCert(GWEN_NETTRANSPORT *tr,
-                                                   GWEN_DB_NODE *cert,
-                                                   void *user_data){
+                                                   GWEN_DB_NODE *cert){
   return GWEN_NetTransportSSL_AskAddCertResultTmp;
 }
 

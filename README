@@ -155,6 +155,28 @@ Please have a look at the file in tutorials/. They pretty much explain how
 Libchipcard2 can be used.
 
 
-Martin Preuss, Hamburg/Germany, 2005/02/13
+
+8. Remote Drivers
+=================
+
+As of version 1.9.10 Libchipcard2 supports remote drivers. These drivers are
+used on thin clients (as requested by GnuMed).
+
+For this to work you need to enable remote drivers in the server configuration
+file ($PREFIX/etc/chipcard2-server/chipcardd2.conf).
+
+Also, you will have to add a "server" section in the server configuration file
+which is not "local" (because otherwise the remote driver could not connect
+to the server).
+
+The next step is to create a configuration file on the thin client which is
+used by the remote driver daemon 
+     $PREFIX/etc/chipcard2-server/chipcardrd.conf
+
+An example file is provided. The driver sections in such a file are nearly the
+same as in the server configuration file.
+
+
+Martin Preuss, Hamburg/Germany, 2005/02/15
 
 
