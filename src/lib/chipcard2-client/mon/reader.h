@@ -25,46 +25,70 @@ typedef struct LCM_READER LCM_READER;
 #include <time.h>
 
 
-GWEN_LIST_FUNCTION_DEFS(LCM_READER, LCM_Reader)
-GWEN_LIST2_FUNCTION_DEFS(LCM_READER, LCM_Reader)
+GWEN_LIST_FUNCTION_LIB_DEFS(LCM_READER, LCM_Reader, CHIPCARD_API)
+GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_READER, LCM_Reader, CHIPCARD_API)
 
 
+CHIPCARD_API
 LCM_READER *LCM_Reader_new(GWEN_TYPE_UINT32 serverId);
+CHIPCARD_API
 void LCM_Reader_free(LCM_READER *mr);
 
+CHIPCARD_API
 GWEN_TYPE_UINT32 LCM_Reader_GetServerId(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetServerId(LCM_READER *mr, GWEN_TYPE_UINT32 i);
 
 
+CHIPCARD_API
 const char *LCM_Reader_GetReaderId(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderId(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetShortDescr(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetShortDescr(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetStatus(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetStatus(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetDriverId(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetDriverId(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetReaderType(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderType(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetReaderName(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderName(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 const char *LCM_Reader_GetReaderInfo(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderInfo(LCM_READER *mr, const char *s);
 
+CHIPCARD_API
 int LCM_Reader_GetReaderPort(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderPort(LCM_READER *mr, int i);
 
+CHIPCARD_API
 GWEN_TYPE_UINT32 LCM_Reader_GetReaderFlags(const LCM_READER *mr);
+CHIPCARD_API
 void LCM_Reader_SetReaderFlags(LCM_READER *mr, GWEN_TYPE_UINT32 i);
 
+CHIPCARD_API
 GWEN_BUFFER *LCM_Reader_GetLogBuffer(const LCM_READER *mr);
 
+CHIPCARD_API
 time_t LCM_Reader_GetLastChangeTime(const LCM_READER *mr);
 
 

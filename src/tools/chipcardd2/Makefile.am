@@ -19,5 +19,5 @@ chipcardd2_SOURCES=\
   init.c \
   mkcert.c \
   chipcardd2.c
-chipcardd2_LDADD=-L../../lib/chipcard2-server -lchipcard2s
+chipcardd2_LDADD=-L../../lib/chipcard2-server -lchipcard2s @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 

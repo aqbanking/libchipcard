@@ -15,6 +15,7 @@
         list2="lib" >
     <headers>
       <header type="sys" >chipcard2-client/cards/starcos.h</header>
+      <header type="sys" >chipcard2/chipcard2.h</header>
     </headers>
     
     <elem name="keyId" type="int" />

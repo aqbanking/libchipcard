@@ -38,6 +38,7 @@ get it with @ref LC_GeldKarte_Values_GetMaxXfer
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
+#include <chipcard2/chipcard2.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,45 +46,66 @@ extern "C" {
 
 typedef struct LC_GELDKARTE_VALUES LC_GELDKARTE_VALUES;
 
-GWEN_LIST2_FUNCTION_DEFS(LC_GELDKARTE_VALUES, LC_GeldKarte_Values)
+GWEN_LIST2_FUNCTION_LIB_DEFS(LC_GELDKARTE_VALUES, LC_GeldKarte_Values, CHIPCARD_API)
 
-void LC_GeldKarte_Values_List2_freeAll(LC_GELDKARTE_VALUES_LIST2 *stl);
+/** Destroys all objects stored in the given LIST2 and the list itself
+*/
+CHIPCARD_API void LC_GeldKarte_Values_List2_freeAll(LC_GELDKARTE_VALUES_LIST2 *stl);
+/** Creates a deep copy of the given LIST2.
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES_LIST2 *LC_GeldKarte_Values_List2_dup(const LC_GELDKARTE_VALUES_LIST2 *stl);
 
-LC_GELDKARTE_VALUES *LC_GeldKarte_Values_new();
-void LC_GeldKarte_Values_free(LC_GELDKARTE_VALUES *st);
-void LC_GeldKarte_Values_Attach(LC_GELDKARTE_VALUES *st);
-LC_GELDKARTE_VALUES *LC_GeldKarte_Values_dup(const LC_GELDKARTE_VALUES*st);
-LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db);
-int LC_GeldKarte_Values_toDb(const LC_GELDKARTE_VALUES*st, GWEN_DB_NODE *db);
-int LC_GeldKarte_Values_IsModified(const LC_GELDKARTE_VALUES *st);
-void LC_GeldKarte_Values_SetModified(LC_GELDKARTE_VALUES *st, int i);
+/** Creates a new object.
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_new();
+/** Destroys the given object.
+*/
+CHIPCARD_API void LC_GeldKarte_Values_free(LC_GELDKARTE_VALUES *st);
+/** Increments the usage counter of the given object, so an additional free() is needed to destroy the object.
+*/
+CHIPCARD_API void LC_GeldKarte_Values_Attach(LC_GELDKARTE_VALUES *st);
+/** Creates and returns a deep copy of thegiven object.
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_dup(const LC_GELDKARTE_VALUES*st);
+/** Creates an object from the data in the given GWEN_DB_NODE
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db);
+/** Stores an object in the given GWEN_DB_NODE
+*/
+CHIPCARD_API int LC_GeldKarte_Values_toDb(const LC_GELDKARTE_VALUES*st, GWEN_DB_NODE *db);
+/** Returns 0 if this object has not been modified, !=0 otherwise
+*/
+CHIPCARD_API int LC_GeldKarte_Values_IsModified(const LC_GELDKARTE_VALUES *st);
+/** Sets the modified state of the given object
+*/
+CHIPCARD_API void LC_GeldKarte_Values_SetModified(LC_GELDKARTE_VALUES *st, int i);
 
 /**
 * Returns the property @ref LC_GELDKARTE_VALUES_Loaded
 */
-int LC_GeldKarte_Values_GetLoaded(const LC_GELDKARTE_VALUES *el);
+CHIPCARD_API int LC_GeldKarte_Values_GetLoaded(const LC_GELDKARTE_VALUES *el);
 /**
 * Set the property @ref LC_GELDKARTE_VALUES_Loaded
 */
-void LC_GeldKarte_Values_SetLoaded(LC_GELDKARTE_VALUES *el, int d);
+CHIPCARD_API void LC_GeldKarte_Values_SetLoaded(LC_GELDKARTE_VALUES *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_VALUES_MaxLoad
 */
-int LC_GeldKarte_Values_GetMaxLoad(const LC_GELDKARTE_VALUES *el);
+CHIPCARD_API int LC_GeldKarte_Values_GetMaxLoad(const LC_GELDKARTE_VALUES *el);
 /**
 * Set the property @ref LC_GELDKARTE_VALUES_MaxLoad
 */
-void LC_GeldKarte_Values_SetMaxLoad(LC_GELDKARTE_VALUES *el, int d);
+CHIPCARD_API void LC_GeldKarte_Values_SetMaxLoad(LC_GELDKARTE_VALUES *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_VALUES_MaxXfer
 */
-int LC_GeldKarte_Values_GetMaxXfer(const LC_GELDKARTE_VALUES *el);
+CHIPCARD_API int LC_GeldKarte_Values_GetMaxXfer(const LC_GELDKARTE_VALUES *el);
 /**
 * Set the property @ref LC_GELDKARTE_VALUES_MaxXfer
 */
-void LC_GeldKarte_Values_SetMaxXfer(LC_GELDKARTE_VALUES *el, int d);
+CHIPCARD_API void LC_GeldKarte_Values_SetMaxXfer(LC_GELDKARTE_VALUES *el, int d);
 
 
 #ifdef __cplusplus

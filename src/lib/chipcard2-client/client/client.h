@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 #include <gwenhywfar/inherit.h>
+#include <chipcard2/chipcard2.h>
 
 
 typedef struct LC_CLIENT LC_CLIENT;
 
-GWEN_INHERIT_FUNCTION_DEFS(LC_CLIENT)
+GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_CLIENT, CHIPCARD_API)
 
 
 typedef enum {

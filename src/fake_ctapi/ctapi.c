@@ -340,7 +340,7 @@ char CT_data(unsigned short ctn,
       result=CT__ejectICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;
-      case 0x15: /* EJECT ICC */
+    case 0x15: /* EJECT ICC */
       result=CT__ejectICC(ctx, dad, sad, apdu, lenr, response);
       handled=1;
       break;

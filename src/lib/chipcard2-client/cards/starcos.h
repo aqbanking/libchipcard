@@ -20,12 +20,17 @@
 
 
 
+CHIPCARD_API
 int LC_Starcos_ExtendCard(LC_CARD *card);
+CHIPCARD_API
 int LC_Starcos_UnextendCard(LC_CARD *card);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card);
 
 
+CHIPCARD_API
 GWEN_DB_NODE *LC_Starcos_GetCardDataAsDb(const LC_CARD *card);
+CHIPCARD_API
 GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card);
 
 
@@ -34,29 +39,36 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card);
  *
  */
 /*@{*/
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GetPinStatus(LC_CARD *card,
                                          unsigned int pid,
                                          int *maxErrors,
                                          int *currentErrors);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_VerifyPin(LC_CARD *card,
                                       unsigned int pid,
                                       const char *pin);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_SecureVerifyPin(LC_CARD *card,
                                             unsigned int pid);
 
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_VerifyInitialPin(LC_CARD *card,
                                              unsigned int pid);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ModifyInitialPin(LC_CARD *card,
                                              unsigned int pid,
                                              const char *newpin);
 
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ModifyPin(LC_CARD *card,
                                       unsigned int pid,
                                       const char *oldpin,
                                       const char *newpin);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_SecureModifyPin(LC_CARD *card,
                                             unsigned int pid);
 /*@}*/
@@ -71,8 +83,10 @@ LC_CLIENT_RESULT LC_Starcos_SecureModifyPin(LC_CARD *card,
  * The caller becomes the owner of the returned object (if any), so he is
  * responsible for freeing it (using @ref GWEN_KeySpec_free).
  */
+CHIPCARD_API
 GWEN_KEYSPEC *LC_Starcos_GetKeySpec(LC_CARD *card, int kid);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_SetKeySpec(LC_CARD *card,
                                        int kid,
                                        const GWEN_KEYSPEC *ks);
@@ -83,18 +97,22 @@ LC_CLIENT_RESULT LC_Starcos_SetKeySpec(LC_CARD *card,
  * need to call @ref LC_Starcos_ActivateKeyPair.
  * @param kid use 0x8e for crypt keys and 0x8f for sign keys
  */
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
                                             int bits);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
                                             int dstKid,
                                             const GWEN_KEYSPEC *ks);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
                                            const GWEN_CRYPTKEY *key);
 
+CHIPCARD_API
 GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid);
 /*@}*/
 
@@ -116,10 +134,12 @@ GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid);
  * is directly stored within this given group.
  *
  */
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
                                               int idx,
                                               GWEN_DB_NODE *dbData);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
                                                int idx,
                                                GWEN_DB_NODE *dbData);
@@ -131,21 +151,26 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
  *
  */
 /*@{*/
+CHIPCARD_API
 GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_Sign(LC_CARD *card,
                                  int kid,
                                  GWEN_BUFFER *hashBuf,
                                  GWEN_BUFFER *sigBuf);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
                                    int kid,
                                    GWEN_BUFFER *hashBuf,
                                    GWEN_BUFFER *sigBuf);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_Encipher(LC_CARD *card,
                                      int kid,
                                      GWEN_BUFFER *plainBuf,
                                      GWEN_BUFFER *codeBuf);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_Decipher(LC_CARD *card,
                                      int kid,
                                      GWEN_BUFFER *codeBuf,
@@ -154,6 +179,7 @@ LC_CLIENT_RESULT LC_Starcos_Decipher(LC_CARD *card,
 /**
  * returns 8 random bytes
  */
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf);
 
 

@@ -7,11 +7,11 @@ AM_CFLAGS=\
 
 #EXTRA_DIST=
 
-lib_LTLIBRARIES=libchipcard2s.la libchipcard2d.la
+lib_LTLIBRARIES=libchipcard2d.la
+noinst_LTLIBRARIES=libchipcard2s.la
 
 libchipcard2s_la_SOURCES=dummy.c
-libchipcard2s_la_LIBADD= @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@\
-  server/libserver.la
+libchipcard2s_la_LIBADD=server/libserver.la
 
 
 libchipcard2d_la_SOURCES=dummy.c

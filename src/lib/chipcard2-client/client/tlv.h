@@ -16,25 +16,36 @@
 
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/misc.h>
+#include <chipcard2/chipcard2.h>
 
 
 typedef struct LC_TLV LC_TLV;
 
-GWEN_LIST_FUNCTION_DEFS(LC_TLV, LC_TLV)
+GWEN_LIST_FUNCTION_LIB_DEFS(LC_TLV, LC_TLV, CHIPCARD_API)
 
 
+CHIPCARD_API
 LC_TLV *LC_TLV_new();
+CHIPCARD_API
 void LC_TLV_free(LC_TLV *tlv);
 
+CHIPCARD_API
 LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv);
 
+CHIPCARD_API
 int LC_TLV_IsBerTlv(const LC_TLV *tlv);
+CHIPCARD_API
 unsigned int LC_TLV_GetTagType(const LC_TLV *tlv);
+CHIPCARD_API
 unsigned int LC_TLV_GetTagLength(const LC_TLV *tlv);
+CHIPCARD_API
 const void *LC_TLV_GetTagData(const LC_TLV *tlv);
 
+CHIPCARD_API
 int LC_TLV_IsContructed(const LC_TLV *tlv);
+CHIPCARD_API
 unsigned int LC_TLV_GetClass(const LC_TLV *tlv);
+CHIPCARD_API
 unsigned int LC_TLV_GetTagSize(const LC_TLV *tlv);
 
 

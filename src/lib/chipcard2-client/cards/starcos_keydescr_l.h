@@ -17,9 +17,12 @@ extern "C" {
 #endif
 
 GWEN_LIST_FUNCTION_DEFS(LC_STARCOS_KEYDESCR, LC_Starcos_KeyDescr)
+LC_STARCOS_KEYDESCR_LIST *LC_Starcos_KeyDescr_List_dup(const LC_STARCOS_KEYDESCR_LIST *stl);
 GWEN_LIST2_FUNCTION_DEFS(LC_STARCOS_KEYDESCR, LC_Starcos_KeyDescr)
 
 void LC_Starcos_KeyDescr_List2_freeAll(LC_STARCOS_KEYDESCR_LIST2 *stl);
+LC_STARCOS_KEYDESCR_LIST2 *LC_Starcos_KeyDescr_List2_dup(const LC_STARCOS_KEYDESCR_LIST2 *stl);
+
 
 
 

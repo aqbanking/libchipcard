@@ -32,6 +32,7 @@
     <headers>
       <header type="sys" >gwenhywfar/types.h</header>
       <header type="sys" >gwenhywfar/gwentime.h</header>
+      <header type="sys" >chipcard2/chipcard2.h</header>
     </headers>
     
     <elem name="status" type="int" />
@@ -56,6 +57,7 @@
     <headers>
       <header type="sys" >gwenhywfar/types.h</header>
       <header type="sys" >gwenhywfar/gwentime.h</header>
+      <header type="sys" >chipcard2/chipcard2.h</header>
     </headers>
     
     <elem name="status" type="int" />
@@ -79,6 +81,7 @@
     <headers>
       <header type="sys" >gwenhywfar/types.h</header>
       <header type="sys" >gwenhywfar/gwentime.h</header>
+      <header type="sys" >chipcard2/chipcard2.h</header>
     </headers>
     
     <elem name="loaded" type="int" />

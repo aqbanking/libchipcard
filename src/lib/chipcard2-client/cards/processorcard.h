@@ -20,16 +20,22 @@
 extern "C" {
 #endif
 
+CHIPCARD_API
 int LC_ProcessorCard_ExtendCard(LC_CARD *card);
+CHIPCARD_API
 int LC_ProcessorCard_UnextendCard(LC_CARD *card);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_ProcessorCard_SelectDF(LC_CARD *card,
                                            const char *fname);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_ProcessorCard_SelectEF(LC_CARD *card,
                                            const char *fname);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_ProcessorCard_ReadRecord(LC_CARD *card,
                                              int recNum,
                                              GWEN_BUFFER *buf);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_ProcessorCard_WriteRecord(LC_CARD *card,
                                               int recNum,
                                               GWEN_BUFFER *buf);

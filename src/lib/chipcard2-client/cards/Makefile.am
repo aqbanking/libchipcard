@@ -50,4 +50,4 @@ libcards_la_SOURCES=\
 
 
 types: $(typefiles)
-	typemaker $(typefiles)
+	typemaker -d CHIPCARD_API $(typefiles)

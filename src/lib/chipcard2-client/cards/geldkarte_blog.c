@@ -8,6 +8,7 @@
 #include "geldkarte_blog_p.h"
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/db.h>
+#include <gwenhywfar/debug.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -282,6 +283,8 @@ void LC_GeldKarte_BLog_List2_freeAll(LC_GELDKARTE_BLOG_LIST2 *stl) {
     LC_GeldKarte_BLog_List2_free(stl); 
   }
 }
+
+
 
 
 

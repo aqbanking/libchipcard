@@ -22,18 +22,23 @@ extern "C" {
 #endif
 
 
+CHIPCARD_API
 int LC_MemoryCard_ExtendCard(LC_CARD *card);
+CHIPCARD_API
 int LC_MemoryCard_UnextendCard(LC_CARD *card);
 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
                                           int offset,
                                           int size,
                                           GWEN_BUFFER *buf);
+CHIPCARD_API
 LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
                                            int offset,
                                            const char *ptr,
                                            unsigned int size);
 
+CHIPCARD_API
 unsigned int LC_MemoryCard_GetCapacity(const LC_CARD *card);
 
 

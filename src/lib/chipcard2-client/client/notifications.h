@@ -17,19 +17,26 @@
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/list2.h>
+#include <chipcard2/chipcard2.h>
 
 
 typedef struct LC_NOTIFICATION LC_NOTIFICATION;
 
-GWEN_LIST2_FUNCTION_DEFS(LC_NOTIFICATION, LC_Notification)
-GWEN_INHERIT_FUNCTION_DEFS(LC_NOTIFICATION)
+GWEN_LIST2_FUNCTION_LIB_DEFS(LC_NOTIFICATION, LC_Notification, CHIPCARD_API)
+GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_NOTIFICATION, CHIPCARD_API)
 
+CHIPCARD_API
 void LC_Notification_free(LC_NOTIFICATION *n);
 
+CHIPCARD_API
 GWEN_TYPE_UINT32 LC_Notification_GetServerId(const LC_NOTIFICATION *n);
+CHIPCARD_API
 const char *LC_Notification_GetClientId(const LC_NOTIFICATION *n);
+CHIPCARD_API
 const char *LC_Notification_GetType(const LC_NOTIFICATION *n);
+CHIPCARD_API
 const char *LC_Notification_GetCode(const LC_NOTIFICATION *n);
+CHIPCARD_API
 GWEN_DB_NODE *LC_Notification_GetData(const LC_NOTIFICATION *n);
 
 

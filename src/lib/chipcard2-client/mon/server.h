@@ -29,11 +29,13 @@ typedef struct LCM_SERVER LCM_SERVER;
 
 
 
-GWEN_LIST_FUNCTION_DEFS(LCM_SERVER, LCM_Server)
-GWEN_LIST2_FUNCTION_DEFS(LCM_SERVER, LCM_Server)
+GWEN_LIST_FUNCTION_LIB_DEFS(LCM_SERVER, LCM_Server, CHIPCARD_API)
+GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_SERVER, LCM_Server, CHIPCARD_API)
 
 
+CHIPCARD_API
 LCM_SERVER *LCM_Server_new(GWEN_TYPE_UINT32 serverId);
+CHIPCARD_API
 void LCM_Server_free(LCM_SERVER *ms);
 
 /**
@@ -41,29 +43,35 @@ void LCM_Server_free(LCM_SERVER *ms);
  * a LC_CLIENT. It is used to group the drivers, readers etc under their
  * server. Therefore every LCM object holds this id.
  */
+CHIPCARD_API
 GWEN_TYPE_UINT32 LCM_Server_GetServerId(const LCM_SERVER *ms);
 
 /**
  * This is the id the server assigned to us (since we are a client to the
  * server).
  */
+CHIPCARD_API
 const char *LCM_Server_GetClientId(const LCM_SERVER *ms);
+CHIPCARD_API
 void LCM_Server_SetClientId(LCM_SERVER *ms, const char *s);
 
 /**
  * Returns the list of drivers the monitor knows of the server.
  */
+CHIPCARD_API
 LCM_DRIVER_LIST *LCM_Server_GetDrivers(const LCM_SERVER *ms);
 
 /**
  * Returns the list of readers the monitor knows of the server.
  */
+CHIPCARD_API
 LCM_READER_LIST *LCM_Server_GetReaders(const LCM_SERVER *ms);
 
 
 /**
  * Returns the list of services the monitor knows of the server.
  */
+CHIPCARD_API
 LCM_SERVICE_LIST *LCM_Server_GetServices(const LCM_SERVER *ms);
 
 #endif

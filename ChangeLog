@@ -5,6 +5,12 @@
   - added environment variable "LC_CTAPI_LOGLEVEL"
   - made it less verbous per default
   - fixed usage of PIN id for SecureVerifyPin/ModifyPin commands
+- added license exception needed for Debian
+- no longer install the server library (it is not needed by any tool except
+  the chipcard daemon, and no program should need it)
+- no longer install ctapi.h (not needed and it interferes with the same file
+  from some drivers)
+- added prefix "CHIPCARD_API" to all exported functions
 
 
 2005/02/12: Martin Preuss<martin@libchipcard.de>

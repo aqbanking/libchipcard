@@ -8,6 +8,7 @@
 #include "starcos_keydescr_p.h"
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/db.h>
+#include <gwenhywfar/debug.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -176,6 +177,30 @@ void LC_Starcos_KeyDescr_List2_freeAll(LC_STARCOS_KEYDESCR_LIST2 *stl) {
     LC_Starcos_KeyDescr_List2_ForEach(stl, LC_Starcos_KeyDescr_List2__freeAll_cb, 0);
     LC_Starcos_KeyDescr_List2_free(stl); 
   }
+}
+
+
+
+
+LC_STARCOS_KEYDESCR_LIST *LC_Starcos_KeyDescr_List_dup(const LC_STARCOS_KEYDESCR_LIST *stl) {
+  if (stl) {
+    LC_STARCOS_KEYDESCR_LIST *nl;
+    LC_STARCOS_KEYDESCR *e;
+
+    nl=LC_Starcos_KeyDescr_List_new();
+    e=LC_Starcos_KeyDescr_List_First(stl);
+    while(e) {
+      LC_STARCOS_KEYDESCR *ne;
+
+      ne=LC_Starcos_KeyDescr_dup(e);
+      assert(ne);
+      LC_Starcos_KeyDescr_List_Add(ne, nl);
+      e=LC_Starcos_KeyDescr_List_Next(e);
+    } /* while (e) */
+    return nl;
+  }
+  else
+    return 0;
 }
 
 

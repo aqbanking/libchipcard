@@ -25,23 +25,30 @@ typedef struct LCM_MONITOR LCM_MONITOR;
 #include <time.h>
 
 
+CHIPCARD_API
 LCM_MONITOR *LCM_Monitor_new();
+CHIPCARD_API
 void LCM_Monitor_free(LCM_MONITOR *mm);
 
+CHIPCARD_API
 LCM_SERVER_LIST *LCM_Monitor_GetServers(const LCM_MONITOR *mm);
 
 
+CHIPCARD_API
 time_t LCM_Monitor_GetLastChangeTime(const LCM_MONITOR *mm);
 
 
+CHIPCARD_API
 LCM_SERVER *LCM_Monitor_FindServer(const LCM_MONITOR *mm,
                                    GWEN_TYPE_UINT32 serverId);
 
 
+CHIPCARD_API
 LCM_DRIVER *LCM_Monitor_FindDriver(const LCM_MONITOR *mm,
                                    GWEN_TYPE_UINT32 serverId,
                                    const char *driverId);
 
+CHIPCARD_API
 LCM_READER *LCM_Monitor_FindReader(const LCM_MONITOR *mm,
                                    GWEN_TYPE_UINT32 serverId,
                                    const char *readerId);

@@ -92,6 +92,7 @@ get it with @ref LC_GeldKarte_LLog_GetTime
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
+#include <chipcard2/chipcard2.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,99 +100,120 @@ extern "C" {
 
 typedef struct LC_GELDKARTE_LLOG LC_GELDKARTE_LLOG;
 
-GWEN_LIST2_FUNCTION_DEFS(LC_GELDKARTE_LLOG, LC_GeldKarte_LLog)
+GWEN_LIST2_FUNCTION_LIB_DEFS(LC_GELDKARTE_LLOG, LC_GeldKarte_LLog, CHIPCARD_API)
 
-void LC_GeldKarte_LLog_List2_freeAll(LC_GELDKARTE_LLOG_LIST2 *stl);
+/** Destroys all objects stored in the given LIST2 and the list itself
+*/
+CHIPCARD_API void LC_GeldKarte_LLog_List2_freeAll(LC_GELDKARTE_LLOG_LIST2 *stl);
+/** Creates a deep copy of the given LIST2.
+*/
+CHIPCARD_API LC_GELDKARTE_LLOG_LIST2 *LC_GeldKarte_LLog_List2_dup(const LC_GELDKARTE_LLOG_LIST2 *stl);
 
-LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_new();
-void LC_GeldKarte_LLog_free(LC_GELDKARTE_LLOG *st);
-void LC_GeldKarte_LLog_Attach(LC_GELDKARTE_LLOG *st);
-LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_dup(const LC_GELDKARTE_LLOG*st);
-LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_fromDb(GWEN_DB_NODE *db);
-int LC_GeldKarte_LLog_toDb(const LC_GELDKARTE_LLOG*st, GWEN_DB_NODE *db);
-int LC_GeldKarte_LLog_IsModified(const LC_GELDKARTE_LLOG *st);
-void LC_GeldKarte_LLog_SetModified(LC_GELDKARTE_LLOG *st, int i);
+/** Creates a new object.
+*/
+CHIPCARD_API LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_new();
+/** Destroys the given object.
+*/
+CHIPCARD_API void LC_GeldKarte_LLog_free(LC_GELDKARTE_LLOG *st);
+/** Increments the usage counter of the given object, so an additional free() is needed to destroy the object.
+*/
+CHIPCARD_API void LC_GeldKarte_LLog_Attach(LC_GELDKARTE_LLOG *st);
+/** Creates and returns a deep copy of thegiven object.
+*/
+CHIPCARD_API LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_dup(const LC_GELDKARTE_LLOG*st);
+/** Creates an object from the data in the given GWEN_DB_NODE
+*/
+CHIPCARD_API LC_GELDKARTE_LLOG *LC_GeldKarte_LLog_fromDb(GWEN_DB_NODE *db);
+/** Stores an object in the given GWEN_DB_NODE
+*/
+CHIPCARD_API int LC_GeldKarte_LLog_toDb(const LC_GELDKARTE_LLOG*st, GWEN_DB_NODE *db);
+/** Returns 0 if this object has not been modified, !=0 otherwise
+*/
+CHIPCARD_API int LC_GeldKarte_LLog_IsModified(const LC_GELDKARTE_LLOG *st);
+/** Sets the modified state of the given object
+*/
+CHIPCARD_API void LC_GeldKarte_LLog_SetModified(LC_GELDKARTE_LLOG *st, int i);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_Status
 */
-int LC_GeldKarte_LLog_GetStatus(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API int LC_GeldKarte_LLog_GetStatus(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_Status
 */
-void LC_GeldKarte_LLog_SetStatus(LC_GELDKARTE_LLOG *el, int d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetStatus(LC_GELDKARTE_LLOG *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_BSeq
 */
-int LC_GeldKarte_LLog_GetBSeq(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API int LC_GeldKarte_LLog_GetBSeq(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_BSeq
 */
-void LC_GeldKarte_LLog_SetBSeq(LC_GELDKARTE_LLOG *el, int d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetBSeq(LC_GELDKARTE_LLOG *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_LSeq
 */
-int LC_GeldKarte_LLog_GetLSeq(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API int LC_GeldKarte_LLog_GetLSeq(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_LSeq
 */
-void LC_GeldKarte_LLog_SetLSeq(LC_GELDKARTE_LLOG *el, int d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetLSeq(LC_GELDKARTE_LLOG *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_Value
 */
-int LC_GeldKarte_LLog_GetValue(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API int LC_GeldKarte_LLog_GetValue(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_Value
 */
-void LC_GeldKarte_LLog_SetValue(LC_GELDKARTE_LLOG *el, int d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetValue(LC_GELDKARTE_LLOG *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_CenterId
 */
-const char *LC_GeldKarte_LLog_GetCenterId(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API const char *LC_GeldKarte_LLog_GetCenterId(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_CenterId
 */
-void LC_GeldKarte_LLog_SetCenterId(LC_GELDKARTE_LLOG *el, const char *d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetCenterId(LC_GELDKARTE_LLOG *el, const char *d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_TerminalId
 */
-const char *LC_GeldKarte_LLog_GetTerminalId(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API const char *LC_GeldKarte_LLog_GetTerminalId(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_TerminalId
 */
-void LC_GeldKarte_LLog_SetTerminalId(LC_GELDKARTE_LLOG *el, const char *d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetTerminalId(LC_GELDKARTE_LLOG *el, const char *d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_TraceId
 */
-const char *LC_GeldKarte_LLog_GetTraceId(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API const char *LC_GeldKarte_LLog_GetTraceId(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_TraceId
 */
-void LC_GeldKarte_LLog_SetTraceId(LC_GELDKARTE_LLOG *el, const char *d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetTraceId(LC_GELDKARTE_LLOG *el, const char *d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_Loaded
 */
-int LC_GeldKarte_LLog_GetLoaded(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API int LC_GeldKarte_LLog_GetLoaded(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_Loaded
 */
-void LC_GeldKarte_LLog_SetLoaded(LC_GELDKARTE_LLOG *el, int d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetLoaded(LC_GELDKARTE_LLOG *el, int d);
 
 /**
 * Returns the property @ref LC_GELDKARTE_LLOG_Time
 */
-const GWEN_TIME *LC_GeldKarte_LLog_GetTime(const LC_GELDKARTE_LLOG *el);
+CHIPCARD_API const GWEN_TIME *LC_GeldKarte_LLog_GetTime(const LC_GELDKARTE_LLOG *el);
 /**
 * Set the property @ref LC_GELDKARTE_LLOG_Time
 */
-void LC_GeldKarte_LLog_SetTime(LC_GELDKARTE_LLOG *el, const GWEN_TIME *d);
+CHIPCARD_API void LC_GeldKarte_LLog_SetTime(LC_GELDKARTE_LLOG *el, const GWEN_TIME *d);
 
 
 #ifdef __cplusplus

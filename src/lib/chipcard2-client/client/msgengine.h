@@ -19,6 +19,7 @@ extern "C" {
 #endif
 
 #include <gwenhywfar/msgengine.h>
+#include <chipcard2/chipcard2.h>
 
 /**
  * @file msgengine_l.h
@@ -33,6 +34,7 @@ extern "C" {
  * </ul>
  */
 
+CHIPCARD_API
 GWEN_MSGENGINE *LC_MsgEngine_new();
 
 
