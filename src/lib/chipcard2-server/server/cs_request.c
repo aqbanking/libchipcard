@@ -1249,6 +1249,13 @@ int LC_CardServer_HandleCommandCard(LC_CARDSERVER *cs,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbDriverReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		       "readerId", numbuf);
+
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+           LC_Reader_GetDriversReaderId(r));
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbDriverReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+		       "driversReaderId", numbuf);
+
   GWEN_DB_SetIntValue(dbDriverReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slotnum", LC_Card_GetSlot(card));
   GWEN_DB_SetIntValue(dbDriverReq, GWEN_DB_FLAGS_OVERWRITE_VARS,

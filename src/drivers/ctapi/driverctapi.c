@@ -34,6 +34,7 @@ GWEN_INHERIT(LC_DRIVER, DRIVER_CTAPI)
 LC_DRIVER *DriverCTAPI_new(int argc, char **argv) {
   DRIVER_CTAPI *dct;
   LC_DRIVER *d;
+  int rv;
 
   d=LC_Driver_new(argc, argv);
   if (!d) {
@@ -56,6 +57,12 @@ LC_DRIVER *DriverCTAPI_new(int argc, char **argv) {
   LC_Driver_SetCreateReaderFn(d, DriverCTAPI_CreateReader);
   LC_Driver_SetGetErrorTextFn(d, DriverCTAPI_GetErrorText);
 
+  rv=LC_Driver_Init(d, argc, argv);
+  if (rv) {
+    DBG_ERROR(0, "Could not init driver (%d)", rv);
+    LC_Driver_free(d);
+    return 0;
+  }
   return d;
 }
 
@@ -610,6 +617,8 @@ LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
                                     GWEN_TYPE_UINT32 flags){
   LC_READER *r;
   DRIVER_CTAPI *dct;
+
+  DBG_ERROR(0, "Creating reader...");
 
   assert(d);
   dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);

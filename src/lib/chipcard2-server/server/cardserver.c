@@ -355,7 +355,7 @@ void LC_CardServer__Up(GWEN_NETCONNECTION *conn){
 
 
 void LC_CardServer__Down(GWEN_NETCONNECTION *conn){
-  DBG_NOTICE(0, "Connection down");
+  DBG_ERROR(0, "Connection down"); // DEBUG
 }
 
 
@@ -380,6 +380,8 @@ int LC_CardServer_ReadConfig(LC_CARDSERVER *cs, GWEN_DB_NODE *db) {
   else {
     DBG_NOTICE(0, "USB Autoconfiguration enabled");
   }
+
+  cs->allowRemote=GWEN_DB_GetIntValue(db, "allowRemote", 0, 0);
 
   cs->driverStartTimeout=
     GWEN_DB_GetIntValue(db,

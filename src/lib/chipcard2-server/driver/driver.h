@@ -76,8 +76,10 @@ typedef const char* (*LC_DRIVER_GETERRORTEXT_FN)(LC_DRIVER *d,
 
 void LC_Driver_Usage(const char *prgName);
 
-LC_DRIVER *LC_Driver_new(int argc, char **argv);
+LC_DRIVER *LC_Driver_new();
 void LC_Driver_free(LC_DRIVER *d);
+
+int LC_Driver_Init(LC_DRIVER *d, int argc, char **argv);
 
 const char *LC_Driver_GetDriverDataDir(const LC_DRIVER *d);
 const char *LC_Driver_GetLibraryFile(const LC_DRIVER *d);
@@ -114,6 +116,8 @@ LC_READER *LC_Driver_FindReader(const LC_DRIVER *d);
 LC_READER *LC_Driver_FindReaderByName(const LC_DRIVER *d, const char *name);
 LC_READER *LC_Driver_FindReaderByPort(const LC_DRIVER *d, int port);
 LC_READER *LC_Driver_FindReaderById(const LC_DRIVER *d, GWEN_TYPE_UINT32 id);
+LC_READER *LC_Driver_FindReaderByDriversId(const LC_DRIVER *d,
+                                           GWEN_TYPE_UINT32 id);
 
 void LC_Driver_AddReader(LC_DRIVER *d, LC_READER *r);
 void LC_Driver_DelReader(LC_DRIVER *d, LC_READER *r);

@@ -17,16 +17,10 @@
 
 typedef struct LC_READER LC_READER;
 
-#define LC_READER_FLAGS_KEYPAD  0x00010000
-#define LC_READER_FLAGS_DISPLAY 0x00020000
-#define LC_READER_FLAGS_NOINFO  0x00040000
-#define LC_READER_FLAGS_REMOTE  0x00080000
-#define LC_READER_FLAGS_AUTO    0x00100000
-
-
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/misc.h>
 
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-server/server/driver.h>
 #include <chipcard2-server/server/request.h>
 #include <chipcard2-server/server/client.h>
@@ -69,6 +63,9 @@ const char *LC_Reader_GetReaderInfo(const LC_READER *r);
 void LC_Reader_SetReaderInfo(LC_READER *r, const char *s);
 
 GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r);
+
+GWEN_TYPE_UINT32 LC_Reader_GetDriversReaderId(const LC_READER *r);
+void LC_Reader_SetDriversReaderId(LC_READER *r, GWEN_TYPE_UINT32 id);
 
 LC_READER_STATUS LC_Reader_GetStatus(const LC_READER *r);
 void LC_Reader_SetStatus(LC_READER *r, LC_READER_STATUS st);

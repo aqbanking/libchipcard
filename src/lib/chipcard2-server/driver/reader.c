@@ -65,6 +65,7 @@ void LC_Reader_free(LC_READER *r){
   if (r) {
     GWEN_INHERIT_FINI(LC_READER, r);
     GWEN_LIST_FINI(LC_READER, r);
+    free(r->readerType);
     free(r->name);
     LC_Slot_List_free(r->slots);
     free(r->logger);
@@ -82,9 +83,46 @@ GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r){
 
 
 
+void LC_Reader_SetReaderId(LC_READER *r, GWEN_TYPE_UINT32 id){
+  assert(r);
+  r->readerId=id;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Reader_GetDriversReaderId(const LC_READER *r){
+  assert(r);
+  return r->driversReaderId;
+}
+
+
+
+void LC_Reader_SetDriversReaderId(LC_READER *r, GWEN_TYPE_UINT32 id){
+  assert(r);
+  r->driversReaderId=id;
+}
+
+
+
 const char *LC_Reader_GetName(const LC_READER *r){
   assert(r);
   return r->name;
+}
+
+
+
+const char *LC_Reader_GetReaderType(const LC_READER *r){
+  assert(r);
+  return r->readerType;
+}
+
+
+
+void LC_Reader_SetReaderType(LC_READER *r, const char *s){
+  assert(r);
+  free(r->readerType);
+  if (s) r->readerType=strdup(s);
+  else r->readerType=0;
 }
 
 

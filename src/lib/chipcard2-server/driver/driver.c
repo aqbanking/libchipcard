@@ -52,12 +52,16 @@ void LC_Driver_Usage(const char *prgName) {
           "[-a ARG]          server IP address (or hostname)\n"
           "[-p ARG]          server TCP port\n"
           "-l ARG            name of the library driver file\n"
-	  "-i ARG            driver id for this session\n"
-	  "The following arguments are used in test mode only\n"
+          "-i ARG            driver id for this session\n"
+          "\n"
+          "The following arguments are used in test/remote mode only\n"
           "--test            enter test mode, check for a given reader\n"
           "-rp ARG           reader port\n"
           "-rs ARG           reader slots\n"
           "-rn ARG           reader name\n"
+          "--remote          driver is in remote mode\n"
+          "[-rt ARG]         reader type (only for remote drivers)\n"
+          "[-dt ARG]         driver type (only for remote drivers)\n"
           , prgName
          );
 }
@@ -75,11 +79,13 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
   d->testMode=0;
   d->rport=0;
   d->rname=0;
+  d->rtype=0;
+  d->dtype=0;
+  d->remoteMode=0;
   d->logType=GWEN_LoggerTypeConsole;
   d->logFile=strdup("driver.log");
-  d->logLevel=GWEN_LoggerLevelNotice; // debug
+  d->logLevel=GWEN_LoggerLevelNotice;
   d->serverPort=LC_DEFAULT_PORT;
-  d->readers=LC_Reader_List_new();
   d->typ="local";
   d->certFile=0;
   d->certDir=0;
@@ -183,6 +189,22 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
 	return LC_DriverCheckArgsResultError;
       d->rslots=atoi(argv[i]);
     }
+    else if (strcmp(argv[i],"-rt")==0) {
+      i++;
+      if (i>=argc)
+	return LC_DriverCheckArgsResultError;
+      d->rtype=argv[i];
+    }
+    else if (strcmp(argv[i],"-dt")==0) {
+      i++;
+      if (i>=argc)
+	return LC_DriverCheckArgsResultError;
+      d->dtype=argv[i];
+    }
+    else if (strcmp(argv[i],"--remote")==0) {
+      DBG_ERROR(0, "Remote mode is on");
+      d->remoteMode=1;
+    }
     else if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
       LC_Driver_Usage(argv[0]);
       return LC_DriverCheckArgsResultHelp;
@@ -206,7 +228,7 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
       DBG_ERROR(0, "Server address missing");
       return LC_DriverCheckArgsResultError;
     }
-    if (!d->driverId) {
+    if (!d->driverId && !d->remoteMode) {
       DBG_ERROR(0, "Driver id missing");
       return LC_DriverCheckArgsResultError;
     }
@@ -241,26 +263,49 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
     }
   }
 
+  if (d->remoteMode) {
+    if (!d->rname ||
+        !d->rtype ||
+        !d->dtype) {
+      DBG_ERROR(0, "Reader properties missing");
+      return LC_DriverCheckArgsResultError;
+    }
+  }
+
+  /* now setup reader if in remote mode */
+  if (d->remoteMode) {
+    LC_READER *r;
+
+    /* setup remote mode */
+    DBG_ERROR(0, "Creating reader...");
+    r=LC_Driver_CreateReader(d, 0,
+                             d->rname,
+                             d->rport, d->rslots,
+                             d->rflags);
+    if (!r) {
+      DBG_ERROR(0, "Could not create reader, aborting.");
+      return LC_DriverCheckArgsResultError;
+    }
+    LC_Reader_SetReaderType(r, d->rtype);
+    LC_Reader_SetDriversReaderId(r, ++(d->lastReaderId));
+    LC_Driver_AddReader(d, r);
+  }
+
   return 0;
 }
 
 
 
-LC_DRIVER *LC_Driver_new(int argc, char **argv) {
-  LC_DRIVER *d;
+int LC_Driver_Init(LC_DRIVER *d, int argc, char **argv) {
   LC_DRIVER_CHECKARGS_RESULT res;
   GWEN_NETTRANSPORT *tr;
   GWEN_SOCKET *sk;
   GWEN_INETADDRESS *addr;
   GWEN_TYPE_UINT32 sid;
 
-  GWEN_NEW_OBJECT(LC_DRIVER, d);
-  GWEN_INHERIT_INIT(LC_DRIVER, d);
-
   res=LC_Driver_CheckArgs(d, argc, argv);
   if (res!=LC_DriverCheckArgsResultOk) {
-    GWEN_FREE_OBJECT(d);
-    return 0;
+    return -1;
   }
 
   if (GWEN_Directory_GetPath(d->logFile,
@@ -329,8 +374,7 @@ LC_DRIVER *LC_Driver_new(int argc, char **argv) {
       else {
 	DBG_ERROR(0, "Unknown mode \"%s\"", d->typ);
 	GWEN_InetAddr_free(addr);
-	LC_Driver_free(d);
-	return 0;
+        return -1;
       }
     }
 
@@ -342,13 +386,23 @@ LC_DRIVER *LC_Driver_new(int argc, char **argv) {
 				  LC_DRIVER_MARK_DRIVER);
     if (sid==0) {
       DBG_ERROR(0, "Could not add IPC client");
-      LC_Driver_free(d);
-      return 0;
+      return -1;
     }
 
     d->ipcId=sid;
     DBG_INFO(0, "IPC stuff initialized");
   }
+  return 0;
+}
+
+
+
+LC_DRIVER *LC_Driver_new() {
+  LC_DRIVER *d;
+
+  GWEN_NEW_OBJECT(LC_DRIVER, d);
+  GWEN_INHERIT_INIT(LC_DRIVER, d);
+  d->readers=LC_Reader_List_new();
 
   return d;
 }
@@ -534,12 +588,23 @@ int LC_Driver_CheckResponses(GWEN_DB_NODE *db) {
     DBG_ERROR(0, "Bad IPC message (no command)");
     return -1;
   }
-  if (strcasecmp(name, "Error")==0) {
-    const char *code;
 
-    code=GWEN_DB_GetCharValue(db, "body/code", 0, 0);
-    if (strcasecmp(code, "OK")!=0) {
-      DBG_ERROR(0, "Error %s: %s", code,
+  if (strcasecmp(name, "Error")==0) {
+    int numCode;
+
+    numCode=GWEN_DB_GetIntValue(db, "body/code", 0, -1);
+    if (numCode==-1) {
+      const char *code;
+
+      code=GWEN_DB_GetCharValue(db, "body/code", 0, "ERROR");
+      if (strcasecmp(code, "OK")!=0)
+        numCode=LC_ERROR_GENERIC;
+      else
+        numCode=0;
+    }
+
+    if (numCode) {
+      DBG_ERROR(0, "Error %d: %s", numCode,
                 GWEN_DB_GetCharValue(db,
                                      "body/text", 0, "(empty)"));
       return -1;
@@ -566,8 +631,73 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
 
   /* tell the server about our status */
   dbReq=GWEN_DB_Group_new("DriverReady");
+  if (d->driverId)
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driverId", d->driverId);
+
+  if (d->remoteMode) {
+    /* send some additional information in remote mode */
+    GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "driverType", d->dtype);
+  } /* if remote mode */
+
+  /* send information about every reader we already now.
+   * Normally we don't know any reader by now, since the server informs us
+   * about that later upon a StartReader request.
+   * However, in remote mode (or later for PC/SC drivers) we in fact do have
+   * some readers already, so we now inform the server about readers we can
+   * offer.
+   */
+  if (LC_Reader_List_GetCount(d->readers)) {
+    GWEN_DB_NODE *dbReaders;
+    LC_READER *r;
+
+    dbReaders=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS,
+                               "readers");
+    assert(dbReaders);
+
+    r=LC_Reader_List_First(d->readers);
+    while(r) {
+      GWEN_DB_NODE *dbReader;
+      GWEN_TYPE_UINT32 flags;
+
+      dbReader=GWEN_DB_GetGroup(dbReaders, GWEN_DB_FLAGS_OVERWRITE_GROUPS,
+                                "reader");
+      assert(dbReader);
+      GWEN_DB_SetIntValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "driversReaderId",
+                          LC_Reader_GetDriversReaderId(r));
+      GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "readerType", d->rtype);
+      GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "readerName", d->rname);
+      GWEN_DB_SetIntValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "port", d->rport);
+      GWEN_DB_SetIntValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "slots", d->rslots);
+
+      flags=LC_Reader_GetReaderFlags(r);
+      if (flags & LC_READER_FLAGS_KEYPAD)
+        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
+                             "readerflags", "KEYPAD");
+      if (flags & LC_READER_FLAGS_DISPLAY)
+        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
+                             "readerflags", "DISPLAY");
+      if (flags & LC_READER_FLAGS_NOINFO)
+        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
+                             "readerflags", "NOINFO");
+      if (flags & LC_READER_FLAGS_REMOTE)
+        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
+                             "readerflags", "REMOTE");
+      if (flags & LC_READER_FLAGS_AUTO)
+        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
+                             "readerflags", "AUTO");
+
+      r=LC_Reader_List_Next(r);
+    } /* while */
+  } /* if readers */
+
+
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "code", code);
   if (text)
@@ -678,6 +808,22 @@ LC_READER *LC_Driver_FindReaderById(const LC_DRIVER *d, GWEN_TYPE_UINT32 id){
 
 
 
+LC_READER *LC_Driver_FindReaderByDriversId(const LC_DRIVER *d,
+                                           GWEN_TYPE_UINT32 id){
+  LC_READER *r;
+
+  assert(d);
+  r=LC_Reader_List_First(d->readers);
+  while(r) {
+    if (id==LC_Reader_GetDriversReaderId(r))
+      return r;
+    r=LC_Reader_List_Next(r);
+  } /* while */
+  return 0;
+}
+
+
+
 void LC_Driver_AddReader(LC_DRIVER *d, LC_READER *r){
   assert(d);
   assert(r);
@@ -728,9 +874,14 @@ GWEN_TYPE_UINT32 LC_Driver_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl){
 
 
 GWEN_TYPE_UINT32 LC_Driver_ConnectReader(LC_DRIVER *d, LC_READER *r){
+  GWEN_TYPE_UINT32 rv;
+
   assert(d);
   assert(d->connectReaderFn);
-  return d->connectReaderFn(d, r);
+  rv=d->connectReaderFn(d, r);
+  if (rv==0)
+    LC_Reader_AddStatus(r, LC_READER_STATUS_UP);
+  return rv;
 }
 
 
@@ -744,9 +895,13 @@ GWEN_TYPE_UINT32 LC_Driver_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl){
 
 
 GWEN_TYPE_UINT32 LC_Driver_DisconnectReader(LC_DRIVER *d, LC_READER *r){
+  GWEN_TYPE_UINT32 rv;
+
   assert(d);
   assert(d->disconnectReaderFn);
-  return d->disconnectReaderFn(d, r);
+  rv=d->disconnectReaderFn(d, r);
+  LC_Reader_SubStatus(r, LC_READER_STATUS_UP);
+  return rv;
 }
 
 
@@ -786,7 +941,7 @@ LC_READER *LC_Driver_CreateReader(LC_DRIVER *d,
   LC_READER *r;
 
   assert(d);
-  if (!d->createReaderFn) {
+  if (d->createReaderFn==0) {
     r=LC_Reader_new(readerId, name, port, slots, flags);
   }
   else {
@@ -909,6 +1064,13 @@ int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
 
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
+
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slotnum", slot);
 
@@ -953,11 +1115,19 @@ int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
 
   assert(d);
   dbReq=GWEN_DB_Group_new("ReaderError");
+
   rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Reader_GetReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
 
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "text", text);
@@ -995,81 +1165,83 @@ int LC_Driver_CheckStatusChanges(LC_DRIVER *d) {
 
     rnext=LC_Reader_List_Next(r);
 
-    retval=LC_Driver_ReaderStatus(d, r);
-    if (retval) {
-      DBG_ERROR(LC_Reader_GetLogger(r), "Error getting reader status");
-      LC_Driver_SendReaderErrorNotification(d, r,
-                                            LC_Driver_GetErrorText(d, retval));
-      DBG_NOTICE(LC_Reader_GetLogger(r),
-                 "Reader \"%s\" had an error, shutting down",
-                 LC_Reader_GetName(r));
-      LC_Reader_List_Del(r);
-      LC_Reader_free(r);
-    }
-    else {
-      LC_SLOT_LIST *slList;
-      LC_SLOT *sl;
-
-      slList=LC_Reader_GetSlots(r);
-      sl=LC_Slot_List_First(slList);
-      while(sl) {
-        int isInserted;
-        GWEN_TYPE_UINT32 newStatus, oldStatus;
-        int cardNum;
-
-        newStatus=LC_Slot_GetStatus(sl);
-        if (!(newStatus & LC_SLOT_STATUS_DISABLED)) {
-          oldStatus=LC_Slot_GetLastStatus(sl);
+    if (LC_Reader_GetStatus(r) & LC_READER_STATUS_UP) {
+      retval=LC_Driver_ReaderStatus(d, r);
+      if (retval) {
+        DBG_ERROR(LC_Reader_GetLogger(r), "Error getting reader status");
+        LC_Driver_SendReaderErrorNotification(d, r,
+                                              LC_Driver_GetErrorText(d, retval));
+        DBG_NOTICE(LC_Reader_GetLogger(r),
+                   "Reader \"%s\" had an error, shutting down",
+                   LC_Reader_GetName(r));
+        LC_Reader_List_Del(r);
+        LC_Reader_free(r);
+      }
+      else {
+        LC_SLOT_LIST *slList;
+        LC_SLOT *sl;
   
-          if (((newStatus^oldStatus) & LC_SLOT_STATUS_CARD_INSERTED) &&
-              /*!(newStatus & LC_SLOT_STATUS_CARD_CONNECTED) && */
-              (newStatus & LC_SLOT_STATUS_CARD_INSERTED)){
-            /* card has just been inserted, try to connect it */
-            DBG_NOTICE(LC_Reader_GetLogger(r),
-                       "Card inserted, trying to connect it");
-            if (LC_Driver_ConnectSlot(d, sl)) {
-              DBG_ERROR(0, "Card inserted, but I can't connect to it");
+        slList=LC_Reader_GetSlots(r);
+        sl=LC_Slot_List_First(slList);
+        while(sl) {
+          int isInserted;
+          GWEN_TYPE_UINT32 newStatus, oldStatus;
+          int cardNum;
+  
+          newStatus=LC_Slot_GetStatus(sl);
+          if (!(newStatus & LC_SLOT_STATUS_DISABLED)) {
+            oldStatus=LC_Slot_GetLastStatus(sl);
+    
+            if (((newStatus^oldStatus) & LC_SLOT_STATUS_CARD_INSERTED) &&
+                /*!(newStatus & LC_SLOT_STATUS_CARD_CONNECTED) && */
+                (newStatus & LC_SLOT_STATUS_CARD_INSERTED)){
+              /* card has just been inserted, try to connect it */
+              DBG_NOTICE(LC_Reader_GetLogger(r),
+                         "Card inserted, trying to connect it");
+              if (LC_Driver_ConnectSlot(d, sl)) {
+                DBG_ERROR(0, "Card inserted, but I can't connect to it");
+              }
+              newStatus=LC_Slot_GetStatus(sl);
             }
-            newStatus=LC_Slot_GetStatus(sl);
-          }
+    
+            isInserted=(newStatus & LC_SLOT_STATUS_CARD_CONNECTED);
+            if ((newStatus^oldStatus) &
+                (LC_SLOT_STATUS_CARD_CONNECTED)){
+              DBG_NOTICE(LC_Reader_GetLogger(r),
+                         "Status changed on slot %d (%08x->%08x) (cardnum %d)",
+                         LC_Slot_GetSlotNum(sl),
+                         oldStatus, newStatus,
+                         LC_Slot_GetCardNum(sl));
+              if (isInserted) {
+                DBG_INFO(LC_Reader_GetLogger(r), "Card is now connected");
+                cardNum=++LC_Driver__LastCardNum;
+                LC_Slot_SetCardNum(sl, cardNum);
+              }
+              else {
+                DBG_INFO(LC_Reader_GetLogger(r), "Card is not connected");
+                cardNum=LC_Slot_GetCardNum(sl);
+              }
   
-          isInserted=(newStatus & LC_SLOT_STATUS_CARD_CONNECTED);
-          if ((newStatus^oldStatus) &
-              (LC_SLOT_STATUS_CARD_CONNECTED)){
-            DBG_NOTICE(LC_Reader_GetLogger(r),
-                       "Status changed on slot %d (%08x->%08x) (cardnum %d)",
-                       LC_Slot_GetSlotNum(sl),
-                       oldStatus, newStatus,
-                       LC_Slot_GetCardNum(sl));
-            if (isInserted) {
-              DBG_INFO(LC_Reader_GetLogger(r), "Card is now connected");
-              cardNum=++LC_Driver__LastCardNum;
-              LC_Slot_SetCardNum(sl, cardNum);
+              DBG_INFO(LC_Reader_GetLogger(r), "Card number is %d", cardNum);
+    
+              if (LC_Driver_SendStatusChangeNotification(d,
+                                                         sl)) {
+                DBG_ERROR(0, "Error sending status change notification");
+              }
+              else {
+                DBG_INFO(0, "Server informed");
+              }
+              LC_Slot_SetLastStatus(sl, newStatus);
             }
             else {
-              DBG_INFO(LC_Reader_GetLogger(r), "Card is not connected");
-              cardNum=LC_Slot_GetCardNum(sl);
+              DBG_DEBUG(LC_Reader_GetLogger(r), "Status on slot %d unchanged",
+                         LC_Slot_GetSlotNum(sl));
             }
-
-            DBG_INFO(LC_Reader_GetLogger(r), "Card number is %d", cardNum);
-  
-            if (LC_Driver_SendStatusChangeNotification(d,
-                                                       sl)) {
-              DBG_ERROR(0, "Error sending status change notification");
-            }
-            else {
-              DBG_INFO(0, "Server informed");
-            }
-            LC_Slot_SetLastStatus(sl, newStatus);
           }
-          else {
-            DBG_DEBUG(LC_Reader_GetLogger(r), "Status on slot %d unchanged",
-                       LC_Slot_GetSlotNum(sl));
-          }
-        }
-        sl=LC_Slot_List_Next(sl);
-      } /* while slots */
-    } /* if getting reader status worked */
+          sl=LC_Slot_List_Next(sl);
+        } /* while slots */
+      } /* if getting reader status worked */
+    } /* if reader is up */
     r=rnext;
   } /* while reader */
 
@@ -1082,6 +1254,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq){
   GWEN_TYPE_UINT32 readerId;
+  GWEN_TYPE_UINT32 driversReaderId;
   const char *name;
   int port;
   int slots;
@@ -1094,6 +1267,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
   assert(d);
   assert(dbReq);
   DBG_NOTICE(0, "Command: Start reader");
+
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
                 "%x",
                 &readerId)) {
@@ -1101,6 +1275,15 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
     /* TODO: send error result */
     return -1;
   }
+
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/driversReaderId", 0, "0"),
+                "%x",
+                &driversReaderId)) {
+    DBG_ERROR(0, "Bad driversReaderId");
+    /* TODO: send error result */
+    return -1;
+  }
+
   name=GWEN_DB_GetCharValue(dbReq, "body/name", 0, "noname");
   port=GWEN_DB_GetIntValue(dbReq, "body/port", 0, 0);
   flags=GWEN_DB_GetIntValue(dbReq, "body/flags", 0, 0);
@@ -1169,26 +1352,62 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
       LC_Driver_RemoveCommand(d, rid, 0);
       return -1;
     }
-  }
+  } /* if reader found */
   else {
-    /* check whether we have a reader at that port */
-    r=LC_Driver_FindReaderByPort(d, port);
-    if (r) {
-      DBG_ERROR(0, "A reader with port \"%08x\" already exists", port);
-      /* send error result */
-      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                           "code", "ERROR");
-      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                           "text",
-                           "There already is a reader at the given port");
+    /* search by driversReaderId */
+    if (driversReaderId) {
+      r=LC_Driver_FindReaderByDriversId(d, driversReaderId);
+      if (r) {
+        if (LC_Reader_GetReaderId(r)==0) {
+          /* The reader exists but has no reader id. So this is the first time
+           * the reader has been accessed. Assign the reader id from the
+           * server so that the next calls will find it. */
+          LC_Reader_SetReaderId(r, readerId);
+        }
+        else {
+          DBG_ERROR(0, "Uups, reader already has an id ?");
+          /* send error result */
+          GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                               "code", "ERROR");
+          GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                               "text",
+                               "Internal error (reader already has an id)");
 
-      LC_Driver_SendResponse(d, rid, dbRsp);
-      LC_Driver_RemoveCommand(d, rid, 0);
-      return -1;
+          LC_Driver_SendResponse(d, rid, dbRsp);
+          LC_Driver_RemoveCommand(d, rid, 0);
+          return -1;
+        }
+      }
+      else {
+        DBG_ERROR(0, "Reader not found");
+      }
+    }
+    else {
+      DBG_ERROR(0, "No DriversReaderId");
     }
 
-    /* ok to create the reader */
-    r=LC_Driver_CreateReader(d, readerId, name, port, slots, flags);
+    if (!r) {
+      /* check whether we have a reader at that port */
+      r=LC_Driver_FindReaderByPort(d, port);
+      if (r) {
+        DBG_ERROR(0, "A reader with port \"%08x\" already exists", port);
+        /* send error result */
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "code", "ERROR");
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "text",
+                             "There already is a reader at the given port");
+  
+        LC_Driver_SendResponse(d, rid, dbRsp);
+        LC_Driver_RemoveCommand(d, rid, 0);
+        return -1;
+      }
+      /* if not found it is ok to create the reader */
+      r=LC_Driver_CreateReader(d, readerId, name, port, slots, flags);
+      assert(r);
+      LC_Driver_AddReader(d, r);
+    }
+
     if (d->readerLogFile) {
       GWEN_BUFFER *mbuf;
 
@@ -1210,11 +1429,20 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
           DBG_NOTICE(0, "Reader \"%s\" logs to \"%s\"", name,
                      GWEN_Buffer_GetStart(mbuf));
           LC_Reader_SetLogger(r, name);
-          GWEN_Logger_SetLevel(name, d->logLevel);
         }
         GWEN_Buffer_free(mbuf);
       }
     } /* if reader log file */
+    else {
+      if (GWEN_Logger_Open(name,
+                           name,
+                           0,
+                           GWEN_LoggerTypeConsole,
+                           GWEN_LoggerFacilityDaemon)) {
+        DBG_ERROR(0, "Could not open logger for reader \"%s\"", name);
+      }
+    }
+    GWEN_Logger_SetLevel(name, d->logLevel);
 
     /* init reader */
     DBG_NOTICE(LC_Reader_GetLogger(r),
@@ -1264,7 +1492,6 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
       return -1;
     }
     DBG_NOTICE(LC_Reader_GetLogger(r), "Reader start handled");
-    LC_Driver_AddReader(d, r);
   }
   LC_Driver_RemoveCommand(d, rid, 0);
 

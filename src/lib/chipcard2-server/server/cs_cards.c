@@ -570,6 +570,14 @@ GWEN_TYPE_UINT32 LC_CardServer_SendResetCard(LC_CARDSERVER *cs,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slotnum", slot);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,

@@ -24,6 +24,7 @@ struct LC_READER {
   GWEN_LIST_ELEMENT(LC_READER)
   GWEN_INHERIT_ELEMENT(LC_READER)
   GWEN_TYPE_UINT32 readerId;
+  GWEN_TYPE_UINT32 driversReaderId;
   char *name;
   int port;
   GWEN_TYPE_UINT32 readerFlags;
@@ -32,6 +33,8 @@ struct LC_READER {
   GWEN_TYPE_UINT32 status;
   LC_SLOT_LIST *slots;
   char *logger;
+
+  char *readerType;
 };
 
 

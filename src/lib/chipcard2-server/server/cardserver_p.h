@@ -96,6 +96,7 @@ struct LC_CARDSERVER {
 
   unsigned int lastAutoReader;
   int disableAutoconf;
+  int allowRemote;
   time_t lastUsbScan;
   time_t lastUsbTtyScan;
   unsigned int usbScanInterval;

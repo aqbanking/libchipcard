@@ -32,8 +32,9 @@ GWEN_INHERIT(LC_DRIVER, DRIVER_IFD)
 LC_DRIVER *DriverIFD_new(int argc, char **argv) {
   DRIVER_IFD *dct;
   LC_DRIVER *d;
+  int rv;
 
-  d=LC_Driver_new(argc, argv);
+  d=LC_Driver_new();
   if (!d) {
     DBG_ERROR(0, "Could not create driver, aborting");
     return 0;
@@ -52,6 +53,13 @@ LC_DRIVER *DriverIFD_new(int argc, char **argv) {
   LC_Driver_SetReaderStatusFn(d, DriverIFD_ReaderStatus);
   LC_Driver_SetReaderInfoFn(d, DriverIFD_ReaderInfo);
   LC_Driver_SetGetErrorTextFn(d, DriverIFD_GetErrorText);
+
+  rv=LC_Driver_Init(d, argc, argv);
+  if (rv) {
+    DBG_ERROR(0, "Could not init driver (%d)", rv);
+    LC_Driver_free(d);
+    return 0;
+  }
 
   return d;
 }

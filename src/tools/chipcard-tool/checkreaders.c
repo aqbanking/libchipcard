@@ -43,7 +43,7 @@ int _checkReaders_check(LCM_MONITOR *mon) {
                      LC_NOTIFY_CODE_DRIVER_UP)!=0 &&
           strcasecmp(LCM_Driver_GetStatus(md),
                      LC_NOTIFY_CODE_DRIVER_ERROR)!=0) {
-        DBG_ERROR(0, "Driver still down/started");
+        DBG_DEBUG(0, "Driver still down/started");
         return 1;
       }
       md=LCM_Driver_List_Next(md);
@@ -52,7 +52,7 @@ int _checkReaders_check(LCM_MONITOR *mon) {
     /* check readers */
     mr=LCM_Reader_List_First(LCM_Server_GetReaders(ms));
     if (!mr) {
-      DBG_ERROR(0, "Still no readers");
+      DBG_DEBUG(0, "Still no readers");
       return 1;
     }
     while(mr) {

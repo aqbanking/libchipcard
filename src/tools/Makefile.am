@@ -1,2 +1,2 @@
-SUBDIRS=rsacard geldkarte memcard chipcard-tool kvkcard cardcommander chipcardd2
+SUBDIRS=rsacard geldkarte memcard chipcard-tool kvkcard cardcommander chipcardd2 chipcardrd
 

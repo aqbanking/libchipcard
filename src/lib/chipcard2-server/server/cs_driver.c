@@ -153,6 +153,7 @@ void LC_CardServer_DriverDown(LC_CARDSERVER *cs, LC_DRIVER *d,
       case LC_ReaderStatusWaitForReaderDown:
       case LC_ReaderStatusUp:
       default:
+        LC_Driver_DecActiveReadersCount(d);
         nrst=LC_ReaderStatusAborted;
       }
       LC_CardServer_ReaderDown(cs, r, nrst,
@@ -245,7 +246,7 @@ int LC_CardServer_StartReader(LC_CARDSERVER *cs, LC_READER *r) {
               "postponing start",
               LC_Reader_GetReaderName(r), dst);
     LC_Reader_SetWantRestart(r, 1);
-    return 0;
+    return 1;
   }
   else if (dst!=LC_DriverStatusUp &&
            dst!=LC_DriverStatusStarted) {
@@ -365,14 +366,21 @@ int LC_CardServer_CheckReader(LC_CARDSERVER *cs, LC_READER *r) {
     handled=1;
     if (LC_Reader_IsAvailable(r)) {
       if (LC_Reader_GetUsageCount(r)>0) {
+        int rv;
+
         DBG_INFO(0, "Trying to start reader \"%s\" (is now in use)",
                  LC_Reader_GetReaderName(r));
-        if (LC_CardServer_StartReader(cs, r)) {
+        rv=LC_CardServer_StartReader(cs, r);
+        if (rv<0) {
           DBG_ERROR(0, "Could not start reader \"%s\"",
                     LC_Reader_GetReaderName(r));
           return -1;
         }
-        couldDoSomething++;
+        else if (rv==0)
+          couldDoSomething++;
+        else {
+          DBG_INFO(0, "Not starting reader right now");
+        }
       }
     }
     /* check for delayed start */
@@ -874,32 +882,42 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
 
   done=0;
 
-
   nid=LC_Driver_GetIpcId(d);
 
-  if (
-      (LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) ||
-      (
-       (LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_AUTO) &&
-       (LC_Driver_GetAssignedReadersCount(d)==0)
-      )
-     ){
-    DBG_NOTICE(0, "Driver \"%s\" is unused, removing it",
-               LC_Driver_GetDriverName(d));
-    LC_Driver_List_Del(d);
-    LC_Driver_free(d);
-    return 0;
-  }
+  if (LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) {
+    if (LC_Driver_GetStatus(d)==LC_DriverStatusAborted ||
+        LC_Driver_GetStatus(d)==LC_DriverStatusDown) {
+      if (LC_Driver_GetActiveReadersCount(d)==0) {
+        /* driver no longer active, remove it */
+        DBG_NOTICE(0, "Driver \"%s\" is down and unused, removing it",
+                   LC_Driver_GetDriverName(d));
+        LC_Driver_List_Del(d);
+        LC_Driver_free(d);
+        return 0;
+      }
+    }
+  } /* if remote */
+  else {
+    if ((LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_AUTO) &&
+        (LC_Driver_GetAssignedReadersCount(d)==0)){
+      DBG_NOTICE(0, "Driver \"%s\" is unused, removing it",
+                 LC_Driver_GetDriverName(d));
+      LC_Driver_List_Del(d);
+      LC_Driver_free(d);
+      return 0;
+    }
+  } /* if local driver */
 
   if (LC_Driver_GetStatus(d)==LC_DriverStatusAborted) {
-    if (cs->driverRestartTime &&
+    if (!(LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) &&
+        cs->driverRestartTime &&
         difftime(time(0), LC_Driver_GetLastStatusChangeTime(d))>=
         cs->driverRestartTime) {
       DBG_NOTICE(0, "Reenabling driver \"%s\"",
                  LC_Driver_GetDriverName(d));
       LC_Driver_SetStatus(d, LC_DriverStatusDown);
     }
-  }
+  } /* if aborted */
 
   if (LC_Driver_GetStatus(d)==LC_DriverStatusStopping) {
     GWEN_PROCESS *p;
@@ -1056,6 +1074,7 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
   if (LC_Driver_GetStatus(d)==LC_DriverStatusUp) {
     GWEN_PROCESS *p;
     GWEN_PROCESS_STATE pst;
+    GWEN_NETCONNECTION *conn;
 
     /* check whether the driver really is still up and running */
     p=LC_Driver_GetProcess(d);
@@ -1078,6 +1097,24 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
         abort();
       }
     }
+
+    /* check connection */
+    conn=GWEN_IPCManager_GetConnection(cs->ipcManager,
+                                       LC_Driver_GetIpcId(d));
+    assert(conn);
+    if (GWEN_NetConnection_GetStatus(conn)!=
+        GWEN_NetTransportStatusLConnected) {
+      DBG_ERROR(0, "Driver connection is down");
+      p=LC_Driver_GetProcess(d);
+      if (p) {
+        GWEN_Process_Terminate(p);
+      }
+      LC_Driver_SetProcess(d, 0);
+      LC_CardServer_DriverDown(cs, d, LC_DriverStatusAborted,
+                               "Driver connection broken");
+      return -1;
+    }
+
     DBG_DEBUG(0, "Driver still running");
     if (LC_Driver_GetActiveReadersCount(d)==0 &&
         cs->driverIdleTimeout) {
@@ -1087,8 +1124,9 @@ int LC_CardServer_CheckDriver(LC_CARDSERVER *cs, LC_DRIVER *d) {
       t=LC_Driver_GetIdleSince(d);
       assert(t);
 
-      if (cs->driverIdleTimeout &&
-          difftime(time(0), t)>cs->driverIdleTimeout) {
+      if (!(LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) &&
+          cs->driverIdleTimeout &&
+          (difftime(time(0), t)>cs->driverIdleTimeout)) {
         DBG_NOTICE(0, "Driver \"%s\" is too long idle, stopping it",
                    LC_Driver_GetDriverName(d));
         if (LC_CardServer_StopDriver(cs, d)) {
@@ -1123,6 +1161,8 @@ int LC_CardServer_HandleDriverReady(LC_CARDSERVER *cs,
   const char *text;
   int i;
   GWEN_NETCONNECTION *conn;
+  GWEN_DB_NODE *dbReader;
+  int driverCreated=0;
 
   assert(dbReq);
 
@@ -1139,18 +1179,20 @@ int LC_CardServer_HandleDriverReady(LC_CARDSERVER *cs,
 
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/driverId", 0, "0"),
                 "%x", &i)) {
-    DBG_ERROR(0, "Invalid driver id");
-    if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
-      DBG_WARN(0, "Could not remove request");
-    }
+    DBG_ERROR(0, "Invalid driver id (%s)",
+              GWEN_DB_GetCharValue(dbReq, "body/driverId", 0, "0"));
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Invalid driver id");
     return -1;
   }
   driverId=i;
-  if (driverId==0) {
-    DBG_ERROR(0, "Invalid driver id");
-    if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
-      DBG_WARN(0, "Could not remove request");
-    }
+  if (driverId==0 && cs->allowRemote==0) {
+    DBG_ERROR(0, "Invalid driver id, remote drivers not allowed");
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Invalid driver id, "
+                                    "remote drivers not allowed");
     return -1;
   }
 
@@ -1162,16 +1204,118 @@ int LC_CardServer_HandleDriverReady(LC_CARDSERVER *cs,
       break;
     d=LC_Driver_List_Next(d);
   } /* while */
+
   if (!d) {
-    DBG_ERROR(0, "Driver \"%08x\" not found", driverId);
+    if (cs->allowRemote==0) {
+      DBG_ERROR(0, "Driver \"%08x\" not found", driverId);
+      LC_CardServer_SendErrorResponse(cs, rid,
+                                      LC_ERROR_INVALID,
+                                      "Driver not found, "
+                                      "remote driver not allowed");
+      if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
+        DBG_WARN(0, "Could not remove request");
+      }
+      return -1;
+    }
+    else {
+      const char *dtype;
+      GWEN_DB_NODE *dbDriver;
+
+      /* unknown driver, must be a remote driver */
+      dtype=GWEN_DB_GetCharValue(dbReq, "body/driverType", 0, 0);
+      if (!dtype) {
+        DBG_ERROR(0, "No driver type given in remote driver");
+        LC_CardServer_SendErrorResponse(cs, rid,
+                                        LC_ERROR_INVALID,
+                                        "No driver type");
+        if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
+          DBG_WARN(0, "Could not remove request");
+        }
+        return -1;
+      }
+
+      /* find driver by type name */
+      dbDriver=GWEN_DB_FindFirstGroup(cs->dbDrivers, "driver");
+      while(dbDriver) {
+        const char *dname;
+
+        dname=GWEN_DB_GetCharValue(dbDriver, "driverName", 0, 0);
+        if (dname) {
+          if (strcasecmp(dname, dtype)==0)
+            break;
+        }
+        dbDriver=GWEN_DB_FindNextGroup(dbDriver, "driver");
+      } /* while */
+
+      if (!dbDriver) {
+        DBG_ERROR(0, "Unknown driver type \"%s\"", dtype);
+        LC_CardServer_SendErrorResponse(cs, rid,
+                                        LC_ERROR_INVALID,
+                                        "Unknown driver type");
+        if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
+          DBG_WARN(0, "Could not remove request");
+        }
+        return -1;
+      }
+
+      /* create driver from DB */
+      d=LC_Driver_FromDb(dbDriver);
+      assert(d);
+      driverId=LC_Driver_GetDriverId(d);;
+      LC_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_REMOTE);
+      LC_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_AUTO);
+
+      /* add driver to list */
+      DBG_NOTICE(0, "Adding remote driver \"%s\"", dtype);
+      LC_Driver_List_Add(d, cs->drivers);
+      driverCreated=1;
+    } /* if remote drivers are allowed */
+  } /* if driver does not exist */
+
+  /* create all readers enumerated by the driver */
+  dbReader=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                            "body/readers");
+  if (dbReader)
+    dbReader=GWEN_DB_FindFirstGroup(dbReader, "reader");
+
+  if (dbReader==0 && driverCreated) {
+    DBG_ERROR(0, "No readers in request");
     LC_CardServer_SendErrorResponse(cs, rid,
                                     LC_ERROR_INVALID,
-                                    "Driver not found");
+                                    "No readers in request");
     if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
     }
+    LC_Driver_SetStatus(d, LC_DriverStatusAborted);
+    if (driverCreated) {
+      LC_Driver_List_Del(d);
+      LC_Driver_free(d);
+    }
     return -1;
   }
+
+  /* now really create readers */
+  while(dbReader) {
+    LC_READER *r;
+
+    r=LC_Reader_FromDb(d, dbReader);
+    assert(r);
+    DBG_NOTICE(0, "Adding reader \"%s\" (enumerated by the driver)",
+               LC_Reader_GetReaderName(r));
+    if (LC_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)
+      /* if the driver is remote, so is the reader */
+      LC_Reader_AddFlags(r, LC_READER_FLAGS_REMOTE);
+
+    /* reader has been created automatically */
+    LC_Reader_AddFlags(r, LC_READER_FLAGS_AUTO);
+    /* reader is available */
+    LC_Reader_SetIsAvailable(r, 1);
+
+    /* add reader to list */
+    LC_Reader_List_Add(r, cs->readers);
+
+    dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");
+  } /* while */
 
   /* store node id */
   LC_Driver_SetIpcId(d, nodeId);
@@ -1437,6 +1581,14 @@ GWEN_TYPE_UINT32 LC_CardServer_SendStartReader(LC_CARDSERVER *cs,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
+
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "name", LC_Reader_GetReaderName(r));
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1477,6 +1629,13 @@ GWEN_TYPE_UINT32 LC_CardServer_SendStopReader(LC_CARDSERVER *cs,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
 
   p=LC_Reader_GetReaderName(r);
   if (p)
@@ -2014,12 +2173,21 @@ int LC_CardServer_SendReaderNotification(LC_CARDSERVER *cs,
 
   d=LC_Reader_GetDriver(r);
   assert(d);
+
   rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
               LC_Reader_GetReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+              LC_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driversReaderId", numbuf);
+
   rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
               LC_Driver_GetDriverId(d));
   assert(rv>0 && rv<sizeof(numbuf)-1);

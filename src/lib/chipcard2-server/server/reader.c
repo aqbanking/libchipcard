@@ -107,6 +107,8 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
     LC_Reader_LastId=time(0);
   r->readerId=++LC_Reader_LastId;
 
+  r->driversReaderId=GWEN_DB_GetIntValue(db, "driversReaderId", 0, 0);
+
   p=GWEN_DB_GetCharValue(db, "readerType", 0, 0);
   if (p)
     r->readerType=strdup(p);
@@ -188,6 +190,11 @@ void LC_Reader_SetIsAvailable(LC_READER *r, int i){
 void LC_Reader_ToDb(const LC_READER *r, GWEN_DB_NODE *db){
   assert(r);
   assert(db);
+
+  if (r->driversReaderId)
+    GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+			"driversReaderId",
+			r->driversReaderId);
 
   if (r->readerType)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -283,6 +290,20 @@ void LC_Reader_SetReaderInfo(LC_READER *r, const char *s){
 GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r){
   assert(r);
   return r->readerId;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Reader_GetDriversReaderId(const LC_READER *r){
+  assert(r);
+  return r->driversReaderId;
+}
+
+
+
+void LC_Reader_SetDriversReaderId(LC_READER *r, GWEN_TYPE_UINT32 id){
+  assert(r);
+  r->driversReaderId=id;
 }
 
 
@@ -608,6 +629,9 @@ void LC_Reader_Dump(const LC_READER *r, FILE *f, int indent) {
   for (i=0; i<indent; i++)
     fprintf(f, " ");
   fprintf(f, "Status : %d\n", r->status);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Flags  : %08x\n", r->flags);
 }
 
 

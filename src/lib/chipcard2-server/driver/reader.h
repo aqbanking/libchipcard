@@ -15,10 +15,6 @@
 #define CHIPCARD_DRIVER_READER_H
 
 
-#define LC_READER_FLAGS_KEYPAD  0x00010000
-#define LC_READER_FLAGS_DISPLAY 0x00020000
-#define LC_READER_FLAGS_NOINFO  0x00040000
-
 #define LC_READER_STATUS_UP  0x00000001
 
 
@@ -42,8 +38,16 @@ LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
 void LC_Reader_free(LC_READER *r);
 
 GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r);
+void LC_Reader_SetReaderId(LC_READER *r, GWEN_TYPE_UINT32 id);
+
 const char *LC_Reader_GetName(const LC_READER *r);
 int LC_Reader_GetPort(const LC_READER *r);
+
+const char *LC_Reader_GetReaderType(const LC_READER *r);
+void LC_Reader_SetReaderType(LC_READER *r, const char *s);
+
+GWEN_TYPE_UINT32 LC_Reader_GetDriversReaderId(const LC_READER *r);
+void LC_Reader_SetDriversReaderId(LC_READER *r, GWEN_TYPE_UINT32 id);
 
 GWEN_TYPE_UINT32 LC_Reader_GetStatus(const LC_READER *r);
 void LC_Reader_SetStatus(LC_READER *r, GWEN_TYPE_UINT32 s);

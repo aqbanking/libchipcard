@@ -32,4 +32,6 @@ A: If you have an old device (old Cyberjack or ecom) then you should most
    You should also move these drivers to Libchipcard2's own lowlevel driver
    folder, $PREFIX/lib/chipcard2-server/lowlevel. This makes sure that
    Libchipcard2 always uses the correct driver.
-
+   However, since version 2.0.6 the driver contains a nice workaround which is
+   used by Libchipcard2, so you may use this version with both old and new
+   Cyberjacks.

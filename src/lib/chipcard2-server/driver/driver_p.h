@@ -45,12 +45,18 @@ struct LC_DRIVER {
   const char *rname;             /* -rn ARG */
   int rport;                     /* -rp ARG */
   int rslots;                    /* -rs ARG */
+  const char *rtype;             /* -rt ARG */
+  const char *dtype;             /* -dt ARG */
+  int remoteMode;                /* --remote */
+  GWEN_TYPE_UINT32 rflags;       /* -rf ARG */
 
   /* runtime data */
   int stopDriver;
   GWEN_IPCMANAGER *ipcManager;
   LC_READER_LIST *readers;
   GWEN_TYPE_UINT32 ipcId;
+
+  GWEN_TYPE_UINT32 lastReaderId;
 
   LC_DRIVER_SENDAPDU_FN sendApduFn;
   LC_DRIVER_CONNECTSLOT_FN connectSlotFn;

@@ -1,2 +1,14 @@
-- services now use a default log file (like drivers do) if none provided in
-  the config file
+- prepared server/driver code to let a driver send a list of supported 
+  readers. This is needed for remote drivers and later for a PC/SC driver.
+- decreased verbosity of chipcard-tool
+- fixed some minor bugs
+- prepared remote drivers: Remote drivers are used with networks of thin 
+  clients (as requested by Gnumed developers). 
+  With such a configuration there is a central chipcard daemon to which card
+  readers connected to thin clients can connect. At this central server there
+  may be a service which uses all readers at all thin clients (as the KVK
+  service does). This feature has been requested and sponsored by Gnumed.
+  
+  I'm still working on the process watcher which will start and monitor the 
+  remote drivers at the thin clients. This watcher has to restart the driver
+  when the connection between driver and server has been cut off.

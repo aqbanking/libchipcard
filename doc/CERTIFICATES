@@ -4,7 +4,7 @@ In "private" or "secure" mode the chipcard2 daemon uses SSL secured
 connections. For this to work you need to do some setup.
 
 You can let the chipcard daemon do this for you (easiest way, since the
-chipcard daemon where to store which files) or you can do it manually.
+chipcard daemon knows where to store which files) or you can do it manually.
 
 
 

@@ -38,6 +38,7 @@ struct LC_READER {
   /* runtime variables */
   char *readerInfo;
   GWEN_TYPE_UINT32 readerId;
+  GWEN_TYPE_UINT32 driversReaderId;
   LC_DRIVER *driver;
   LC_READER_STATUS status;
   int wantRestart;

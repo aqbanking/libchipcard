@@ -16,6 +16,7 @@
 #
 
 # if this is "0" then the server won't start
+#
 enabled="1"
 
 #
@@ -51,6 +52,20 @@ int usbScanInterval="2"
 # only initial setup of already connected readers)
 #
 int usbTtyScanInterval="2"
+
+
+# ===========================================================================
+# Remote Drivers
+#
+# Remote drivers are used with thin clients: In such a configuration there
+# is a central chipcard daemon to which the card readers of all thin clients
+# connect. This is going to be used by Gnumed.
+#
+
+# if 0 then remote drivers are not allowed to connect to the server 
+# default: "0"
+#
+allowRemote="1"
 
 
 
