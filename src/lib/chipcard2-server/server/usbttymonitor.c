@@ -149,6 +149,7 @@ void LC_USBTTYMonitor_free(LC_USBTTYMONITOR *um) {
 
 
 
+/* this function has been submitted by Thomas Viehmann. Thanks ;-)*/
 int LC_USBTTYMonitor_ScanSysFS_UsbSerial(LC_USBTTYDEVICE_LIST *dl) {
 #ifndef USE_LIBSYSFS
   DBG_INFO(0, "LibSysFS not supported");
