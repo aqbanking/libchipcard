@@ -378,6 +378,8 @@ int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card){
   if (keyVer==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "No keyVersion in record 2 of EF_AUTD");
   }
+  if (keyVer==0)
+    keyVer=1;
 
   return keyVer;
 }
@@ -428,6 +430,8 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
   if (keyVer==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "No keyVersion in record 2 of EF_KEYD");
   }
+  if (keyVer==0)
+    keyVer=1;
 
   return keyVer;
 }
