@@ -188,7 +188,8 @@ void LC_FSNode_SetFileSize(LC_FS_NODE *fn, GWEN_TYPE_UINT32 s){
 
 
 LC_FS_NODE_HANDLE *LC_FSNodeHandle_new(const char *name,
-                                       LC_FS_NODE *fn){
+                                       LC_FS_NODE *fn,
+                                       GWEN_TYPE_UINT32 id){
   LC_FS_NODE_HANDLE *fh;
 
   assert(fn);
@@ -200,6 +201,7 @@ LC_FS_NODE_HANDLE *LC_FSNodeHandle_new(const char *name,
   fh->name=strdup(name);
   LC_FSNode_Attach(fh->node);
   fh->entryList=GWEN_StringList2_new();
+  fh->id=id;
 
   return fh;
 }
@@ -238,19 +240,10 @@ const char *LC_FSNodeHandle_GetName(const LC_FS_NODE_HANDLE *fh){
 
 
 
-GWEN_TYPE_UINT32 LC_FSNodeHandle_GetFid(const LC_FS_NODE_HANDLE *fh){
+GWEN_TYPE_UINT32 LC_FSNodeHandle_GetId(const LC_FS_NODE_HANDLE *fh){
   assert(fh);
   assert(fh->usageCounter);
-  return fh->fid;
-}
-
-
-
-void LC_FSNodeHandle_SetFid(LC_FS_NODE_HANDLE *fh,
-                            GWEN_TYPE_UINT32 id){
-  assert(fh);
-  assert(fh->usageCounter);
-  fh->fid=id;
+  return fh->id;
 }
 
 

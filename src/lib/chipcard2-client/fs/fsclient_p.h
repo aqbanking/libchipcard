@@ -21,8 +21,9 @@ struct LC_FS_CLIENT {
   GWEN_LIST_ELEMENT(LC_FS_CLIENT);
   LC_FS *fileSystem;
   GWEN_TYPE_UINT32 id;
-  LC_FS_NODE_HANDLE_LIST2 *handles;
+  LC_FS_NODE_HANDLE_LIST *handles;
   LC_FS_PATH_CTX *workingCtx;
+  GWEN_TYPE_UINT32 lastHandleId;
 };
 
 

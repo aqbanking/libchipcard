@@ -31,7 +31,8 @@ enum LC_FS_ERROR {
   LC_FS_ErrorNotFile,
   LC_FS_ErrorNotDir,
   LC_FS_ErrorExists,
-  LC_FS_ErrorFull
+  LC_FS_ErrorFull,
+  LC_FS_ErrorInvalid
 };
 
 

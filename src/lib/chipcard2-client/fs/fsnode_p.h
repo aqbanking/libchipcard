@@ -44,7 +44,7 @@ struct LC_FS_NODE_HANDLE {
   GWEN_LIST_ELEMENT(LC_FS_NODE_HANDLE);
   GWEN_TYPE_UINT32 usageCounter;
   char *name;
-  GWEN_TYPE_UINT32 fid;
+  GWEN_TYPE_UINT32 id;
   LC_FS_NODE *node;
   GWEN_TYPE_UINT32 flags;
   GWEN_TYPE_UINT32 fpointer;

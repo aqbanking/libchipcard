@@ -303,13 +303,20 @@ void LC_FS_DestroyClient(LC_FS *fs, GWEN_TYPE_UINT32 clid){
 
 
 int LC_FS_ChangeWorkingDir(LC_FS *fs,
-                           LC_FS_CLIENT *fcl,
+                           GWEN_TYPE_UINT32 clid,
                            const char *path) {
   LC_FS_PATH_CTX *ctx;
+  LC_FS_CLIENT *fcl;
   int rv;
 
   assert(fs);
-  assert(fcl);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
   ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
 
   rv=LC_FS__GetNode(fs, ctx, path,
@@ -327,9 +334,195 @@ int LC_FS_ChangeWorkingDir(LC_FS *fs,
 
 
 
+int LC_FS_OpenDir(LC_FS *fs,
+		  GWEN_TYPE_UINT32 clid,
+		  const char *path,
+		  GWEN_TYPE_UINT32 *pHid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  LC_FS_NODE_HANDLE *hdl;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+		      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+  }
+
+  /* open folder (if not root) */
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+  if (strcasecmp(p, "/")!=0) {
+    rv=LC_FSModule_OpenDir(LC_FSNode_GetFileSystem(node),
+                           node,
+			   p,
+			   &node);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      return rv;
+    }
+  }
+
+  /* create file handle */
+  hdl=LC_FSNodeHandle_new(p, node, LC_FSClient_GetNextHandleId(fcl));
+  LC_FSClient_AddNodeHandle(fcl, hdl);
+  *pHid=LC_FSNodeHandle_GetId(hdl);
+  LC_FSPathCtx_free(ctx);
+  return 0;
+}
 
 
 
+int LC_FS_MkDir(LC_FS *fs,
+		GWEN_TYPE_UINT32 clid,
+		const char *path,
+		GWEN_TYPE_UINT32 mode,
+		GWEN_TYPE_UINT32 *pHid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  LC_FS_NODE_HANDLE *hdl;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  if (strcasecmp(path, "/")==0) {
+    DBG_ERROR(0, "Unable to create root node");
+    return LC_FS_ErrorExists;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+		      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+  }
+
+  /* open folder (if not root) */
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+  if (strcasecmp(p, "/")!=0) {
+    rv=LC_FSModule_MkDir(LC_FSNode_GetFileSystem(node),
+			 node,
+			 p,
+                         mode,
+			 &node);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      return rv;
+    }
+  }
+
+  /* create file handle */
+  hdl=LC_FSNodeHandle_new(p, node, LC_FSClient_GetNextHandleId(fcl));
+  LC_FSClient_AddNodeHandle(fcl, hdl);
+  *pHid=LC_FSNodeHandle_GetId(hdl);
+  LC_FSPathCtx_free(ctx);
+  return 0;
+}
+
+
+
+int LC_FS_CloseDir(LC_FS *fs,
+		   GWEN_TYPE_UINT32 clid,
+		   GWEN_TYPE_UINT32 hid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE_HANDLE *hdl;
+  LC_FS_NODE *node;
+  int rv;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  hdl=LC_FSClient_FindHandle(fcl, hid);
+  if (!hdl) {
+    DBG_ERROR(0, "Handle %08x not found", hid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  node=LC_FSNodeHandle_GetNode(hdl);
+  rv=LC_FSModule_CloseDir(LC_FSNode_GetFileSystem(node), node);
+  LC_FSNodeHandle_List_Del(hdl);
+  LC_FSNodeHandle_free(hdl);
+
+  return rv;
+}
 
 
 

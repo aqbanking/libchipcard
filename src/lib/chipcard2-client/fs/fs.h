@@ -47,8 +47,25 @@ void LC_FS_DestroyClient(LC_FS *fs, GWEN_TYPE_UINT32 clid);
 
 
 int LC_FS_ChangeWorkingDir(LC_FS *fs,
-                           LC_FS_CLIENT *fcl,
+                           GWEN_TYPE_UINT32 clid,
                            const char *path);
+
+int LC_FS_OpenDir(LC_FS *fs,
+                  GWEN_TYPE_UINT32 clid,
+                  const char *path,
+                  GWEN_TYPE_UINT32 *pHid);
+
+int LC_FS_MkDir(LC_FS *fs,
+                GWEN_TYPE_UINT32 clid,
+                const char *path,
+                GWEN_TYPE_UINT32 mode,
+                GWEN_TYPE_UINT32 *pHid);
+
+int LC_FS_CloseDir(LC_FS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   GWEN_TYPE_UINT32 hid);
+
+
 
 
 #endif /* LC_FS_H */

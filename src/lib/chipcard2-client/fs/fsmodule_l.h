@@ -36,7 +36,7 @@ int LC_FSModule_OpenDir(LC_FS_MODULE *fs,
 int LC_FSModule_MkDir(LC_FS_MODULE *fs,
                       LC_FS_NODE *node,
                       const char *name,
-                      GWEN_TYPE_UINT32 flags,
+                      GWEN_TYPE_UINT32 mode,
                       LC_FS_NODE **nPtr);
 
 

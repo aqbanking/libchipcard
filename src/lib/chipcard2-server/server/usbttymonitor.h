@@ -37,7 +37,6 @@ void LC_USBTTYDevice_free(LC_USBTTYDEVICE *ud);
 
 
 int LC_USBTTYMonitor_Scan(LC_USBTTYMONITOR *um);
-
 LC_USBTTYDEVICE_LIST *LC_USBTTYMonitor_GetNewDevices(const LC_USBTTYMONITOR *um);
 LC_USBTTYDEVICE_LIST *LC_USBTTYMonitor_GetLostDevices(const LC_USBTTYMONITOR *um);
 

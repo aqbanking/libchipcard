@@ -32,12 +32,19 @@ LC_FS *LC_FSClient_GetFileSystem(const LC_FS_CLIENT *fcl);
 
 
 GWEN_TYPE_UINT32 LC_FSClient_GetId(const LC_FS_CLIENT *fcl);
-LC_FS_NODE_HANDLE_LIST2 *LC_FSClient_GetHandles(const LC_FS_CLIENT *fcl);
+LC_FS_NODE_HANDLE_LIST *LC_FSClient_GetHandles(const LC_FS_CLIENT *fcl);
 
 LC_FS_PATH_CTX *LC_FSClient_GetWorkingCtx(const LC_FS_CLIENT *fcl);
 void LC_FSClient_SetWorkingCtx(LC_FS_CLIENT *fcl, LC_FS_PATH_CTX *ctx);
 
 
+GWEN_TYPE_UINT32 LC_FSClient_GetNextHandleId(LC_FS_CLIENT *fcl);
+
+
+void LC_FSClient_AddNodeHandle(LC_FS_CLIENT *fcl, LC_FS_NODE_HANDLE *hdl);
+
+LC_FS_NODE_HANDLE *LC_FSClient_FindHandle(LC_FS_CLIENT *fcl,
+                                          GWEN_TYPE_UINT32 hid);
 
 #endif /* LC_FS_CLIENT_L_H */
 

@@ -79,16 +79,15 @@ void LC_FSNode_SetFileSystem(LC_FS_NODE *fn, LC_FS_MODULE *fs);
 
 
 LC_FS_NODE_HANDLE *LC_FSNodeHandle_new(const char *name,
-                                       LC_FS_NODE *fn);
+                                       LC_FS_NODE *fn,
+                                       GWEN_TYPE_UINT32 id);
 void LC_FSNodeHandle_free(LC_FS_NODE_HANDLE *fh);
 void LC_FSNodeHandle_Attach(LC_FS_NODE_HANDLE *fh);
 
 
 const char *LC_FSNodeHandle_GetName(const LC_FS_NODE_HANDLE *fh);
 
-GWEN_TYPE_UINT32 LC_FSNodeHandle_GetFid(const LC_FS_NODE_HANDLE *fh);
-void LC_FSNodeHandle_SetFid(LC_FS_NODE_HANDLE *fh,
-                            GWEN_TYPE_UINT32 id);
+GWEN_TYPE_UINT32 LC_FSNodeHandle_GetId(const LC_FS_NODE_HANDLE *fh);
 
 LC_FS_NODE *LC_FSNodeHandle_GetNode(const LC_FS_NODE_HANDLE *fh);
 
