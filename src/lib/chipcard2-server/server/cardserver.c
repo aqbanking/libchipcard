@@ -2983,6 +2983,7 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
   GWEN_TYPE_UINT32 serviceId;
   GWEN_TYPE_UINT32 nodeId;
   LC_SERVICE *as;
+  LC_CLIENT *cl;
   const char *code;
   const char *text;
   int i;
@@ -2991,6 +2992,7 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
   assert(dbReq);
 
   nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
+  DBG_NOTICE(0, "Service %08x: ServiceReady", nodeId);
   if (!nodeId) {
     DBG_ERROR(0, "Invalid node id");
     if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0)) {
@@ -2999,7 +3001,22 @@ int LC_CardServer_HandleServiceReady(LC_CARDSERVER *cs,
     return -1;
   }
 
-  DBG_NOTICE(0, "Service %08x: ServiceReady", nodeId);
+  /* find client for service */
+  cl=LC_Client_List_First(cs->clients);
+  while(cl) {
+    if (LC_Client_GetClientId(cl)==nodeId)
+      break;
+    cl=LC_Client_List_Next(cl);
+  } /* while */
+  if (!cl) {
+    DBG_ERROR(0, "Client \"%08x\" for service not found", nodeId);
+    /* Send SegResult */
+    LC_CardServer_SendErrorResponse(cs, rid,
+                                    LC_ERROR_INVALID,
+                                    "Unknown client id");
+    GWEN_IPCManager_RemoveRequest(cs->ipcManager, rid, 0);
+    return -1;
+  }
 
   if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/serviceId", 0, "0"),
                 "%x", &i)) {
