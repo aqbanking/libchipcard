@@ -657,7 +657,6 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
       break;
     dbCurr=GWEN_DB_Group_new("llog");
     GWEN_Buffer_Rewind(buf);
-    GWEN_Buffer_Dump(buf, stderr, 2);
     if (LC_Card_ParseRecord(card, idx?idx:i, buf, dbCurr)) {
       DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx?idx:i);
       GWEN_DB_Group_free(dbCurr);
