@@ -1,4 +1,11 @@
 
+2005/01/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changes in DDV card:
+  - for DDV0 signKey and cryptKey versions are now always 0
+  - LC_DDVCard_ReadInstituteData() now returns every record (even empty ones)
+
+
 2005/01/29: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added function LC_DDVCard_WriteInstituteData() (to be used by the next

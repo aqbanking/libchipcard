@@ -378,9 +378,6 @@ int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card){
   if (keyVer==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "No keyVersion in record 2 of EF_AUTD");
   }
-  if (keyVer==0)
-    keyVer=1;
-
   return keyVer;
 }
 
@@ -430,8 +427,6 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
   if (keyVer==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "No keyVersion in record 2 of EF_KEYD");
   }
-  if (keyVer==0)
-    keyVer=1;
 
   return keyVer;
 }
@@ -535,7 +530,7 @@ int LC_DDVCard_GetSignKeyNumber(LC_CARD *card){
   assert(ddv);
 
   if (ddv->ddvType==0)
-    return 1;
+    return 0;
   else
     return 2;
 }
@@ -550,7 +545,7 @@ int LC_DDVCard_GetCryptKeyNumber(LC_CARD *card){
   assert(ddv);
 
   if (ddv->ddvType==0)
-    return 1;
+    return 0;
   else
     return 3;
 }
@@ -908,14 +903,8 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
 
       p1=GWEN_DB_GetCharValue(dbCurr, "country", 0, "");
       p2=GWEN_DB_GetCharValue(dbCurr, "bankCode", 0, "");
-      if (*p1 && *p2) {
-        GWEN_DB_AddGroup(dbData, dbCurr);
-        ctxCount++;
-      }
-      else {
-        DBG_WARN(LC_LOGDOMAIN, "Entry %d is empty", idx?idx:i);
-        GWEN_DB_Group_free(dbCurr);
-      }
+      GWEN_DB_AddGroup(dbData, dbCurr);
+      ctxCount++;
     }
     if (idx)
       break;

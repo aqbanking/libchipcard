@@ -1,2 +1,3 @@
-- added function LC_DDVCard_WriteInstituteData() (to be used by the next
-  DDVCard plugin of AqHBCI)
+- changes in DDV card:
+  - for DDV0 signKey and cryptKey versions are now always 0
+  - LC_DDVCard_ReadInstituteData() now returns every record (even empty ones)
