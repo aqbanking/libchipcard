@@ -930,6 +930,51 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
 
 
 
+LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
+                                               int idx,
+                                               GWEN_DB_NODE *dbData){
+  LC_DDVCARD *ddv;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *buf;
+
+  assert(card);
+  ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
+  assert(ddv);
+
+  if (idx==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid index 0");
+    return LC_Client_ResultInvalid;
+  }
+
+  /* select EF_BNK */
+  res=LC_ProcessorCard_SelectEF(card, "EF_BNK");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  /* create record data */
+  buf=GWEN_Buffer_new(0, 256, 0, 1);
+  if (LC_Card_CreateRecord(card, idx, buf, dbData)) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error creating record %d", idx);
+    GWEN_Buffer_free(buf);
+    return LC_Client_ResultDataError;
+  }
+  GWEN_Buffer_Rewind(buf);
+
+  /* write record */
+  res=LC_ProcessorCard_WriteRecord(card, idx, buf);
+  GWEN_Buffer_free(buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
 
 
 

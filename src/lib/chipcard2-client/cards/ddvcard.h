@@ -46,6 +46,10 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
                                               int idx,
                                               GWEN_DB_NODE *dbData);
 
+LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
+                                               int idx,
+                                               GWEN_DB_NODE *dbData);
+
 int LC_DDVCard_GetSignKeyVersion(LC_CARD *card);
 int LC_DDVCard_GetSignKeyNumber(LC_CARD *card);
 int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card);

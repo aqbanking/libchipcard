@@ -1,4 +1,10 @@
 
+2005/01/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added function LC_DDVCard_WriteInstituteData() (to be used by the next
+  DDVCard plugin of AqHBCI)
+
+
 2005/01/28: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added command "CardCheck" which checks whether a card has been removed

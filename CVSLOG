@@ -1,3 +1,2 @@
-- started working on a fake CTAPI: It is now able to tell MoneyPlex that a
-  Cyberjack reader is connected while in fact a completely other reader might
-  be present (even tested with a SCM 532 which only comes with an IFD driver).
+- added function LC_DDVCard_WriteInstituteData() (to be used by the next
+  DDVCard plugin of AqHBCI)
