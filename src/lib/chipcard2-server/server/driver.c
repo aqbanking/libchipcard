@@ -16,6 +16,7 @@
 
 
 #include "driver_p.h"
+#include "cardserver_l.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
@@ -80,7 +81,15 @@ LC_DRIVER *LC_Driver_FromDb(GWEN_DB_NODE *db){
   d->firstNewPort=GWEN_DB_GetIntValue(d->driverVars, "firstNewPort", 0, 1000);
   d->autoPortOffset=GWEN_DB_GetIntValue(d->driverVars,
                                         "autoPortOffset", 0, -1);
-
+  d->autoPortMode=-1;
+  p=GWEN_DB_GetCharValue(d->driverVars,
+                         "autoPortMode", 0, 0);
+  if (p) {
+    if (strcasecmp(p, "productId")==0)
+      d->autoPortMode=LC_CARDSERVER_AUTOPORT_MODE_PRODUCTID;
+    else if (strcasecmp(p, "vendorId")==0)
+      d->autoPortMode=LC_CARDSERVER_AUTOPORT_MODE_VENDORID;
+  }
   d->maxReaders=GWEN_DB_GetIntValue(db, "maxReaders", 0, 1);
 
   p=GWEN_DB_GetCharValue(db, "driverType", 0, 0);
@@ -138,10 +147,6 @@ void LC_Driver_ToDb(const LC_DRIVER *d, GWEN_DB_NODE *db){
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "maxReaders", d->maxReaders);
-  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "firstNewPort", d->firstNewPort);
-  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "autoPortOffset", d->autoPortOffset);
 
   if (d->driverType)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -201,6 +206,12 @@ int LC_Driver_GetFirstNewPort(const LC_DRIVER *d){
 int LC_Driver_GetAutoPortOffset(const LC_DRIVER *d){
   assert(d);
   return d->autoPortOffset;
+}
+
+
+int LC_Driver_GetAutoPortMode(const LC_DRIVER *d){
+  assert(d);
+  return d->autoPortMode;
 }
 
 

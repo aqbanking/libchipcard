@@ -164,11 +164,16 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
       LC_USBDEVICE *tud;
       int count;
       int autoPortOffset;
+      int autoPortMode;
 
       count=0;
       autoPortOffset=LC_Driver_GetAutoPortOffset(d);
       if (autoPortOffset==-1)
         autoPortOffset=0;
+
+      autoPortMode=LC_Driver_GetAutoPortMode(d);
+      if (autoPortMode==-1)
+        autoPortMode=LC_CARDSERVER_AUTOPORT_MODE_PRODUCTID;
 
       /* neither port nor default port available, just count the devices */
       usbDevices=LC_USBMonitor_GetCurrentDevices(cs->usbMonitor);
@@ -183,14 +188,17 @@ int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
             if (strcasecmp(GWEN_DB_GetCharValue(dbT,
                                                 "comType", 0, "serial"),
                            "serial")!=0) {
-	      if ((GWEN_DB_GetIntValue(dbT, "vendorId", 0, 0)==
-		   (int)LC_USBDevice_GetVendorId(tud)) &&
-		  (GWEN_DB_GetIntValue(dbT, "productId", 0, 0)==
-		   (int)LC_USBDevice_GetProductId(tud))) {
-		/* reader found */
-		break;
-	      }
-	    }
+              if (GWEN_DB_GetIntValue(dbT, "vendorId", 0, 0)==
+                  (int)LC_USBDevice_GetVendorId(tud)) {
+                if ((GWEN_DB_GetIntValue(dbT, "productId", 0, 0)==
+                     (int)LC_USBDevice_GetProductId(tud))
+                    ||
+                    (autoPortMode!=LC_CARDSERVER_AUTOPORT_MODE_PRODUCTID)) {
+                  /* reader found */
+                  break;
+                }
+              }
+            }
 	  }
           dbT=GWEN_DB_GetNextGroup(dbT);
         } /* while */

@@ -46,6 +46,7 @@ struct LC_DRIVER {
   int pendingCommandCount;
   int firstNewPort;   /* derived from driverVars */
   int autoPortOffset; /* derived from driverVars */
+  int autoPortMode;   /* derived from driverVars */
   int assignedReaders;
 };
 

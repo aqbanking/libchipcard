@@ -14,6 +14,10 @@
 #ifndef CHIPCARD_SERVER_CARDSERVER_L_H
 #define CHIPCARD_SERVER_CARDSERVER_L_H
 
+#define LC_CARDSERVER_AUTOPORT_MODE_PRODUCTID 1
+#define LC_CARDSERVER_AUTOPORT_MODE_VENDORID  2
+
+
 #include <chipcard2-server/server/cardserver.h>
 #include <chipcard2-server/server/service.h>
 

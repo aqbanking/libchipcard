@@ -1,3 +1,7 @@
-- added tutorial3 and an example card type
-- added function LC_Card_SelectApp()
-- fixed some XML files for Cyberjack readers
+- added driver variable "autoportmode" which defines how ports are to be
+  assigned automatically:
+  - productid: VendorId *and* ProductId must match to count a device
+  - vendorId:  VendorId suffices
+  Now the cyberjack uses the mode "vendorid" because to find out the port to
+  be used we must also count old Cyberjacks (thats why the driver does this,
+  too). Should now improve support for new Cyberjack.

@@ -26,6 +26,7 @@
 
   <vars>
     <var name="autoPortOffset">1</var>
+    <var name="autoPortMode">productId</var>
   </vars>
 
   <readers>

@@ -8,4 +8,5 @@ SUBDIRS=\
  scmx32_ifd \
  tow_ctapi
 
+EXTRA_DIST=README
 

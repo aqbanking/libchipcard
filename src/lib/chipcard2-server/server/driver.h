@@ -115,6 +115,7 @@ void LC_Driver_DecPendingCommandCount(LC_DRIVER *d);
 
 int LC_Driver_GetFirstNewPort(const LC_DRIVER *d);
 int LC_Driver_GetAutoPortOffset(const LC_DRIVER *d);
+int LC_Driver_GetAutoPortMode(const LC_DRIVER *d);
 
 
 void LC_Driver_Dump(const LC_DRIVER *d, FILE *f, int indent);
