@@ -1,4 +1,4 @@
-SUBDIRS=client cards mon
+SUBDIRS=client cards mon fs
 
 AM_CFLAGS=\
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"

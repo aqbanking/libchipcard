@@ -1,4 +1,15 @@
 
+2005/01/05: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added code which retrieves reader information via CTAPI. This information is
+  now shown by "chipcard-tool check".
+
+
+2005/01/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on card file system
+
+
 2005/01/02: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - combined chipcard2-client and chipcard2-server to form the new libchipcard2.

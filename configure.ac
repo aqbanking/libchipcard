@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=7
-CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_BUILD=3
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -424,7 +424,7 @@ done
 #
 # create header directory for client, make symlinks
 #
-lc_modules="client cards mon"
+lc_modules="client cards mon fs"
 lc_client_modules="apps lowlevel"
 
 lprefix="${srcdir}"
@@ -515,6 +515,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-client/client/apps/Makefile
                  src/lib/chipcard2-client/client/lowlevel/Makefile
                  src/lib/chipcard2-client/mon/Makefile
+                 src/lib/chipcard2-client/fs/Makefile
                  src/lib/chipcard2-client/chipcard2.h
                  src/lib/chipcard2-client/version.h
                  src/lib/chipcard2-server/Makefile
