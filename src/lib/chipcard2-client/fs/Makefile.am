@@ -12,6 +12,7 @@ noinst_HEADERS=\
  fsclient_l.h \
  fsclient_p.h \
  fsmem_p.h \
+ fsfile_p.h \
  fs_p.h
 
 
@@ -21,6 +22,7 @@ iheader_HEADERS=\
  fsmodule.h \
  fsclient.h \
  fsmem.h \
+ fsfile.h \
  fs.h
 
 libfs_la_SOURCES=\
@@ -28,6 +30,7 @@ libfs_la_SOURCES=\
  fsmodule.c \
  fsclient.c \
  fsmem.c \
+ fsfile.c \
  fs.c
 
 

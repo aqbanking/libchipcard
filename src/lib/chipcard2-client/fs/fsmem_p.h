@@ -55,7 +55,6 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 
 
 int LC_FSMemModule_Mount(LC_FS_MODULE *fs,
-                         GWEN_TYPE_UINT32 flags,
                          LC_FS_NODE **nPtr);
 
 int LC_FSMemModule_Unmount(LC_FS_MODULE *fs, LC_FS_NODE *node);
@@ -98,12 +97,14 @@ int LC_FSMemModule_CloseFile(LC_FS_MODULE *fs,
 
 int LC_FSMemModule_ReadFile(LC_FS_MODULE *fs,
                             LC_FS_NODE *node,
+                            GWEN_TYPE_UINT32 mode,
                             GWEN_TYPE_UINT32 offset,
                             GWEN_TYPE_UINT32 len,
                             GWEN_BUFFER *buf);
 
 int LC_FSMemModule_WriteFile(LC_FS_MODULE *fs,
                              LC_FS_NODE *node,
+                             GWEN_TYPE_UINT32 mode,
                              GWEN_TYPE_UINT32 offset,
                              GWEN_BUFFER *buf);
 

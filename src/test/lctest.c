@@ -9,6 +9,7 @@
 #include <chipcard2-client/cards/starcos.h>
 #include <chipcard2-client/cards/geldkarte.h>
 #include <chipcard2-client/fs/fs.h>
+#include <chipcard2-client/fs/fsfile.h>
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/debug.h>
@@ -3509,6 +3510,263 @@ int testFS1(int argc, char **argv) {
 
 
 
+int testFS2(int argc, char **argv) {
+  LC_FS *fs;
+  GWEN_TYPE_UINT32 clid;
+  int rv;
+  GWEN_TYPE_UINT32 hid1;
+  GWEN_TYPE_UINT32 hid2;
+  GWEN_TYPE_UINT32 hid3;
+  LC_FS_MODULE *fsm;
+
+  GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelDebug);
+  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelDebug);
+
+  fprintf(stderr, "Creating file system\n");
+  fs=LC_FS_new();
+  fprintf(stderr, "Creating client\n");
+  clid=LC_FS_CreateClient(fs);
+  fprintf(stderr, "Client is %08x\n", clid);
+
+
+  fprintf(stderr, "Creating folder1\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1",
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 &hid1);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fsm=LC_FSFileModule_new("testfolder");
+  rv=LC_FS_Mount(fs, fsm, "/testDir1");
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating file\n");
+  rv=LC_FS_CreateFile(fs, clid, "/testDir1/testFile",
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating folder2\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 &hid3);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+
+  rv=LC_FS_Dump(fs, clid, "/", stderr, 2);
+  if (rv!=LC_FS_ErrorNone) {
+    fprintf(stderr, "Function not supported for file system (%d).\n", rv);
+  }
+
+  return 0;
+}
+
+
+
+int testFS3(int argc, char **argv) {
+  LC_FS *fs;
+  GWEN_TYPE_UINT32 clid;
+  int rv;
+  GWEN_TYPE_UINT32 hid1;
+  GWEN_TYPE_UINT32 hid2;
+  GWEN_TYPE_UINT32 hid3;
+  LC_FS_MODULE *fsm;
+  GWEN_BUFFER *dbuf;
+
+  GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelDebug);
+  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelDebug);
+
+  fprintf(stderr, "Creating file system\n");
+  fs=LC_FS_new();
+  fprintf(stderr, "Creating client\n");
+  clid=LC_FS_CreateClient(fs);
+  fprintf(stderr, "Client is %08x\n", clid);
+
+
+  fprintf(stderr, "Creating folder1\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1",
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 &hid1);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fsm=LC_FSFileModule_new("testfolder");
+  //LC_FSModule_SetMountFlags(fsm, LC_FS_MOUNT_FLAGS_READONLY);
+  rv=LC_FS_Mount(fs, fsm, "/testDir1");
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Opening file\n");
+  rv=LC_FS_OpenFile(fs, clid, "/testDir1/README",
+                    LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                    LC_FS_NODE_MODE_RIGHTS_OWNER_READ |
+                    LC_FS_HANDLE_MODE_READ,
+                    &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File opened.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  dbuf=GWEN_Buffer_new(0, 1024, 0, 1);
+  rv=LC_FS_ReadFile(fs, clid, hid2, 0, 4410, dbuf);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File read.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  GWEN_Buffer_Dump(dbuf, stderr, 2);
+
+  fprintf(stderr, "Creating folder2\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 &hid3);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+
+  rv=LC_FS_Dump(fs, clid, "/", stderr, 2);
+  if (rv!=LC_FS_ErrorNone) {
+    fprintf(stderr, "Function not supported for file system (%d).\n", rv);
+  }
+
+  return 0;
+}
+
+
+
+int testFS4(int argc, char **argv) {
+  LC_FS *fs;
+  GWEN_TYPE_UINT32 clid;
+  int rv;
+  GWEN_TYPE_UINT32 hid1;
+  GWEN_TYPE_UINT32 hid2;
+  GWEN_TYPE_UINT32 hid3;
+  LC_FS_MODULE *fsm;
+
+  GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelDebug);
+  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelDebug);
+
+  fprintf(stderr, "Creating file system\n");
+  fs=LC_FS_new();
+  fprintf(stderr, "Creating client\n");
+  clid=LC_FS_CreateClient(fs);
+  fprintf(stderr, "Client is %08x\n", clid);
+
+
+  fprintf(stderr, "Creating folder1\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1",
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 &hid1);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fsm=LC_FSFileModule_new("testfolder");
+  rv=LC_FS_Mount(fs, fsm, "/testDir1");
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating file\n");
+  rv=LC_FS_CreateFile(fs, clid, "/testDir1/testFile1",
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating folder2\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 &hid3);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating file2\n");
+  rv=LC_FS_CreateFile(fs, clid, "/testDir1/testDir2/testFile2",
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+
+  rv=LC_FS_Dump(fs, clid, "/", stderr, 2);
+  if (rv!=LC_FS_ErrorNone) {
+    fprintf(stderr, "Function not supported for file system (%d).\n", rv);
+  }
+
+  return 0;
+}
+
+
+
 int main(int argc, char **argv) {
 
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelNotice);
@@ -3586,6 +3844,12 @@ int main(int argc, char **argv) {
     return test31(argc, argv);
   else if (strcasecmp(argv[1], "fs")==0)
     return testFS1(argc, argv);
+  else if (strcasecmp(argv[1], "fs2")==0)
+    return testFS2(argc, argv);
+  else if (strcasecmp(argv[1], "fs3")==0)
+    return testFS3(argc, argv);
+  else if (strcasecmp(argv[1], "fs4")==0)
+    return testFS4(argc, argv);
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", argv[1]);
     return 1;

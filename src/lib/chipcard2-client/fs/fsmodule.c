@@ -16,6 +16,7 @@
 #endif
 
 #include "fsmodule_p.h"
+#include "fs.h"
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
@@ -67,9 +68,23 @@ void LC_FSModule_SetMountFn(LC_FS_MODULE *fs, LC_FS_MODULE_MOUNT_FN f){
 
 
 
+LC_FS_MODULE_MOUNT_FN LC_FSModule_GetMountFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->mountFn;
+}
+
+
+
 void LC_FSModule_SetUnmountFn(LC_FS_MODULE *fs, LC_FS_MODULE_UNMOUNT_FN f){
   assert(fs);
   fs->unmountFn=f;
+}
+
+
+
+LC_FS_MODULE_UNMOUNT_FN LC_FSModule_GetUnmountFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->unmountFn;
 }
 
 
@@ -81,9 +96,23 @@ void LC_FSModule_SetOpenDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_OPENDIR_FN f){
 
 
 
+LC_FS_MODULE_OPENDIR_FN LC_FSModule_GetOpenDirFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->openDirFn;
+}
+
+
+
 void LC_FSModule_SetMkDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_MKDIR_FN f){
   assert(fs);
   fs->mkDirFn=f;
+}
+
+
+
+LC_FS_MODULE_MKDIR_FN LC_FSModule_GetMkDirFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->mkDirFn;
 }
 
 
@@ -95,6 +124,13 @@ void LC_FSModule_SetReadDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_READDIR_FN f){
 
 
 
+LC_FS_MODULE_READDIR_FN LC_FSModule_GetReadDirFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->readDirFn;
+}
+
+
+
 void LC_FSModule_SetCloseDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_CLOSEDIR_FN f){
   assert(fs);
   fs->closeDirFn=f;
@@ -102,9 +138,23 @@ void LC_FSModule_SetCloseDirFn(LC_FS_MODULE *fs, LC_FS_MODULE_CLOSEDIR_FN f){
 
 
 
+LC_FS_MODULE_CLOSEDIR_FN LC_FSModule_GetCloseDirFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->closeDirFn;
+}
+
+
+
 void LC_FSModule_SetOpenFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_OPENFILE_FN f){
   assert(fs);
   fs->openFileFn=f;
+}
+
+
+
+LC_FS_MODULE_OPENFILE_FN LC_FSModule_GetOpenFileFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->openFileFn;
 }
 
 
@@ -117,6 +167,14 @@ void LC_FSModule_SetCreateFileFn(LC_FS_MODULE *fs,
 
 
 
+LC_FS_MODULE_CREATEFILE_FN
+LC_FSModule_GetCreateFileFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->createFileFn;
+}
+
+
+
 void LC_FSModule_SetCloseFileFn(LC_FS_MODULE *fs,
                                 LC_FS_MODULE_CLOSEFILE_FN f){
   assert(fs);
@@ -125,9 +183,23 @@ void LC_FSModule_SetCloseFileFn(LC_FS_MODULE *fs,
 
 
 
+LC_FS_MODULE_CLOSEFILE_FN LC_FSModule_GetCloseFileFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->closeFileFn;
+}
+
+
+
 void LC_FSModule_SetReadFileFn(LC_FS_MODULE *fs, LC_FS_MODULE_READFILE_FN f){
   assert(fs);
   fs->readFileFn=f;
+}
+
+
+
+LC_FS_MODULE_READFILE_FN LC_FSModule_GetReadFileFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->readFileFn;
 }
 
 
@@ -140,9 +212,24 @@ void LC_FSModule_SetWriteFileFileFn(LC_FS_MODULE *fs,
 
 
 
+LC_FS_MODULE_WRITEFILE_FN
+LC_FSModule_GetWriteFileFileFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->writeFileFn;
+}
+
+
+
 void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f){
   assert(fs);
   fs->lookupFn=f;
+}
+
+
+
+LC_FS_MODULE_LOOKUP_FN LC_FSModule_GetLookupFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->lookupFn;
 }
 
 
@@ -154,30 +241,37 @@ void LC_FSModule_SetDumpFn(LC_FS_MODULE *fs, LC_FS_MODULE_DUMP_FN f){
 
 
 
-GWEN_TYPE_UINT32 LC_FSModule_GetFlags(const LC_FS_MODULE *fs){
+LC_FS_MODULE_DUMP_FN LC_FSModule_GetDumpFn(const LC_FS_MODULE *fs){
   assert(fs);
-  return fs->flags;
+  return fs->dumpFn;
 }
 
 
 
-void LC_FSModule_SetFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+GWEN_TYPE_UINT32 LC_FSModule_GetMountFlags(const LC_FS_MODULE *fs){
   assert(fs);
-  fs->flags=fl;
+  return fs->mountFlags;
 }
 
 
 
-void LC_FSModule_AddFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+void LC_FSModule_SetMountFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
   assert(fs);
-  fs->flags|=fl;
+  fs->mountFlags=fl;
 }
 
 
 
-void LC_FSModule_SubFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+void LC_FSModule_AddMountFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
   assert(fs);
-  fs->flags&=~fl;
+  fs->mountFlags|=fl;
+}
+
+
+
+void LC_FSModule_SubMountFlags(LC_FS_MODULE *fs, GWEN_TYPE_UINT32 fl){
+  assert(fs);
+  fs->mountFlags&=~fl;
 }
 
 
@@ -207,12 +301,11 @@ void LC_FSModule_DecActiveNodes(LC_FS_MODULE *fs){
 
 
 int LC_FSModule_Mount(LC_FS_MODULE *fs,
-                      GWEN_TYPE_UINT32 flags,
                       LC_FS_NODE **nPtr){
   assert(fs);
   if (!fs->mountFn)
     return LC_FS_ErrorNotSupported;
-  return fs->mountFn(fs, flags, nPtr);
+  return fs->mountFn(fs, nPtr);
 }
 
 
@@ -244,6 +337,10 @@ int LC_FSModule_MkDir(LC_FS_MODULE *fs,
                       GWEN_TYPE_UINT32 flags,
                       LC_FS_NODE **nPtr){
   assert(fs);
+  if (fs->mountFlags & LC_FS_MOUNT_FLAGS_READONLY) {
+    DBG_ERROR(LC_LOGDOMAIN, "Read-only filesystem");
+    return LC_FS_ErrorInvalid;
+  }
   if (!fs->mkDirFn)
     return LC_FS_ErrorNotSupported;
   return fs->mkDirFn(fs, node, name, flags, nPtr);
@@ -289,6 +386,10 @@ int LC_FSModule_CreateFile(LC_FS_MODULE *fs,
                            GWEN_TYPE_UINT32 flags,
                            LC_FS_NODE **nPtr){
   assert(fs);
+  if (fs->mountFlags & LC_FS_MOUNT_FLAGS_READONLY) {
+    DBG_ERROR(LC_LOGDOMAIN, "Read-only filesystem");
+    return LC_FS_ErrorInvalid;
+  }
   if (!fs->createFileFn)
     return LC_FS_ErrorNotSupported;
   return fs->createFileFn(fs, node, name, flags, nPtr);
@@ -307,25 +408,31 @@ int LC_FSModule_CloseFile(LC_FS_MODULE *fs, LC_FS_NODE *node){
 
 int LC_FSModule_ReadFile(LC_FS_MODULE *fs,
                          LC_FS_NODE *node,
+                         GWEN_TYPE_UINT32 mode,
                          GWEN_TYPE_UINT32 offset,
                          GWEN_TYPE_UINT32 len,
                          GWEN_BUFFER *buf){
   assert(fs);
   if (!fs->readFileFn)
     return LC_FS_ErrorNotSupported;
-  return fs->readFileFn(fs, node, offset, len, buf);
+  return fs->readFileFn(fs, node, mode, offset, len, buf);
 }
 
 
 
 int LC_FSModule_WriteFile(LC_FS_MODULE *fs,
                           LC_FS_NODE *node,
+                          GWEN_TYPE_UINT32 mode,
                           GWEN_TYPE_UINT32 offset,
                           GWEN_BUFFER *buf){
   assert(fs);
+  if (fs->mountFlags & LC_FS_MOUNT_FLAGS_READONLY) {
+    DBG_ERROR(LC_LOGDOMAIN, "Read-only filesystem");
+    return LC_FS_ErrorInvalid;
+  }
   if (!fs->writeFileFn)
     return LC_FS_ErrorNotSupported;
-  return fs->writeFileFn(fs, node, offset, buf);
+  return fs->writeFileFn(fs, node, mode, offset, buf);
 }
 
 

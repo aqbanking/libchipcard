@@ -43,7 +43,7 @@ struct LC_FS_MODULE {
 
   LC_FS_MODULE_DUMP_FN dumpFn;
 
-  GWEN_TYPE_UINT32 flags;
+  GWEN_TYPE_UINT32 mountFlags;
   GWEN_TYPE_UINT32 activeNodes;
   GWEN_TYPE_UINT32 usage;
 };

@@ -19,6 +19,8 @@
 #include <gwenhywfar/stringlist2.h>
 
 
+#define LC_FS_MODE_MASK_NODE               0x0000ffff
+
 #define LC_FS_NODE_MODE_RIGHTS_OWNER_MASK  0x00000700
 #define LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC  0x00000100
 #define LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE 0x00000200
@@ -38,6 +40,10 @@
 #define LC_FS_NODE_MODE_FTYPE_FILE         0x00001000
 #define LC_FS_NODE_MODE_FTYPE_DIR          0x00002000
 
+
+#define LC_FS_MODE_MASK_HANDLE             0xffff0000
+#define LC_FS_HANDLE_MODE_READ             0x00010000
+#define LC_FS_HANDLE_MODE_WRITE            0x00020000
 
 
 typedef struct LC_FS_NODE LC_FS_NODE;

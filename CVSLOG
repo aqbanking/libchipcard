@@ -1,2 +1,7 @@
-- added callback function LC_CLIENT_SERVER_DOWN_FN which is called when
-  a server went down. This can be used by applications to detect this.
+- more work on file system (added new file system which works with real
+  files in a folder).
+  When this is finished I will have to write a service which will for example
+  offer a filesystem hierarchy which shows information about readers, cards,
+  clients, service etc). Later I can built a KIO module for that...
+- fixed a bug in the driver description file for Cyberjack ("autoPortMode"
+  must be set to "vendorId")

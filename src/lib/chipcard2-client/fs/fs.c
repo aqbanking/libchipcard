@@ -145,6 +145,7 @@ void *LC_FS__HandlePathElement(const char *entry,
   int rv;
   GWEN_BUFFER *pbuf;
   LC_FS_NODE *pnode;
+  LC_FS_NODE *rnode;
 
   ctx=(LC_FS_PATH_CTX*)data;
   pbuf=LC_FSPathCtx_GetPathBuffer(ctx);
@@ -161,12 +162,13 @@ void *LC_FS__HandlePathElement(const char *entry,
     s++;
 
   if (strcmp(s, ".")==0) {
-    DBG_DEBUG(0, "Entry pointing to itself");
+    DBG_INFO(0, "Entry pointing to itself");
     return data;
   }
   else if (strcmp(s, "..")==0) {
     char *p;
 
+    DBG_INFO(0, "Entry pointing to parent");
     p=strrchr(GWEN_Buffer_GetStart(pbuf), '/');
     if (p)
       if (strcmp(GWEN_Buffer_GetStart(pbuf), "/")==0)
@@ -181,6 +183,7 @@ void *LC_FS__HandlePathElement(const char *entry,
   else {
     if (GWEN_Buffer_GetUsedBytes(pbuf)) {
       char *p;
+
       p=GWEN_Buffer_GetStart(pbuf);
       if (p[GWEN_Buffer_GetUsedBytes(pbuf)-1]!='/')
         GWEN_Buffer_AppendByte(pbuf, '/');
@@ -189,9 +192,15 @@ void *LC_FS__HandlePathElement(const char *entry,
   }
 
   /* check for existence of the file/folder */
-  DBG_INFO(GWEN_LOGDOMAIN, "Checking entry \"%s\"", s);
-  rv=LC_FSModule_Lookup(LC_FSNode_GetFileSystem(pnode),
-                        pnode,
+  rnode=LC_FSNode_GetMounted(pnode);
+  if (!rnode)
+    rnode=pnode;
+  else {
+    DBG_INFO(LC_LOGDOMAIN, "There something mounted at \"%s\"", s);
+  }
+  DBG_INFO(LC_LOGDOMAIN, "Checking entry \"%s\"", s);
+  rv=LC_FSModule_Lookup(LC_FSNode_GetFileSystem(rnode),
+                        rnode,
                         s, &node);
   if (rv==LC_FS_ErrorNotFound)
     exists=0;
@@ -203,32 +212,35 @@ void *LC_FS__HandlePathElement(const char *entry,
     return 0;
   }
 
+  DBG_INFO(LC_LOGDOMAIN, "Result for entry \"%s\": %d (%s)",
+           entry, rv, exists?"exists":"missing");
+
   if (exists) {
     GWEN_TYPE_UINT32 fmode;
 
     fmode=LC_FSNode_GetFileMode(node);
-    DBG_DEBUG(GWEN_LOGDOMAIN, "Checking for type");
+    DBG_INFO(LC_LOGDOMAIN, "Checking for type");
     if (flags & GWEN_PATH_FLAGS_VARIABLE) {
       if ((fmode & LC_FS_NODE_MODE_FTYPE_MASK) !=
           LC_FS_NODE_MODE_FTYPE_FILE) {
-        DBG_INFO(GWEN_LOGDOMAIN, "%s not a regular file", s);
+        DBG_INFO(LC_LOGDOMAIN, "%s not a regular file", s);
         return 0;
       }
     }
     else {
       if ((fmode & LC_FS_NODE_MODE_FTYPE_MASK) !=
           LC_FS_NODE_MODE_FTYPE_DIR) {
-        DBG_INFO(GWEN_LOGDOMAIN, "%s not a direcory", s);
+        DBG_INFO(LC_LOGDOMAIN, "%s not a direcory", s);
         return 0;
       }
     }
     if ((flags & GWEN_PATH_FLAGS_PATHMUSTNOTEXIST) ||
         ((flags & GWEN_PATH_FLAGS_LAST) &&
          (flags & GWEN_PATH_FLAGS_NAMEMUSTNOTEXIST))) {
-      DBG_INFO(GWEN_LOGDOMAIN, "Path \"%s\" does exists (it should not)", p);
+      DBG_INFO(LC_LOGDOMAIN, "Path \"%s\" does exists (it should not)", p);
       return 0;
     }
-    DBG_DEBUG(0, "Entry \"%s\" exists", s);
+    DBG_INFO(0, "Entry \"%s\" exists", s);
     LC_FSPathCtx_SetNode(ctx, node);
     /* check if something is mounted there, select the mounted node in this
      * case. */
@@ -497,7 +509,7 @@ int LC_FS_MkDir(LC_FS *fs,
   rv=LC_FSModule_MkDir(LC_FSNode_GetFileSystem(node),
                        node,
                        p,
-                       mode,
+                       mode & LC_FS_MODE_MASK_NODE,
                        &node);
   if (rv) {
     DBG_INFO(0, "here");
@@ -508,6 +520,7 @@ int LC_FS_MkDir(LC_FS *fs,
   /* create file handle */
   DBG_INFO(LC_LOGDOMAIN, "Creating handle");
   hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
+  LC_FSNodeHandle_SetFlags(hdl, mode & LC_FS_MODE_MASK_HANDLE);
   LC_FSClient_AddNodeHandle(fcl, hdl);
   *pHid=LC_FSNodeHandle_GetId(hdl);
   LC_FSPathCtx_free(ctx);
@@ -550,6 +563,231 @@ int LC_FS_CloseDir(LC_FS *fs,
 
 
 
+int LC_FS_CreateFile(LC_FS *fs,
+                     GWEN_TYPE_UINT32 clid,
+                     const char *path,
+                     GWEN_TYPE_UINT32 mode,
+                     GWEN_TYPE_UINT32 *pHid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  LC_FS_NODE_HANDLE *hdl;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  if (strcasecmp(path, "/")==0) {
+    DBG_ERROR(0, "Unable to create root node");
+    return LC_FS_ErrorExists;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    p++;
+    DBG_INFO(LC_LOGDOMAIN, "Searching for \"%s\" in \"%s\"",
+             p, folder);
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    DBG_INFO(LC_LOGDOMAIN,
+             "Current working dir is: %s\n",
+             GWEN_Buffer_GetStart(LC_FSPathCtx_GetPathBuffer(ctx)));
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+                      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+    DBG_INFO(LC_LOGDOMAIN, "Searching for \"%s\" in current working dir", p);
+  }
+
+  /* open folder (if not root) */
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+  DBG_INFO(LC_LOGDOMAIN, "Creating file \"%s\" here:", p);
+  LC_FSModule_Dump(LC_FSNode_GetFileSystem(node), node, stderr, 2);
+  rv=LC_FSModule_CreateFile(LC_FSNode_GetFileSystem(node),
+                            node,
+                            p,
+                            mode & LC_FS_MODE_MASK_NODE,
+                            &node);
+  if (rv) {
+    DBG_INFO(0, "here");
+    LC_FSPathCtx_free(ctx);
+    return rv;
+    }
+
+  /* create file handle */
+  DBG_INFO(LC_LOGDOMAIN, "Creating handle");
+  hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
+  LC_FSNodeHandle_SetFlags(hdl, mode & LC_FS_MODE_MASK_HANDLE);
+  LC_FSClient_AddNodeHandle(fcl, hdl);
+  *pHid=LC_FSNodeHandle_GetId(hdl);
+  LC_FSPathCtx_free(ctx);
+  DBG_INFO(LC_LOGDOMAIN, "Created handle %08x", *pHid);
+  return 0;
+}
+
+
+
+int LC_FS_OpenFile(LC_FS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   const char *path,
+                   GWEN_TYPE_UINT32 mode,
+                   GWEN_TYPE_UINT32 *pHid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  LC_FS_NODE_HANDLE *hdl;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  if (strcasecmp(path, "/")==0) {
+    DBG_ERROR(0, "Unable to open root node");
+    return LC_FS_ErrorExists;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    p++;
+    DBG_INFO(LC_LOGDOMAIN, "Searching for \"%s\" in \"%s\"",
+             p, folder);
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    DBG_INFO(LC_LOGDOMAIN,
+             "Current working dir is: %s\n",
+             GWEN_Buffer_GetStart(LC_FSPathCtx_GetPathBuffer(ctx)));
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+                      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+    DBG_INFO(LC_LOGDOMAIN, "Searching for \"%s\" in current working dir", p);
+  }
+
+  /* open folder (if not root) */
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+  DBG_INFO(LC_LOGDOMAIN, "Opening file \"%s\"", p);
+  rv=LC_FSModule_OpenFile(LC_FSNode_GetFileSystem(node),
+                          node,
+                          p,
+                          &node);
+  if (rv) {
+    DBG_INFO(0, "here");
+    LC_FSPathCtx_free(ctx);
+    return rv;
+    }
+
+  /* create file handle */
+  DBG_INFO(LC_LOGDOMAIN, "Creating handle");
+  hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
+  LC_FSNodeHandle_SetFlags(hdl, mode & LC_FS_MODE_MASK_HANDLE);
+  LC_FSClient_AddNodeHandle(fcl, hdl);
+  *pHid=LC_FSNodeHandle_GetId(hdl);
+  LC_FSPathCtx_free(ctx);
+  DBG_INFO(LC_LOGDOMAIN, "Created handle %08x", *pHid);
+  return 0;
+}
+
+
+
+int LC_FS_ReadFile(LC_FS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   GWEN_TYPE_UINT32 hid,
+                   GWEN_TYPE_UINT32 offset,
+                   GWEN_TYPE_UINT32 len,
+                   GWEN_BUFFER *buf){
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE_HANDLE *hdl;
+  LC_FS_NODE *node;
+  int rv;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  hdl=LC_FSClient_FindHandle(fcl, hid);
+  if (!hdl) {
+    DBG_ERROR(0, "Handle %08x not found", hid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  node=LC_FSNodeHandle_GetNode(hdl);
+  rv=LC_FSModule_ReadFile(LC_FSNode_GetFileSystem(node), node,
+                          LC_FSNodeHandle_GetFlags(hdl),
+                          offset,
+                          len,
+                          buf);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+  }
+  return rv;
+}
+
+
+
+
+
+
 int LC_FS_Dump(LC_FS *fs,
                GWEN_TYPE_UINT32 clid,
                const char *path,
@@ -583,6 +821,66 @@ int LC_FS_Dump(LC_FS *fs,
   rv=LC_FSModule_Dump(LC_FSNode_GetFileSystem(node), node, f, indent);
   LC_FSPathCtx_free(ctx);
   return rv;
+}
+
+
+
+int LC_FS_Mount(LC_FS *fs,
+                LC_FS_MODULE *fsm,
+                const char *path) {
+  LC_FS_NODE *node;
+  LC_FS_NODE *modNode=0;
+  int rv;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(fsm);
+  assert(path);
+
+  if (strcasecmp(path, "/")==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Can not mount at root");
+    return LC_FS_ErrorInvalid;
+  }
+
+  if (*path!='/') {
+    DBG_ERROR(LC_LOGDOMAIN, "Absolute path needed");
+    return LC_FS_ErrorInvalid;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  ctx=LC_FSPathCtx_new("/", fs->rootFsNode);
+
+  /* get folder node */
+  rv=LC_FS__GetNode(fs, ctx, path,
+                    GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+                    GWEN_PATH_FLAGS_CHECKROOT);
+  if (rv) {
+    DBG_INFO(0, "here");
+    LC_FSPathCtx_free(ctx);
+    return rv;
+  }
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+
+  if (LC_FSNode_GetMounted(node)) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "There already is something mounted here");
+    LC_FSPathCtx_free(ctx);
+    return LC_FS_ErrorInvalid;
+  }
+
+  rv=LC_FSModule_Mount(fsm, &modNode);
+  if (rv) {
+    DBG_INFO(0, "here");
+    LC_FSPathCtx_free(ctx);
+    return rv;
+  }
+
+  LC_FSNode_SetMounted(node, modNode);
+  DBG_NOTICE(LC_LOGDOMAIN, "Mounted fs at \"%s\"", path);
+
+  LC_FSPathCtx_free(ctx);
+  return 0;
 }
 
 

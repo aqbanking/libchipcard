@@ -160,16 +160,21 @@ void LC_FSMemNode_Dump(LC_FS_NODE *node, FILE *f, int indent){
   LC_FSMEM_NODE *mn;
   int i;
   GWEN_TYPE_UINT32 fl;
+  LC_FS_NODE *realNode;
 
   assert(node);
   mn=GWEN_INHERIT_GETDATA(LC_FS_NODE, LC_FSMEM_NODE, node);
   assert(mn);
 
+  realNode=LC_FSNode_GetMounted(node);
+  if (!realNode)
+    realNode=node;
+
   for (i=0; i<indent; i++)
     fprintf(f, " ");
 
   fprintf(f, "%s ", mn->name);
-  fl=LC_FSNode_GetFileMode(node);
+  fl=LC_FSNode_GetFileMode(realNode);
   if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_FILE)
     fprintf(f, "-");
   else if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_DIR)
@@ -218,10 +223,10 @@ void LC_FSMemNode_Dump(LC_FS_NODE *node, FILE *f, int indent){
 
   fprintf(f, " ");
 
-  fl=LC_FSNode_GetFileSize(node);
+  fl=LC_FSNode_GetFileSize(realNode);
   fprintf(f, GWEN_TYPE_TMPL_UINT32, fl);
 
-  fprintf(f, "\n");
+  fprintf(f, " [fsmem]\n");
 }
 
 
@@ -284,8 +289,12 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 
     s=LC_FSMemNode_GetName(nn);
     assert(s);
-    if (strcmp(name, s)==0)
+    DBG_INFO(LC_LOGDOMAIN, "Checking entry \"%s\" (against %s)",
+             s, name);
+    if (strcmp(name, s)==0) {
+      DBG_INFO(LC_LOGDOMAIN, "Found entry \"%s\"", s);
       break;
+    }
     nn=LC_FSNode_List_Next(nn);
   }
 
@@ -296,10 +305,18 @@ LC_FS_NODE *LC_FSMemModule__FindNode(LC_FS_MODULE *fs,
 
 
 int LC_FSMemModule_Mount(LC_FS_MODULE *fs,
-                         GWEN_TYPE_UINT32 flags,
                          LC_FS_NODE **nPtr){
-  *nPtr=LC_FSMemNode_new(fs, "");
-  LC_FSNode_Attach(*nPtr);
+  LC_FS_NODE *node;
+
+  node=LC_FSMemNode_new(fs, "");
+  LC_FSNode_SetFileMode(node,
+                        LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
+                        LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
+                        LC_FS_NODE_MODE_RIGHTS_OWNER_READ |
+                        LC_FS_NODE_MODE_FTYPE_DIR);
+
+  LC_FSNode_Attach(node);
+  *nPtr=node;
   return LC_FS_ErrorNone;
 }
 
@@ -361,7 +378,7 @@ int LC_FSMemModule_MkDir(LC_FS_MODULE *fs,
     return LC_FS_ErrorExists;
   }
   n=LC_FSMemNode_new(fs, name);
-  mode&=LC_FS_NODE_MODE_FTYPE_MASK;
+  mode&=~LC_FS_NODE_MODE_FTYPE_MASK;
   mode|=LC_FS_NODE_MODE_FTYPE_DIR;
   LC_FSNode_SetFileMode(n, mode);
   LC_FSMemNode_AddChild(node, n);
@@ -466,7 +483,7 @@ int LC_FSMemModule_CreateFile(LC_FS_MODULE *fs,
     return LC_FS_ErrorExists;
   }
   n=LC_FSMemNode_new(fs, name);
-  mode&=LC_FS_NODE_MODE_FTYPE_MASK;
+  mode&=~LC_FS_NODE_MODE_FTYPE_MASK;
   mode|=LC_FS_NODE_MODE_FTYPE_FILE;
   LC_FSNode_SetFileMode(n, mode);
   LC_FSMemNode_AddChild(node, n);
@@ -496,7 +513,8 @@ int LC_FSMemModule_CloseFile(LC_FS_MODULE *fs, LC_FS_NODE *node){
 
 
 int LC_FSMemModule_ReadFile(LC_FS_MODULE *fs,
-			    LC_FS_NODE *node,
+                            LC_FS_NODE *node,
+                            GWEN_TYPE_UINT32 mode,
 			    GWEN_TYPE_UINT32 offset,
 			    GWEN_TYPE_UINT32 len,
 			    GWEN_BUFFER *buf){
@@ -541,7 +559,8 @@ int LC_FSMemModule_ReadFile(LC_FS_MODULE *fs,
 
 int LC_FSMemModule_WriteFile(LC_FS_MODULE *fs,
                              LC_FS_NODE *node,
-			     GWEN_TYPE_UINT32 offset,
+                             GWEN_TYPE_UINT32 mode,
+                             GWEN_TYPE_UINT32 offset,
 			     GWEN_BUFFER *buf){
   LC_FSMEM_MODULE *modm;
   GWEN_BUFFER *nbuf;
@@ -601,18 +620,23 @@ int LC_FSMemModule_Dump(LC_FS_MODULE *fs,
                         int indent) {
   LC_FSMEM_MODULE *modm;
   LC_FS_NODE *n;
+  LC_FS_NODE *realn;
 
   assert(fs);
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSMEM_MODULE, fs);
   assert(modm);
 
   LC_FSMemNode_Dump(node, f, indent);
-
-  n=LC_FSNode_List_First(LC_FSMemNode_GetChildren(node));
-  while(n) {
-    LC_FSMemModule_Dump(fs, n, f, indent+2);
-    n=LC_FSNode_List_Next(n);
-  } /* while */
+  realn=LC_FSNode_GetMounted(node);
+  if (realn)
+    LC_FSModule_Dump(LC_FSNode_GetFileSystem(realn), realn, f, indent+2);
+  else {
+    n=LC_FSNode_List_First(LC_FSMemNode_GetChildren(node));
+    while(n) {
+      LC_FSMemModule_Dump(fs, n, f, indent+4);
+      n=LC_FSNode_List_Next(n);
+    } /* while */
+  }
 
   return LC_FS_ErrorNone;
 }

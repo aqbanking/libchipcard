@@ -23,7 +23,6 @@ GWEN_LIST_FUNCTION_DEFS(LC_FS_MODULE, LC_FSModule)
 
 
 int LC_FSModule_Mount(LC_FS_MODULE *fs,
-                      GWEN_TYPE_UINT32 flags,
                       LC_FS_NODE **nPtr);
 
 int LC_FSModule_Unmount(LC_FS_MODULE *fs,
@@ -67,12 +66,14 @@ int LC_FSModule_CloseFile(LC_FS_MODULE *fs,
 
 int LC_FSModule_ReadFile(LC_FS_MODULE *fs,
                          LC_FS_NODE *node,
+                         GWEN_TYPE_UINT32 mode,
                          GWEN_TYPE_UINT32 offset,
                          GWEN_TYPE_UINT32 len,
                          GWEN_BUFFER *buf);
 
 int LC_FSModule_WriteFile(LC_FS_MODULE *fs,
                           LC_FS_NODE *node,
+                          GWEN_TYPE_UINT32 mode,
                           GWEN_TYPE_UINT32 offset,
                           GWEN_BUFFER *buf);
 
@@ -80,11 +81,6 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
                        LC_FS_NODE *node,
                        const char *name,
                        LC_FS_NODE **nPtr);
-
-int LC_FSModule_Dump(LC_FS_MODULE *fs,
-                     LC_FS_NODE *node,
-                     FILE *f,
-                     int indent);
 
 
 

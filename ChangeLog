@@ -1,4 +1,15 @@
 
+2005/01/27: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- more work on file system (added new file system which works with real
+  files in a folder).
+  When this is finished I will have to write a service which will for example
+  offer a filesystem hierarchy which shows information about readers, cards,
+  clients, service etc). Later I can built a KIO module for that...
+- fixed a bug in the driver description file for Cyberjack ("autoPortMode"
+  must be set to "vendorId")
+
+
 ===========================================================================
 MARK: released version 1.9.8beta (2005/01/26)   [first one-package release]
 ===========================================================================

@@ -22,6 +22,10 @@
 #include <stdio.h>
 
 
+#define LC_FS_MOUNT_FLAGS_READONLY 0x00000001
+
+
+
 typedef struct LC_FS_PATH_CTX LC_FS_PATH_CTX;
 typedef struct LC_FS LC_FS;
 
@@ -66,11 +70,37 @@ int LC_FS_CloseDir(LC_FS *fs,
                    GWEN_TYPE_UINT32 clid,
                    GWEN_TYPE_UINT32 hid);
 
+int LC_FS_OpenFile(LC_FS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   const char *path,
+                   GWEN_TYPE_UINT32 mode,
+                   GWEN_TYPE_UINT32 *pHid);
+
+int LC_FS_CreateFile(LC_FS *fs,
+                     GWEN_TYPE_UINT32 clid,
+                     const char *path,
+                     GWEN_TYPE_UINT32 mode,
+                     GWEN_TYPE_UINT32 *pHid);
+
+int LC_FS_ReadFile(LC_FS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   GWEN_TYPE_UINT32 hid,
+                   GWEN_TYPE_UINT32 offset,
+                   GWEN_TYPE_UINT32 len,
+                   GWEN_BUFFER *buf);
+
+
+
 int LC_FS_Dump(LC_FS *fs,
                GWEN_TYPE_UINT32 clid,
                const char *path,
                FILE *f,
                int indent);
+
+
+int LC_FS_Mount(LC_FS *fs,
+                LC_FS_MODULE *fsm,
+                const char *path);
 
 
 
