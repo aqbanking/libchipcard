@@ -1,4 +1,10 @@
 
+2005/02/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added a driver for OpenSC. This allows OpenSC to use Libchipcard instead of
+  OpenCT, CTAPI or PC/SC
+
+
 2005/02/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in fake CTAPI

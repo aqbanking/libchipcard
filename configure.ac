@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=9
-CHIPCARD_VERSION_BUILD=10
+CHIPCARD_VERSION_BUILD=11
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -211,6 +211,21 @@ fi
 #    AC_MSG_RESULT(yes)
 #fi
 
+
+# ---------------------------------------------------------------------------
+# check for OpenSC
+#
+
+AC_OPENSC(0,9,4)
+AC_MSG_CHECKING(if OpenSC might be used)
+if test "$have_opensc" != "yes" ; then
+    AC_MSG_WARN(OpenSC not found, OpenSC driver will not be available.)
+else
+    all_includes="$all_includes $opensc_includes"
+    AC_DEFINE(USE_OPENSC, 1, [whether OpenSC is to be used])
+    AC_MSG_RESULT(yes)
+fi
+AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 
 
 ###-------------------------------------------------------------------------
@@ -637,6 +652,7 @@ AC_CONFIG_FILES([Makefile
                  src/drivers/pcsc/Makefile
                  src/fake_ctapi/Makefile
                  src/fake_ctapi/ressource.rc
+                 src/opensc/Makefile
                  src/tools/Makefile
                  src/tools/chipcardd2/Makefile
                  src/tools/chipcardrd/Makefile

@@ -1,4 +1,18 @@
 
+                                 Content
+                 -------------------------------------------
+                 1. Introduction
+                 2. Needed Components
+                 3. Server Setup
+                 4. Starting The Daemon
+                 5. Server Environment Variables
+                 6. Client Setup
+                 7. Using Libchipcard2 in your own Projects
+                 8. Remote Drivers
+                 9. Using OpenSC with Libchipcard2
+                 -------------------------------------------
+
+
 
 1. Introduction
 ===============
@@ -14,9 +28,10 @@ chipcard2-client.
 ====================
 
 Libchipcard2 needs the following packages:
-- Gwenhywfar (http://gwenhywfar.sf.net/)          [required]
-- LibUSB (http://libusb.sf.net/)                  [strongly recommended]
-- LibSysFS (http://linux-diag.sf.net/)            [optional]
+- Gwenhywfar http://gwenhywfar.sf.net/          [required]
+- LibUSB     http://libusb.sf.net/              [strongly recommended]
+- LibSysFS   http://linux-diag.sf.net/          [recommended]
+- OpenSC     http://www.opensc.org/             [optional]
 
 If LibUSB is available at compile time it will be used to scan the USB bus
 for new devices. Fortunately LibUSB is ported to the major *nix-alike 
@@ -28,6 +43,8 @@ For devices which use a /dev/ttyUSBx device the procfs file
 However, revent kernels (2.6.x) only allow root to view these files, so
 for these systems LibSysFS (part of sysfsutils) is needed.
 
+If OpenSC is installed then the OpenSC-driver for Libchipcard2 is built and
+installed. This driver allows OpenSC to use Libchipcard.
 
 
 3. Server Setup
@@ -177,6 +194,25 @@ An example file is provided. The driver sections in such a file are nearly the
 same as in the server configuration file.
 
 
-Martin Preuss, Hamburg/Germany, 2005/02/15
+
+9. Using OpenSC with Libchipcard2
+=================================
+
+You can enable this driver with OpenSC by adding the name "chipcard2" to
+the OpenSC configuration file variable "app/reader_drivers".
+You will also have to add a driver section to that configuration file below
+"app":
+
+  ----------------------------------------
+  reader_driver chipcard2 {
+    module = /usr/lib/reader-libchipcard2;
+  }
+  ----------------------------------------
+  
+Such a section allows OpenSC to dynamically load the driver module.
+
+
+Martin Preuss, Hamburg/Germany, 2005/02/19
+
 
 

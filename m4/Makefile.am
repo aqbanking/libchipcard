@@ -5,6 +5,7 @@ EXTRA_DIST=\
  docpath.m4 \
  libusb.m4 \
  libsysfs.m4 \
+ opensc.m4 \
  os.m4 \
  pcsc.m4 \
  searchfiles.m4 \

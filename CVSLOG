@@ -1,1 +1,2 @@
-- fixed a bug in fake CTAPI
+- added a driver for OpenSC. This allows OpenSC to use Libchipcard instead of
+  OpenCT, CTAPI or PC/SC
