@@ -1,2 +1,1 @@
-- added a driver for OpenSC. This allows OpenSC to use Libchipcard instead of
-  OpenCT, CTAPI or PC/SC
+- fixed some bugs in Geldkarte

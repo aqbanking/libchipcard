@@ -385,7 +385,6 @@ static int chipcard2_getcard(struct sc_reader *reader,
 	       GWEN_Buffer_GetStart(atr),
 	       GWEN_Buffer_GetUsedBytes(atr));
 	slot->atr_len=GWEN_Buffer_GetUsedBytes(atr);
-	_sc_parse_atr(reader->ctx, slot);
       }
       else
 	slot->atr_len=0;

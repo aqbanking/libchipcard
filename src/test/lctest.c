@@ -2997,6 +2997,9 @@ int test26(int argc, char **argv) {
   fprintf(stderr, "Card is:\n");
   GWEN_DB_Dump(LC_GeldKarte_GetCardDataAsDb(card), stderr, 2);
 
+  fprintf(stderr, "Account is:\n");
+  GWEN_DB_Dump(LC_GeldKarte_GetAccountDataAsDb(card), stderr, 2);
+
   fprintf(stderr, "Stopping wait\n");
   res=LC_Client_StopWait(cl);
   if (res!=LC_Client_ResultOk) {

@@ -481,6 +481,22 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
       bseq=GWEN_DB_GetIntValue(dbCurr, "bseq", 0, 0);
       lseq=GWEN_DB_GetIntValue(dbCurr, "lseq", 0, 0);
       if (bseq!=0 && lseq!=0) {
+	const void *p;
+	unsigned int bs;
+
+	p=GWEN_DB_GetBinValue(dbCurr, "merchantId", 0, 0, 0, &bs);
+	if (p && bs) {
+	  GWEN_BUFFER *hexbuf;
+  
+	  hexbuf=GWEN_Buffer_new(0, 32, 0, 1);
+	  if (GWEN_Text_ToHexBuffer(p, bs, hexbuf, 0, 0, 0))
+	    abort();
+	  GWEN_DB_DeleteVar(dbCurr, "merchantId");
+	  GWEN_DB_SetCharValue(dbCurr, GWEN_DB_FLAGS_OVERWRITE_VARS,
+			       "merchantId",
+			       GWEN_Buffer_GetStart(hexbuf));
+	  GWEN_Buffer_free(hexbuf);
+	}
 	DBG_DEBUG(LC_LOGDOMAIN, "Adding BLOG entry %d", ctxCount);
 	GWEN_DB_AddGroup(dbData, dbCurr);
 	ctxCount++;
@@ -528,6 +544,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
   while(dbCurr) {
     LC_GELDKARTE_BLOG *blog;
     const char *d, *t;
+    int v;
 
     blog=LC_GeldKarte_BLog_new();
     LC_GeldKarte_BLog_SetStatus(blog,
@@ -540,10 +557,14 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
 			      GWEN_DB_GetIntValue(dbCurr, "hseq", 0, 0));
     LC_GeldKarte_BLog_SetSSeq(blog,
 			      GWEN_DB_GetIntValue(dbCurr, "sseq", 0, 0));
-    LC_GeldKarte_BLog_SetValue(blog,
-			       GWEN_DB_GetIntValue(dbCurr, "value", 0, 0));
-    LC_GeldKarte_BLog_SetLoaded(blog,
-				GWEN_DB_GetIntValue(dbCurr, "loaded", 0, 0));
+    if (1!=sscanf(GWEN_DB_GetCharValue(dbCurr, "value", 0, "0"),
+		  "%d", &v))
+      v=0;
+    LC_GeldKarte_BLog_SetValue(blog, v);
+    if (1!=sscanf(GWEN_DB_GetCharValue(dbCurr, "loaded", 0, "0"),
+		  "%d", &v))
+      v=0;
+    LC_GeldKarte_BLog_SetLoaded(blog, v);
     LC_GeldKarte_BLog_SetMerchantId(blog,
                                     GWEN_DB_GetCharValue(dbCurr,
                                                          "merchantId",
@@ -636,6 +657,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
       break;
     dbCurr=GWEN_DB_Group_new("llog");
     GWEN_Buffer_Rewind(buf);
+    GWEN_Buffer_Dump(buf, stderr, 2);
     if (LC_Card_ParseRecord(card, idx?idx:i, buf, dbCurr)) {
       DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx?idx:i);
       GWEN_DB_Group_free(dbCurr);
@@ -694,6 +716,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
   while(dbCurr) {
     LC_GELDKARTE_LLOG *llog;
     const char *d, *t;
+    int v;
 
     llog=LC_GeldKarte_LLog_new();
     LC_GeldKarte_LLog_SetStatus(llog,
@@ -702,10 +725,16 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
 			      GWEN_DB_GetIntValue(dbCurr, "bseq", 0, 0));
     LC_GeldKarte_LLog_SetLSeq(llog,
 			      GWEN_DB_GetIntValue(dbCurr, "lseq", 0, 0));
-    LC_GeldKarte_LLog_SetValue(llog,
-			       GWEN_DB_GetIntValue(dbCurr, "value", 0, 0));
-    LC_GeldKarte_LLog_SetLoaded(llog,
-				GWEN_DB_GetIntValue(dbCurr, "loaded", 0, 0));
+
+    if (1!=sscanf(GWEN_DB_GetCharValue(dbCurr, "value", 0, "0"),
+		  "%d", &v))
+      v=0;
+    LC_GeldKarte_LLog_SetValue(llog, v);
+    if (1!=sscanf(GWEN_DB_GetCharValue(dbCurr, "loaded", 0, "0"),
+		  "%d", &v))
+      v=0;
+    LC_GeldKarte_LLog_SetLoaded(llog, v);
+
     LC_GeldKarte_LLog_SetCenterId(llog,
                                   GWEN_DB_GetCharValue(dbCurr,
                                                        "centerId",
