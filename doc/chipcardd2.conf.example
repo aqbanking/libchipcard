@@ -37,7 +37,7 @@ int disableAutoConf="0"
 #
 # minimum time in seconds which has to elapse between two USB scans
 # USB scans only check for readers which do NOT use ttyUSBx devices (like
-# the SCM Chipdrive Pinpad)
+# the SCM Chipdrive Pinpad or newer Cyberjacks)
 # A value of "0" makes the chipcard daemon only scan once (thus allowing
 # only initial setup of already connected readers)
 #
@@ -45,7 +45,7 @@ int usbScanInterval="2"
 
 #
 # minimum time in seconds which has to elapse between two USB-Serial scans
-# USB-Serial scans check for readers which use ttyUSBx devices (like the
+# USB-Serial scans check for readers which use ttyUSBx devices (like the old
 # Cyberjack).
 # A value of "0" makes the chipcard daemon only scan once (thus allowing
 # only initial setup of already connected readers)
@@ -170,14 +170,16 @@ server.inactive {
 #
 # However, if autoconfiguration is disabled (either by config file, see 
 # above or because libUSB is not available) you need a driver section and 
-# reader sections therin for every reader you want to use.
+# reader sections therein for every reader you want to use.
 #
+# To activate one of the examples below remove the ".inactive" suffix
+# (driver.inactive -> driver)
 
 
 # ---------------------------------------------------------------------------
-# driver section for a Kobil Kaan Professional
+# driver section for a Kobil Kaan Professional (serial)
 #
-driver {
+driver.inactive {
   # the general type of the driver
   # Currently available are these:
   # - ctapi (for CTAPI type drivers)
@@ -195,7 +197,6 @@ driver {
   # path and name of the low-level driver file. This is the driver actually
   # provided by the manufacturer of the card reader
   char libraryFile="/usr/lib/kobil/libct.so"
-  
   
   # This is a sub-section under a driver section.
   # One driver can generally run multiple readers (as long as the same
@@ -215,7 +216,10 @@ driver {
     # which have two (or might have even more). With chipcard2 the number
     # of slots is not limited anymore.
     int slots="1"
-    
+
+    # needed for serial readers
+    char comType="serial"
+
     # the meaning of the port value is completely defined by the driver:
     # - for CTAPI drivers this is the value given as CTN argument to CT_init
     # - for IFD drivers this value is given as CHANNEL in IFDHCreateChannel
@@ -230,5 +234,30 @@ driver {
     char flags="keypad","display"
   }
 }
+
+
+
+# ---------------------------------------------------------------------------
+# driver section for a Towitoko Chipdrive Micro (serial)
+#
+driver.inactive {
+  char driverType="ctapi"
+  char driverName="tow_ctapi"
+  char driverDataDir="/var/lib/chipcard2/drivers/ctapi"
+  char libraryFile="/usr/lib/libtowitoko.so"
+
+  vars {
+    #char WriteBoundary="32" # for Towitoko 2.0.7
+    char WriteBoundary="249" # for Towitoko 2.0.8 (not yet released)
+  }
+  
+  reader {
+    char readerType="tow_cdm"
+    char readerName="tow1"
+    int slots="1"
+    char comType="serial"
+    int port="0" # 0=COM1, 1=COM2 etc
+  }
+} # driver
 
 

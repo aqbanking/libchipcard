@@ -16,12 +16,17 @@ chipcard2-client.
 Libchipcard2 needs the following packages:
 - Gwenhywfar (http://gwenhywfar.sf.net/)          [required]
 - LibUSB (http://libusb.sf.net/)                  [strongly recommended]
+- LibSysFS (http://linux-diag.sf.net/)            [optional]
 
 If LibUSB is available at compile time it will be used to scan the USB bus
 for new devices. Fortunately LibUSB is ported to the major *nix-alike 
 systems ;-)
 If LibUSB is missing autoconfiguration of USB devices is not possible.
 
+For devices which use a /dev/ttyUSBx device the procfs file 
+"/proc/tty/driver/usb-serial" or "/proc/tty/driver/usbserial" is used.
+However, revent kernels (2.6.x) only allow root to view these files, so
+for these systems LibSysFS (part of sysfsutils) is needed.
 
 
 3. Server Setup
@@ -32,6 +37,11 @@ The chipcard daemon uses the configuration file
 
 This file contains a description of which drivers to load and a list of
 configured readers.
+
+You can copy one of the example files installed to 
+"$PREFIX/etc/chipcard2-server/". For USB-only readers the minimal example
+can be used. For serial devices the file "chipcardd2.conf.example" can be used
+as a starting point.
 
 
 3.1. Security Mode
@@ -113,11 +123,11 @@ stop it using CTRL-C.
 Clients for libchipcard2 use the configuration file 
     $PREFIX/etc/chipcard2-client/chipcardc2.conf
 
-This file contains a description of which the chipcard2 servers to connect to.
+This file contains a description of the chipcard2 servers to connect to.
 
 
 
 
-Martin Preuss, Hamburg/Germany, 2005/01/02
+Martin Preuss, Hamburg/Germany, 2005/01/26
 
 
