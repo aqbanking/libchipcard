@@ -6,6 +6,7 @@ SUBDIRS=\
  omnikey_ifd \
  orga_ctapi \
  scmx32_ifd \
+ scm33x_ifd \
  tow_ctapi
 
 EXTRA_DIST=README

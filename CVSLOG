@@ -1,1 +1,2 @@
-- split off driver for old IFD interface (has now a folder of its own)
+- fs: added remote access code (LC_RFS, LC_FS_HandleRequest)
+- data: added description for SCR33x readers from SCM (not tested yet)

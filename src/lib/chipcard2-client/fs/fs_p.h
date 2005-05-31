@@ -49,4 +49,42 @@ LC_FS_CLIENT *LC_FS__FindClient(LC_FS *fs, GWEN_TYPE_UINT32 id);
 
 
 
+
+int LC_FS_HandleCreateClient(LC_FS *fs,
+                             GWEN_DB_NODE *dbRequest,
+                             GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleDestroyClient(LC_FS *fs,
+                              GWEN_DB_NODE *dbRequest,
+                              GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleChangeWorkingDir(LC_FS *fs,
+                                 GWEN_DB_NODE *dbRequest,
+                                 GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleOpenDir(LC_FS *fs,
+                        GWEN_DB_NODE *dbRequest,
+                        GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleMkDir(LC_FS *fs,
+                      GWEN_DB_NODE *dbRequest,
+                      GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleCloseDir(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleOpenFile(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleCreateFile(LC_FS *fs,
+                           GWEN_DB_NODE *dbRequest,
+                           GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleReadFile(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse);
+
+
 #endif /* LC_FS_P_H */

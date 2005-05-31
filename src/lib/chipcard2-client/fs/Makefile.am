@@ -13,7 +13,8 @@ noinst_HEADERS=\
  fsclient_p.h \
  fsmem_p.h \
  fsfile_p.h \
- fs_p.h
+ fs_p.h \
+ rfs_p.h
 
 
 iheaderdir=${includedir}/chipcard2-client/fs
@@ -23,7 +24,8 @@ iheader_HEADERS=\
  fsclient.h \
  fsmem.h \
  fsfile.h \
- fs.h
+ fs.h \
+ rfs.h
 
 libfs_la_SOURCES=\
  fsnode.c \
@@ -31,6 +33,7 @@ libfs_la_SOURCES=\
  fsclient.c \
  fsmem.c \
  fsfile.c \
- fs.c
+ fs.c \
+ rfs.c
 
 

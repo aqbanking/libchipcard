@@ -171,6 +171,13 @@ int LC_Card_CreateData(LC_CARD *card,
                        GWEN_DB_NODE *dbData);
 
 /**
+ * Returns a copy of the XML node describing the currently selected
+ * card application (or 0 if none is selected).
+ */
+CHIPCARD_API
+GWEN_XMLNODE *LC_Card_GetAppInfo(const LC_CARD *card);
+
+/**
  * Returns a copy of the XML node describing the currently selected EF.
  * The caller becomes the owner of the node returned (if any).
  */

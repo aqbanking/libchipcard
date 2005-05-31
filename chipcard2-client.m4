@@ -47,6 +47,7 @@ if test "$enable_chipcard_client" != "no"; then
 	     /usr/local \
              /usr \
 	     /chipcard-client \
+             /sw \
              /"])
 
   for li in $lcc_dir; do

@@ -554,6 +554,12 @@ int LC_FS_CloseDir(LC_FS *fs,
   }
 
   node=LC_FSNodeHandle_GetNode(hdl);
+  assert(node);
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
+      LC_FS_NODE_MODE_FTYPE_DIR) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a folder");
+    return LC_FS_ErrorNotDir;
+  }
   rv=LC_FSModule_CloseDir(LC_FSNode_GetFileSystem(node), node);
   LC_FSNodeHandle_List_Del(hdl);
   LC_FSNodeHandle_free(hdl);
@@ -745,6 +751,46 @@ int LC_FS_OpenFile(LC_FS *fs,
 
 
 
+int LC_FS_CloseFile(LC_FS *fs,
+                    GWEN_TYPE_UINT32 clid,
+                    GWEN_TYPE_UINT32 hid) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE_HANDLE *hdl;
+  LC_FS_NODE *node;
+  int rv;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  hdl=LC_FSClient_FindHandle(fcl, hid);
+  if (!hdl) {
+    DBG_ERROR(0, "Handle %08x not found", hid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  node=LC_FSNodeHandle_GetNode(hdl);
+  assert(node);
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
+      LC_FS_NODE_MODE_FTYPE_FILE) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a regular file");
+    return LC_FS_ErrorNotFile;
+  }
+
+  rv=LC_FSModule_CloseFile(LC_FSNode_GetFileSystem(node), node);
+  LC_FSNodeHandle_List_Del(hdl);
+  LC_FSNodeHandle_free(hdl);
+
+  return rv;
+}
+
+
+
 int LC_FS_ReadFile(LC_FS *fs,
                    GWEN_TYPE_UINT32 clid,
                    GWEN_TYPE_UINT32 hid,
@@ -881,6 +927,404 @@ int LC_FS_Mount(LC_FS *fs,
 
   LC_FSPathCtx_free(ctx);
   return 0;
+}
+
+
+
+
+
+
+
+int LC_FS_HandleCreateClient(LC_FS *fs,
+                             GWEN_DB_NODE *dbRequest,
+                             GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+
+  cid=LC_FS_CreateClient(fs);
+  GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "resultCode", 0);
+  GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "resultText", "Client created");
+  GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cid", cid);
+  return 0;
+}
+
+
+
+int LC_FS_HandleDestroyClient(LC_FS *fs,
+                              GWEN_DB_NODE *dbRequest,
+                              GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  LC_FS_DestroyClient(fs, cid);
+  GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "resultCode", 0);
+  GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "resultText", "Client destroyed");
+  return 0;
+}
+
+
+
+int LC_FS_HandleChangeWorkingDir(LC_FS *fs,
+                                 GWEN_DB_NODE *dbRequest,
+                                 GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_ChangeWorkingDir(fs, cid, path);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Working directory changed");
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleOpenDir(LC_FS *fs,
+                        GWEN_DB_NODE *dbRequest,
+                        GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_OpenDir(fs, cid, path, &hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Folder opened");
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "hid", hid);
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleMkDir(LC_FS *fs,
+                      GWEN_DB_NODE *dbRequest,
+                      GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 mode;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  mode=GWEN_DB_GetIntValue(dbRequest, "mode", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_MkDir(fs, cid, path, mode, &hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Folder created");
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "hid", hid);
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleCloseDir(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  hid=GWEN_DB_GetIntValue(dbRequest, "hid", 0, 0);
+  if (hid==0) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_CloseDir(fs, cid, hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Folder closed");
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleOpenFile(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_OpenDir(fs, cid, path, &hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Working directory changed");
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "hid", hid);
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleCreateFile(LC_FS *fs,
+                           GWEN_DB_NODE *dbRequest,
+                           GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 mode;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  mode=GWEN_DB_GetIntValue(dbRequest, "mode", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_CreateFile(fs, cid, path, mode, &hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Folder created");
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "hid", hid);
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleCloseFile(LC_FS *fs,
+                          GWEN_DB_NODE *dbRequest,
+                          GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  hid=GWEN_DB_GetIntValue(dbRequest, "hid", 0, 0);
+  if (hid==0) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_CloseFile(fs, cid, hid);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "File closed");
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleReadFile(LC_FS *fs,
+                         GWEN_DB_NODE *dbRequest,
+                         GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  GWEN_TYPE_UINT32 offset;
+  GWEN_TYPE_UINT32 len;
+  GWEN_BUFFER *buf;
+  int rv;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  hid=GWEN_DB_GetIntValue(dbRequest, "hid", 0, 0);
+  offset=GWEN_DB_GetIntValue(dbRequest, "offset", 0, 0);
+  len=GWEN_DB_GetIntValue(dbRequest, "len", 0, 0);
+  if (hid==0 || len==0) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  buf=GWEN_Buffer_new(0, len, 0, 1);
+  rv=LC_FS_ReadFile(fs, cid, hid, offset, len, buf);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    GWEN_Buffer_free(buf);
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "File closed");
+    if (GWEN_Buffer_GetUsedBytes(buf))
+      GWEN_DB_SetBinValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "data",
+                          GWEN_Buffer_GetStart(buf),
+                          GWEN_Buffer_GetUsedBytes(buf));
+  }
+  GWEN_Buffer_free(buf);
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleRequest(LC_FS *fs,
+                        GWEN_DB_NODE *dbRequest,
+                        GWEN_DB_NODE *dbResponse) {
+  const char *cmd;
+  int rv;
+
+  cmd=GWEN_DB_GetCharValue(dbRequest, "name", 0, 0);
+  if (!cmd) {
+    DBG_ERROR(LC_LOGDOMAIN, "No command in request");
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing command");
+    rv=LC_FS_ErrorNone;
+  }
+  else {
+    DBG_NOTICE(LC_LOGDOMAIN, "Command \"%s\"", cmd);
+    if (strcasecmp(cmd, "CreateClientRequest")==0)
+      rv=LC_FS_HandleCreateClient(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "DestroyClientRequest")==0)
+      rv=LC_FS_HandleDestroyClient(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "ChangeWorkingDirRequest")==0)
+      rv=LC_FS_HandleChangeWorkingDir(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "OpenDirRequest")==0)
+      rv=LC_FS_HandleOpenDir(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "MkDirRequest")==0)
+      rv=LC_FS_HandleMkDir(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "CloseDirRequest")==0)
+      rv=LC_FS_HandleCloseDir(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "OpenFileRequest")==0)
+      rv=LC_FS_HandleOpenFile(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "CreateFileRequest")==0)
+      rv=LC_FS_HandleCreateFile(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "CloseFileRequest")==0)
+      rv=LC_FS_HandleCloseFile(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "ReadFileRequest")==0)
+      rv=LC_FS_HandleReadFile(fs, dbRequest, dbResponse);
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command \"%s\" not supported", cmd);
+      GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "resultCode", LC_FS_ErrorNotSupported);
+      GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "resultText", "Command not supported");
+      rv=LC_FS_ErrorNone;
+    }
+  }
+
+  return rv;
 }
 
 

@@ -33,14 +33,14 @@
         <port value="3">COM3</port>
         <port value="4">COM4</port>
         
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
         <flag>keypad</flag>
@@ -56,14 +56,14 @@
         <port value="3">COM3</port>
         <port value="4">COM4</port>
         
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
       </flags>
@@ -77,14 +77,14 @@
         <port value="3">COM3</port>
         <port value="4">COM4</port>
         
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
         <flag>keypad</flag>
@@ -100,14 +100,14 @@
         <port value="3">COM3</port>
         <port value="4">COM4</port>
         
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
         <flag>keypad</flag>
@@ -124,14 +124,14 @@
         <port value="3">COM3</port>
         <port value="4">COM4</port>
         
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
       </flags>
@@ -141,14 +141,14 @@
             vendor="0x0d46" product="0x2011" >
       <short>Kaan Professional (USB)</short>
       <ports>
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
         <flag>keypad</flag>
@@ -160,14 +160,14 @@
             vendor="0x0d46" product="0x2012" >
       <short>Kaan Standard Plus (USB)</short>
       <ports>
-        <port value="0">USB0</port>
-        <port value="1">USB1</port>
-        <port value="2">USB2</port>
-        <port value="3">USB3</port>
-        <port value="4">USB4</port>
-        <port value="5">USB5</port>
-        <port value="6">USB6</port>
-        <port value="7">USB7</port>
+        <port value="1">USB0</port>
+        <port value="2">USB1</port>
+        <port value="3">USB2</port>
+        <port value="4">USB3</port>
+        <port value="5">USB4</port>
+        <port value="6">USB5</port>
+        <port value="7">USB6</port>
+        <port value="8">USB7</port>
       </ports>
       <flags>
         <flag>keypad</flag>

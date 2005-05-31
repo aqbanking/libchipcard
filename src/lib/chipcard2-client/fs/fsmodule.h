@@ -33,7 +33,8 @@ enum LC_FS_ERROR {
   LC_FS_ErrorExists,
   LC_FS_ErrorFull,
   LC_FS_ErrorInvalid,
-  LC_FS_ErrorBrokenPipe
+  LC_FS_ErrorBrokenPipe,
+  LC_FS_ErrorMissingArgs
 };
 
 

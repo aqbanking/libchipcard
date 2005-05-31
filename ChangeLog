@@ -1,4 +1,10 @@
 
+2005/06/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fs: added remote access code (LC_RFS, LC_FS_HandleRequest)
+- data: added description for SCR33x readers from SCM (not tested yet)
+
+
 ===========================================================================
 MARK: released version 1.9.12beta (2005/03/28)
 ===========================================================================

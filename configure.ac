@@ -14,8 +14,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=12
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="beta"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
 
@@ -625,6 +625,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/omnikey_ifd/Makefile
                  data/drivers/orga_ctapi/Makefile
                  data/drivers/scmx32_ifd/Makefile
+                 data/drivers/scm33x_ifd/Makefile
                  data/drivers/tow_ctapi/Makefile
                  doc/Makefile
                  src/Makefile

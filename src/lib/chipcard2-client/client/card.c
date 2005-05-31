@@ -791,6 +791,23 @@ GWEN_XMLNODE *LC_Card_GetDfInfo(const LC_CARD *card){
 
 
 
+GWEN_XMLNODE *LC_Card_GetAppInfo(const LC_CARD *card){
+  GWEN_XMLNODE *n;
+
+  assert(card);
+
+  if (!card->context) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card/application selected");
+    return 0;
+  }
+  n=LC_CardContext_GetAppNode(card->context);
+  if (n)
+    return GWEN_XMLNode_dup(n);
+  return 0;
+}
+
+
+
 LC_CLIENT_RESULT LC_Card_GetDriverVar(LC_CARD *card,
                                       const char *varName,
                                       GWEN_BUFFER *vbuf) {

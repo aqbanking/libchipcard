@@ -1,6 +1,137 @@
 
 <apps>
   <app name="ddv1">
+  
+    <crypttoken typeName="ddv1" subTypeName="ddv1" name="DDV1Card">
+
+      <flags>
+        <flag>manages_signseq</flag>
+        <flag>predef_context_only</flag>
+        <flag>context_management</flag>
+        <flag>context_ro_keys</flag>
+        <flag>context_ro_descr</flag>
+        <flag>context_ro_signdescr</flag>
+        <flag>context_ro_cryptdescr</flag>
+        <flag>context_ro_keydescrs</flag>
+      </flags>
+  
+      <signinfos>
+        <signinfo>
+          <id>1</id>
+          <hashalgo>rmd160</hashalgo>
+          <paddalgo>iso9796_1a4</paddalgo>
+        </signinfo>
+      </signinfos>
+      
+      <cryptinfos>
+        <cryptinfo>
+          <id>1</id>
+          <cryptalgo>des_3k</cryptalgo>
+          <paddalgo>ansix9_23</paddalgo>
+        </cryptinfo>
+      </cryptinfos>
+      
+      <keyinfos>
+        <keyinfo>
+          <keyId>2</keyId>
+          <keySize>16</keySize>
+          <chunksize>8</chunksize>
+          <cryptalgo>des_3k</cryptalgo>
+          <keyDescription>Signkey</keyDescription>
+          <keyFlags>
+            <flag>canSign</flag>
+            <flag>canVerify</flag>
+            <flag>hasSignSeq</flag>
+          </keyFlags>
+        </keyinfo>
+        
+        <keyinfo>
+          <keyId>3</keyId>
+          <keySize>16</keySize>
+          <chunksize>8</chunksize>
+          <cryptalgo>des_3k</cryptalgo>
+          <keyDescription>Cryptkey</keyDescription>
+          <keyFlags>
+            <flag>canEncrypt</flag>
+            <flag>canDecrypt</flag>
+          </keyFlags>
+        </keyinfo>
+      </keyinfos>
+  
+      <contexts>
+        <!-- There only is one context, and it is the context for HBCI -->
+        <context>
+          <id>1</id>
+          <description>Context for HBCI operations</description>
+          
+          <signkeyinfo>
+            <keyId>2</keyId>
+            <keySize>16</keySize>
+            <chunksize>8</chunksize>
+            <cryptalgo>des_3k</cryptalgo>
+            <keyDescription>Signkey</keyDescription>
+            <keyFlags>
+              <flag>canSign</flag>
+              <flag>canVerify</flag>
+              <flag>hasSignSeq</flag>
+            </keyFlags>
+          </signkeyinfo>
+          
+          <verifykeyinfo>
+            <keyId>2</keyId>
+            <keySize>16</keySize>
+            <chunksize>8</chunksize>
+            <cryptalgo>des_3k</cryptalgo>
+            <keyDescription>Signkey</keyDescription>
+            <keyFlags>
+              <flag>canSign</flag>
+              <flag>canVerify</flag>
+              <flag>hasSignSeq</flag>
+            </keyFlags>
+          </verifykeyinfo>
+  
+          <signinfo>
+            <id>1</id>
+            <hashalgo>rmd160</hashalgo>
+            <paddalgo>iso9796_1a4</paddalgo>
+          </signinfo>
+  
+          <encryptKeyInfo>
+            <keyId>3</keyId>
+            <keySize>16</keySize>
+            <chunksize>8</chunksize>
+            <cryptalgo>des_3k</cryptalgo>
+            <keyDescription>Cryptkey</keyDescription>
+            <keyFlags>
+              <flag>canEncrypt</flag>
+              <flag>canDecrypt</flag>
+            </keyFlags>
+          </encryptKeyInfo>
+  
+          <decryptKeyInfo>
+            <keyId>3</keyId>
+            <keySize>16</keySize>
+            <chunksize>8</chunksize>
+            <cryptalgo>des_3k</cryptalgo>
+            <keyDescription>Cryptkey</keyDescription>
+            <keyFlags>
+              <flag>canEncrypt</flag>
+              <flag>canDecrypt</flag>
+            </keyFlags>
+          </decryptKeyInfo>
+  
+          <cryptinfo>
+            <id>1</id>
+            <cryptalgo>des_3k</cryptalgo>
+            <paddalgo>ansix9_23</paddalgo>
+          </cryptinfo>
+          
+        </context>
+      </contexts>
+      
+    </crypttoken>
+  
+  
     <files>
       <ef name="EF_KEY" sid="0x0010" 
           type="record" mode="linear" 
