@@ -84,8 +84,8 @@ if test "$enable_opensc" != "no"; then
       if test "$enable_opensc_test" != "no"; then
         opensc_versionstring="`$opensc_dir/bin/opensc-config --version`"
         AC_MSG_RESULT([found $opensc_versionstring])
-        if test "$wantedversion" \< "${opensc_versionstring}"; then
-          AC_MSG_ERROR([Your OpenSC version is too old.
+        if test "$wantedversion" \> "${opensc_versionstring}"; then
+          AC_MSG_ERROR([Your OpenSC version is too old (found ${opensc_versionstring}, need $wantedversion).
           Please update from http://www.opensc.org/])
         fi
         have_opensc="yes"
