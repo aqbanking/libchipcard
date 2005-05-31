@@ -15,8 +15,10 @@
       <loc>/lib</loc>
       <loc>/usr/lib</loc>
       <loc>/usr/local/lib</loc>
-      <loc>/usr/lib/pcsc/drivers/scr33xccidDriver.bundle/Contents/Linux</loc>
-      <loc>/usr/local/lib/pcsc/drivers/scr33xccidDriver.bundle/Contents/Linux</loc>
+      <loc>/usr/lib/pcsc/drivers/scr33xcciddriver.bundle/Contents/Linux</loc>
+      <loc>/usr/pcsc/drivers/scr33xcciddriver.bundle/Contents/Linux</loc>
+      <loc>/usr/local/lib/pcsc/drivers/scr33xcciddriver.bundle/Contents/Linux</loc>
+      <loc>/usr/local/pcsc/drivers/scr33xcciddriver.bundle/Contents/Linux</loc>
     </locations>
     
     <downloads>
