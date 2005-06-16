@@ -13,3 +13,6 @@ endif
 cardcommander2_SOURCES = cardcommander.cpp
 cardcommander2_LDADD = -L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 cardcommander2_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

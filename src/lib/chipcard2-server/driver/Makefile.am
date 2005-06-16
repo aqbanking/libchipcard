@@ -19,3 +19,6 @@ libdriver_la_SOURCES=\
   reader.c \
   slot.c
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

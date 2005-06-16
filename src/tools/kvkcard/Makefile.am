@@ -16,3 +16,6 @@ kvkcard2_SOURCES=\
   main.c
 kvkcard2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB)
 kvkcard2_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

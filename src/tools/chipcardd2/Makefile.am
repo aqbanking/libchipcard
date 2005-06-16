@@ -21,3 +21,6 @@ chipcardd2_SOURCES=\
   chipcardd2.c
 chipcardd2_LDADD=-L../../lib/chipcard2-server -lchipcard2s @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 chipcardd2_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

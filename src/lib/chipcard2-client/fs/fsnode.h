@@ -18,26 +18,9 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/stringlist2.h>
 
+
 #define LC_FS_MODE_MASK_NODE               0x0000ffff
 
-#define LC_FS_NODE_MODE_RIGHTS_OWNER_MASK  0x00000700
-#define LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC  0x00000100
-#define LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE 0x00000200
-#define LC_FS_NODE_MODE_RIGHTS_OWNER_READ  0x00000400
-
-#define LC_FS_NODE_MODE_RIGHTS_GROUP_MASK  0x00000070
-#define LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC  0x00000010
-#define LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE 0x00000020
-#define LC_FS_NODE_MODE_RIGHTS_GROUP_READ  0x00000040
-
-#define LC_FS_NODE_MODE_RIGHTS_OTHER_MASK  0x00000007
-#define LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC  0x00000001
-#define LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE 0x00000002
-#define LC_FS_NODE_MODE_RIGHTS_OTHER_READ  0x00000004
-
-#define LC_FS_NODE_MODE_FTYPE_MASK         0x0000f000
-#define LC_FS_NODE_MODE_FTYPE_FILE         0x00001000
-#define LC_FS_NODE_MODE_FTYPE_DIR          0x00002000
 
 
 #define LC_FS_MODE_MASK_HANDLE             0xffff0000
@@ -54,13 +37,13 @@ typedef struct LC_FS_NODE_HANDLE LC_FS_NODE_HANDLE;
 GWEN_LIST_FUNCTION_LIB_DEFS(LC_FS_NODE, LC_FSNode, CHIPCARD_API)
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_FS_NODE, CHIPCARD_API)
 
+#include <chipcard2-client/fs/fs.h>
 #include <chipcard2-client/fs/fsmodule.h>
 
 
 LC_FS_NODE *LC_FSNode_new(LC_FS_MODULE *fs);
 void LC_FSNode_free(LC_FS_NODE *fn);
 void LC_FSNode_Attach(LC_FS_NODE *fn);
-
 
 GWEN_TYPE_UINT32 LC_FSNode_GetLockedById(const LC_FS_NODE *fn);
 void LC_FSNode_SetLockedById(LC_FS_NODE *fn, GWEN_TYPE_UINT32 id);
@@ -79,6 +62,18 @@ LC_FS_NODE *LC_FSNode_GetMounted(const LC_FS_NODE *fn);
 void LC_FSNode_SetMounted(LC_FS_NODE *fn, LC_FS_NODE *n);
 LC_FS_MODULE *LC_FSNode_GetFileSystem(const LC_FS_NODE *fn);
 void LC_FSNode_SetFileSystem(LC_FS_NODE *fn, LC_FS_MODULE *fs);
+
+time_t LC_FSNode_GetCTime(const LC_FS_NODE *fn);
+void LC_FSNode_SetCTime(LC_FS_NODE *fn, time_t ti);
+
+time_t LC_FSNode_GetATime(const LC_FS_NODE *fn);
+void LC_FSNode_SetATime(LC_FS_NODE *fn, time_t ti);
+
+time_t LC_FSNode_GetMTime(const LC_FS_NODE *fn);
+void LC_FSNode_SetMTime(LC_FS_NODE *fn, time_t ti);
+
+
+
 
 
 

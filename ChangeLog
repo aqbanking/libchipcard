@@ -1,8 +1,21 @@
 
+2005/06/17: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- partially applied patch provided by Andreas Jellinghaus (mostly regarding
+  OpenSC):
+  - PKG is now used instead of my own m4 file
+
+
+2005/06/14: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added description for my driver for Cherry keybards
+
+
 2005/06/01: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fs: added remote access code (LC_RFS, LC_FS_HandleRequest)
 - data: added description for SCR33x readers from SCM (not tested yet)
+- m4: fixed macros for OpenSC version detection
 
 
 ===========================================================================

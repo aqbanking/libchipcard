@@ -17,3 +17,6 @@ serverconf_DATA=\
   chipcardd2.conf.minimal \
   chipcardrd.conf.example
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

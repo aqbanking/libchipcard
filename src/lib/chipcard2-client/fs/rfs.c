@@ -264,6 +264,77 @@ int LC_RFS_MkDir(LC_RFS *fs,
 
 
 
+int LC_RFS_ReadDir(LC_RFS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   GWEN_TYPE_UINT32 hid,
+                   GWEN_STRINGLIST2 *sl) {
+  GWEN_DB_NODE *dbRequest;
+  GWEN_DB_NODE *dbResponse;
+  int rv;
+
+  dbRequest=GWEN_DB_Group_new("RFS_Request");
+  GWEN_DB_SetCharValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "name", "ReadDirRequest");
+  GWEN_DB_SetIntValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cid", clid);
+  GWEN_DB_SetIntValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "hid", hid);
+  dbResponse=GWEN_DB_Group_new("RFS_Response");
+  rv=fs->exchangeFn(fs, dbRequest, dbResponse);
+  if (rv) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error exchanging request/response (%d)", rv);
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return rv;
+  }
+  else {
+    GWEN_TYPE_UINT32 i;
+
+    i=GWEN_DB_GetIntValue(dbResponse, "resultCode", 0, -1);
+    if (i) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "Remote: Error %d (%s)", i,
+                GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+      GWEN_DB_Group_free(dbResponse);
+      GWEN_DB_Group_free(dbRequest);
+      return i;
+    }
+    else {
+      int i;
+
+      DBG_INFO(LC_LOGDOMAIN,
+               "Remote: Ok (%s)",
+               GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+
+      for (i=0; ; i++) {
+        const char *s;
+
+        if (i>5000000) {
+          DBG_ERROR(LC_LOGDOMAIN,
+                    "Uuups, too many entries (%d), aborting",
+                    i);
+          abort();
+        }
+        s=GWEN_DB_GetCharValue(dbResponse, "entries", i, 0);
+        if (!s)
+          break;
+        if (GWEN_StringList2_AppendString(sl, s, 0,
+                                          GWEN_StringList2_IntertModeNoDouble)
+            ==0) {
+          DBG_WARN(LC_LOGDOMAIN, "Double entry suppressed");
+        }
+      } /* for */
+
+    }
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return 0;
+  }
+
+}
+
+
+
 int LC_RFS_CloseDir(LC_RFS *fs,
                     GWEN_TYPE_UINT32 clid,
                     GWEN_TYPE_UINT32 hid) {
@@ -529,6 +600,110 @@ int LC_RFS_ReadFile(LC_RFS *fs,
     GWEN_DB_Group_free(dbResponse);
     GWEN_DB_Group_free(dbRequest);
     return LC_FS_ErrorNone;
+  }
+}
+
+
+
+int LC_RFS_Unlink(LC_RFS *fs,
+                  GWEN_TYPE_UINT32 clid,
+                  const char *path) {
+  GWEN_DB_NODE *dbRequest;
+  GWEN_DB_NODE *dbResponse;
+  int rv;
+
+  dbRequest=GWEN_DB_Group_new("RFS_Request");
+  GWEN_DB_SetCharValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "name", "UnlinkRequest");
+  GWEN_DB_SetIntValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cid", clid);
+  GWEN_DB_SetCharValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "path", path);
+  dbResponse=GWEN_DB_Group_new("RFS_Response");
+  rv=fs->exchangeFn(fs, dbRequest, dbResponse);
+  if (rv) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error exchanging request/response (%d)", rv);
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return rv;
+  }
+  else {
+    GWEN_TYPE_UINT32 i;
+
+    i=GWEN_DB_GetIntValue(dbResponse, "resultCode", 0, -1);
+    if (i) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "Remote: Error %d (%s)", i,
+                GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+      GWEN_DB_Group_free(dbResponse);
+      GWEN_DB_Group_free(dbRequest);
+      return i;
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN,
+               "Remote: Ok (%s)",
+               GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+    }
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return 0;
+  }
+}
+
+
+
+int LC_RFS_Stat(LC_RFS *fs,
+                GWEN_TYPE_UINT32 clid,
+                const char *path,
+                LC_FS_STAT **pStat) {
+  GWEN_DB_NODE *dbRequest;
+  GWEN_DB_NODE *dbResponse;
+  int rv;
+
+  dbRequest=GWEN_DB_Group_new("RFS_Request");
+  GWEN_DB_SetCharValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "name", "StatRequest");
+  GWEN_DB_SetIntValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cid", clid);
+  GWEN_DB_SetCharValue(dbRequest, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "path", path);
+  dbResponse=GWEN_DB_Group_new("RFS_Response");
+  rv=fs->exchangeFn(fs, dbRequest, dbResponse);
+  if (rv) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error exchanging request/response (%d)", rv);
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return rv;
+  }
+  else {
+    GWEN_TYPE_UINT32 i;
+
+    i=GWEN_DB_GetIntValue(dbResponse, "resultCode", 0, -1);
+    if (i) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "Remote: Error %d (%s)", i,
+                GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+      GWEN_DB_Group_free(dbResponse);
+      GWEN_DB_Group_free(dbRequest);
+      return i;
+    }
+    else {
+      GWEN_DB_NODE *dbT;
+
+      DBG_INFO(LC_LOGDOMAIN,
+               "Remote: Ok (%s)",
+               GWEN_DB_GetCharValue(dbResponse, "resultText", 0, ""));
+      dbT=GWEN_DB_GetGroup(dbResponse, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "stat");
+      if (!dbT) {
+        DBG_ERROR(LC_LOGDOMAIN, "No stat structure returned by remote");
+        abort();
+      }
+      *pStat=LC_FSStat_fromDb(dbT);
+      assert(*pStat);
+    }
+    GWEN_DB_Group_free(dbResponse);
+    GWEN_DB_Group_free(dbRequest);
+    return 0;
   }
 }
 

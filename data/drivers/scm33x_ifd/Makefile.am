@@ -21,3 +21,6 @@ carddata_DATA=\
 driverdatadir=@libchipcard2s_config_am@/drivers/scmx32_ifd
 driverdata_DATA=driver.xml
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

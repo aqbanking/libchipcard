@@ -15,3 +15,6 @@ lstest_LDADD=-L../lib/chipcard2-server -lchipcard2s @gwenhywfar_libs@ @libusb_li
 
 lctest_SOURCES=lctest.c cbtest.c
 lctest_LDADD=-L../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
+
+MAINTAINERCLEANFILES=Makefile.in
+

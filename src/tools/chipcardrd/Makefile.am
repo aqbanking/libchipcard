@@ -16,3 +16,6 @@ chipcardrd_SOURCES=\
   chipcardrd.c
 chipcardrd_LDADD=@gwenhywfar_libs@
 chipcardrd_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

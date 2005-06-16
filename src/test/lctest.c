@@ -3552,9 +3552,9 @@ int testFS1(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder1\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1",
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
 		 &hid1);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3565,9 +3565,9 @@ int testFS1(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder2\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
 		 &hid2);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3616,9 +3616,9 @@ int testFS2(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder1\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1",
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
 		 &hid1);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3638,8 +3638,8 @@ int testFS2(int argc, char **argv) {
 
   fprintf(stderr, "Creating file\n");
   rv=LC_FS_CreateFile(fs, clid, "/testDir1/testFile",
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_MODE_RIGHTS_OWNER_READ,
                       &hid2);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "File created.\n");
@@ -3650,9 +3650,9 @@ int testFS2(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder2\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_MODE_RIGHTS_OWNER_READ,
                  &hid3);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3694,9 +3694,9 @@ int testFS3(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder1\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1",
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
 		 &hid1);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3717,8 +3717,8 @@ int testFS3(int argc, char **argv) {
 
   fprintf(stderr, "Opening file\n");
   rv=LC_FS_OpenFile(fs, clid, "/testDir1/README",
-                    LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                    LC_FS_NODE_MODE_RIGHTS_OWNER_READ |
+                    LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                    LC_FS_MODE_RIGHTS_OWNER_READ |
                     LC_FS_HANDLE_MODE_READ,
                     &hid2);
   if (rv==LC_FS_ErrorNone) {
@@ -3741,9 +3741,9 @@ int testFS3(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder2\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_MODE_RIGHTS_OWNER_READ,
                  &hid3);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3784,9 +3784,9 @@ int testFS4(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder1\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1",
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-		 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
 		 &hid1);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3806,8 +3806,8 @@ int testFS4(int argc, char **argv) {
 
   fprintf(stderr, "Creating file\n");
   rv=LC_FS_CreateFile(fs, clid, "/testDir1/testFile1",
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_MODE_RIGHTS_OWNER_READ,
                       &hid2);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "File created.\n");
@@ -3818,9 +3818,9 @@ int testFS4(int argc, char **argv) {
 
   fprintf(stderr, "Creating folder2\n");
   rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                 LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_MODE_RIGHTS_OWNER_READ,
                  &hid3);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "Folder created.\n");
@@ -3831,8 +3831,8 @@ int testFS4(int argc, char **argv) {
 
   fprintf(stderr, "Creating file2\n");
   rv=LC_FS_CreateFile(fs, clid, "/testDir1/testDir2/testFile2",
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                      LC_FS_NODE_MODE_RIGHTS_OWNER_READ,
+                      LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_MODE_RIGHTS_OWNER_READ,
                       &hid2);
   if (rv==LC_FS_ErrorNone) {
     fprintf(stderr, "File created.\n");
@@ -3846,6 +3846,269 @@ int testFS4(int argc, char **argv) {
   if (rv!=LC_FS_ErrorNone) {
     fprintf(stderr, "Function not supported for file system (%d).\n", rv);
   }
+
+  return 0;
+}
+
+
+
+void _dumpStat(LC_FS_STAT *st, const char *s, int indent) {
+  GWEN_TYPE_UINT32 fl;
+  int i;
+  
+  for (i=0; i<indent; i++)
+    fprintf(stdout, " ");
+  
+  fl=LC_FSStat_GetFileMode(st);
+  if ((fl & LC_FS_MODE_FTYPE_MASK)==LC_FS_MODE_FTYPE_FILE)
+    fprintf(stdout, "-");
+  else if ((fl & LC_FS_MODE_FTYPE_MASK)==LC_FS_MODE_FTYPE_DIR)
+    fprintf(stdout, "d");
+  else {
+    DBG_ERROR(0, "Unknown file type %08x (%08x)\n",
+              fl, fl & LC_FS_MODE_FTYPE_MASK);
+    fprintf(stdout, "?");
+  }
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_READ)
+    fprintf(stdout, "r");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_WRITE)
+    fprintf(stdout, "w");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_EXEC)
+    fprintf(stdout, "x");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_READ)
+    fprintf(stdout, "r");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_WRITE)
+    fprintf(stdout, "w");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_EXEC)
+    fprintf(stdout, "x");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_READ)
+    fprintf(stdout, "r");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_WRITE)
+    fprintf(stdout, "w");
+  else
+    fprintf(stdout, "-");
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_EXEC)
+    fprintf(stdout, "x");
+  else
+    fprintf(stdout, "-");
+  
+  fprintf(stdout, " ");
+  
+  fl=LC_FSStat_GetFileSize(st);
+  fprintf(stdout, GWEN_TYPE_TMPL_UINT32 " ", fl);
+  
+  fprintf(stdout, "%s ", s);
+  fprintf(stdout, "\n");
+}
+
+
+
+int _showFiles(LC_FS *fs, GWEN_TYPE_UINT32 clid,
+               const char *dname, int indent) {
+  int rv;
+  GWEN_TYPE_UINT32 hid;
+
+  DBG_ERROR(0, "Opening dir \"%s\"", dname);
+
+  rv=LC_FS_OpenDir(fs, clid, dname, &hid);
+  if (rv) {
+    DBG_ERROR(0, "Error opening dir \"%s\": %d", dname, rv);
+  }
+  else {
+    GWEN_STRINGLIST2 *sl;
+
+    sl=GWEN_StringList2_new();
+    rv=LC_FS_ReadDir(fs, clid, hid, sl);
+    if (rv) {
+      DBG_ERROR(0, "Error reading dir \"%s\": %d", dname, rv);
+    }
+    else {
+      GWEN_STRINGLIST2_ITERATOR *sit;
+
+      sit=GWEN_StringList2_First(sl);
+      if (sit) {
+        const char *s;
+
+        s=GWEN_StringList2Iterator_Data(sit);
+        while(s) {
+          GWEN_BUFFER *nbuf;
+          LC_FS_STAT *st=0;
+
+          nbuf=GWEN_Buffer_new(0, 256, 0, 1);
+          GWEN_Buffer_AppendString(nbuf, dname);
+          if (strcasecmp(dname, "/")!=0)
+            GWEN_Buffer_AppendString(nbuf, "/");
+          GWEN_Buffer_AppendString(nbuf, s);
+          rv=LC_FS_Stat(fs, clid, GWEN_Buffer_GetStart(nbuf), &st);
+          if (rv) {
+            DBG_ERROR(0, "Error stating entry \"%s\": %d",
+                      GWEN_Buffer_GetStart(nbuf), rv);
+            GWEN_Buffer_free(nbuf);
+            break;
+          }
+          else {
+            _dumpStat(st, s, indent);
+          }
+          GWEN_Buffer_free(nbuf);
+          s=GWEN_StringList2Iterator_Next(sit);
+        }
+        GWEN_StringList2Iterator_free(sit);
+      }
+      else {
+        DBG_ERROR(0, "Empty folder \"%s\"", dname);
+      }
+
+      sit=GWEN_StringList2_First(sl);
+      if (sit) {
+        const char *s;
+
+        s=GWEN_StringList2Iterator_Data(sit);
+        while(s) {
+          GWEN_BUFFER *nbuf;
+          LC_FS_STAT *st=0;
+
+          nbuf=GWEN_Buffer_new(0, 256, 0, 1);
+          GWEN_Buffer_AppendString(nbuf, dname);
+          if (strcasecmp(dname, "/")!=0)
+            GWEN_Buffer_AppendString(nbuf, "/");
+          GWEN_Buffer_AppendString(nbuf, s);
+          DBG_ERROR(0, "Stating entry \"%s\"",
+                    GWEN_Buffer_GetStart(nbuf));
+          rv=LC_FS_Stat(fs, clid, GWEN_Buffer_GetStart(nbuf), &st);
+          if (rv) {
+            DBG_ERROR(0, "Error stating entry \"%s\": %d",
+                      GWEN_Buffer_GetStart(nbuf), rv);
+            GWEN_Buffer_free(nbuf);
+            break;
+          }
+          else {
+            if (((LC_FSStat_GetFileMode(st) & LC_FS_MODE_FTYPE_MASK)
+                ==LC_FS_MODE_FTYPE_DIR) &&
+                (strcasecmp(s, ".")!=0) &&
+                (strcasecmp(s, "..")!=0)) {
+              fprintf(stderr, "Recursion\n");
+              _showFiles(fs, clid, GWEN_Buffer_GetStart(nbuf),
+                         indent+1);
+            }
+          }
+          GWEN_Buffer_free(nbuf);
+          s=GWEN_StringList2Iterator_Next(sit);
+        }
+        GWEN_StringList2Iterator_free(sit);
+      }
+
+    }
+  }
+
+  rv=LC_FS_CloseDir(fs, clid, hid);
+  if (rv) {
+    DBG_ERROR(0, "Error closing dir \"%s\": %d", dname, rv);
+  }
+
+  return 0;
+}
+
+
+
+int testFS5(int argc, char **argv) {
+  LC_FS *fs;
+  GWEN_TYPE_UINT32 clid;
+  int rv;
+  GWEN_TYPE_UINT32 hid1;
+  GWEN_TYPE_UINT32 hid2;
+  GWEN_TYPE_UINT32 hid3;
+  LC_FS_MODULE *fsm;
+
+  GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelDebug);
+  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelDebug);
+
+  fprintf(stderr, "Creating file system\n");
+  fs=LC_FS_new();
+  fprintf(stderr, "Creating client\n");
+  clid=LC_FS_CreateClient(fs);
+  fprintf(stderr, "Client is %08x\n", clid);
+
+
+  fprintf(stderr, "Creating folder1\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1",
+		 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+		 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+		 LC_FS_MODE_RIGHTS_OWNER_READ,
+		 &hid1);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fsm=LC_FSFileModule_new("testfolder");
+  rv=LC_FS_Mount(fs, fsm, "/testDir1");
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating file\n");
+  rv=LC_FS_CreateFile(fs, clid, "/testDir1/testFile1",
+                      LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_MODE_RIGHTS_OWNER_READ,
+                      &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating folder2\n");
+  rv=LC_FS_MkDir(fs, clid, "/testDir1/testDir2",
+                 LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                 LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                 LC_FS_MODE_RIGHTS_OWNER_READ,
+                 &hid3);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "Folder created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+  fprintf(stderr, "Creating file2\n");
+  rv=LC_FS_CreateFile(fs, clid, "/testDir1/testDir2/testFile2",
+                      LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                      LC_FS_MODE_RIGHTS_OWNER_READ,
+                      &hid2);
+  if (rv==LC_FS_ErrorNone) {
+    fprintf(stderr, "File created.\n");
+  }
+  else {
+    fprintf(stderr, "Error: %d\n", rv);
+  }
+
+
+  rv=LC_FS_Dump(fs, clid, "/", stderr, 2);
+  if (rv!=LC_FS_ErrorNone) {
+    fprintf(stderr, "Function not supported for file system (%d).\n", rv);
+  }
+
+  _showFiles(fs, clid, "/", 0);
 
   return 0;
 }
@@ -4190,6 +4453,8 @@ int main(int argc, char **argv) {
     return testFS3(argc, argv);
   else if (strcasecmp(argv[1], "fs4")==0)
     return testFS4(argc, argv);
+  else if (strcasecmp(argv[1], "fs5")==0)
+    return testFS5(argc, argv);
   else if (strcasecmp(argv[1], "test33")==0)
     return test33(argc, argv);
   else if (strcasecmp(argv[1], "test34")==0)

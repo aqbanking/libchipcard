@@ -1,2 +1,3 @@
-- fs: added remote access code (LC_RFS, LC_FS_HandleRequest)
-- data: added description for SCR33x readers from SCM (not tested yet)
+- partially applied patch provided by Andreas Jellinghaus (mostly regarding
+  OpenSC):
+  - PKG is now used instead of my own m4 file

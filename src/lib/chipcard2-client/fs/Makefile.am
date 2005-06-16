@@ -37,3 +37,5 @@ libfs_la_SOURCES=\
  rfs.c
 
 
+MAINTAINERCLEANFILES=Makefile.in
+

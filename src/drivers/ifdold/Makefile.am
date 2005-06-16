@@ -16,3 +16,5 @@ ifdold_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
 ifdold_LDFLAGS=@STRIPALL@
 
 
+MAINTAINERCLEANFILES=Makefile.in
+

@@ -1,3 +1,5 @@
+MAINTAINERCLEANFILES=Makefile.in
+
 SUBDIRS=bin data doc m4 src tutorials
 
 EXTRA_DIST= \

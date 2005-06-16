@@ -8,3 +8,6 @@ iheader_HEADERS=\
   version.h
 
 
+MAINTAINERCLEANFILES=Makefile.in
+
+

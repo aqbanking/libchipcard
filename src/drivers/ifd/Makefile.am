@@ -14,3 +14,6 @@ ifd_SOURCES=\
 ifd_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ifd_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

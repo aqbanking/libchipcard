@@ -20,3 +20,6 @@ carddata_DATA=\
 
 driverdatadir=@libchipcard2s_config_am@/drivers/kobil_ctapi
 driverdata_DATA=driver.xml
+
+MAINTAINERCLEANFILES=Makefile.in
+

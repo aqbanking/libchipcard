@@ -34,3 +34,6 @@ tutorial2_LDADD=-L../src/lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 tutorial3_SOURCES=tutorial3.c examplecard.c
 tutorial3_LDADD=-L../src/lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

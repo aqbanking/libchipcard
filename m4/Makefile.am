@@ -11,3 +11,6 @@ EXTRA_DIST=\
  searchfiles.m4 \
  windoze.m4
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

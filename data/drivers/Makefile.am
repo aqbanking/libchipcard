@@ -1,5 +1,6 @@
 SUBDIRS=\
  ccid_ifd \
+ cherry_ctapi \
  cyberjack_ctapi \
  cyberjack2_ctapi \
  kobil_ctapi \
@@ -10,4 +11,6 @@ SUBDIRS=\
  tow_ctapi
 
 EXTRA_DIST=README
+
+MAINTAINERCLEANFILES=Makefile.in
 

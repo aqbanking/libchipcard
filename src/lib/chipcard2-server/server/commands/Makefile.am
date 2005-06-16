@@ -15,3 +15,6 @@ libcommands_la_SOURCES=\
   cardmgr.c \
   msgengine.c
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

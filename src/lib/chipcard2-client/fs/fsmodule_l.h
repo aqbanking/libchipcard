@@ -82,6 +82,9 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
                        const char *name,
                        LC_FS_NODE **nPtr);
 
+int LC_FSModule_Unlink(LC_FS_MODULE *fs,
+                       LC_FS_NODE *node,
+                       const char *name);
 
 
 #endif /* LC_FS_MODULE_L_H */

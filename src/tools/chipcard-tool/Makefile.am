@@ -19,3 +19,6 @@ chipcard_tool_SOURCES=\
   listreaders.c
 chipcard_tool_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 chipcard_tool_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

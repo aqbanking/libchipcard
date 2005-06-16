@@ -20,3 +20,6 @@ libcommon_la_SOURCES=\
   usbmonitor.c \
   usbttymonitor.c
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

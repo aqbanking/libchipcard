@@ -19,3 +19,5 @@ carddata_DATA=\
 driverdatadir=@libchipcard2s_config_am@/drivers/ccid_ifd
 driverdata_DATA=driver.xml
 
+MAINTAINERCLEANFILES=Makefile.in
+

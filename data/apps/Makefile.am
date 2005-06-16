@@ -21,3 +21,5 @@ appdata_DATA=\
   processorcard.xml \
   starcos.xml
 
+MAINTAINERCLEANFILES=Makefile.in
+

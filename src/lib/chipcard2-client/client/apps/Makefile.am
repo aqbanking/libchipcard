@@ -15,3 +15,6 @@ libapps_la_SOURCES=\
   cardcontext.c \
   cardmgr.c
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

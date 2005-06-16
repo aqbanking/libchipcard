@@ -19,6 +19,7 @@
 #include <chipcard2-client/fs/fs.h>
 #include <gwenhywfar/misc.h>
 
+#include "fs_l.h"
 #include "fsnode_l.h"
 
 

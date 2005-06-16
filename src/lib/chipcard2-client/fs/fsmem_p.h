@@ -16,6 +16,7 @@
 
 
 #include <chipcard2-client/fs/fsmem.h>
+#include <chipcard2-client/fs/fs.h>
 #include <stdio.h>
 
 

@@ -37,3 +37,6 @@ libclient_la_LIBADD=\
   lowlevel/liblowlevel.la \
   apps/libapps.la
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

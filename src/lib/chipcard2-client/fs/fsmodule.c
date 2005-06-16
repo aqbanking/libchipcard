@@ -234,6 +234,20 @@ LC_FS_MODULE_LOOKUP_FN LC_FSModule_GetLookupFn(const LC_FS_MODULE *fs){
 
 
 
+void LC_FSModule_SetUnlinkFn(LC_FS_MODULE *fs, LC_FS_MODULE_UNLINK_FN f){
+  assert(fs);
+  fs->unlinkFn=f;
+}
+
+
+
+LC_FS_MODULE_UNLINK_FN LC_FSModule_GetUnlinkFn(const LC_FS_MODULE *fs){
+  assert(fs);
+  return fs->unlinkFn;
+}
+
+
+
 void LC_FSModule_SetDumpFn(LC_FS_MODULE *fs, LC_FS_MODULE_DUMP_FN f){
   assert(fs);
   fs->dumpFn=f;
@@ -445,6 +459,17 @@ int LC_FSModule_Lookup(LC_FS_MODULE *fs,
   if (!fs->lookupFn)
     return LC_FS_ErrorNotSupported;
   return fs->lookupFn(fs, node, name, nPtr);
+}
+
+
+
+int LC_FSModule_Unlink(LC_FS_MODULE *fs,
+                       LC_FS_NODE *node,
+                       const char *name) {
+  assert(fs);
+  if (!fs->unlinkFn)
+    return LC_FS_ErrorNotSupported;
+  return fs->unlinkFn(fs, node, name);
 }
 
 

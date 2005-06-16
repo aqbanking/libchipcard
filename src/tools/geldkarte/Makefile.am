@@ -16,3 +16,6 @@ geldkarte2_SOURCES=\
   main.c
 geldkarte2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 geldkarte2_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

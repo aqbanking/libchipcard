@@ -4,4 +4,5 @@ if USE_OPENSC
 SUBDIRS+=opensc
 endif
 
+MAINTAINERCLEANFILES=Makefile.in
 

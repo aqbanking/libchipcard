@@ -26,6 +26,15 @@ struct LC_FS_PATH_CTX {
 };
 
 
+struct LC_FS_STAT {
+  GWEN_TYPE_UINT32 fileMode;
+  GWEN_TYPE_UINT32 fileSize;
+  time_t ctime;
+  time_t atime;
+  time_t mtime;
+  GWEN_TYPE_UINT32 linkCount;
+};
+
 
 struct LC_FS {
   LC_FS_MODULE *rootFsModule;
@@ -85,6 +94,19 @@ int LC_FS_HandleCreateFile(LC_FS *fs,
 int LC_FS_HandleReadFile(LC_FS *fs,
                          GWEN_DB_NODE *dbRequest,
                          GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleUnlink(LC_FS *fs,
+                       GWEN_DB_NODE *dbRequest,
+                       GWEN_DB_NODE *dbResponse);
+
+int LC_FS_HandleStat(LC_FS *fs,
+                     GWEN_DB_NODE *dbRequest,
+                     GWEN_DB_NODE *dbResponse);
+
+
+
+
+LC_FS_STAT *LC_FSStat_fromNode(const LC_FS_NODE *n);
 
 
 #endif /* LC_FS_P_H */

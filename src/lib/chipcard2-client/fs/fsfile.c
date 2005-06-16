@@ -194,48 +194,48 @@ void LC_FSFileNode_Dump(LC_FS_NODE *node, FILE *f, int indent){
 
   fprintf(f, "%s ", mn->name);
   fl=LC_FSNode_GetFileMode(realNode);
-  if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_FILE)
+  if ((fl & LC_FS_MODE_FTYPE_MASK)==LC_FS_MODE_FTYPE_FILE)
     fprintf(f, "-");
-  else if ((fl & LC_FS_NODE_MODE_FTYPE_MASK)==LC_FS_NODE_MODE_FTYPE_DIR)
+  else if ((fl & LC_FS_MODE_FTYPE_MASK)==LC_FS_MODE_FTYPE_DIR)
     fprintf(f, "d");
   else {
     DBG_ERROR(0, "Unknown file type %08x (%08x)\n",
-              fl, fl & LC_FS_NODE_MODE_FTYPE_MASK);
+              fl, fl & LC_FS_MODE_FTYPE_MASK);
     fprintf(f, "?");
   }
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_READ)
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_READ)
     fprintf(f, "r");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE)
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_WRITE)
     fprintf(f, "w");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC)
+  if (fl & LC_FS_MODE_RIGHTS_OWNER_EXEC)
     fprintf(f, "x");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_READ)
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_READ)
     fprintf(f, "r");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE)
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_WRITE)
     fprintf(f, "w");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC)
+  if (fl & LC_FS_MODE_RIGHTS_GROUP_EXEC)
     fprintf(f, "x");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_READ)
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_READ)
     fprintf(f, "r");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE)
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_WRITE)
     fprintf(f, "w");
   else
     fprintf(f, "-");
-  if (fl & LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC)
+  if (fl & LC_FS_MODE_RIGHTS_OTHER_EXEC)
     fprintf(f, "x");
   else
     fprintf(f, "-");
@@ -390,35 +390,35 @@ int LC_FSFileModule__Dir2Node2(LC_FS_MODULE *fs,
 
           /* owner rights */
           if (st.st_mode & S_IRUSR)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OWNER_READ;
+            fmode|=LC_FS_MODE_RIGHTS_OWNER_READ;
           if (st.st_mode & S_IWUSR)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE;
+            fmode|=LC_FS_MODE_RIGHTS_OWNER_WRITE;
           if (st.st_mode & S_IXUSR)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC;
+            fmode|=LC_FS_MODE_RIGHTS_OWNER_EXEC;
 
           /* group rights */
 #ifndef OS_WIN32
 	  if (st.st_mode & S_IRGRP)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_GROUP_READ;
+            fmode|=LC_FS_MODE_RIGHTS_GROUP_READ;
           if (st.st_mode & S_IWGRP)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE;
+            fmode|=LC_FS_MODE_RIGHTS_GROUP_WRITE;
           if (st.st_mode & S_IXGRP)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC;
+            fmode|=LC_FS_MODE_RIGHTS_GROUP_EXEC;
 
           /* other rights */
           if (st.st_mode & S_IROTH)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OTHER_READ;
+            fmode|=LC_FS_MODE_RIGHTS_OTHER_READ;
           if (st.st_mode & S_IWOTH)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE;
+            fmode|=LC_FS_MODE_RIGHTS_OTHER_WRITE;
           if (st.st_mode & S_IXOTH)
-            fmode|=LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC;
+            fmode|=LC_FS_MODE_RIGHTS_OTHER_EXEC;
 #endif
 
           /* file type */
           if (S_ISDIR(st.st_mode))
-            fmode|=LC_FS_NODE_MODE_FTYPE_DIR;
+            fmode|=LC_FS_MODE_FTYPE_DIR;
           else if (S_ISREG(st.st_mode))
-            fmode|=LC_FS_NODE_MODE_FTYPE_FILE;
+            fmode|=LC_FS_MODE_FTYPE_FILE;
 
           n=LC_FSFileNode_new(fs, entry);
           LC_FSNode_SetFileSize(n, st.st_size);
@@ -476,6 +476,9 @@ int LC_FSFileModule__GetNodePath(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
+  DBG_ERROR(0, "Buffer before:");
+  GWEN_Buffer_Dump(pbuf, stderr, 2);
+
   while(node) {
     LC_FS_NODE *parentNode;
 
@@ -486,6 +489,10 @@ int LC_FSFileModule__GetNodePath(LC_FS_MODULE *fs,
     assert(s);
     DBG_INFO(LC_LOGDOMAIN, "Inserting entry \"%s\"", s);
     GWEN_Buffer_InsertString(pbuf, s);
+
+    DBG_ERROR(0, "Buffer after inserting \"%s\":", s);
+    GWEN_Buffer_Dump(pbuf, stderr, 2);
+
     node=parentNode;
   }
   if (GWEN_Buffer_GetUsedBytes(pbuf))
@@ -510,10 +517,10 @@ int LC_FSFileModule_Mount(LC_FS_MODULE *fs,
 
   node=LC_FSFileNode_new(fs, "");
   LC_FSNode_SetFileMode(node,
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_READ |
-                        LC_FS_NODE_MODE_FTYPE_DIR);
+                        LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                        LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                        LC_FS_MODE_RIGHTS_OWNER_READ |
+                        LC_FS_MODE_FTYPE_DIR);
 
   rv=LC_FSFileModule__Dir2Node2(fs, node, modm->path);
   if (rv) {
@@ -550,14 +557,21 @@ int LC_FSFileModule_OpenDir(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
-  DBG_INFO(LC_LOGDOMAIN, "Opening folder \"%s\"", name);
-  n=LC_FSFileModule__FindNode(fs, node, name);
-  if (!n) {
-    DBG_INFO(0, "here");
-    return LC_FS_ErrorNotFound;
+  if (name) {
+    DBG_INFO(LC_LOGDOMAIN, "Opening folder \"%s\"", name);
+    n=LC_FSFileModule__FindNode(fs, node, name);
+    if (!n) {
+      DBG_INFO(0, "here");
+      return LC_FS_ErrorNotFound;
+    }
   }
-  if ((LC_FSNode_GetFileMode(n) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_DIR) {
+  else {
+    DBG_INFO(LC_LOGDOMAIN, "Opening root folder");
+    n=node;
+  }
+
+  if ((LC_FSNode_GetFileMode(n) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_DIR) {
     DBG_ERROR(0, "Entry \"%s\" is not a folder", name);
     return LC_FS_ErrorNotDir;
   }
@@ -629,8 +643,8 @@ int LC_FSFileModule_MkDir(LC_FS_MODULE *fs,
 
   /* create file node */
   n=LC_FSFileNode_new(fs, name);
-  mode&=~LC_FS_NODE_MODE_FTYPE_MASK;
-  mode|=LC_FS_NODE_MODE_FTYPE_DIR;
+  mode&=~LC_FS_MODE_FTYPE_MASK;
+  mode|=LC_FS_MODE_FTYPE_DIR;
   LC_FSNode_SetFileMode(n, mode);
   LC_FSFileNode_AddChild(node, n);
   *nPtr=n;
@@ -698,8 +712,8 @@ int LC_FSFileModule_CloseDir(LC_FS_MODULE *fs, LC_FS_NODE *node){
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_DIR) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_DIR) {
     DBG_ERROR(0, "Node is not a folder");
     return LC_FS_ErrorNotDir;
   }
@@ -727,8 +741,8 @@ int LC_FSFileModule_OpenFile(LC_FS_MODULE *fs,
     DBG_INFO(0, "here");
     return LC_FS_ErrorNotFound;
   }
-  if ((LC_FSNode_GetFileMode(n) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_FILE) {
+  if ((LC_FSNode_GetFileMode(n) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_FILE) {
     DBG_ERROR(0, "Entry \"%s\" is not a file", name);
     return LC_FS_ErrorNotFile;
   }
@@ -745,28 +759,28 @@ int LC_FSFileModule__FileModeToSys(GWEN_TYPE_UINT32 fm) {
   res=0;
 
   /* owner rights */
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC)
+  if (fm & LC_FS_MODE_RIGHTS_OWNER_EXEC)
     res|=S_IXUSR;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE)
+  if (fm & LC_FS_MODE_RIGHTS_OWNER_WRITE)
     res|=S_IWUSR;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OWNER_READ)
+  if (fm & LC_FS_MODE_RIGHTS_OWNER_READ)
     res|=S_IRUSR;
 
 #ifndef OS_WIN32
   /* group rights */
-  if (fm & LC_FS_NODE_MODE_RIGHTS_GROUP_EXEC)
+  if (fm & LC_FS_MODE_RIGHTS_GROUP_EXEC)
     res|=S_IXGRP;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_GROUP_WRITE)
+  if (fm & LC_FS_MODE_RIGHTS_GROUP_WRITE)
     res|=S_IWGRP;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_GROUP_READ)
+  if (fm & LC_FS_MODE_RIGHTS_GROUP_READ)
     res|=S_IRGRP;
 
   /* other rights */
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OTHER_EXEC)
+  if (fm & LC_FS_MODE_RIGHTS_OTHER_EXEC)
     res|=S_IXOTH;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OTHER_WRITE)
+  if (fm & LC_FS_MODE_RIGHTS_OTHER_WRITE)
     res|=S_IWOTH;
-  if (fm & LC_FS_NODE_MODE_RIGHTS_OTHER_READ)
+  if (fm & LC_FS_MODE_RIGHTS_OTHER_READ)
     res|=S_IROTH;
 #endif
 
@@ -835,8 +849,8 @@ int LC_FSFileModule_CreateFile(LC_FS_MODULE *fs,
 
   /* create file node */
   n=LC_FSFileNode_new(fs, name);
-  mode&=~LC_FS_NODE_MODE_FTYPE_MASK;
-  mode|=LC_FS_NODE_MODE_FTYPE_FILE;
+  mode&=~LC_FS_MODE_FTYPE_MASK;
+  mode|=LC_FS_MODE_FTYPE_FILE;
   LC_FSNode_SetFileMode(n, mode);
   LC_FSFileNode_AddChild(node, n);
   *nPtr=n;
@@ -853,8 +867,8 @@ int LC_FSFileModule_CloseFile(LC_FS_MODULE *fs, LC_FS_NODE *node){
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_FILE) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_FILE) {
     DBG_ERROR(0, "Node is not a file");
     return LC_FS_ErrorNotDir;
   }
@@ -881,8 +895,8 @@ int LC_FSFileModule_ReadFile(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_FILE) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_FILE) {
     DBG_ERROR(0, "Node is not a file");
     return LC_FS_ErrorNotFile;
   }
@@ -993,8 +1007,8 @@ int LC_FSFileModule_WriteFile(LC_FS_MODULE *fs,
   modm=GWEN_INHERIT_GETDATA(LC_FS_MODULE, LC_FSFILE_MODULE, fs);
   assert(modm);
 
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_FILE) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_FILE) {
     DBG_ERROR(0, "Node is not a file");
     return LC_FS_ErrorNotFile;
   }

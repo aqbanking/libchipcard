@@ -1,3 +1,5 @@
+MAINTAINERCLEANFILES=Makefile.in
+
 INCLUDES=@all_includes@
 
 DEFS=@DEFS@ -DOPENSC_VERSION=\"@opensc_version@\"
@@ -12,7 +14,7 @@ lib_LTLIBRARIES=reader-libchipcard2.la
 
 noinst_HEADERS=reader-libchipcard2_p.h
 reader_libchipcard2_la_SOURCES=reader-libchipcard2.c
-reader_libchipcard2_la_LIBADD=-L../lib/chipcard2-client $(CLIENT_LIB) $(opensc_libs) @gwenhywfar_libs@
+reader_libchipcard2_la_LIBADD=-L../lib/chipcard2-client $(CLIENT_LIB) $(OPENSC_LIBS) @gwenhywfar_libs@
 reader_libchipcard2_la_LDFLAGS=\
   -module @STRIPALL@ -version-info \
    @LIBCHIPCARD_SO_CURRENT@:@LIBCHIPCARD_SO_REVISION@:@LIBCHIPCARD_SO_AGE@
@@ -22,7 +24,7 @@ if IS_WINDOWS
 
 # you only need to setup these variables here, the rest is done automatically
 LIBRARY_NAME = reader-libchipcard2
-DLLLDLIBS = -L../lib/chipcard2-client $(CLIENT_LIB) -L/mingw/lib  $(opensc_libs) @gwenhywfar_libs@
+DLLLDLIBS = -L../lib/chipcard2-client $(CLIENT_LIB) -L/mingw/lib  $(OPENSC_LIBS) @gwenhywfar_libs@
 DLLLDFLAGS = $(STRIPALL) $(LDFLAGS)
 
 

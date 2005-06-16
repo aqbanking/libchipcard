@@ -34,7 +34,8 @@ enum LC_FS_ERROR {
   LC_FS_ErrorFull,
   LC_FS_ErrorInvalid,
   LC_FS_ErrorBrokenPipe,
-  LC_FS_ErrorMissingArgs
+  LC_FS_ErrorMissingArgs,
+  LC_FS_ErrorNotEmpty,
 };
 
 
@@ -45,6 +46,7 @@ GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_FS_MODULE, CHIPCARD_API)
 
 
 #include <chipcard2-client/fs/fsnode.h>
+#include <chipcard2-client/fs/fs.h>
 
 
 LC_FS_MODULE *LC_FSModule_new();
@@ -111,6 +113,12 @@ typedef int (*LC_FS_MODULE_LOOKUP_FN)(LC_FS_MODULE *fs,
                                       LC_FS_NODE *node,
                                       const char *name,
                                       LC_FS_NODE **nPtr);
+
+typedef int (*LC_FS_MODULE_UNLINK_FN)(LC_FS_MODULE *fs,
+                                      LC_FS_NODE *node,
+                                      const char *name);
+
+
 typedef int (*LC_FS_MODULE_DUMP_FN)(LC_FS_MODULE *fs,
                                     LC_FS_NODE *node,
                                     FILE *f,
@@ -160,8 +168,12 @@ LC_FS_MODULE_WRITEFILE_FN
 void LC_FSModule_SetLookupFn(LC_FS_MODULE *fs, LC_FS_MODULE_LOOKUP_FN f);
 LC_FS_MODULE_LOOKUP_FN LC_FSModule_GetLookupFn(const LC_FS_MODULE *fs);
 
+void LC_FSModule_SetUnlinkFn(LC_FS_MODULE *fs, LC_FS_MODULE_UNLINK_FN f);
+LC_FS_MODULE_UNLINK_FN LC_FSModule_GetUnlinkFn(const LC_FS_MODULE *fs);
+
 void LC_FSModule_SetDumpFn(LC_FS_MODULE *fs, LC_FS_MODULE_DUMP_FN f);
 LC_FS_MODULE_DUMP_FN LC_FSModule_GetDumpFn(const LC_FS_MODULE *fs);
+
 
 
 GWEN_TYPE_UINT32 LC_FSModule_GetMountFlags(const LC_FS_MODULE *fs);

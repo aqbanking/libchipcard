@@ -17,3 +17,5 @@ carddata_DATA=\
 driverdatadir=@libchipcard2s_config_am@/drivers/omnikey_ifd
 driverdata_DATA=driver.xml
 
+MAINTAINERCLEANFILES=Makefile.in
+

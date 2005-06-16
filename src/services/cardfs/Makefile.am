@@ -21,3 +21,6 @@ cardfs_LDADD=\
  -L../../lib/chipcard2-service $(SERVICE_LIB) \
  -L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 cardfs_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

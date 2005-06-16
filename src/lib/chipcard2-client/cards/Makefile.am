@@ -51,3 +51,6 @@ libcards_la_SOURCES=\
 
 types: $(typefiles)
 	typemaker -d CHIPCARD_API $(typefiles)
+
+MAINTAINERCLEANFILES=Makefile.in
+

@@ -17,3 +17,6 @@ ctapi_SOURCES=\
 ctapi_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ctapi_LDFLAGS=@STRIPALL@
+
+MAINTAINERCLEANFILES=Makefile.in
+

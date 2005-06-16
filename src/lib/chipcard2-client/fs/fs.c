@@ -113,10 +113,10 @@ LC_FS *LC_FS_new() {
   fs->rootFsModule=LC_FSMemModule_new();
   fs->rootFsNode=LC_FSMemNode_new(fs->rootFsModule, "");
   LC_FSNode_SetFileMode(fs->rootFsNode,
-                        LC_FS_NODE_MODE_FTYPE_DIR |
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_EXEC |
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_WRITE |
-                        LC_FS_NODE_MODE_RIGHTS_OWNER_READ);
+                        LC_FS_MODE_FTYPE_DIR |
+                        LC_FS_MODE_RIGHTS_OWNER_EXEC |
+                        LC_FS_MODE_RIGHTS_OWNER_WRITE |
+                        LC_FS_MODE_RIGHTS_OWNER_READ);
 
   return fs;
 }
@@ -221,15 +221,15 @@ void *LC_FS__HandlePathElement(const char *entry,
     fmode=LC_FSNode_GetFileMode(node);
     DBG_INFO(LC_LOGDOMAIN, "Checking for type");
     if (flags & GWEN_PATH_FLAGS_VARIABLE) {
-      if ((fmode & LC_FS_NODE_MODE_FTYPE_MASK) !=
-          LC_FS_NODE_MODE_FTYPE_FILE) {
+      if ((fmode & LC_FS_MODE_FTYPE_MASK) !=
+          LC_FS_MODE_FTYPE_FILE) {
         DBG_INFO(LC_LOGDOMAIN, "%s not a regular file", s);
         return 0;
       }
     }
     else {
-      if ((fmode & LC_FS_NODE_MODE_FTYPE_MASK) !=
-          LC_FS_NODE_MODE_FTYPE_DIR) {
+      if ((fmode & LC_FS_MODE_FTYPE_MASK) !=
+          LC_FS_MODE_FTYPE_DIR) {
         DBG_INFO(LC_LOGDOMAIN, "%s not a direcory", s);
         return 0;
       }
@@ -271,9 +271,11 @@ int LC_FS__GetNode(LC_FS *fs,
     /* root, set context to root */
     LC_FSPathCtx_SetPath(ctx, "/");
     LC_FSPathCtx_SetNode(ctx, fs->rootFsNode);
-    if (path[1]==0)
+    if (path[1]==0) {
       /* root wanted, finished */
+      DBG_ERROR(LC_LOGDOMAIN, "Root wanted");
       return LC_FS_ErrorNone;
+    }
   }
 
   if (0==GWEN_Path_Handle(path, (void*)ctx,
@@ -368,6 +370,7 @@ int LC_FS_OpenDir(LC_FS *fs,
 		  GWEN_TYPE_UINT32 *pHid) {
   LC_FS_CLIENT *fcl;
   LC_FS_NODE *node;
+  LC_FS_NODE *realNode;
   LC_FS_NODE_HANDLE *hdl;
   int rv;
   const char *p;
@@ -417,17 +420,29 @@ int LC_FS_OpenDir(LC_FS *fs,
   /* open folder (if not root) */
   node=LC_FSPathCtx_GetNode(ctx);
   assert(node);
-  if (strcasecmp(p, "/")!=0) {
+  realNode=LC_FSNode_GetMounted(node);
+  if (realNode)
+    node=realNode;
+
+  if (strcasecmp(path, "/")==0)
     rv=LC_FSModule_OpenDir(LC_FSNode_GetFileSystem(node),
                            node,
-			   p,
-			   &node);
-    if (rv) {
-      DBG_INFO(0, "here");
-      LC_FSPathCtx_free(ctx);
-      return rv;
-    }
+                           0,
+                           &node);
+  else
+    rv=LC_FSModule_OpenDir(LC_FSNode_GetFileSystem(node),
+                           node,
+                           p,
+                           &node);
+  if (rv) {
+    DBG_INFO(0, "here");
+    LC_FSPathCtx_free(ctx);
+    return rv;
   }
+
+  realNode=LC_FSNode_GetMounted(node);
+  if (realNode)
+    node=realNode;
 
   /* create file handle */
   hdl=LC_FSNodeHandle_new(path, node, LC_FSClient_GetNextHandleId(fcl));
@@ -530,6 +545,46 @@ int LC_FS_MkDir(LC_FS *fs,
 
 
 
+int LC_FS_ReadDir(LC_FS *fs,
+                  GWEN_TYPE_UINT32 clid,
+                  GWEN_TYPE_UINT32 hid,
+                  GWEN_STRINGLIST2 *sl) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE_HANDLE *hdl;
+  LC_FS_NODE *node;
+  int rv;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  hdl=LC_FSClient_FindHandle(fcl, hid);
+  if (!hdl) {
+    DBG_ERROR(0, "Handle %08x not found", hid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  node=LC_FSNodeHandle_GetNode(hdl);
+  assert(node);
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_DIR) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a folder");
+    return LC_FS_ErrorNotDir;
+  }
+  rv=LC_FSModule_ReadDir(LC_FSNode_GetFileSystem(node), node, sl);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "Error: %d", rv);
+  }
+  return rv;
+}
+
+
+
 int LC_FS_CloseDir(LC_FS *fs,
 		   GWEN_TYPE_UINT32 clid,
 		   GWEN_TYPE_UINT32 hid) {
@@ -555,8 +610,8 @@ int LC_FS_CloseDir(LC_FS *fs,
 
   node=LC_FSNodeHandle_GetNode(hdl);
   assert(node);
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_DIR) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_DIR) {
     DBG_ERROR(LC_LOGDOMAIN, "Not a folder");
     return LC_FS_ErrorNotDir;
   }
@@ -776,8 +831,8 @@ int LC_FS_CloseFile(LC_FS *fs,
 
   node=LC_FSNodeHandle_GetNode(hdl);
   assert(node);
-  if ((LC_FSNode_GetFileMode(node) & LC_FS_NODE_MODE_FTYPE_MASK) !=
-      LC_FS_NODE_MODE_FTYPE_FILE) {
+  if ((LC_FSNode_GetFileMode(node) & LC_FS_MODE_FTYPE_MASK) !=
+      LC_FS_MODE_FTYPE_FILE) {
     DBG_ERROR(LC_LOGDOMAIN, "Not a regular file");
     return LC_FS_ErrorNotFile;
   }
@@ -828,6 +883,166 @@ int LC_FS_ReadFile(LC_FS *fs,
   }
   return rv;
 }
+
+
+
+int LC_FS_Unlink(LC_FS *fs,
+                 GWEN_TYPE_UINT32 clid,
+                 const char *path) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    p++;
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+		      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+  }
+
+  /* unlink (if not root) */
+  node=LC_FSPathCtx_GetNode(ctx);
+  assert(node);
+  if (strcasecmp(p, "/")!=0) {
+    /* TODO: Check for file or empty folder */
+    rv=LC_FSModule_Unlink(LC_FSNode_GetFileSystem(node),
+                          node,
+                          p);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      return rv;
+    }
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN, "Can not unlink root");
+    return LC_FS_ErrorInvalid;
+  }
+
+  LC_FSPathCtx_free(ctx);
+  return 0;
+}
+
+
+
+int LC_FS_Stat(LC_FS *fs,
+               GWEN_TYPE_UINT32 clid,
+               const char *path,
+               LC_FS_STAT **pStat) {
+  LC_FS_CLIENT *fcl;
+  LC_FS_NODE *node;
+  LC_FS_NODE *realNode;
+  int rv;
+  const char *p;
+  LC_FS_PATH_CTX *ctx;
+
+  assert(fs);
+  assert(clid);
+
+  fcl=LC_FS__FindClient(fs, clid);
+  if (!fcl) {
+    DBG_ERROR(0, "Client %08x not found", clid);
+    return LC_FS_ErrorInvalid;
+  }
+
+  /* get context of folder which contains the wanted dir */
+  p=strrchr(path, '/');
+  if (p) {
+    char *folder;
+
+    if (p==path)
+      folder=strdup("/");
+    else {
+      folder=(char*)malloc(p-path+1);
+      assert(folder);
+      memmove(folder, path, p-path);
+      folder[p-path]=0;
+    }
+    p++;
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+
+    rv=LC_FS__GetNode(fs, ctx, folder,
+		      GWEN_PATH_FLAGS_NAMEMUSTEXIST |
+		      GWEN_PATH_FLAGS_CHECKROOT);
+    if (rv) {
+      DBG_INFO(0, "here");
+      LC_FSPathCtx_free(ctx);
+      free(folder);
+      return rv;
+    }
+    free(folder);
+  }
+  else {
+    ctx=LC_FSPathCtx_dup(LC_FSClient_GetWorkingCtx(fcl));
+    p=path;
+  }
+
+  /* return node */
+  node=LC_FSPathCtx_GetNode(ctx);
+  realNode=LC_FSNode_GetMounted(node);
+  if (realNode)
+    node=realNode;
+  rv=LC_FSModule_Lookup(LC_FSNode_GetFileSystem(node), node,
+                        p, &node);
+  if (rv) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error lookin up node \"%s\": %d",
+              p, rv);
+    LC_FSPathCtx_free(ctx);
+    return rv;
+  }
+  assert(node);
+  realNode=LC_FSNode_GetMounted(node);
+  if (realNode)
+    node=realNode;
+  *pStat=LC_FSStat_fromNode(node);
+  assert(*pStat);
+  LC_FSPathCtx_free(ctx);
+  return 0;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -1081,6 +1296,60 @@ int LC_FS_HandleMkDir(LC_FS *fs,
 
 
 
+int LC_FS_HandleReadDir(LC_FS *fs,
+                        GWEN_DB_NODE *dbRequest,
+                        GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  GWEN_TYPE_UINT32 hid;
+  int rv;
+  GWEN_STRINGLIST2 *sl;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  hid=GWEN_DB_GetIntValue(dbRequest, "hid", 0, 0);
+  if (hid==0) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  sl=GWEN_StringList2_new();
+  rv=LC_FS_ReadDir(fs, cid, hid, sl);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    GWEN_StringList2_free(sl);
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_STRINGLIST2_ITERATOR *sit;
+
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Folder read");
+    GWEN_DB_DeleteVar(dbResponse, "entries");
+    sit=GWEN_StringList2_First(sl);
+    if (sit) {
+      const char *s;
+
+      s=GWEN_StringList2Iterator_Data(sit);
+      while(s) {
+        GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_DEFAULT,
+                             "entries", s);
+        s=GWEN_StringList2Iterator_Next(sit);
+      }
+      GWEN_StringList2Iterator_free(sit);
+    }
+  }
+  GWEN_StringList2_free(sl);
+  return LC_FS_ErrorNone;
+}
+
+
+
 int LC_FS_HandleCloseDir(LC_FS *fs,
                          GWEN_DB_NODE *dbRequest,
                          GWEN_DB_NODE *dbResponse) {
@@ -1277,6 +1546,84 @@ int LC_FS_HandleReadFile(LC_FS *fs,
 
 
 
+int LC_FS_HandleUnlink(LC_FS *fs,
+                       GWEN_DB_NODE *dbRequest,
+                       GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  int rv;
+  const char *path;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_Unlink(fs, cid, path);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Object unlinked");
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
+int LC_FS_HandleStat(LC_FS *fs,
+                     GWEN_DB_NODE *dbRequest,
+                     GWEN_DB_NODE *dbResponse) {
+  GWEN_TYPE_UINT32 cid;
+  int rv;
+  const char *path;
+  LC_FS_STAT *st=0;
+
+  cid=GWEN_DB_GetIntValue(dbRequest, "cid", 0, 0);
+  path=GWEN_DB_GetCharValue(dbRequest, "path", 0, 0);
+  if (!path) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorMissingArgs);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Missing arguments");
+    return LC_FS_ErrorNone;
+  }
+  rv=LC_FS_Stat(fs, cid, path, &st);
+  if (rv) {
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", rv);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Error returned by function");
+    return LC_FS_ErrorNone;
+  }
+  else {
+    GWEN_DB_NODE *dbT;
+
+    assert(st);
+    GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "resultCode", LC_FS_ErrorNone);
+    GWEN_DB_SetCharValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "resultText", "Stat performed.");
+    dbT=GWEN_DB_GetGroup(dbResponse, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "stat");
+    assert(dbT);
+    LC_FSStat_toDb(st, dbT);
+    LC_FSStat_free(st);
+  }
+  return LC_FS_ErrorNone;
+}
+
+
+
 int LC_FS_HandleRequest(LC_FS *fs,
                         GWEN_DB_NODE *dbRequest,
                         GWEN_DB_NODE *dbResponse) {
@@ -1304,6 +1651,8 @@ int LC_FS_HandleRequest(LC_FS *fs,
       rv=LC_FS_HandleOpenDir(fs, dbRequest, dbResponse);
     else if (strcasecmp(cmd, "MkDirRequest")==0)
       rv=LC_FS_HandleMkDir(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "ReadDirRequest")==0)
+      rv=LC_FS_HandleReadDir(fs, dbRequest, dbResponse);
     else if (strcasecmp(cmd, "CloseDirRequest")==0)
       rv=LC_FS_HandleCloseDir(fs, dbRequest, dbResponse);
     else if (strcasecmp(cmd, "OpenFileRequest")==0)
@@ -1314,6 +1663,10 @@ int LC_FS_HandleRequest(LC_FS *fs,
       rv=LC_FS_HandleCloseFile(fs, dbRequest, dbResponse);
     else if (strcasecmp(cmd, "ReadFileRequest")==0)
       rv=LC_FS_HandleReadFile(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "UnlinkRequest")==0)
+      rv=LC_FS_HandleUnlink(fs, dbRequest, dbResponse);
+    else if (strcasecmp(cmd, "StatRequest")==0)
+      rv=LC_FS_HandleStat(fs, dbRequest, dbResponse);
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Command \"%s\" not supported", cmd);
       GWEN_DB_SetIntValue(dbResponse, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1326,6 +1679,160 @@ int LC_FS_HandleRequest(LC_FS *fs,
 
   return rv;
 }
+
+
+
+
+
+
+
+LC_FS_STAT *LC_FSStat_new() {
+  LC_FS_STAT *st;
+
+  GWEN_NEW_OBJECT(LC_FS_STAT, st);
+  return st;
+}
+
+
+
+void LC_FSStat_free(LC_FS_STAT *st) {
+  if (st) {
+    GWEN_FREE_OBJECT(st);
+  }
+}
+
+
+
+LC_FS_STAT *LC_FSStat_dup(const LC_FS_STAT *ost) {
+  LC_FS_STAT *st;
+
+  st=LC_FSStat_new();
+  st->fileMode=ost->fileMode;
+  st->fileSize=ost->fileSize;
+  st->ctime=ost->ctime;
+  st->mtime=ost->mtime;
+  st->atime=ost->atime;
+
+  return st;
+}
+
+
+
+LC_FS_STAT *LC_FSStat_fromNode(const LC_FS_NODE *n) {
+  LC_FS_STAT *st;
+
+  st=LC_FSStat_new();
+  st->fileMode=LC_FSNode_GetFileMode(n);
+  st->fileSize=LC_FSNode_GetFileSize(n);
+  st->ctime=LC_FSNode_GetCTime(n);
+  st->mtime=LC_FSNode_GetMTime(n);
+  st->atime=LC_FSNode_GetATime(n);
+
+  return st;
+}
+
+
+
+LC_FS_STAT *LC_FSStat_fromDb(GWEN_DB_NODE *db) {
+  LC_FS_STAT *st;
+
+  st=LC_FSStat_new();
+  st->fileMode=(GWEN_TYPE_UINT32)GWEN_DB_GetIntValue(db, "fileMode", 0, 0);
+  st->fileSize=(GWEN_TYPE_UINT32)GWEN_DB_GetIntValue(db, "fileSize", 0, 0);
+  st->ctime=(time_t)GWEN_DB_GetIntValue(db, "ctime", 0, 0);
+  st->mtime=(time_t)GWEN_DB_GetIntValue(db, "mtime", 0, 0);
+  st->atime=(time_t)GWEN_DB_GetIntValue(db, "atime", 0, 0);
+
+  return st;
+}
+
+
+
+int LC_FSStat_toDb(const LC_FS_STAT *st, GWEN_DB_NODE *db) {
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "fileMode", st->fileMode);
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "fileSize", st->fileSize);
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "ctime", st->ctime);
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "mtime", st->mtime);
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "atime", st->atime);
+
+  return 0;
+}
+
+
+
+
+GWEN_TYPE_UINT32 LC_FSStat_GetFileMode(const LC_FS_STAT *st) {
+  assert(st);
+  return st->fileMode;
+}
+
+
+
+void LC_FSStat_SetFileMode(LC_FS_STAT *st, GWEN_TYPE_UINT32 m){
+}
+
+
+
+GWEN_TYPE_UINT32 LC_FSStat_GetFileSize(const LC_FS_STAT *st) {
+  assert(st);
+  return st->fileSize;
+}
+
+
+
+void LC_FSStat_SetFileSize(LC_FS_STAT *st, GWEN_TYPE_UINT32 s) {
+}
+
+
+
+time_t LC_FSStat_GetCTime(const LC_FS_STAT *st) {
+  assert(st);
+  return st->ctime;
+}
+
+
+
+void LC_FSStat_SetCTime(LC_FS_STAT *st, time_t ti) {
+  assert(st);
+  st->ctime=ti;
+}
+
+
+
+time_t LC_FSStat_GetATime(const LC_FS_STAT *st) {
+  assert(st);
+  return st->atime;
+}
+
+
+
+void LC_FSStat_SetATime(LC_FS_STAT *st, time_t ti) {
+  assert(st);
+  st->atime=ti;
+}
+
+
+
+time_t LC_FSStat_GetMTime(const LC_FS_STAT *st) {
+  assert(st);
+  return st->mtime;
+}
+
+
+
+void LC_FSStat_SetMTime(LC_FS_STAT *st, time_t ti) {
+  assert(st);
+  st->mtime=ti;
+}
+
+
+
+
 
 
 

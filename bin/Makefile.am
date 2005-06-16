@@ -1,3 +1,5 @@
+MAINTAINERCLEANFILES=Makefile.in
+
 EXTRA_DIST=prepare.sh.in.in
 
 noinst_SCRIPTS=prepare.sh

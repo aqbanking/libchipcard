@@ -35,3 +35,5 @@ libmon_la_SOURCES=\
  mservice.c
 
 
+MAINTAINERCLEANFILES=Makefile.in
+

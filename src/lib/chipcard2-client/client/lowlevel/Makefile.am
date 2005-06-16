@@ -12,3 +12,6 @@ liblowlevel_la_SOURCES=\
   request.c \
   server.c
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

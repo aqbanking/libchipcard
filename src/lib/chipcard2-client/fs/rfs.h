@@ -59,6 +59,11 @@ int LC_RFS_MkDir(LC_RFS *fs,
                 GWEN_TYPE_UINT32 mode,
                 GWEN_TYPE_UINT32 *pHid);
 
+int LC_RFS_ReadDir(LC_RFS *fs,
+                   GWEN_TYPE_UINT32 clid,
+                   GWEN_TYPE_UINT32 hid,
+                   GWEN_STRINGLIST2 *sl);
+
 int LC_RFS_CloseDir(LC_RFS *fs,
                    GWEN_TYPE_UINT32 clid,
                    GWEN_TYPE_UINT32 hid);
@@ -85,6 +90,16 @@ int LC_RFS_ReadFile(LC_RFS *fs,
                    GWEN_TYPE_UINT32 offset,
                    GWEN_TYPE_UINT32 len,
                    GWEN_BUFFER *buf);
+
+int LC_RFS_Unlink(LC_RFS *fs,
+                  GWEN_TYPE_UINT32 clid,
+                  const char *path);
+
+
+int LC_RFS_Stat(LC_RFS *fs,
+                GWEN_TYPE_UINT32 clid,
+                const char *path,
+                LC_FS_STAT **pStat);
 
 
 

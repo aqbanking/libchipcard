@@ -54,3 +54,6 @@ libserver_la_SOURCES=\
 libserver_la_LIBADD=\
   commands/libcommands.la
 
+
+MAINTAINERCLEANFILES=Makefile.in
+

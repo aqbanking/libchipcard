@@ -169,6 +169,48 @@ void LC_FSNode_SetFileSize(LC_FS_NODE *fn, GWEN_TYPE_UINT32 s){
 
 
 
+time_t LC_FSNode_GetCTime(const LC_FS_NODE *fn) {
+  assert(fn);
+  return fn->ctime;
+}
+
+
+
+void LC_FSNode_SetCTime(LC_FS_NODE *fn, time_t ti) {
+  assert(fn);
+  fn->ctime=ti;
+}
+
+
+
+time_t LC_FSNode_GetATime(const LC_FS_NODE *fn) {
+  assert(fn);
+  return fn->atime;
+}
+
+
+
+void LC_FSNode_SetATime(LC_FS_NODE *fn, time_t ti) {
+  assert(fn);
+  fn->atime=ti;
+}
+
+
+
+time_t LC_FSNode_GetMTime(const LC_FS_NODE *fn) {
+  assert(fn);
+  return fn->mtime;
+}
+
+
+
+void LC_FSNode_SetMTime(LC_FS_NODE *fn, time_t ti) {
+  assert(fn);
+  fn->mtime=ti;
+}
+
+
+
 
 
 
@@ -216,7 +258,8 @@ void LC_FSNodeHandle_free(LC_FS_NODE_HANDLE *fh){
     assert(fh->usageCounter);
     if (--(fh->usageCounter)==0) {
       GWEN_LIST_FINI(LC_FS_NODE_HANDLE, fh);
-      GWEN_StringList2Iterator_free(fh->entryIterator);
+      if (fh->entryIterator)
+        GWEN_StringList2Iterator_free(fh->entryIterator);
       GWEN_StringList2_free(fh->entryList);
       LC_FSNode_free(fh->node);
       GWEN_FREE_OBJECT(fh);
