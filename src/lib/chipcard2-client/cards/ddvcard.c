@@ -596,9 +596,10 @@ LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf){
 
 
 
-LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
-                                       GWEN_BUFFER *ibuf,
-                                       GWEN_BUFFER *obuf){
+LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
+                                           const char *data,
+                                           unsigned int dlen,
+                                           GWEN_BUFFER *obuf){
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -610,9 +611,10 @@ LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
   ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
   assert(ddv);
 
-  if (GWEN_Buffer_GetUsedBytes(ibuf)!=8) {
-    DBG_ERROR(LC_LOGDOMAIN, "In-block must exactly be 8 bytes in length (is %d)",
-              GWEN_Buffer_GetUsedBytes(ibuf));
+  if (dlen!=8) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "In-block must exactly be 8 bytes in length (is %d)",
+              dlen);
     return LC_Client_ResultDataError;
   }
 
@@ -620,8 +622,7 @@ LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
   dbResp=GWEN_DB_Group_new("response");
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "in",
-                      GWEN_Buffer_GetStart(ibuf),
-                      GWEN_Buffer_GetUsedBytes(ibuf));
+                      data, dlen);
 
   res=LC_Card_ExecCommand(card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
@@ -648,6 +649,17 @@ LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
   return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
+                                       GWEN_BUFFER *ibuf,
+                                       GWEN_BUFFER *obuf){
+  return LC_DDVCard_CryptCharBlock(card,
+                                   GWEN_Buffer_GetStart(ibuf),
+                                   GWEN_Buffer_GetUsedBytes(ibuf),
+                                   obuf);
 }
 
 

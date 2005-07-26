@@ -2,7 +2,7 @@
 <apps>
   <app name="ddv1">
   
-    <crypttoken typeName="ddv1" subTypeName="ddv1" name="DDV1Card">
+    <crypttoken typeName="ddv" subTypeName="ddv1" name="DDV1Card">
 
       <flags>
         <flag>manages_signseq</flag>
@@ -33,8 +33,10 @@
       
       <keyinfos>
         <keyinfo>
-          <keyId>2</keyId>
+          <keyId>1</keyId>
           <keySize>16</keySize>
+          <minKeySize>16</minKeySize>
+          <maxKeySize>16</maxKeySize>
           <chunksize>8</chunksize>
           <cryptalgo>des_3k</cryptalgo>
           <keyDescription>Signkey</keyDescription>
@@ -46,8 +48,10 @@
         </keyinfo>
         
         <keyinfo>
-          <keyId>3</keyId>
+          <keyId>2</keyId>
           <keySize>16</keySize>
+          <minKeySize>16</minKeySize>
+          <maxKeySize>16</maxKeySize>
           <chunksize>8</chunksize>
           <cryptalgo>des_3k</cryptalgo>
           <keyDescription>Cryptkey</keyDescription>
@@ -65,8 +69,10 @@
           <description>Context for HBCI operations</description>
           
           <signkeyinfo>
-            <keyId>2</keyId>
+            <keyId>1</keyId>
             <keySize>16</keySize>
+            <minKeySize>16</minKeySize>
+            <maxKeySize>16</maxKeySize>
             <chunksize>8</chunksize>
             <cryptalgo>des_3k</cryptalgo>
             <keyDescription>Signkey</keyDescription>
@@ -78,8 +84,10 @@
           </signkeyinfo>
           
           <verifykeyinfo>
-            <keyId>2</keyId>
+            <keyId>1</keyId>
             <keySize>16</keySize>
+            <minKeySize>16</minKeySize>
+            <maxKeySize>16</maxKeySize>
             <chunksize>8</chunksize>
             <cryptalgo>des_3k</cryptalgo>
             <keyDescription>Signkey</keyDescription>
@@ -93,12 +101,14 @@
           <signinfo>
             <id>1</id>
             <hashalgo>rmd160</hashalgo>
-            <paddalgo>iso9796_1a4</paddalgo>
+            <paddalgo>none</paddalgo>
           </signinfo>
   
           <encryptKeyInfo>
-            <keyId>3</keyId>
+            <keyId>2</keyId>
             <keySize>16</keySize>
+            <minKeySize>16</minKeySize>
+            <maxKeySize>16</maxKeySize>
             <chunksize>8</chunksize>
             <cryptalgo>des_3k</cryptalgo>
             <keyDescription>Cryptkey</keyDescription>
@@ -109,8 +119,10 @@
           </encryptKeyInfo>
   
           <decryptKeyInfo>
-            <keyId>3</keyId>
+            <keyId>2</keyId>
             <keySize>16</keySize>
+            <minKeySize>16</minKeySize>
+            <maxKeySize>16</maxKeySize>
             <chunksize>8</chunksize>
             <cryptalgo>des_3k</cryptalgo>
             <keyDescription>Cryptkey</keyDescription>
@@ -123,7 +135,7 @@
           <cryptinfo>
             <id>1</id>
             <cryptalgo>des_3k</cryptalgo>
-            <paddalgo>ansix9_23</paddalgo>
+            <paddalgo>none</paddalgo>
           </cryptinfo>
           
         </context>

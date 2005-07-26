@@ -35,6 +35,11 @@ CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card,
 CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
                                                     GWEN_BUFFER *ibuf,
                                                     GWEN_BUFFER *obuf);
+LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
+                                           const char *data,
+                                           unsigned int dlen,
+                                           GWEN_BUFFER *obuf);
+
 CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_SignHash(LC_CARD *card,
                                                   GWEN_BUFFER *hbuf,
                                                   GWEN_BUFFER *obuf);

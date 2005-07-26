@@ -1,4 +1,9 @@
 
+2005/07/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added crypttoken plugin for DDV cards
+
+
 2005/06/17: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - partially applied patch provided by Andreas Jellinghaus (mostly regarding
