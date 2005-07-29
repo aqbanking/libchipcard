@@ -20,7 +20,7 @@ int test1(int argc, char **argv) {
   GWEN_WAITCALLBACK *cb;
 
   cardServer=LC_CardServer_new(0);
-  cb=TEST_Callback_new(GWEN_NETCONNECTION_CBID_IO);
+  cb=TEST_Callback_new(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   if (GWEN_WaitCallback_Register(cb)) {
     fprintf(stderr, "Could not register callback\n");
     return 1;

@@ -628,9 +628,7 @@ void *sc_module_init(const char *name) {
 
 
 
-char *sc_driver_version() {
-  return OPENSC_VERSION;
-}
+SC_IMPLEMENT_DRIVER_VERSION(OPENSC_VERSION)
 
 
 

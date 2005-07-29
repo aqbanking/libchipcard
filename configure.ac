@@ -225,6 +225,11 @@ PKG_CHECK_MODULES([OPENSC], [libopensc >= 0.9.4], [
     AC_MSG_WARN(OpenSC not found, OpenSC driver will not be available.)
     have_opensc=no
 ])
+if test "$have_opensc" = "yes"; then
+  opensc_version="`pkg-config --modversion libopensc`"
+fi
+AC_SUBST(opensc_version)
+
 AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 
 

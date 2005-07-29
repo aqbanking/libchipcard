@@ -36,7 +36,7 @@ int test1(int argc, char **argv) {
   GWEN_WAITCALLBACK *cb;
   LC_CLIENT_RESULT res;
 
-  cb=TEST_Callback_new(GWEN_NETCONNECTION_CBID_IO);
+  cb=TEST_Callback_new(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   if (GWEN_WaitCallback_Register(cb)) {
     fprintf(stderr, "Could not register callback\n");
     return 1;
@@ -169,14 +169,14 @@ int test2(int argc, char **argv) {
   LC_CLIENT_RESULT res;
   time_t startTime;
 
-  cb=TEST_Callback_new(GWEN_NETCONNECTION_CBID_IO);
+  cb=TEST_Callback_new(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   if (GWEN_WaitCallback_Register(cb)) {
     fprintf(stderr, "Could not register callback\n");
     return 1;
   }
 
   //GWEN_WaitCallback_SetDistance(cb, 100);
-  GWEN_WaitCallback_Enter(GWEN_NETCONNECTION_CBID_IO);
+  GWEN_WaitCallback_Enter(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   db=GWEN_DB_Group_new("client");
   if (GWEN_DB_ReadFile(db,
                        "chipcardc.conf",
@@ -357,7 +357,7 @@ int test3(int argc, char **argv) {
   LC_CLIENT_RESULT res;
   time_t startTime;
 
-  cb=TEST_Callback_new(GWEN_NETCONNECTION_CBID_IO);
+  cb=TEST_Callback_new(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   if (GWEN_WaitCallback_Register(cb)) {
     fprintf(stderr, "Could not register callback\n");
     return 1;
@@ -446,14 +446,14 @@ int test4(int argc, char **argv) {
   LC_CLIENT_RESULT res;
   time_t startTime;
 
-  cb=TEST_Callback_new(GWEN_NETCONNECTION_CBID_IO);
+  cb=TEST_Callback_new(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   if (GWEN_WaitCallback_Register(cb)) {
     fprintf(stderr, "Could not register callback\n");
     return 1;
   }
 
   //GWEN_WaitCallback_SetDistance(cb, 100);
-  GWEN_WaitCallback_Enter(GWEN_NETCONNECTION_CBID_IO);
+  GWEN_WaitCallback_Enter(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS);
   db=GWEN_DB_Group_new("client");
   if (GWEN_DB_ReadFile(db,
                        "chipcardc.conf",

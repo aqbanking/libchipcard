@@ -1,7 +1,13 @@
 
+2005/07/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in Gwen
+
+
 2005/07/26: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added crypttoken plugin for DDV cards
+- improved OpenSC detection (driver module now works again)
 
 
 2005/06/17: Martin Preuss<martin@libchipcard.de>
