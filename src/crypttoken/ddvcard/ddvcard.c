@@ -15,7 +15,7 @@
 # include <config.h>
 #endif
 
-#include "ct_ddv_p.h"
+#include "ddvcard_p.h"
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
@@ -109,8 +109,90 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_Plugin_CreateToken(GWEN_PLUGIN *pl,
 int LC_CryptTokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
 				       GWEN_BUFFER *subTypeName,
 				       GWEN_BUFFER *name) {
+  GWEN_PLUGIN_MANAGER *pm;
+  LC_CT_PLUGIN_DDV *cpl;
+  LC_CLIENT_RESULT res;
+  LC_CARD *hcard=0;
+  const char *currCardNumber;
 
-  return GWEN_ERROR_CT_IO_ERROR;
+  assert(pl);
+  cpl=GWEN_INHERIT_GETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_DDV, pl);
+  assert(cpl);
+
+  pm=GWEN_Plugin_GetManager(pl);
+  assert(pm);
+
+  res=LC_Client_StartWait(cpl->client, 0, 0);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  hcard=LC_Client_WaitForNextCard(cpl->client, 5);
+  if (!hcard) {
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "No card within specified timeout");
+    LC_Client_StopWait(cpl->client);
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+  else {
+    int rv;
+
+    /* ok, we have a card, don't wait for more */
+    LC_Client_StopWait(cpl->client);
+    /* check card */
+    rv=LC_DDVCard_ExtendCard(hcard);
+    if (rv) {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"DDV card not available, please check your setup (%d)", rv);
+      LC_Card_free(hcard);
+      return GWEN_ERROR_NOT_AVAILABLE;
+    }
+
+    res=LC_Card_Open(hcard);
+    if (res!=LC_Client_ResultOk) {
+      LC_Card_free(hcard);
+      DBG_NOTICE(LC_LOGDOMAIN,
+		 "Could not open card (%d), maybe not a DDV card?",
+		 res);
+      return GWEN_ERROR_CT_NOT_SUPPORTED;
+    } /* if card not open */
+    else {
+      GWEN_DB_NODE *dbCardData;
+
+        dbCardData=LC_DDVCard_GetCardDataAsDb(hcard);
+	assert(dbCardData);
+
+        currCardNumber=GWEN_DB_GetCharValue(dbCardData,
+                                            "cardNumber",
+                                            0,
+                                            0);
+	if (!currCardNumber) {
+          DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
+          abort();
+        }
+
+        DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
+
+	if (GWEN_Buffer_GetUsedBytes(name)==0) {
+	  DBG_NOTICE(LC_LOGDOMAIN, "No or empty token name");
+	  GWEN_Buffer_AppendString(name, currCardNumber);
+	}
+	else {
+	  if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
+	    DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
+	    LC_Card_Close(hcard);
+	    LC_Card_free(hcard);
+	    return GWEN_ERROR_CT_BAD_NAME;
+	  }
+	}
+
+        LC_Card_Close(hcard);
+	LC_Card_free(hcard);
+    } /* if card is open */
+    return 0;
+  } /* if there is a card */
+
 }
 
 
@@ -132,7 +214,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_new(GWEN_PLUGIN_MANAGER *pm,
   /* create crypt token */
   ct=GWEN_CryptToken_new(pm,
                          GWEN_CryptToken_Device_Card,
-                         "ddv", 0, name);
+                         "ddvcard", 0, name);
 
   /* inherit CryptToken: Set our own data */
   GWEN_NEW_OBJECT(LC_CT_DDV, lct);
@@ -152,6 +234,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_new(GWEN_PLUGIN_MANAGER *pm,
   GWEN_CryptToken_SetGetSignSeqFn(ct, LC_CryptTokenDDV_GetSignSeq);
   GWEN_CryptToken_SetReadKeySpecFn(ct, LC_CryptTokenDDV_ReadKeySpec);
   GWEN_CryptToken_SetFillUserListFn(ct, LC_CryptTokenDDV_FillUserList);
+  GWEN_CryptToken_SetGetTokenIdDataFn(ct, LC_CryptTokenDDV_GetTokenIdData);
   return ct;
 }
 
@@ -607,9 +690,15 @@ int LC_CryptTokenDDV_Sign(GWEN_CRYPTTOKEN *ct,
     GWEN_Buffer_free(hbuf);
     return GWEN_ERROR_CT_IO_ERROR;
   }
+  GWEN_Buffer_free(hbuf);
+
+  rv=LC_CryptTokenDDV__IncSignSeq(ct, GWEN_CryptToken_KeyInfo_GetKeyId(ki));
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+    return rv;
+  }
 
   /* done */
-  GWEN_Buffer_free(hbuf);
   return 0;
 }
 
@@ -891,9 +980,8 @@ int LC_CryptTokenDDV_Decrypt(GWEN_CRYPTTOKEN *ct,
 
 
 
-int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,
-				GWEN_TYPE_UINT32 kid,
-				GWEN_TYPE_UINT32 *signSeq) {
+int LC_CryptTokenDDV__IncSignSeq(GWEN_CRYPTTOKEN *ct,
+                                 GWEN_TYPE_UINT32 kid) {
   LC_CT_DDV *lct;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -962,6 +1050,66 @@ int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,
   GWEN_Buffer_free(mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  return 0;
+}
+
+
+
+int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,
+				GWEN_TYPE_UINT32 kid,
+				GWEN_TYPE_UINT32 *signSeq) {
+  LC_CT_DDV *lct;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *mbuf;
+  GWEN_DB_NODE *dbRecord;
+  int seq;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_DDV, ct);
+  assert(lct);
+
+  if (lct->card==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card.");
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  /* get keyinfo and perform some checks */
+  if (kid!=1) {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid key id");
+    return GWEN_ERROR_INVALID;
+  }
+
+  /* read signature sequence counter from card */
+  res=LC_ProcessorCard_SelectEF(lct->card, "EF_SEQ");
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "here");
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  mbuf=GWEN_Buffer_new(0, 4, 0, 1);
+  res=LC_ProcessorCard_ReadRecord(lct->card, 1, mbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "here");
+    GWEN_Buffer_free(mbuf);
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+  GWEN_Buffer_Rewind(mbuf);
+  dbRecord=GWEN_DB_Group_new("seq");
+  if (LC_Card_ParseRecord(lct->card, 1, mbuf, dbRecord)) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error parsing record");
+    GWEN_DB_Group_free(dbRecord);
+    GWEN_Buffer_free(mbuf);
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  seq=GWEN_DB_GetIntValue(dbRecord, "seq", 0, -1);
+  if (seq==-1) {
+    DBG_ERROR(LC_LOGDOMAIN, "Bad record data in EF_SEQ");
+    GWEN_DB_Group_free(dbRecord);
+    GWEN_Buffer_free(mbuf);
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
@@ -1107,6 +1255,32 @@ int LC_CryptTokenDDV_FillUserList(GWEN_CRYPTTOKEN *ct,
   }
 
   GWEN_DB_Group_free(dbData);
+  return 0;
+}
+
+
+
+int LC_CryptTokenDDV_GetTokenIdData(GWEN_CRYPTTOKEN *ct, GWEN_BUFFER *buf){
+  LC_CT_DDV *lct;
+  GWEN_BUFFER *dbuf;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_DDV, ct);
+  assert(lct);
+
+  if (lct->card==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card.");
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  dbuf=LC_DDVCard_GetCardDataAsBuffer(lct->card);
+  if (dbuf==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card data");
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  GWEN_Buffer_AppendBuffer(buf, dbuf);
+
   return 0;
 }
 

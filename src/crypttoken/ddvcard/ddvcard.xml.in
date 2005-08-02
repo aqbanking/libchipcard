@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf8"?>
 
-<plugin type="crypttoken" name="ddv" device="card" >
+<plugin type="crypttoken" name="ddvcard" device="card" >
   <version>@CHIPCARD_VERSION_STRING@</version>
   <author>Martin Preuss (martin@libchipcard.de)</author>
   <short>DDV Chipcard Medium</short>

@@ -89,6 +89,9 @@ int LC_CryptTokenDDV_ReadKeySpec(GWEN_CRYPTTOKEN *ct,
 int LC_CryptTokenDDV_FillUserList(GWEN_CRYPTTOKEN *ct,
                                   GWEN_CRYPTTOKEN_USER_LIST *ul);
 
+int LC_CryptTokenDDV_GetTokenIdData(GWEN_CRYPTTOKEN *ct, GWEN_BUFFER *buf);
+
+
 GWEN_CRYPTTOKEN *LC_CryptTokenDDV_Plugin_CreateToken(GWEN_PLUGIN *pl,
                                                      const char *subTypeName,
                                                      const char *name);
@@ -105,7 +108,8 @@ int LC_CryptTokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
 				       GWEN_BUFFER *subTypeName,
 				       GWEN_BUFFER *name);
 
-
+int LC_CryptTokenDDV__IncSignSeq(GWEN_CRYPTTOKEN *ct,
+                                 GWEN_TYPE_UINT32 kid);
 
 
 #endif

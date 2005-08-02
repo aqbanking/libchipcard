@@ -45,6 +45,10 @@ CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_SignHash(LC_CARD *card,
                                                   GWEN_BUFFER *obuf);
 
 CHIPCARD_API GWEN_DB_NODE *LC_DDVCard_GetCardDataAsDb(const LC_CARD *card);
+
+/**
+ * Does not relinquish ownership.
+ */
 CHIPCARD_API GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card);
 
 CHIPCARD_API
