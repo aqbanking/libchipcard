@@ -28,9 +28,9 @@ GWEN_INHERIT(GWEN_PLUGIN, LC_CT_PLUGIN_DDV)
 
 
 
-GWEN_PLUGIN *crypttoken_ddv_factory(GWEN_PLUGIN_MANAGER *pm,
-                                    const char *modName,
-				    const char *fileName) {
+GWEN_PLUGIN *crypttoken_ddvcard_factory(GWEN_PLUGIN_MANAGER *pm,
+                                        const char *modName,
+                                        const char *fileName) {
   GWEN_PLUGIN *pl;
 
   pl=LC_CryptTokenDDV_Plugin_new(pm, modName, fileName);
