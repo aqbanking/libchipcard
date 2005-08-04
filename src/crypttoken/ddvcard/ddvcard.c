@@ -1153,6 +1153,7 @@ int LC_CryptTokenDDV_ReadKeySpec(GWEN_CRYPTTOKEN *ct,
 
   /* read and create key spec */
   ks=GWEN_KeySpec_new();
+  GWEN_KeySpec_SetStatus(ks, GWEN_CRYPTTOKEN_KEYSTATUS_ACTIVE);
   GWEN_KeySpec_SetKeyType(ks, "des");
   if (kid==1) {
     int i;
