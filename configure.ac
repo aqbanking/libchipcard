@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=12
-CHIPCARD_VERSION_BUILD=6
+CHIPCARD_VERSION_BUILD=7
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -237,7 +237,7 @@ AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,9,10,0)
+AC_GWENHYWFAR(1,14,0,5)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -657,6 +657,8 @@ AC_CONFIG_FILES([Makefile
                  src/crypttoken/Makefile
                  src/crypttoken/ddvcard/Makefile
                  src/crypttoken/ddvcard/ddvcard.xml
+                 src/crypttoken/starcoscard/Makefile
+                 src/crypttoken/starcoscard/starcoscard.xml
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ifd/Makefile

@@ -24,6 +24,16 @@
 # define CHIPCARD_API
 #endif
 
+#ifndef CHIPCARD_NOWARN_DEPRECATED
+# ifdef __GNUC__
+#  define CHIPCARD_DEPRECATED __attribute((__deprecated__))
+# else
+#  define CHIPCARD_DEPRECATED
+# endif
+# else
+#  define CHIPCARD_DEPRECATED
+#endif
+
 
 /* APIDOC stuff for Doxygen */
 /** @defgroup MOD_TUTORIALS Tutorials */

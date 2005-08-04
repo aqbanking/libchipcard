@@ -63,19 +63,24 @@ int LC_CryptTokenDDV_Close(GWEN_CRYPTTOKEN *ct);
 
 int LC_CryptTokenDDV_Sign(GWEN_CRYPTTOKEN *ct,
                           const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-                          GWEN_BUFFER *src,
+                          const char *ptr,
+                          unsigned int len,
                           GWEN_BUFFER *dst);
 int LC_CryptTokenDDV_Verify(GWEN_CRYPTTOKEN *ct,
                             const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-                            GWEN_BUFFER *src,
-                            GWEN_BUFFER *dst);
+                            const char *ptr,
+                            unsigned int len,
+                            const char *sigptr,
+                            unsigned int siglen);
 int LC_CryptTokenDDV_Encrypt(GWEN_CRYPTTOKEN *ct,
                              const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-                             GWEN_BUFFER *src,
+                             const char *ptr,
+                             unsigned int len,
                              GWEN_BUFFER *dst);
 int LC_CryptTokenDDV_Decrypt(GWEN_CRYPTTOKEN *ct,
                              const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-                             GWEN_BUFFER *src,
+                             const char *ptr,
+                             unsigned int len,
                              GWEN_BUFFER *dst);
 
 int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,

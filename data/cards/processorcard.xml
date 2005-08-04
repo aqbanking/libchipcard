@@ -229,53 +229,6 @@
 				</responses>
     	</command>
 
-      <!-- Read Record -->
-      <command name="ReadRecord" >
-      	<send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="word">0x00b2</ELEM>
-            <ELEM name="recNum" type="byte" />
-            <ELEM type="byte">0x04</ELEM>
-	  			</APDU>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-         <result sw1="0x6a" sw2="0x83" type="error" >
-           Record not found
-         </result>
-       </results>
-    	</command>
-
-      <!-- Update Record -->
-      <command name="WriteRecord" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00dc</ELEM>
-            <ELEM name="recNum" type="byte" />
-            <ELEM type="byte">0x04</ELEM>
-	  			</APDU>
-          <DATA>
-            <ELEM name="data" type="bytes" />
-          </DATA>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-         <result sw1="0x6a" sw2="0x83" type="error" >
-           Record not found
-         </result>
-       </results>
-    	</command>
-
     </commands>
 
 

@@ -611,7 +611,7 @@ char CT__requestICC(CTAPI_CONTEXT *ctx,
       i=apdu->rlen;
       if (i==-1)
         i=GWEN_Buffer_GetUsedBytes(atr);
-      if (i>GWEN_Buffer_GetUsedBytes(atr))
+      if (i>(int)GWEN_Buffer_GetUsedBytes(atr))
         i=GWEN_Buffer_GetUsedBytes(atr);
       if (i>(*lenr)-2) {
         return CT_API_RV_ERR_INVALID;
@@ -794,7 +794,7 @@ char CT__resetICC(CTAPI_CONTEXT *ctx,
       i=apdu->rlen;
       if (i==-1)
         i=GWEN_Buffer_GetUsedBytes(atr);
-      if (i>GWEN_Buffer_GetUsedBytes(atr))
+      if (i>(int)GWEN_Buffer_GetUsedBytes(atr))
         i=GWEN_Buffer_GetUsedBytes(atr);
       if (i>(*lenr)-2) {
         return CT_API_RV_ERR_INVALID;
@@ -924,7 +924,7 @@ char CT__secureVerify(CTAPI_CONTEXT *ctx,
     i=apdu->rlen;
     if (i==-1)
       i=bs;
-    if (i>bs)
+    if (i>(int)bs)
       i=bs;
     if (i>(*lenr)-2) {
       GWEN_DB_Group_free(dbResp);
@@ -1029,7 +1029,7 @@ char CT__secureModify(CTAPI_CONTEXT *ctx,
     i=apdu->rlen;
     if (i==-1)
       i=bs;
-    if (i>bs)
+    if (i>(int)bs)
       i=bs;
     if (i>(*lenr)-2) {
       GWEN_DB_Group_free(dbResp);

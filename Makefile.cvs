@@ -1,3 +1,6 @@
+
+MY_CFLAGS=-ggdb -Wall -O -ggdb
+
 default: all
 
 dist:
@@ -38,7 +41,7 @@ mp:
 	autoheader
 	automake --add-missing
 	autoconf
-	CFLAGS="-ggdb -Wall -O" CXXFLAGS="-ggdb -Wall -O" ./configure --enable-maintainer-mode
+	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" ./configure --enable-maintainer-mode
 
 mp-debug:
 	libtoolize -f --automake

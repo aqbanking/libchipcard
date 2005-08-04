@@ -1,1 +1,1 @@
-SUBDIRS=ddvcard
+SUBDIRS=ddvcard starcoscard

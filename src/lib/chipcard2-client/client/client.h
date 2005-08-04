@@ -38,7 +38,8 @@ typedef enum {
   LC_Client_ResultInternal,
   LC_Client_ResultGeneric,
   LC_Client_ResultNoData,
-  LC_Client_ResultCardRemoved
+  LC_Client_ResultCardRemoved,
+  LC_Client_ResultNotSupported
 } LC_CLIENT_RESULT;
 
 

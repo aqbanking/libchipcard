@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf8"?>
+
+<plugin type="crypttoken" name="starcoscard" device="card" >
+  <version>@CHIPCARD_VERSION_STRING@</version>
+  <author>Martin Preuss (martin@libchipcard.de)</author>
+  <short>STARCOS Chipcard Medium</short>
+
+  <descr>
+    This plugins provides support for STARCOS chipcards.
+
+    <text format="html" >
+      <p>
+        This plugins provides support for STARCOS chipcards.
+      </p>
+    </text>
+
+    <text format="html" lang="de" >
+      <p>
+        Dieses Modul unterstuetzt STARCOS Chipkarten.
+      </p>
+    </text>
+
+  </descr>
+
+</plugin>
+
+

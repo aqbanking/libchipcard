@@ -614,7 +614,8 @@ int LC_CryptTokenDDV_Close(GWEN_CRYPTTOKEN *ct) {
 
 int LC_CryptTokenDDV_Sign(GWEN_CRYPTTOKEN *ct,
 			  const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-                          GWEN_BUFFER *src,
+                          const char *ptr,
+                          unsigned int len,
                           GWEN_BUFFER *dst) {
   LC_CT_DDV *lct;
   const GWEN_CRYPTTOKEN_KEYINFO *ki;
@@ -657,8 +658,7 @@ int LC_CryptTokenDDV_Sign(GWEN_CRYPTTOKEN *ct,
   /* hash data */
   hbuf=GWEN_Buffer_new(0, 32, 0, 1);
   rv=GWEN_CryptToken_Hash(GWEN_CryptToken_SignInfo_GetHashAlgo(si),
-			  GWEN_Buffer_GetStart(src),
-			  GWEN_Buffer_GetUsedBytes(src),
+                          ptr, len,
 			  hbuf);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here");
@@ -706,8 +706,10 @@ int LC_CryptTokenDDV_Sign(GWEN_CRYPTTOKEN *ct,
 
 int LC_CryptTokenDDV_Verify(GWEN_CRYPTTOKEN *ct,
 			    const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-			    GWEN_BUFFER *src,
-			    GWEN_BUFFER *signature) {
+                            const char *ptr,
+                            unsigned int len,
+                            const char *sigptr,
+                            unsigned int siglen) {
   LC_CT_DDV *lct;
   const GWEN_CRYPTTOKEN_KEYINFO *ki;
   const GWEN_CRYPTTOKEN_SIGNINFO *si;
@@ -753,8 +755,7 @@ int LC_CryptTokenDDV_Verify(GWEN_CRYPTTOKEN *ct,
   /* hash data */
   hbuf=GWEN_Buffer_new(0, 32, 0, 1);
   rv=GWEN_CryptToken_Hash(GWEN_CryptToken_SignInfo_GetHashAlgo(si),
-			  GWEN_Buffer_GetStart(src),
-			  GWEN_Buffer_GetUsedBytes(src),
+                          ptr, len,
 			  hbuf);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here");
@@ -785,9 +786,9 @@ int LC_CryptTokenDDV_Verify(GWEN_CRYPTTOKEN *ct,
   }
 
   /* compare signatures */
-  p1=GWEN_Buffer_GetStart(signature);
+  p1=sigptr;
   p2=GWEN_Buffer_GetStart(tmpsigbuf);
-  bsize=GWEN_Buffer_GetUsedBytes(signature);
+  bsize=siglen;
   if (bsize!=GWEN_Buffer_GetUsedBytes(tmpsigbuf)) {
     DBG_ERROR(LC_LOGDOMAIN, "Invalid signature (1) [%d!=%d]",
 	      bsize, GWEN_Buffer_GetUsedBytes(tmpsigbuf));
@@ -817,7 +818,8 @@ int LC_CryptTokenDDV_Verify(GWEN_CRYPTTOKEN *ct,
 
 int LC_CryptTokenDDV_Encrypt(GWEN_CRYPTTOKEN *ct,
 			     const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-			     GWEN_BUFFER *src,
+                             const char *ptr,
+                             unsigned int len,
 			     GWEN_BUFFER *dst) {
   LC_CT_DDV *lct;
   const GWEN_CRYPTTOKEN_KEYINFO *ki;
@@ -859,8 +861,8 @@ int LC_CryptTokenDDV_Encrypt(GWEN_CRYPTTOKEN *ct,
   }
 
   /* copy data */
-  hbuf=GWEN_Buffer_new(0, GWEN_Buffer_GetUsedBytes(src), 0, 1);
-  GWEN_Buffer_AppendBuffer(hbuf, src);
+  hbuf=GWEN_Buffer_new(0, len, 0, 1);
+  GWEN_Buffer_AppendBytes(hbuf, ptr, len);
 
   /* padd data */
   GWEN_Buffer_Rewind(hbuf);
@@ -900,7 +902,8 @@ int LC_CryptTokenDDV_Encrypt(GWEN_CRYPTTOKEN *ct,
 
 int LC_CryptTokenDDV_Decrypt(GWEN_CRYPTTOKEN *ct,
 			     const GWEN_CRYPTTOKEN_CONTEXT *ctx,
-			     GWEN_BUFFER *src,
+                             const char *ptr,
+                             unsigned int len,
 			     GWEN_BUFFER *dst) {
   LC_CT_DDV *lct;
   const GWEN_CRYPTTOKEN_KEYINFO *ki;
@@ -942,9 +945,9 @@ int LC_CryptTokenDDV_Decrypt(GWEN_CRYPTTOKEN *ct,
   }
 
   /* decrypt data */
-  p=GWEN_Buffer_GetStart(src);
-  i=GWEN_Buffer_GetUsedBytes(src)/GWEN_CryptToken_KeyInfo_GetChunkSize(ki);
-  hbuf=GWEN_Buffer_new(0, GWEN_Buffer_GetUsedBytes(src), 0, 1);
+  p=ptr;
+  i=len/GWEN_CryptToken_KeyInfo_GetChunkSize(ki);
+  hbuf=GWEN_Buffer_new(0, len, 0, 1);
   while(i--) {
     LC_CLIENT_RESULT res;
 
@@ -1011,7 +1014,8 @@ int LC_CryptTokenDDV__IncSignSeq(GWEN_CRYPTTOKEN *ct,
   }
 
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(lct->card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(lct->card,
+                            LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -1045,7 +1049,12 @@ int LC_CryptTokenDDV__IncSignSeq(GWEN_CRYPTTOKEN *ct,
     return GWEN_ERROR_CT_IO_ERROR;
   }
   GWEN_Buffer_Rewind(mbuf);
-  res=LC_ProcessorCard_WriteRecord(lct->card, 1, mbuf);
+  res=LC_Card_IsoUpdateRecord(lct->card,
+                              LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              1,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
+
   GWEN_DB_Group_free(dbRecord);
   GWEN_Buffer_free(mbuf);
   if (res!=LC_Client_ResultOk) {
@@ -1090,7 +1099,8 @@ int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,
   }
 
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(lct->card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);

@@ -64,6 +64,9 @@ int LC_Starcos_ExtendCard(LC_CARD *card){
   LC_Card_SetOpenFn(card, LC_Starcos_Open);
   LC_Card_SetCloseFn(card, LC_Starcos_Close);
 
+  LC_Card_SetIsoSignFn(card, LC_Starcos__Sign);
+  LC_Card_SetIsoVerifyFn(card, LC_Starcos__Verify);
+
   return 0;
 }
 
@@ -662,6 +665,15 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyDescr(LC_CARD *card,
     DBG_INFO(LC_LOGDOMAIN, "Key %02x not available", kid);
     return LC_Client_ResultInvalid;
   }
+
+  res=LC_ProcessorCard_SelectEF(card, "EF_KEY_LOG");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
+    return LC_Client_ResultGeneric;
+  }
+
+  LC_Card_SetLastResult(card, 0, 0, 0, 0);
+
   dbDescr=GWEN_DB_Group_new("descriptor");
   assert(dbDescr);
   if (LC_Starcos_KeyDescr_toDb(d, dbDescr)) {
@@ -1114,7 +1126,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
     /* we have to mirror the modulus */
     s=(const char*)p+modLen;
-    for (i=0; i<bs; i++)
+    for (i=0; i<(int)bs; i++)
       GWEN_Buffer_AppendByte(mbuf, *(--s));
   }
   else {
@@ -1320,7 +1332,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbCurr;
-  unsigned int i;
+  int i;
   GWEN_BUFFER *buf;
 
   assert(card);
@@ -1338,7 +1350,8 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   for (i=1; i<6; i++) {
     GWEN_Buffer_Reset(buf);
-    res=LC_ProcessorCard_ReadRecord(card, idx?idx:i, buf);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              idx?idx:i, buf);
     if (res!=LC_Client_ResultOk)
       break;
     if (idx)
@@ -1408,7 +1421,10 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
   }
 
   GWEN_Buffer_Rewind(buf);
-  res=LC_ProcessorCard_WriteRecord(card, idx, buf);
+  res=LC_Card_IsoUpdateRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              idx,
+                              GWEN_Buffer_GetStart(buf),
+                              GWEN_Buffer_GetUsedBytes(buf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(buf);
@@ -1450,7 +1466,8 @@ GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, i, buf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            i, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (res=%d)", res);
     GWEN_Buffer_free(buf);
@@ -1481,78 +1498,10 @@ GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
 
 
 
-LC_CLIENT_RESULT LC_Starcos__ManageSE(LC_CARD *card,
-                                      int tmpl, int kids, int kidp, int ar) {
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-
-  dbReq=0;
-  if (kids==0) {
-    if (kidp==0) {
-      DBG_ERROR(LC_LOGDOMAIN, "No keys given.");
-      return LC_Client_ResultInvalid;
-    }
-    dbReq=GWEN_DB_Group_new("SelectPublicKey");
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "template", tmpl);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "algo", ar);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "kid", kidp);
-  }
-  else if (kidp==0) {
-    if (kids==0) {
-      DBG_ERROR(LC_LOGDOMAIN, "No keys given.");
-      return LC_Client_ResultInvalid;
-    }
-    dbReq=GWEN_DB_Group_new("SelectPrivateKey");
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "template", tmpl);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "algo", ar);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "kid", kids);
-  }
-  else {
-    dbReq=GWEN_DB_Group_new("ManageSE");
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "template", tmpl);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "algo", ar);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "kids", kids);
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                        "kidp", kidp);
-  }
-
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbResp);
-    return res;
-  }
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return LC_Client_ResultOk;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_Sign(LC_CARD *card,
-                                 int kid,
-                                 GWEN_BUFFER *hashBuf,
-                                 GWEN_BUFFER *sigBuf) {
+LC_CLIENT_RESULT LC_Starcos__Sign(LC_CARD *card,
+                                  const char *ptr,
+                                  unsigned int size,
+                                  GWEN_BUFFER *sigBuf) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
@@ -1564,27 +1513,13 @@ LC_CLIENT_RESULT LC_Starcos_Sign(LC_CARD *card,
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
   assert(scos);
 
-  if (kid<0x81 || kid>0x85) {
-    DBG_ERROR(LC_LOGDOMAIN,
-              "Signing only allowed with kid 0x81-0x85 (is: %02x)",
-              kid);
-    return LC_Client_ResultInvalid;
-  }
-
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Starcos__ManageSE(card, 0xb6, kid, kid, 0x25);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
-  }
 
   /* put hash */
   dbReq=GWEN_DB_Group_new("PutHash");
   dbRsp=GWEN_DB_Group_new("response");
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "data",
-                      GWEN_Buffer_GetStart(hashBuf),
-                      GWEN_Buffer_GetUsedBytes(hashBuf));
+                      "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, dbReq, dbRsp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
@@ -1627,10 +1562,11 @@ LC_CLIENT_RESULT LC_Starcos_Sign(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
-                                   int kid,
-                                   GWEN_BUFFER *hashBuf,
-                                   GWEN_BUFFER *sigBuf) {
+LC_CLIENT_RESULT LC_Starcos__Verify(LC_CARD *card,
+                                    const char *ptr,
+                                    unsigned int size,
+                                    const char *sigptr,
+                                    unsigned int sigsize) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
@@ -1640,31 +1576,13 @@ LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
   assert(scos);
 
-  if (!(
-        (kid>=0x81 && kid<=0x85) ||
-        (kid>=0x91 && kid<=0x95)
-       )
-     ){
-    DBG_ERROR(LC_LOGDOMAIN,
-              "Expected KID 0x81-0x85 or 0x91-0x95 (is: %02x)",
-              kid);
-    return LC_Client_ResultInvalid;
-  }
-
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Starcos__ManageSE(card, 0xb6, 0, kid, 0x25);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
-  }
 
   /* put hash */
   dbReq=GWEN_DB_Group_new("PutHash");
   dbRsp=GWEN_DB_Group_new("response");
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "data",
-                      GWEN_Buffer_GetStart(hashBuf),
-                      GWEN_Buffer_GetUsedBytes(hashBuf));
+                      "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, dbReq, dbRsp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
@@ -1682,8 +1600,7 @@ LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
   dbRsp=GWEN_DB_Group_new("response");
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "signature",
-                      GWEN_Buffer_GetStart(sigBuf),
-                      GWEN_Buffer_GetUsedBytes(sigBuf));
+                      sigptr, sigsize);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, dbReq, dbRsp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
@@ -1694,141 +1611,6 @@ LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
     return res;
   }
 
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbRsp);
-
-  return LC_Client_ResultOk;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_Encipher(LC_CARD *card,
-                                     int kid,
-                                     GWEN_BUFFER *plainBuf,
-                                     GWEN_BUFFER *codeBuf) {
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
-  const void *p;
-  unsigned int bs;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  if (!(
-        (kid>=0x86 && kid<=0x8a) ||
-        (kid>=0x9a && kid<=0x9a)
-       )
-     ){
-    DBG_ERROR(LC_LOGDOMAIN,
-              "Expected KID 0x86-0x8a or 0x96-0x9a (is: %02x)",
-              kid);
-    return LC_Client_ResultInvalid;
-  }
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Starcos__ManageSE(card, 0xb8, 0, kid, 0x03);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
-  }
-
-  /* put hash */
-  dbReq=GWEN_DB_Group_new("Encipher");
-  dbRsp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "data",
-                      GWEN_Buffer_GetStart(plainBuf),
-                      GWEN_Buffer_GetUsedBytes(plainBuf));
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card, dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbRsp);
-    return res;
-  }
-
-  /* extract the encoded data */
-  p=GWEN_DB_GetBinValue(dbRsp, "data", 0, 0, 0, &bs);
-  if (!p || !bs) {
-    DBG_ERROR(LC_LOGDOMAIN, "No data returned by card");
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbRsp);
-    return res;
-  }
-  GWEN_Buffer_AppendBytes(codeBuf, p, bs);
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbRsp);
-
-  return LC_Client_ResultOk;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_Decipher(LC_CARD *card,
-                                     int kid,
-                                     GWEN_BUFFER *codeBuf,
-                                     GWEN_BUFFER *plainBuf) {
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
-  const void *p;
-  unsigned int bs;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  if (!(
-        (kid>=0x86 && kid<=0x8a) ||
-        (kid>=0x9a && kid<=0x9a)
-       )
-     ){
-    DBG_ERROR(LC_LOGDOMAIN,
-              "Expected KID 0x86-0x8a or 0x96-0x9a (is: %02x)",
-              kid);
-    return LC_Client_ResultInvalid;
-  }
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Starcos__ManageSE(card, 0xb8, kid, kid, 0x03);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
-  }
-
-  /* put hash */
-  dbReq=GWEN_DB_Group_new("Decipher");
-  dbRsp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "data",
-                      GWEN_Buffer_GetStart(codeBuf),
-                      GWEN_Buffer_GetUsedBytes(codeBuf));
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card, dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbRsp);
-    return res;
-  }
-
-  /* extract the decoded data */
-  p=GWEN_DB_GetBinValue(dbRsp, "command/response/data", 0, 0, 0, &bs);
-  if (!p || !bs) {
-    DBG_ERROR(LC_LOGDOMAIN, "No data returned by card");
-    GWEN_DB_Dump(dbRsp, stderr, 2);
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbRsp);
-    return res;
-  }
-  GWEN_Buffer_AppendBytes(plainBuf, p, bs);
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbRsp);
 

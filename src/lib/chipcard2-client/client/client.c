@@ -1792,7 +1792,7 @@ LC_Client_CheckStartWait(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if ((unsigned int)err>GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -1826,7 +1826,7 @@ LC_Client_CheckStopWait(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if ((unsigned int)err>GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -1860,7 +1860,7 @@ LC_Client_CheckTakeCard(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -1894,7 +1894,7 @@ LC_Client_CheckReleaseCard(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -1947,7 +1947,7 @@ LC_Client_CheckCommandCard(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2073,7 +2073,7 @@ LC_Client_CheckExecCommand(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       LC_Card_SetLastResult(card, "error", "IPC error", -1, -1);
       return LC_Client_ResultIpcError;
@@ -2146,7 +2146,7 @@ LC_Client_CheckSelectCardApp(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2346,7 +2346,7 @@ LC_CLIENT_RESULT LC_Client_CheckSetNotify(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2484,7 +2484,7 @@ LC_Client_CheckGetDriverVar(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2583,7 +2583,7 @@ LC_CLIENT_RESULT LC_Client_CheckCardCheck(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2683,7 +2683,7 @@ LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2796,7 +2796,7 @@ LC_Client_CheckOpenService(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -2906,7 +2906,7 @@ LC_CLIENT_RESULT LC_Client_CheckCloseService(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;
@@ -3016,7 +3016,7 @@ LC_CLIENT_RESULT LC_Client_CheckServiceCommand(LC_CLIENT *cl,
 
   err=LC_Client_CheckForError(dbRsp);
   if (err) {
-    if (err>GWEN_IPC_ERROR_CODES) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
       DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
       GWEN_DB_Group_free(dbRsp);
       return LC_Client_ResultIpcError;

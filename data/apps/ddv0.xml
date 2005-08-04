@@ -1,6 +1,98 @@
 
 <apps>
+
   <app name="ddv0">
+
+    <crypttoken typeName="ddvcard" subTypeName="ddv0" name="DDV0Card">
+
+      <flags>
+        <flag>manages_signseq</flag>
+        <flag>predef_context_only</flag>
+        <flag>context_management</flag>
+        <flag>context_ro_keys</flag>
+        <flag>context_ro_descr</flag>
+        <flag>context_ro_signdescr</flag>
+        <flag>context_ro_cryptdescr</flag>
+        <flag>context_ro_keydescrs</flag>
+      </flags>
+  
+      <signinfos>
+        <signinfo>
+          <id>1</id>
+          <hashalgo>rmd160</hashalgo>
+          <paddalgo>iso9796_1a4</paddalgo>
+        </signinfo>
+      </signinfos>
+      
+      <cryptinfos>
+        <cryptinfo>
+          <id>1</id>
+          <cryptalgo>des_3k</cryptalgo>
+          <paddalgo>ansix9_23</paddalgo>
+        </cryptinfo>
+      </cryptinfos>
+      
+      <keyinfos>
+        <keyinfo>
+          <keyId>1</keyId>
+          <keySize>16</keySize>
+          <minKeySize>16</minKeySize>
+          <maxKeySize>16</maxKeySize>
+          <chunksize>8</chunksize>
+          <cryptalgo>des_3k</cryptalgo>
+          <keyDescription>Signkey</keyDescription>
+          <keyFlags>
+            <flag>canSign</flag>
+            <flag>canVerify</flag>
+            <flag>hasSignSeq</flag>
+          </keyFlags>
+        </keyinfo>
+        
+        <keyinfo>
+          <keyId>2</keyId>
+          <keySize>16</keySize>
+          <minKeySize>16</minKeySize>
+          <maxKeySize>16</maxKeySize>
+          <chunksize>8</chunksize>
+          <cryptalgo>des_3k</cryptalgo>
+          <keyDescription>Cryptkey</keyDescription>
+          <keyFlags>
+            <flag>canEncrypt</flag>
+            <flag>canDecrypt</flag>
+          </keyFlags>
+        </keyinfo>
+      </keyinfos>
+  
+      <contexts>
+        <!-- There only is one context, and it is the context for HBCI -->
+        <context>
+          <id>1</id>
+          <description>Context for HBCI operations</description>
+          
+          <signkeyinfo id="1" />
+          <verifykeyinfo id="1" />
+  
+          <signinfo>
+            <id>1</id>
+            <hashalgo>rmd160</hashalgo>
+            <paddalgo>none</paddalgo>
+          </signinfo>
+  
+          <encryptKeyInfo id="2" />
+          <decryptKeyInfo id="2" />
+  
+          <cryptinfo>
+            <id>1</id>
+            <cryptalgo>des_3k</cryptalgo>
+            <paddalgo>none</paddalgo>
+          </cryptinfo>
+          
+        </context>
+      </contexts>
+      
+    </crypttoken>
+
+
     <files>
       <ef name="EF_KEY" sid="0x0010" 
           type="record" mode="linear" 

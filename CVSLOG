@@ -1,1 +1,6 @@
-- adapted to latest changes in Gwen
+- added crypttoken for STARCOS cards ("Matrica")
+- added function pointers to LC_CARD for generic ISO commands
+- added crypttoken definitions to ddv0.xml and starcos.xml
+- modified card module LC_STARCOS (breaks compatibility with AqHBCIs
+  RSACard plugin. However, AqHBCI now uses crypttokens so that plugin
+  is obsolete anyway)

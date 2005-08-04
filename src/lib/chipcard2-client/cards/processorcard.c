@@ -198,42 +198,9 @@ LC_CLIENT_RESULT LC_ProcessorCard_SelectEF(LC_CARD *card,
 LC_CLIENT_RESULT LC_ProcessorCard_ReadRecord(LC_CARD *card,
                                              int recNum,
                                              GWEN_BUFFER *buf){
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-  unsigned int bs;
-  const void *p;
-
-  dbReq=GWEN_DB_Group_new("ReadRecord");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "recNum", recNum);
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbResp);
-    return res;
-  }
-
-  /* successful */
-  if (buf) {
-    p=GWEN_DB_GetBinValue(dbResp,
-                          "command/response/data",
-                          0,
-                          0, 0,
-                          &bs);
-    if (p && bs) {
-      GWEN_Buffer_AppendBytes(buf, p, bs);
-    }
-    else {
-      DBG_WARN(LC_LOGDOMAIN, "No data in response");
-    }
-  }
-
-  GWEN_DB_Group_free(dbResp);
-  GWEN_DB_Group_free(dbReq);
-  return res;
+  return LC_Card_IsoReadRecord(card,
+                               LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                               recNum, buf);
 }
 
 
@@ -241,34 +208,11 @@ LC_CLIENT_RESULT LC_ProcessorCard_ReadRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_ProcessorCard_WriteRecord(LC_CARD *card,
                                               int recNum,
                                               GWEN_BUFFER *buf){
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  dbReq=GWEN_DB_Group_new("WriteRecord");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "recNum", recNum);
-  if (buf) {
-    if (GWEN_Buffer_GetUsedBytes(buf)) {
-      GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                          "data",
-                          GWEN_Buffer_GetStart(buf),
-                          GWEN_Buffer_GetUsedBytes(buf));
-    }
-  }
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbResp);
-    return res;
-  }
-
-  GWEN_DB_Group_free(dbResp);
-  GWEN_DB_Group_free(dbReq);
-  return res;
-
+  return LC_Card_IsoUpdateRecord(card,
+                                 LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                                 recNum,
+                                 GWEN_Buffer_GetStart(buf),
+                                 GWEN_Buffer_GetUsedBytes(buf));
 }
 
 

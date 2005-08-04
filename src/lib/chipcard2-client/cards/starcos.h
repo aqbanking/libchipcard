@@ -19,6 +19,15 @@
 #include <gwenhywfar/crypt.h>
 
 
+#define LC_STARCOS_KEY_STATUS_ACTIVE            0x10
+#define LC_STARCOS_KEY_STATUS_INACTIVE_CERT     0x0a
+#define LC_STARCOS_KEY_STATUS_INACTIVE_FREE     0x08
+#define LC_STARCOS_KEY_STATUS_INACTIVE_NEW      0x07
+#define LC_STARCOS_KEY_STATUS_ACTIVE_NEW        0x02
+#define LC_STARCOS_KEY_STATUS_ACTIVE_INCOMPLETE 0x01
+#define LC_STARCOS_KEY_STATUS_ACTIVE_INILETTER  0x00
+#define LC_STARCOS_KEY_STATUS_INTERNAL_UNUSED   0xff
+
 
 CHIPCARD_API
 int LC_Starcos_ExtendCard(LC_CARD *card);
@@ -153,28 +162,6 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
 /*@{*/
 CHIPCARD_API
 GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid);
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_Sign(LC_CARD *card,
-                                 int kid,
-                                 GWEN_BUFFER *hashBuf,
-                                 GWEN_BUFFER *sigBuf);
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_Verify(LC_CARD *card,
-                                   int kid,
-                                   GWEN_BUFFER *hashBuf,
-                                   GWEN_BUFFER *sigBuf);
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_Encipher(LC_CARD *card,
-                                     int kid,
-                                     GWEN_BUFFER *plainBuf,
-                                     GWEN_BUFFER *codeBuf);
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_Decipher(LC_CARD *card,
-                                     int kid,
-                                     GWEN_BUFFER *codeBuf,
-                                     GWEN_BUFFER *plainBuf);
 
 /**
  * returns 8 random bytes

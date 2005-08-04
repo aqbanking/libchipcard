@@ -72,10 +72,16 @@ int LC_Starcos__IsCryptKey(int kid);
 
 int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid);
 
-LC_CLIENT_RESULT LC_Starcos__ManageSE(LC_CARD *card,
-                                      int tmpl, int kids, int kidp, int ar);
 
-
+LC_CLIENT_RESULT LC_Starcos__Sign(LC_CARD *card,
+                                  const char *ptr,
+                                  unsigned int size,
+                                  GWEN_BUFFER *sigBuf);
+LC_CLIENT_RESULT LC_Starcos__Verify(LC_CARD *card,
+                                    const char *ptr,
+                                    unsigned int size,
+                                    const char *sigptr,
+                                    unsigned int sigsize);
 
 
 

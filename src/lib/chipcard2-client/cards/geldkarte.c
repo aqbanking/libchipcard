@@ -173,7 +173,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card){
 
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -212,7 +212,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card){
 
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -366,7 +366,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, buf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(0, "here");
     GWEN_Buffer_free(buf);
@@ -445,7 +445,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
 					GWEN_DB_NODE *dbData){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbCurr;
-  unsigned int i;
+  int i;
   unsigned int ctxCount;
   GWEN_BUFFER *buf;
   LC_GELDKARTE *gk;
@@ -465,7 +465,8 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
   for (i=1; i<16; i++) {
     DBG_NOTICE(LC_LOGDOMAIN, "Reading BLOG record %d", i);
     GWEN_Buffer_Reset(buf);
-    res=LC_ProcessorCard_ReadRecord(card, idx?idx:i, buf);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              idx?idx:i, buf);
     if (res!=LC_Client_ResultOk)
       break;
     dbCurr=GWEN_DB_Group_new("blog");
@@ -632,7 +633,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
                                         GWEN_DB_NODE *dbData){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbCurr;
-  unsigned int i;
+  int i;
   unsigned int ctxCount;
   GWEN_BUFFER *buf;
   LC_GELDKARTE *gk;
@@ -652,7 +653,8 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
   for (i=1; i<4; i++) {
     DBG_NOTICE(LC_LOGDOMAIN, "Reading LLOG record %d", i);
     GWEN_Buffer_Reset(buf);
-    res=LC_ProcessorCard_ReadRecord(card, idx?idx:i, buf);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              idx?idx:i, buf);
     if (res!=LC_Client_ResultOk)
       break;
     dbCurr=GWEN_DB_Group_new("llog");

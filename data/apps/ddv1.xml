@@ -2,7 +2,7 @@
 <apps>
   <app name="ddv1">
   
-    <crypttoken typeName="ddv" subTypeName="ddv1" name="DDV1Card">
+    <crypttoken typeName="ddvcard" subTypeName="ddv1" name="DDV1Card">
 
       <flags>
         <flag>manages_signseq</flag>
@@ -68,35 +68,8 @@
           <id>1</id>
           <description>Context for HBCI operations</description>
           
-          <signkeyinfo>
-            <keyId>1</keyId>
-            <keySize>16</keySize>
-            <minKeySize>16</minKeySize>
-            <maxKeySize>16</maxKeySize>
-            <chunksize>8</chunksize>
-            <cryptalgo>des_3k</cryptalgo>
-            <keyDescription>Signkey</keyDescription>
-            <keyFlags>
-              <flag>canSign</flag>
-              <flag>canVerify</flag>
-              <flag>hasSignSeq</flag>
-            </keyFlags>
-          </signkeyinfo>
-          
-          <verifykeyinfo>
-            <keyId>1</keyId>
-            <keySize>16</keySize>
-            <minKeySize>16</minKeySize>
-            <maxKeySize>16</maxKeySize>
-            <chunksize>8</chunksize>
-            <cryptalgo>des_3k</cryptalgo>
-            <keyDescription>Signkey</keyDescription>
-            <keyFlags>
-              <flag>canSign</flag>
-              <flag>canVerify</flag>
-              <flag>hasSignSeq</flag>
-            </keyFlags>
-          </verifykeyinfo>
+          <signkeyinfo id="1" />
+          <verifykeyinfo id="1" />
   
           <signinfo>
             <id>1</id>
@@ -104,33 +77,8 @@
             <paddalgo>none</paddalgo>
           </signinfo>
   
-          <encryptKeyInfo>
-            <keyId>2</keyId>
-            <keySize>16</keySize>
-            <minKeySize>16</minKeySize>
-            <maxKeySize>16</maxKeySize>
-            <chunksize>8</chunksize>
-            <cryptalgo>des_3k</cryptalgo>
-            <keyDescription>Cryptkey</keyDescription>
-            <keyFlags>
-              <flag>canEncrypt</flag>
-              <flag>canDecrypt</flag>
-            </keyFlags>
-          </encryptKeyInfo>
-  
-          <decryptKeyInfo>
-            <keyId>2</keyId>
-            <keySize>16</keySize>
-            <minKeySize>16</minKeySize>
-            <maxKeySize>16</maxKeySize>
-            <chunksize>8</chunksize>
-            <cryptalgo>des_3k</cryptalgo>
-            <keyDescription>Cryptkey</keyDescription>
-            <keyFlags>
-              <flag>canEncrypt</flag>
-              <flag>canDecrypt</flag>
-            </keyFlags>
-          </decryptKeyInfo>
+          <encryptKeyInfo id="2" />
+          <decryptKeyInfo id="2" />
   
           <cryptinfo>
             <id>1</id>

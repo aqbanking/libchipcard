@@ -161,7 +161,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
 
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -356,7 +356,7 @@ int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card){
   }
 
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -401,9 +401,10 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
   }
 
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card,
-                                  1 /* should be 2 */,
-                                  mbuf);
+  res=LC_Card_IsoReadRecord(card,
+                            LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            1 /* should be 2 */,
+                            mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -883,7 +884,7 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbCurr;
-  unsigned int i;
+  int i;
   unsigned int ctxCount;
   GWEN_BUFFER *buf;
 
@@ -901,7 +902,8 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   for (i=1; i<6; i++) {
     GWEN_Buffer_Reset(buf);
-    res=LC_ProcessorCard_ReadRecord(card, idx?idx:i, buf);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              idx?idx:i, buf);
     if (res!=LC_Client_ResultOk)
       break;
     dbCurr=GWEN_DB_Group_new("context");
@@ -964,7 +966,9 @@ LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
   GWEN_Buffer_Rewind(buf);
 
   /* write record */
-  res=LC_ProcessorCard_WriteRecord(card, idx, buf);
+  res=LC_Card_IsoUpdateRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, idx,
+                              GWEN_Buffer_GetStart(buf),
+                              GWEN_Buffer_GetUsedBytes(buf));
   GWEN_Buffer_free(buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
