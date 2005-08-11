@@ -1,0 +1,11 @@
+*.rpm
+*.spec
+*.gz
+autom4te.cache
+chipcard2
+chipcard2-client
+chipcard2-client-config.in
+chipcard2-server
+chipcard2-server-config.in
+chipcard2-service
+libtool
