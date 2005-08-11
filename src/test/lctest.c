@@ -1035,7 +1035,8 @@ int test7(int argc, char **argv) {
 
   fprintf(stderr, "Reading record...\n");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            1, mbuf);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
@@ -1240,7 +1241,8 @@ int test10(int argc, char **argv) {
 
   fprintf(stderr, "Reading record...\n");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            1, mbuf);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
@@ -2886,7 +2888,8 @@ int test25(int argc, char **argv) {
 
   fprintf(stderr, "Reading record...\n");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ProcessorCard_ReadRecord(card, 1, mbuf);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                            1, mbuf);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;

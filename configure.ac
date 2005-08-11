@@ -13,9 +13,9 @@ AC_CONFIG_HEADER([config.h])
 #
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
-CHIPCARD_VERSION_PATCHLEVEL=12
-CHIPCARD_VERSION_BUILD=7
-CHIPCARD_VERSION_TAG="cvs"
+CHIPCARD_VERSION_PATCHLEVEL=13
+CHIPCARD_VERSION_BUILD=0
+CHIPCARD_VERSION_TAG="beta"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
 
@@ -23,7 +23,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 # SO version
 #
 LIBCHIPCARD_SO_CURRENT=1
-LIBCHIPCARD_SO_REVISION=0
+LIBCHIPCARD_SO_REVISION=1
 LIBCHIPCARD_SO_AGE=1
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
@@ -219,7 +219,6 @@ fi
 PKG_CHECK_MODULES([OPENSC], [libopensc >= 0.9.4], [
     all_includes="$all_includes $opensc_includes"
     AC_DEFINE(USE_OPENSC, 1, [whether OpenSC is to be used])
-    AC_MSG_RESULT(yes)
     have_opensc=yes
     ], [
     AC_MSG_WARN(OpenSC not found, OpenSC driver will not be available.)
@@ -237,7 +236,7 @@ AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,14,0,5)
+AC_GWENHYWFAR(1,15,0,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -616,7 +615,7 @@ done
 AC_CONFIG_FILES([Makefile
                  chipcard2-client-config.in
                  chipcard2-server-config.in
-                 chipcard2.spec
+                 libchipcard2.spec
                  bin/Makefile
                  bin/prepare.sh.in
                  data/Makefile

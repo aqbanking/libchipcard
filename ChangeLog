@@ -1,4 +1,14 @@
 
+===========================================================================
+MARK: released version 1.9.13beta (2005/08/11)
+===========================================================================
+
+
+2005/08/10: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in MsgEngine: Was not returning "dword" as int type
+
+
 2005/08/04: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added crypttoken for STARCOS cards ("Matrica")

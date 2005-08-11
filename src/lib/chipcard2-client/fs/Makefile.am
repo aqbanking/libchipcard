@@ -13,6 +13,7 @@ noinst_HEADERS=\
  fsclient_p.h \
  fsmem_p.h \
  fsfile_p.h \
+ fs_l.h \
  fs_p.h \
  rfs_p.h
 

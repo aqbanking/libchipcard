@@ -840,7 +840,8 @@ GWEN_DB_VALUETYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
   assert(le);
 
   if (strcasecmp(tname, "byte")==0 ||
-      strcasecmp(tname, "word")==0)
+      strcasecmp(tname, "word")==0 ||
+      strcasecmp(tname, "dword")==0)
     return GWEN_DB_VALUETYPE_INT;
   else if (strcasecmp(tname, "bytes")==0 ||
            strcasecmp(tname, "tlv")==0)

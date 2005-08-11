@@ -12,7 +12,7 @@ EXTRA_DIST= \
  README \
  chipcard2-server.m4 \
  chipcard2-client.m4 \
- chipcard2.spec.in 
+ libchipcard2.spec.in libchipcard2.spec
 
 bin_SCRIPTS = chipcard2-server-config chipcard2-client-config
 M4dir = $(datadir)/aclocal
