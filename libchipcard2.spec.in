@@ -1,6 +1,6 @@
-%define name libchipcard2
+%define name @PACKAGE@
 %define version @VERSION@
-%define release @rpm_release@
+%define release 1
 %define rpm_cxxflags \"-O2 -march=i486 -mcpu=i586\"
 %define rpm_cflags \"-O2 -march=i486 -mcpu=i586\"
 
