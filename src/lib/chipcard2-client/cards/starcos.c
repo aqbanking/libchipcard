@@ -139,13 +139,17 @@ LC_CLIENT_RESULT LC_Starcos_Open(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
+				    const char *appname){
   LC_CLIENT_RESULT res;
   LC_STARCOS *scos;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbData;
+  GWEN_XMLNODE *n;
+  const char *s;
+  int id;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening STARCOS card");
+  DBG_NOTICE(LC_LOGDOMAIN, "Opening STARCOS card (%s)", appname);
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
@@ -157,7 +161,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
   GWEN_Buffer_free(scos->bin_ef_gd_0);
   scos->bin_ef_gd_0=0;
 
-  res=LC_Card_SelectCardAndApp(card, "starcos", "starcos");
+  res=LC_Card_SelectCardAndApp(card, "starcos", appname);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -204,7 +208,6 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
     return LC_Client_ResultDataError;
   }
 
-#if 1
   /* select banking DF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_BANKING...");
   res=LC_ProcessorCard_SelectDF(card, "DF_BANKING");
@@ -214,11 +217,41 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
     GWEN_Buffer_free(mbuf);
     return res;
   }
-#endif
+
+  n=LC_Card_GetDfInfo(card);
+  assert(n);
+  s=GWEN_XMLNode_GetProperty(n, "ch_pin", 0);
+  scos->pinCH=0x90;
+  if (s && (1==sscanf(s, "%i", &id)))
+    scos->pinCH=id;
+  else {
+    DBG_WARN(LC_LOGDOMAIN, "Bad/missing ch_pin in DF_BANKING");
+  }
+  scos->pinEG=0x91;
+  if (s && (1==sscanf(s, "%i", &id)))
+    scos->pinEG=id;
+  else {
+    DBG_WARN(LC_LOGDOMAIN, "Bad/missing eg_pin in DF_BANKING");
+  }
+  GWEN_XMLNode_free(n);
 
   scos->db_ef_gd_0=dbData;
   scos->bin_ef_gd_0=mbuf;
   return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
+  LC_CLIENT_RESULT res;
+
+  res=LC_Starcos__Reopen(card, "starcos");
+  if (res==LC_Client_ResultCmdError)
+    res=LC_Starcos__Reopen(card, "starcos-hvb");
+  if (res==LC_Client_ResultCmdError)
+    res=LC_Starcos__Reopen(card, "starcos-vr");
+
+  return res;
 }
 
 
@@ -1660,6 +1693,30 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
   return LC_Client_ResultOk;
+}
+
+
+
+int LC_Starcos_GetChPinId(const LC_CARD *card) {
+  LC_STARCOS *scos;
+
+  assert(card);
+  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
+  assert(scos);
+
+  return scos->pinCH;
+}
+
+
+
+int LC_Starcos_GetEgPinId(const LC_CARD *card) {
+  LC_STARCOS *scos;
+
+  assert(card);
+  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
+  assert(scos);
+
+  return scos->pinEG;
 }
 
 

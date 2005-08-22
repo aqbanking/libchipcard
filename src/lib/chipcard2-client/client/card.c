@@ -75,6 +75,7 @@ void LC_Card_free(LC_CARD *cd){
   if (cd) {
     GWEN_INHERIT_FINI(LC_CARD, cd);
     GWEN_DB_Group_free(cd->driverVars);
+    free(cd->selectedApp);
     free(cd->cardType);
     free(cd->lastResult);
     free(cd->lastText);
@@ -328,12 +329,19 @@ LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card) {
 
 
 LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card) {
+  LC_CLIENT_RESULT res;
+
   assert(card);
   if (!card->closeFn) {
     DBG_ERROR(LC_LOGDOMAIN, "No CloseFn set");
-    return LC_Client_ResultCmdError;
+    res=LC_Client_ResultCmdError;
   }
-  return card->closeFn(card);
+  else
+    res=card->closeFn(card);
+
+  free(card->selectedApp);
+  card->selectedApp=0;
+  return res;
 }
 
 
@@ -373,6 +381,9 @@ LC_CLIENT_RESULT LC_Card__Open(LC_CARD *card) {
 LC_CLIENT_RESULT LC_Card__Close(LC_CARD *card) {
   GWEN_TYPE_UINT32 rqid;
   LC_CLIENT_RESULT res;
+
+  free(card->selectedApp);
+  card->selectedApp=0;
 
   rqid=LC_Client_SendReleaseCard(card->client, card);
   if (rqid==0) {
@@ -446,7 +457,16 @@ int LC_Card_SelectApp(LC_CARD *card, const char *appName){
     DBG_INFO(LC_LOGDOMAIN, "here");
     return rv;
   }
+  free(card->selectedApp);
+  card->selectedApp=strdup(appName);
   return 0;
+}
+
+
+
+const char *LC_Card_SelectedApp(const LC_CARD *card) {
+  assert(card);
+  return card->selectedApp;
 }
 
 

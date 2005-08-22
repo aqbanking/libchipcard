@@ -637,7 +637,8 @@
         <FORMAT type="EF_GD0" />
       </ef>
   
-      <df name="DF_BANKING" lid="d27600007448420110">
+      <df name="DF_BANKING" lid="d27600007448420110" 
+          ch_pin="0x90" eg_pin="0x91" >
         <files>
           <ef name="EF_IPF" sid="0xb300"
               type="transparent" >

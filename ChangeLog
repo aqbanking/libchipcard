@@ -1,4 +1,13 @@
 
+2005/08/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added application description for VR-Networld kind of STARCOS cards
+- added functions 
+  - LC_Card_SelectedApp()
+  - LC_Starcos_GetChPinId()
+  - LC_Starcos_GetEgPinId()
+
+
 ===========================================================================
 MARK: released version 1.9.13beta (2005/08/11)
 ===========================================================================

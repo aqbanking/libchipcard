@@ -1,6 +1,5 @@
-- added crypttoken for STARCOS cards ("Matrica")
-- added function pointers to LC_CARD for generic ISO commands
-- added crypttoken definitions to ddv0.xml and starcos.xml
-- modified card module LC_STARCOS (breaks compatibility with AqHBCIs
-  RSACard plugin. However, AqHBCI now uses crypttokens so that plugin
-  is obsolete anyway)
+- added application description for VR-Networld kind of STARCOS cards
+- added functions 
+  - LC_Card_SelectedApp()
+  - LC_Starcos_GetChPinId()
+  - LC_Starcos_GetEgPinId()

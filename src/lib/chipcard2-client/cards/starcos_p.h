@@ -47,6 +47,8 @@ struct LC_STARCOS {
   unsigned int currentPrivateKeyId;
   unsigned int currentAlgo;
 
+  int pinCH;
+  int pinEG;
 
 };
 
@@ -55,6 +57,9 @@ struct LC_STARCOS {
 void LC_Starcos_freeData(void *bp, void *p);
 LC_CLIENT_RESULT LC_Starcos_Open(LC_CARD *card);
 LC_CLIENT_RESULT LC_Starcos_Close(LC_CARD *card);
+
+LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
+                                    const char *appname);
 
 
 int LC_Starcos__FindKeyDescrOffset(int kid);

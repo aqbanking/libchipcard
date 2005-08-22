@@ -96,6 +96,9 @@ CHIPCARD_API
 int LC_Card_SelectApp(LC_CARD *card, const char *appName);
 
 CHIPCARD_API
+const char *LC_Card_SelectedApp(const LC_CARD *card);
+
+CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_SelectCardAndApp(LC_CARD *card,
                                           const char *cardName,
                                           const char *appName);

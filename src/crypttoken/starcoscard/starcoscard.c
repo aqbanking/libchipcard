@@ -423,12 +423,12 @@ int LC_CryptTokenSTARCOS_VerifyPin(GWEN_CRYPTTOKEN *ct,
   if (pt==GWEN_CryptToken_PinType_Access) {
     if (lct->haveChPin)
       return 0;
-    pid=0x90;
+    pid=LC_Starcos_GetChPinId(lct->card);
   }
   else if (pt==GWEN_CryptToken_PinType_Manage) {
     if (lct->haveEgPin)
       return 0;
-    pid=0x91;
+    pid=LC_Starcos_GetEgPinId(lct->card);
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Unknown pin type \"%s\"",

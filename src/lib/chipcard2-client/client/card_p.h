@@ -32,6 +32,7 @@ struct LC_CARD {
   GWEN_BUFFER *atr;
 
   GWEN_STRINGLIST *cardTypes;
+  char *selectedApp;
 
   LC_CARDCONTEXT *context;
 
