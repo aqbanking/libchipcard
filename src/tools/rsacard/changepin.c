@@ -59,7 +59,7 @@ int doChangePin(LC_CLIENT *cl,
     }
   }
 
-  res=LC_Starcos_ModifyInitialPin(card, 0x90, pin);
+  res=LC_Starcos_ModifyPin(card, 0x90, pin);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "ModifyInitialPin");
     return RETURNVALUE_WORK;
