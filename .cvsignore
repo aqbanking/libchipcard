@@ -9,3 +9,5 @@ chipcard2-server
 chipcard2-server-config.in
 chipcard2-service
 libtool
+*-config
+stamp-h1

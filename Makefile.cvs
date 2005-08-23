@@ -29,11 +29,21 @@ cvsclean::
 
 all:
 	libtoolize -f --automake
-	aclocal -I ./m4
+	@if test -r config.status; then \
+	   prefix=`grep '@prefix@' config.status |cut -d , -f 3`; \
+	   gwen_prefix=`grep '@GWEN_PREFIX@' config.status |cut -d , -f 3`; \
+	 fi; \
+	 for A in "$${gwen_prefix}/share/aclocal" "$${prefix}/share/aclocal" m4; do \
+	   if test -d "$${A}"; then \
+	     ACLOCAL_FLAGS="$${ACLOCAL_FLAGS} -I $${A}"; \
+	   fi; \
+	 done; \
+	 echo "aclocal $${ACLOCAL_FLAGS}"; \
+	 aclocal $${ACLOCAL_FLAGS} || (echo -e '***\n*** If the line above shows the error message "macro AC_GWENHYWFAR not \n*** found", you need to specify the environment variable ACLOCAL_FLAGS \n*** to be "-I GWENHYWFAR_PREFIX/share/aclocal". For example, do the following:\n***\n***   export ACLOCAL_FLAGS="-I ${HOME}/usr/share/aclocal"\n***   make -f Makefile.cvs\n***'; exit 1)
 	autoheader
 	automake --add-missing
 	autoconf
-	./configure --enable-maintainer-mode
+	@echo "Now you can run ./configure"
 
 mp:
 	libtoolize -f --automake
