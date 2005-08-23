@@ -13,7 +13,7 @@
         <signinfo>
           <id>1</id>
           <hashalgo>rmd160</hashalgo>
-          <paddalgo>iso9796_1a4</paddalgo>
+          <paddalgo>none</paddalgo>
         </signinfo>
       </signinfos>
       
@@ -21,7 +21,7 @@
         <cryptinfo>
           <id>1</id>
           <cryptalgo>des_3k</cryptalgo>
-          <paddalgo>ansix9_23</paddalgo>
+          <paddalgo>none</paddalgo>
         </cryptinfo>
       </cryptinfos>
       
@@ -64,21 +64,11 @@
           
           <signkeyinfo id="1" />
           <verifykeyinfo id="1" />
-  
-          <signinfo>
-            <id>1</id>
-            <hashalgo>rmd160</hashalgo>
-            <paddalgo>none</paddalgo>
-          </signinfo>
+          <signinfo id="1" />
   
           <encryptKeyInfo id="2" />
           <decryptKeyInfo id="2" />
-  
-          <cryptinfo>
-            <id>1</id>
-            <cryptalgo>des_3k</cryptalgo>
-            <paddalgo>none</paddalgo>
-          </cryptinfo>
+          <cryptinfo id="1" />
           
         </context>
       </contexts>

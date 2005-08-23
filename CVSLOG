@@ -1,5 +1,1 @@
-- added application description for VR-Networld kind of STARCOS cards
-- added functions 
-  - LC_Card_SelectedApp()
-  - LC_Starcos_GetChPinId()
-  - LC_Starcos_GetEgPinId()
+- fixed a bug in CryptToken description of DDV card

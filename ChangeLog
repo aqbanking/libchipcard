@@ -1,4 +1,14 @@
 
+===========================================================================
+MARK: released version 1.9.14beta (2005/08/23)
+===========================================================================
+
+
+2005/08/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in CryptToken description of DDV card
+
+
 2005/08/22: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added application description for VR-Networld kind of STARCOS cards

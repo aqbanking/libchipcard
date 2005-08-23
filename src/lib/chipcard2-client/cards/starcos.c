@@ -227,6 +227,7 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
   else {
     DBG_WARN(LC_LOGDOMAIN, "Bad/missing ch_pin in DF_BANKING");
   }
+  s=GWEN_XMLNode_GetProperty(n, "eg_pin", 0);
   scos->pinEG=0x91;
   if (s && (1==sscanf(s, "%i", &id)))
     scos->pinEG=id;
