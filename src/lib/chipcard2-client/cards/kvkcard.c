@@ -329,13 +329,19 @@ LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card){
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMF(card);
   if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
+    if (res==LC_Client_ResultCmdError) {
+      DBG_WARN(LC_LOGDOMAIN, "Could not select MF, ignoring");
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      return res;
+    }
   }
 
-  if (LC_KVKCard_ReadCardData(card)){
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return LC_Client_ResultCmdError;
+  res=LC_KVKCard_ReadCardData(card);
+  if (res!=LC_Client_ResultOk){
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    return res;
   }
 
 

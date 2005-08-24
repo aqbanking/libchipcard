@@ -119,13 +119,6 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
     return res;
   }
 
-  DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMF(card);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    return res;
-  }
-
   /* get driver variables */
   DBG_DEBUG(LC_LOGDOMAIN, "Getting value of WriteBoundary");
   vbuf=GWEN_Buffer_new(0, 256, 0, 1);

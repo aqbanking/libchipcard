@@ -6,6 +6,8 @@
   the corresponding crypttoken)
 - disabled tool rsacard2 completely: This has now been obsoleted by gwen's
   gct-tool
+- fixed memory card and kvk card: MemoryCard no longer selects the MF,
+  and KVKCard ignores cmd-errors when selecting the MF
 
 
 2005/08/23: Martin Preuss<martin@libchipcard.de>
