@@ -272,6 +272,38 @@
 				</results>
       </command>
 
+      <!-- Modify -->
+      <command name="IsoModifyPin" >
+        <send>
+	  			<APDU >
+  	    		<ELEM type="word">0x0024</ELEM>
+            <ELEM type="byte">0x00</ELEM>
+            <ELEM name="pid" type="byte" />
+	  			</APDU>
+	  			<DATA>
+	    			<ELEM name="oldpin" type="bytes" />
+	    			<ELEM name="newpin" type="bytes" />
+	  			</DATA>
+				</send>
+				<results>
+      		<result sw1="0x63" sw2="0xc0" type="error" >
+            Bad PIN (only one try left !)
+          </result>
+      		<result sw1="0x63" type="error" >Bad PIN</result>
+      		<result sw1="0x63" sw2="0xc1" type="error" >
+            Bad PIN (only two tries left !)
+          </result>
+      		<result sw1="0x63" sw2="0xc2" type="error" >
+            Bad PIN (only three tries left !)
+          </result>
+      		<result sw1="0x69" sw2="0x83" type="error" >
+            Card seems to be destroyed, this might have the following reasons:
+             1) you entered a bad PIN too often
+             2) the card is of a new and yet unknown type
+          </result>
+				</results>
+      </command>
+
       <!-- Manage SE -->
       <command name="ManageSE" >
         <DESCR>

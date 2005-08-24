@@ -1,4 +1,4 @@
-SUBDIRS=client cards mon fs
+SUBDIRS=client cards mon fs crypttoken
 
 EXTRA_DIST=ressource.rc.in
 
@@ -13,7 +13,8 @@ libchipcard2c_la_LIBADD= @gwenhywfar_libs@ \
   client/libclient.la \
   cards/libcards.la \
   mon/libmon.la \
-  fs/libfs.la
+  fs/libfs.la \
+  crypttoken/libctcard.la
 
 libchipcard2c_la_LDFLAGS= \
   @STRIPALL@ -version-info \

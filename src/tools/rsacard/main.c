@@ -416,6 +416,14 @@ int main(int argc, char **argv) {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
 
+  fprintf(stderr,
+          "%s",
+          "===========================================================\n"
+          "This tool is deprecated. Therefore it has been disabled.\n"
+          "Please use gct-tool which comes with Gwenhywfar.\n"
+          "===========================================================\n");
+  return 3;
+
   GWEN_NetTransportSSL_SetAskAddCertFn(_askAddCert);
 
   db=GWEN_DB_Group_new("arguments");

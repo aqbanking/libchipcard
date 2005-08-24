@@ -1,6 +1,7 @@
 
 EXTRA_DIST=\
   driver.xml \
+  card.xml \
   ddv0.xml \
   ddv1.xml \
   geldkarte.xml \
@@ -11,6 +12,7 @@ EXTRA_DIST=\
 
 carddatadir=@libchipcard2s_config_am@/drivers/cyberjack_ctapi/cards
 carddata_DATA=\
+  card.xml \
   ddv0.xml \
   ddv1.xml \
   geldkarte.xml \

@@ -523,7 +523,7 @@ done
 #
 # create header directory for client, make symlinks
 #
-lc_modules="client cards mon fs"
+lc_modules="client cards mon fs crypttoken"
 lc_client_modules="apps lowlevel"
 
 lprefix="${srcdir}"
@@ -644,6 +644,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-client/client/apps/Makefile
                  src/lib/chipcard2-client/client/lowlevel/Makefile
                  src/lib/chipcard2-client/mon/Makefile
+                 src/lib/chipcard2-client/crypttoken/Makefile
                  src/lib/chipcard2-client/fs/Makefile
                  src/lib/chipcard2-server/Makefile
                  src/lib/chipcard2-server/ressource.rc

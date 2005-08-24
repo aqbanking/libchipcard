@@ -39,6 +39,9 @@ struct LC_CARD {
   LC_CARD_OPEN_FN openFn;
   LC_CARD_CLOSE_FN closeFn;
 
+  LC_CARD_GETPINSTATUS_FN getPinStatusFn;
+  LC_CARD_GETINITIALPIN_FN getInitialPinFn;
+
   LC_CARD_ISOREADBINARY_FN readBinaryFn;
   LC_CARD_ISOWRITEBINARY_FN writeBinaryFn;
   LC_CARD_ISOUPDATEBINARY_FN updateBinaryFn;
@@ -48,6 +51,10 @@ struct LC_CARD {
   LC_CARD_ISOAPPENDRECORD_FN appendRecordFn;
   LC_CARD_ISOUPDATERECORD_FN updateRecordFn;
   LC_CARD_ISOVERIFYPIN_FN verifyPinFn;
+  LC_CARD_ISOMODIFYPIN_FN modifyPinFn;
+
+  LC_CARD_ISOPERFORMVERIFICATION_FN performVerificationFn;
+  LC_CARD_ISOPERFORMMODIFICATION_FN performModificationFn;
 
   LC_CARD_ISOMANAGESE_FN manageSeFn;
   LC_CARD_ISOSIGN_FN signFn;
@@ -107,9 +114,32 @@ LC_CLIENT_RESULT LC_Card__IsoAppendRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
                                        int identifier,
+                                       LC_PININFO_ENCODING pe,
                                        const char *ptr,
                                        unsigned int size,
                                        int *triesLeft);
+
+LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
+                                                 GWEN_TYPE_UINT32 flags,
+                                                 int identifier,
+                                                 LC_PININFO_ENCODING pe,
+                                                 int *triesLeft);
+
+LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
+                                       GWEN_TYPE_UINT32 flags,
+                                       int identifier,
+                                       LC_PININFO_ENCODING pe,
+                                       const char *oldptr,
+                                       unsigned int oldsize,
+                                       const char *newptr,
+                                       unsigned int newsize,
+                                       int *triesLeft);
+
+LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
+                                                 GWEN_TYPE_UINT32 flags,
+                                                 int identifier,
+                                                 LC_PININFO_ENCODING pe,
+                                                 int *triesLeft);
 
 
 LC_CLIENT_RESULT LC_Card__IsoManageSe(LC_CARD *card,
@@ -123,6 +153,10 @@ LC_CLIENT_RESULT LC_Card__IsoDecipher(LC_CARD *card,
                                       unsigned int size,
                                       GWEN_BUFFER *plainBuf);
 
+
+GWEN_XMLNODE *LC_Card__GetEfInfo(const LC_CARD *card);
+GWEN_XMLNODE *LC_Card__GetDfInfo(const LC_CARD *card);
+GWEN_XMLNODE *LC_Card__GetAppInfo(const LC_CARD *card);
 
 
 

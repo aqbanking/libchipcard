@@ -21,6 +21,7 @@
 #include <gwenhywfar/debug.h>
 #include <chipcard2-client/cards/ddvcard.h>
 #include <chipcard2-client/cards/processorcard.h>
+#include <chipcard2-client/crypttoken/ct_card.h>
 
 
 GWEN_INHERIT(GWEN_CRYPTTOKEN, LC_CT_DDV)
@@ -251,145 +252,6 @@ void LC_CryptTokenDDV_FreeData(void *bp, void *p) {
 
 
 
-int LC_CryptTokenDDV__EnterPin(GWEN_CRYPTTOKEN *ct,
-                               LC_CARD *hcard,
-                               GWEN_CRYPTTOKEN_PINTYPE pt) {
-  LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
-
-  assert(ct);
-  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_DDV, ct);
-  assert(lct);
-
-  assert(hcard);
-
-  if (LC_Card_GetReaderFlags(hcard) & LC_CARD_READERFLAGS_KEYPAD) {
-    int mres;
-
-    DBG_INFO(LC_LOGDOMAIN,"Terminal has a keypad, will ask for pin.");
-    /* tell the user about pin verification */
-    mres=GWEN_CryptManager_BeginEnterPin(lct->pluginManager,
-                                         ct,
-                                         pt);
-    if (mres) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction");
-      return mres;
-    }
-
-    res=LC_DDVCard_SecureVerifyPin(hcard);
-    if (res!=LC_Client_ResultOk) {
-      /* tell the user about end of pin verification */
-      GWEN_CryptManager_EndEnterPin(lct->pluginManager,
-                                    ct,
-                                    pt, 0);
-      DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
-                LC_Card_GetLastSW1(hcard),
-                LC_Card_GetLastSW2(hcard),
-                LC_Card_GetLastText(hcard));
-
-      if (LC_Card_GetLastSW1(hcard)==0x63) {
-	switch (LC_Card_GetLastSW2(hcard)) {
-        case 0xc0: /* no error left */
-          return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
-        case 0xc1: /* one left */
-          return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
-        case 0xc2: /* two left */
-          return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
-        default:   /* unknown error */
-          return GWEN_ERROR_CT_BAD_PIN;
-        } // switch
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x69 &&
-               LC_Card_GetLastSW2(hcard)==0x83) {
-        DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x64 &&
-               LC_Card_GetLastSW2(hcard)==0x01) {
-        DBG_ERROR(LC_LOGDOMAIN, "Aborted by user");
-        return GWEN_ERROR_USER_ABORTED;
-      }
-      else {
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-    } /* if not ok */
-    else {
-      /* PIN ok */
-      DBG_INFO(LC_LOGDOMAIN, "Pin ok");
-      GWEN_CryptManager_EndEnterPin(lct->pluginManager,
-                                    ct,
-                                    pt, 1);
-    }
-  } /* if hasKeyPad */
-  else {
-    char pinBuffer[64];
-    int mres;
-    int pinLength;
-
-    DBG_INFO(LC_LOGDOMAIN, "No keypad (or disabled), will ask for PIN");
-    memset(pinBuffer, 0, sizeof(pinBuffer));
-
-    mres=GWEN_CryptManager_GetPin(lct->pluginManager,
-                                  ct,
-				  pt,
-				  GWEN_CryptToken_PinEncoding_ASCII,
-                                  GWEN_CRYPTTOKEN_GETPIN_FLAGS_NUMERIC,
-                                  pinBuffer,
-                                  4, 10, &pinLength);
-    if (mres) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
-      memset(pinBuffer, 0, sizeof(pinBuffer));
-      return mres;
-    }
-
-    DBG_INFO(LC_LOGDOMAIN, "Verifying the PIN");
-
-    res=LC_DDVCard_VerifyPin(hcard, pinBuffer);
-    if (res!=LC_Client_ResultOk) {
-      DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
-                LC_Card_GetLastSW1(hcard),
-                LC_Card_GetLastSW2(hcard),
-                LC_Card_GetLastText(hcard));
-
-      if (LC_Card_GetLastSW1(hcard)==0x63) {
-        /* TODO: Set Pin status */
-        switch (LC_Card_GetLastSW2(hcard)) {
-        case 0xc0: /* no error left */
-          return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
-        case 0xc1: /* one left */
-          return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
-        case 0xc2: /* two left */
-          return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
-        default:
-          return GWEN_ERROR_CT_BAD_PIN;
-        } // switch
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x69 &&
-               LC_Card_GetLastSW2(hcard)==0x83) {
-        /* TODO: Set Pin status */
-        DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x64 &&
-               LC_Card_GetLastSW2(hcard)==0x01) {
-        return GWEN_ERROR_USER_ABORTED;
-      }
-      else {
-        DBG_ERROR(LC_LOGDOMAIN, "Unknown error");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-    } // if not ok
-    else {
-      DBG_INFO(LC_LOGDOMAIN, "PIN ok");
-      /* TODO: Set Pin Status */
-    }
-  } // if no keyPad
-
-  return 0;
-}
-
-
-
 int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
   LC_CT_DDV *lct;
   LC_CLIENT_RESULT res;
@@ -515,8 +377,8 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
     int rv;
 
     /* enter pin */
-    rv=LC_CryptTokenDDV__EnterPin(ct, hcard,
-                                  GWEN_CryptToken_PinType_Access);
+    rv=LC_CryptToken_VerifyPin(lct->pluginManager, ct, hcard,
+                               GWEN_CryptToken_PinType_Access);
     if (rv) {
       LC_Card_Close(hcard);
       LC_Card_free(hcard);
@@ -526,7 +388,6 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
     else
       havepin=1;
   } /* while !havepin */
-
 
   lct->card=hcard;
   return 0;

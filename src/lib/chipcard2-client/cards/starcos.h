@@ -54,12 +54,6 @@ LC_CLIENT_RESULT LC_Starcos_GetPinStatus(LC_CARD *card,
                                          int *maxErrors,
                                          int *currentErrors);
 
-CHIPCARD_API
-int LC_Starcos_GetChPinId(const LC_CARD *card);
-
-CHIPCARD_API
-int LC_Starcos_GetEgPinId(const LC_CARD *card);
-
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_VerifyPin(LC_CARD *card,
@@ -88,6 +82,7 @@ LC_CLIENT_RESULT LC_Starcos_ModifyPin(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_SecureModifyPin(LC_CARD *card,
                                             unsigned int pid);
+
 /*@}*/
 
 

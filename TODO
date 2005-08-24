@@ -1,3 +1,2 @@
 
-- make tool "rsacard2" use the pin id from the DF_BANKING
-- implement "changepin" command in "rsacard2"
+- cardfs: implement function ServiceCardFS_Command()

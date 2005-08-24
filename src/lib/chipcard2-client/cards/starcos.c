@@ -64,6 +64,9 @@ int LC_Starcos_ExtendCard(LC_CARD *card){
   LC_Card_SetOpenFn(card, LC_Starcos_Open);
   LC_Card_SetCloseFn(card, LC_Starcos_Close);
 
+  LC_Card_SetGetInitialPinFn(card, LC_Starcos_GetInitialPin);
+  LC_Card_SetGetPinStatusFn(card, LC_Starcos_GetPinStatus);
+
   LC_Card_SetIsoSignFn(card, LC_Starcos__Sign);
   LC_Card_SetIsoVerifyFn(card, LC_Starcos__Verify);
 
@@ -145,9 +148,6 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
   LC_STARCOS *scos;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbData;
-  GWEN_XMLNODE *n;
-  const char *s;
-  int id;
 
   DBG_NOTICE(LC_LOGDOMAIN, "Opening STARCOS card (%s)", appname);
 
@@ -217,24 +217,6 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
     GWEN_Buffer_free(mbuf);
     return res;
   }
-
-  n=LC_Card_GetDfInfo(card);
-  assert(n);
-  s=GWEN_XMLNode_GetProperty(n, "ch_pin", 0);
-  scos->pinCH=0x90;
-  if (s && (1==sscanf(s, "%i", &id)))
-    scos->pinCH=id;
-  else {
-    DBG_WARN(LC_LOGDOMAIN, "Bad/missing ch_pin in DF_BANKING");
-  }
-  s=GWEN_XMLNode_GetProperty(n, "eg_pin", 0);
-  scos->pinEG=0x91;
-  if (s && (1==sscanf(s, "%i", &id)))
-    scos->pinEG=id;
-  else {
-    DBG_WARN(LC_LOGDOMAIN, "Bad/missing eg_pin in DF_BANKING");
-  }
-  GWEN_XMLNode_free(n);
 
   scos->db_ef_gd_0=dbData;
   scos->bin_ef_gd_0=mbuf;
@@ -1698,31 +1680,26 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
 
 
 
-int LC_Starcos_GetChPinId(const LC_CARD *card) {
+LC_CLIENT_RESULT LC_Starcos_GetInitialPin(LC_CARD *card,
+                                          int pid,
+                                          unsigned char *buffer,
+                                          unsigned int maxSize,
+                                          unsigned int *pinLength) {
   LC_STARCOS *scos;
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
   assert(scos);
 
-  return scos->pinCH;
+  if (sizeof(scos->initialPin)>maxSize) {
+    DBG_ERROR(LC_LOGDOMAIN, "Buffer too small");
+    return LC_Client_ResultInvalid;
+  }
+
+  memmove(buffer, scos->initialPin, sizeof(scos->initialPin));
+  *pinLength=sizeof(scos->initialPin);
+  return 0;
 }
-
-
-
-int LC_Starcos_GetEgPinId(const LC_CARD *card) {
-  LC_STARCOS *scos;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  return scos->pinEG;
-}
-
-
-
-
 
 
 

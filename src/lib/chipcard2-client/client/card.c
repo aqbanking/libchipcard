@@ -24,7 +24,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/gwentime.h>
 #include <chipcard2/chipcard2.h>
-
+#include <chipcard2-client/client/pininfo.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -627,6 +627,20 @@ void LC_Card_SetCloseFn(LC_CARD *card, LC_CARD_CLOSE_FN fn){
 
 
 
+void LC_Card_SetGetPinStatusFn(LC_CARD *card, LC_CARD_GETPINSTATUS_FN fn) {
+  assert(card);
+  card->getPinStatusFn=fn;
+}
+
+
+
+void LC_Card_SetGetInitialPinFn(LC_CARD *card, LC_CARD_GETINITIALPIN_FN fn){
+  assert(card);
+  card->getInitialPinFn=fn;
+}
+
+
+
 LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
                                     int offset,
                                     int size,
@@ -701,19 +715,37 @@ LC_CLIENT_RESULT LC_Card_SelectMF(LC_CARD *card){
 
 
 
-GWEN_XMLNODE *LC_Card_GetEfInfo(const LC_CARD *card){
-  GWEN_XMLNODE *n;
-
+GWEN_XMLNODE *LC_Card__GetEfInfo(const LC_CARD *card){
   assert(card);
 
   if (!card->context) {
     DBG_ERROR(LC_LOGDOMAIN, "No card/application selected");
     return 0;
   }
-  n=LC_CardContext_GetEfNode(card->context);
+  return LC_CardContext_GetEfNode(card->context);
+}
+
+
+
+GWEN_XMLNODE *LC_Card_GetEfInfo(const LC_CARD *card){
+  GWEN_XMLNODE *n;
+
+  n=LC_Card__GetEfInfo(card);
   if (n)
     return GWEN_XMLNode_dup(n);
   return 0;
+}
+
+
+
+GWEN_XMLNODE *LC_Card__GetDfInfo(const LC_CARD *card){
+  assert(card);
+
+  if (!card->context) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card/application selected");
+    return 0;
+  }
+  return LC_CardContext_GetDfNode(card->context);
 }
 
 
@@ -721,13 +753,7 @@ GWEN_XMLNODE *LC_Card_GetEfInfo(const LC_CARD *card){
 GWEN_XMLNODE *LC_Card_GetDfInfo(const LC_CARD *card){
   GWEN_XMLNODE *n;
 
-  assert(card);
-
-  if (!card->context) {
-    DBG_ERROR(LC_LOGDOMAIN, "No card/application selected");
-    return 0;
-  }
-  n=LC_CardContext_GetDfNode(card->context);
+  n=LC_Card__GetDfInfo(card);
   if (n)
     return GWEN_XMLNode_dup(n);
   return 0;
@@ -735,16 +761,22 @@ GWEN_XMLNODE *LC_Card_GetDfInfo(const LC_CARD *card){
 
 
 
-GWEN_XMLNODE *LC_Card_GetAppInfo(const LC_CARD *card){
-  GWEN_XMLNODE *n;
-
+GWEN_XMLNODE *LC_Card__GetAppInfo(const LC_CARD *card){
   assert(card);
 
   if (!card->context) {
     DBG_ERROR(LC_LOGDOMAIN, "No card/application selected");
     return 0;
   }
-  n=LC_CardContext_GetAppNode(card->context);
+  return LC_CardContext_GetAppNode(card->context);
+}
+
+
+
+GWEN_XMLNODE *LC_Card_GetAppInfo(const LC_CARD *card){
+  GWEN_XMLNODE *n;
+
+  n=LC_Card__GetAppInfo(card);
   if (n)
     return GWEN_XMLNode_dup(n);
   return 0;
@@ -880,6 +912,29 @@ void LC_Card_SetIsoAppendRecordFn(LC_CARD *card,
 void LC_Card_SetIsoVerifyPinFn(LC_CARD *card, LC_CARD_ISOVERIFYPIN_FN f) {
   assert(card);
   card->verifyPinFn=f;
+}
+
+
+
+void LC_Card_SetIsoModifyPinFn(LC_CARD *card, LC_CARD_ISOMODIFYPIN_FN f) {
+  assert(card);
+  card->modifyPinFn=f;
+}
+
+
+
+void LC_Card_SetIsoPerformVerificationFn(LC_CARD *card,
+                                         LC_CARD_ISOPERFORMVERIFICATION_FN f){
+  assert(card);
+  card->performVerificationFn=f;
+}
+
+
+
+void LC_Card_SetIsoPerformModificationFn(LC_CARD *card,
+                                         LC_CARD_ISOPERFORMMODIFICATION_FN f){
+  assert(card);
+  card->performModificationFn=f;
 }
 
 
@@ -1036,15 +1091,73 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       int identifier,
+                                      LC_PININFO_ENCODING pe,
                                       const char *ptr,
                                       unsigned int size,
                                       int *triesLeft) {
   assert(card);
-  if (card->verifyFn)
-    return card->verifyPinFn(card, flags, identifier, ptr, size, triesLeft);
+  if (card->verifyPinFn)
+    return card->verifyPinFn(card, flags, identifier, pe, ptr, size,
+                             triesLeft);
   else
-    return LC_Card__IsoVerifyPin(card, flags, identifier, ptr, size,
+    return LC_Card__IsoVerifyPin(card, flags, identifier, pe, ptr, size,
                                  triesLeft);
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
+                                      GWEN_TYPE_UINT32 flags,
+                                      int identifier,
+                                      LC_PININFO_ENCODING pe,
+                                      const char *oldptr,
+                                      unsigned int oldsize,
+                                      const char *newptr,
+                                      unsigned int newsize,
+                                      int *triesLeft) {
+  assert(card);
+  if (card->modifyPinFn)
+    return card->modifyPinFn(card, flags, identifier, pe,
+                             oldptr, oldsize,
+                             newptr, newsize,
+                             triesLeft);
+  else
+    return LC_Card__IsoModifyPin(card, flags, identifier, pe,
+                                 oldptr, oldsize,
+                                 newptr, newsize,
+                                 triesLeft);
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
+                                                GWEN_TYPE_UINT32 flags,
+                                                int identifier,
+                                                LC_PININFO_ENCODING pe,
+                                                int *triesLeft) {
+  assert(card);
+  if (card->performVerificationFn)
+    return card->performVerificationFn(card, flags, identifier, pe,
+                                       triesLeft);
+  else
+    return LC_Card__IsoPerformVerification(card, flags, identifier, pe,
+                                           triesLeft);
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
+                                                GWEN_TYPE_UINT32 flags,
+                                                int identifier,
+                                                LC_PININFO_ENCODING pe,
+                                                int *triesLeft) {
+  assert(card);
+  if (card->performModificationFn)
+    return card->performModificationFn(card, flags, identifier, pe,
+                                       triesLeft);
+  else
+    return LC_Card__IsoPerformModification(card, flags, identifier, pe,
+                                           triesLeft);
 }
 
 
@@ -1503,6 +1616,7 @@ LC_CLIENT_RESULT LC_Card__IsoAppendRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
                                        int identifier,
+                                       LC_PININFO_ENCODING pe,
                                        const char *ptr,
                                        unsigned int size,
                                        int *triesLeft) {
@@ -1522,6 +1636,177 @@ LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "pin", ptr, size);
   }
+  res=LC_Card_ExecCommand(card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    if (res==LC_Client_ResultCmdError && triesLeft) {
+      if (LC_Card_GetLastSW1(card)==0x63) {
+        int c;
+
+        c=LC_Card_GetLastSW2(card);
+        if (c>=0xc0)
+          *triesLeft=(c & 0xf);
+      }
+    }
+    return res;
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
+                                       GWEN_TYPE_UINT32 flags,
+                                       int identifier,
+                                       LC_PININFO_ENCODING pe,
+                                       const char *oldptr,
+                                       unsigned int oldsize,
+                                       const char *newptr,
+                                       unsigned int newsize,
+                                       int *triesLeft) {
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+
+  if (triesLeft)
+    *triesLeft=-1;
+
+  dbReq=GWEN_DB_Group_new("IsoModifyPin");
+  dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "pid", identifier);
+
+  if (oldptr && oldsize) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                        "oldpin", oldptr, oldsize);
+  }
+  if (newptr && newsize) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                        "newpin", newptr, newsize);
+  }
+  res=LC_Card_ExecCommand(card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    if (res==LC_Client_ResultCmdError && triesLeft) {
+      if (LC_Card_GetLastSW1(card)==0x63) {
+        int c;
+
+        c=LC_Card_GetLastSW2(card);
+        if (c>=0xc0)
+          *triesLeft=(c & 0xf);
+      }
+    }
+    return res;
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
+                                                 GWEN_TYPE_UINT32 flags,
+                                                 int identifier,
+                                                 LC_PININFO_ENCODING pe,
+                                                 int *triesLeft) {
+  GWEN_DB_NODE *dbReq=0;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+
+  if (triesLeft)
+    *triesLeft=-1;
+
+  switch(pe) {
+  case LC_PinInfo_EncodingBin:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bin");
+    break;
+  case LC_PinInfo_EncodingBcd:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bcd");
+    break;
+  case LC_PinInfo_EncodingAscii:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Ascii");
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Fpin2");
+    break;
+  default:
+    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
+              LC_PinInfo_Encoding_toString(pe));
+    return LC_Client_ResultInvalid;
+  }
+
+  dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "pid", identifier);
+
+  res=LC_Card_ExecCommand(card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    if (res==LC_Client_ResultCmdError && triesLeft) {
+      if (LC_Card_GetLastSW1(card)==0x63) {
+        int c;
+
+        c=LC_Card_GetLastSW2(card);
+        if (c>=0xc0)
+          *triesLeft=(c & 0xf);
+      }
+    }
+    return res;
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
+                                                 GWEN_TYPE_UINT32 flags,
+                                                 int identifier,
+                                                 LC_PININFO_ENCODING pe,
+                                                 int *triesLeft) {
+  GWEN_DB_NODE *dbReq=0;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+
+  if (triesLeft)
+    *triesLeft=-1;
+
+  switch(pe) {
+  case LC_PinInfo_EncodingBin:
+    dbReq=GWEN_DB_Group_new("IsoPerformModification_Bin");
+    break;
+  case LC_PinInfo_EncodingBcd:
+    dbReq=GWEN_DB_Group_new("IsoPerformModification_Bcd");
+    break;
+  case LC_PinInfo_EncodingAscii:
+    dbReq=GWEN_DB_Group_new("IsoPerformModification_Ascii");
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    dbReq=GWEN_DB_Group_new("IsoPerformModification_Fpin2");
+    break;
+  default:
+    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
+              LC_PinInfo_Encoding_toString(pe));
+    return LC_Client_ResultInvalid;
+  }
+
+  dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "pid", identifier);
+
   res=LC_Card_ExecCommand(card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
   if (res!=LC_Client_ResultOk) {
@@ -1689,6 +1974,180 @@ LC_CLIENT_RESULT LC_Card__IsoDecipher(LC_CARD *card,
   GWEN_DB_Group_free(dbRsp);
 
   return LC_Client_ResultOk;
+}
+
+
+
+
+
+
+LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, GWEN_TYPE_UINT32 pid) {
+  GWEN_XMLNODE *n;
+
+  n=LC_Card__GetEfInfo(card);
+  if (!n)
+    n=LC_Card__GetDfInfo(card);
+  if (!n)
+    n=LC_Card__GetAppInfo(card);
+  if (!n) {
+    DBG_INFO(LC_LOGDOMAIN, "No XML info");
+    return 0;
+  }
+
+  while(n) {
+    GWEN_XMLNODE *nn;
+
+    nn=GWEN_XMLNode_FindFirstTag(n, "pins", 0, 0);
+    while (nn) {
+      GWEN_XMLNODE *nnn;
+
+      nnn=GWEN_XMLNode_FindFirstTag(nn, "pin", 0, 0);
+      while(nnn) {
+        const char *s;
+
+        s=GWEN_XMLNode_GetProperty(nnn, "id", 0);
+        if (s) {
+          int i;
+
+          if (sscanf(s, "%i", &i)==1) {
+            if (i==(int)pid) {
+              LC_PININFO *pi;
+
+              pi=LC_PinInfo_new();
+              LC_PinInfo_SetId(pi, pid);
+              s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
+              LC_PinInfo_SetName(pi, s);
+              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "minLen", "0"),
+                            "%i", &i))
+                LC_PinInfo_SetMinLength(pi, i);
+              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "maxLen", "0"),
+                            "%i", &i))
+                LC_PinInfo_SetMaxLength(pi, i);
+              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "allowChange", "0"),
+                            "%i", &i))
+                LC_PinInfo_SetAllowChange(pi, i);
+              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "filler", "0"),
+                            "%i", &i))
+                LC_PinInfo_SetFiller(pi, i);
+              s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
+              if (s)
+                LC_PinInfo_SetEncoding(pi, LC_PinInfo_Encoding_fromString(s));
+              return pi;
+            }
+          }
+        }
+        nnn=GWEN_XMLNode_FindNextTag(nnn, "pin", 0, 0);
+      }
+
+      nn=GWEN_XMLNode_FindNextTag(nn, "pins", 0, 0);
+    }
+
+    n=GWEN_XMLNode_GetParent(n);
+  }
+
+  return 0;
+}
+
+
+
+LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name) {
+  GWEN_XMLNODE *n;
+
+  n=LC_Card__GetEfInfo(card);
+  if (!n)
+    n=LC_Card__GetDfInfo(card);
+  if (!n)
+    n=LC_Card__GetAppInfo(card);
+  if (!n) {
+    DBG_INFO(LC_LOGDOMAIN, "No XML info");
+    return 0;
+  }
+
+  while(n) {
+    GWEN_XMLNODE *nn;
+
+    nn=GWEN_XMLNode_FindFirstTag(n, "pins", 0, 0);
+    while (nn) {
+      GWEN_XMLNODE *nnn;
+
+      nnn=GWEN_XMLNode_FindFirstTag(nn, "pin", 0, 0);
+      while(nnn) {
+        const char *s;
+        int i;
+
+        s=GWEN_XMLNode_GetProperty(nnn, "id", 0);
+        if (s && sscanf(s, "%i", &i)==1) {
+          s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
+          if (s && strcasecmp(s, name)==0) {
+            LC_PININFO *pi;
+
+            pi=LC_PinInfo_new();
+            LC_PinInfo_SetId(pi, (GWEN_TYPE_UINT32)i);
+            s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
+            LC_PinInfo_SetName(pi, s);
+            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "minLen", "0"),
+                          "%i", &i))
+              LC_PinInfo_SetMinLength(pi, i);
+            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "maxLen", "0"),
+                          "%i", &i))
+              LC_PinInfo_SetMaxLength(pi, i);
+            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "allowChange", "0"),
+                          "%i", &i))
+              LC_PinInfo_SetAllowChange(pi, i);
+            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "filler", "0"),
+                          "%i", &i))
+              LC_PinInfo_SetFiller(pi, i);
+            s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
+            if (s)
+              LC_PinInfo_SetEncoding(pi, LC_PinInfo_Encoding_fromString(s));
+            return pi;
+          }
+        }
+        nnn=GWEN_XMLNode_FindNextTag(nnn, "pin", 0, 0);
+      }
+
+      nn=GWEN_XMLNode_FindNextTag(nn, "pins", 0, 0);
+    }
+
+    n=GWEN_XMLNode_GetParent(n);
+  }
+
+  return 0;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_GetPinStatus(LC_CARD *card,
+                                      unsigned int pid,
+                                      int *maxErrors,
+                                      int *currentErrors) {
+  assert(card);
+  if (card->getPinStatusFn) {
+    return card->getPinStatusFn(card, pid, maxErrors, currentErrors);
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "no getInitialPin function set");
+    return LC_Client_ResultNotSupported;
+  }
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_GetInitialPin(LC_CARD *card,
+                                       int id,
+                                       unsigned char *buffer,
+                                       unsigned int maxLen,
+                                       unsigned int *pinLength) {
+  assert(card);
+  if (card->getInitialPinFn) {
+    return card->getInitialPinFn(card, id, buffer, maxLen, pinLength);
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "no getInitialPin function set");
+    return LC_Client_ResultNotSupported;
+  }
 }
 
 

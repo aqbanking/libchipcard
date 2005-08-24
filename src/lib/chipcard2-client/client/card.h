@@ -30,6 +30,7 @@ typedef struct LC_CARD LC_CARD;
 
 #include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
+#include <chipcard2-client/client/pininfo.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/xml.h>
@@ -43,6 +44,20 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LC_CARD, LC_Card, CHIPCARD_API)
 
 typedef LC_CLIENT_RESULT (*LC_CARD_OPEN_FN)(LC_CARD *card);
 typedef LC_CLIENT_RESULT (*LC_CARD_CLOSE_FN)(LC_CARD *card);
+
+typedef
+LC_CLIENT_RESULT (*LC_CARD_GETPINSTATUS_FN)(LC_CARD *card,
+                                            unsigned int pid,
+                                            int *maxErrors,
+                                            int *currentErrors);
+
+typedef
+LC_CLIENT_RESULT (*LC_CARD_GETINITIALPIN_FN)(LC_CARD *card,
+                                             int id,
+                                             unsigned char *buffer,
+                                             unsigned int maxLen,
+                                             unsigned int *pinLength);
+
 
 CHIPCARD_API
 void LC_Card_List2_freeAll(LC_CARD_LIST2 *l);
@@ -81,11 +96,31 @@ LC_CARD_CLOSE_FN LC_Card_GetCloseFn(const LC_CARD *card);
 CHIPCARD_API
 void LC_Card_SetCloseFn(LC_CARD *card, LC_CARD_CLOSE_FN fn);
 
+CHIPCARD_API
+void LC_Card_SetGetInitialPinFn(LC_CARD *card, LC_CARD_GETINITIALPIN_FN fn);
+
+CHIPCARD_API
+void LC_Card_SetGetPinStatusFn(LC_CARD *card, LC_CARD_GETPINSTATUS_FN fn);
+
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_GetPinStatus(LC_CARD *card,
+                                      unsigned int pid,
+                                      int *maxErrors,
+                                      int *currentErrors);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_GetInitialPin(LC_CARD *card,
+                                       int id,
+                                       unsigned char *buffer,
+                                       unsigned int maxLen,
+                                       unsigned int *pinLength);
+
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_Check(LC_CARD *card);
@@ -177,6 +212,24 @@ GWEN_XMLNODE *LC_Card_GetEfInfo(const LC_CARD *card);
 CHIPCARD_API
 GWEN_XMLNODE *LC_Card_GetDfInfo(const LC_CARD *card);
 
+/**
+ * Returns a pininfo object of the pin given by its id.
+ * The caller becomes the owner of the object returned (if any) and must
+ * call @ref LC_PinInfo_free on it to avoid memory leaks.
+ */
+CHIPCARD_API
+LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, GWEN_TYPE_UINT32 pid);
+
+/**
+ * Returns a pininfo object of the pin given by its name.
+ * The caller becomes the owner of the object returned (if any) and must
+ * call @ref LC_PinInfo_free on it to avoid memory leaks.
+ * Standard names are "ch_pin" for the cardholder pin and "eg_pin" for
+ * the device pin (needed by STARCOS cards to modify security data on a card).
+ */
+CHIPCARD_API
+LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name);
+
 
 /** @name Last Result
  *
@@ -212,7 +265,6 @@ LC_CLIENT_RESULT LC_Card_WriteBinary2(LC_CARD *card,
                                       int offset,
                                       const char *ptr,
                                       unsigned int size);
-
 
 
 
@@ -286,9 +338,35 @@ typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOVERIFYPIN_FN)(LC_CARD *card,
                                             GWEN_TYPE_UINT32 flags,
                                             int identifier,
+                                            LC_PININFO_ENCODING pe,
                                             const char *ptr,
                                             unsigned int size,
                                             int *triesLeft);
+
+typedef
+LC_CLIENT_RESULT (*LC_CARD_ISOMODIFYPIN_FN)(LC_CARD *card,
+                                            GWEN_TYPE_UINT32 flags,
+                                            int identifier,
+                                            LC_PININFO_ENCODING pe,
+                                            const char *oldptr,
+                                            unsigned int oldsize,
+                                            const char *newptr,
+                                            unsigned int newsize,
+                                            int *triesLeft);
+
+typedef
+LC_CLIENT_RESULT (*LC_CARD_ISOPERFORMVERIFICATION_FN)(LC_CARD *card,
+                                                      GWEN_TYPE_UINT32 flags,
+                                                      int identifier,
+                                                      LC_PININFO_ENCODING pe,
+                                                      int *triesLeft);
+
+typedef
+LC_CLIENT_RESULT (*LC_CARD_ISOPERFORMMODIFICATION_FN)(LC_CARD *card,
+                                                      GWEN_TYPE_UINT32 flags,
+                                                      int identifier,
+                                                      LC_PININFO_ENCODING pe,
+                                                      int *triesLeft);
 
 
 typedef LC_CLIENT_RESULT (*LC_CARD_ISOMANAGESE_FN)(LC_CARD *card,
@@ -328,6 +406,12 @@ void LC_Card_SetIsoUpdateRecordFn(LC_CARD *card, LC_CARD_ISOUPDATERECORD_FN f);
 void LC_Card_SetIsoAppendRecordFn(LC_CARD *card, LC_CARD_ISOAPPENDRECORD_FN f);
 
 void LC_Card_SetIsoVerifyPinFn(LC_CARD *card, LC_CARD_ISOVERIFYPIN_FN f);
+void LC_Card_SetIsoModifyPinFn(LC_CARD *card, LC_CARD_ISOMODIFYPIN_FN f);
+
+void LC_Card_SetIsoPerformVerificationFn(LC_CARD *card,
+                                         LC_CARD_ISOPERFORMVERIFICATION_FN f);
+void LC_Card_SetIsoPerformModificationFn(LC_CARD *card,
+                                         LC_CARD_ISOPERFORMMODIFICATION_FN f);
 
 void LC_Card_SetIsoManageSeFn(LC_CARD *card, LC_CARD_ISOMANAGESE_FN f);
 void LC_Card_SetIsoSignFn(LC_CARD *card, LC_CARD_ISOSIGN_FN f);
@@ -400,9 +484,35 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       int identifier,
+                                      LC_PININFO_ENCODING pe,
                                       const char *ptr,
                                       unsigned int size,
                                       int *triesLeft);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
+                                      GWEN_TYPE_UINT32 flags,
+                                      int identifier,
+                                      LC_PININFO_ENCODING pe,
+                                      const char *oldptr,
+                                      unsigned int oldsize,
+                                      const char *newptr,
+                                      unsigned int newsize,
+                                      int *triesLeft);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
+                                                GWEN_TYPE_UINT32 flags,
+                                                int identifier,
+                                                LC_PININFO_ENCODING pe,
+                                                int *triesLeft);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
+                                                GWEN_TYPE_UINT32 flags,
+                                                int identifier,
+                                                LC_PININFO_ENCODING pe,
+                                                int *triesLeft);
 
 
 CHIPCARD_API

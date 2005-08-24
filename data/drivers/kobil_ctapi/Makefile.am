@@ -1,5 +1,6 @@
 
 EXTRA_DIST=\
+  card.xml \
   ddv0.xml \
   ddv1.xml \
   driver.xml \
@@ -11,6 +12,7 @@ EXTRA_DIST=\
 
 carddatadir=@libchipcard2s_config_am@/drivers/kobil_ctapi/cards
 carddata_DATA=\
+  card.xml \
   ddv0.xml \
   ddv1.xml \
   geldkarte.xml \

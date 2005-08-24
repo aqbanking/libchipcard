@@ -625,8 +625,6 @@
 
     </formats>
 
-
-
     <files>
       <ef name="EF_GD0" sid="0x2f02" 
           type="transparent"
@@ -637,8 +635,15 @@
         <FORMAT type="EF_GD0" />
       </ef>
   
-      <df name="DF_BANKING" lid="d27600007448420110"
-          ch_pin="0x90" eg_pin="0x91" >
+      <df name="DF_BANKING" lid="d27600007448420110">
+
+        <pins>
+          <pin name="ch_pin" encoding="ascii" id="0x90" 
+               minlen="4" maxlen="8" allowChange="1" filler="32" />
+          <pin name="eg_pin" encoding="ascii" id="0x91" 
+               minlen="4" maxlen="8" allowChange="1" filler="32" />
+        </pins>
+
         <files>
           <ef name="EF_IPF" sid="0xb300"
               type="transparent" >

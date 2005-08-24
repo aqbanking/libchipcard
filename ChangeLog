@@ -1,4 +1,9 @@
 
+2005/08/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- reworked starcos card stuff (to make the card of Petric Frank work)
+
+
 2005/08/23: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in STARCOS-vr description

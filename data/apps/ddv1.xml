@@ -211,6 +211,12 @@
 
   
       <df name="DF_BANKING_20" lid="d27600002548420200">
+
+        <pins>
+          <pin name="ch_pin" encoding="fpin2" id="0x81" 
+               minlen="4" maxlen="8" allowChange="0" />
+        </pins>
+
         <files>
 
           <ef name="EF_BNK" sid="0x0301"

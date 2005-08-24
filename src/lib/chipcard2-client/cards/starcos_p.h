@@ -47,9 +47,6 @@ struct LC_STARCOS {
   unsigned int currentPrivateKeyId;
   unsigned int currentAlgo;
 
-  int pinCH;
-  int pinEG;
-
 };
 
 
@@ -88,6 +85,11 @@ LC_CLIENT_RESULT LC_Starcos__Verify(LC_CARD *card,
                                     const char *sigptr,
                                     unsigned int sigsize);
 
+LC_CLIENT_RESULT LC_Starcos_GetInitialPin(LC_CARD *card,
+                                          int pid,
+                                          unsigned char *buffer,
+                                          unsigned int maxSize,
+                                          unsigned int *pinLength);
 
 
 
