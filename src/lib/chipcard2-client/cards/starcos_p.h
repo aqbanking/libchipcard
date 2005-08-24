@@ -37,6 +37,8 @@ struct LC_STARCOS {
   GWEN_DB_NODE *db_ef_gd_0;
   unsigned char initialPin[5];
 
+  char *appName;
+
   /*1st byte of EF_KEY_LOG */
   unsigned int keyLogInfo;
   LC_STARCOS_KEYDESCR_LIST *keyDescriptors;

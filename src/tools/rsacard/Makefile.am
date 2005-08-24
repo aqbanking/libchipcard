@@ -13,15 +13,7 @@ else
 endif
 
 rsacard2_SOURCES=\
-  main.c \
-  generatekey.c \
-  activatekey.c \
-  deactivatekey.c \
-  exportkey.c \
-  importkey.c \
-  exportbankinfo.c \
-  importbankinfo.c \
-  initialpin.c
+  main.c
 rsacard2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
 rsacard2_LDFLAGS=@STRIPALL@
 

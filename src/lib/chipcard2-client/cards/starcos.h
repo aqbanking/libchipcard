@@ -43,6 +43,9 @@ CHIPCARD_API
 GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card);
 
 
+void LC_Starcos_SetAppName(LC_CARD *card, const char *s);
+
+
 
 /** @name PIN Management Functions
  *
@@ -53,36 +56,6 @@ LC_CLIENT_RESULT LC_Starcos_GetPinStatus(LC_CARD *card,
                                          unsigned int pid,
                                          int *maxErrors,
                                          int *currentErrors);
-
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_VerifyPin(LC_CARD *card,
-                                      unsigned int pid,
-                                      const char *pin);
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_SecureVerifyPin(LC_CARD *card,
-                                            unsigned int pid);
-
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_VerifyInitialPin(LC_CARD *card,
-                                             unsigned int pid);
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ModifyInitialPin(LC_CARD *card,
-                                             unsigned int pid,
-                                             const char *newpin);
-
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ModifyPin(LC_CARD *card,
-                                      unsigned int pid,
-                                      const char *oldpin,
-                                      const char *newpin);
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_SecureModifyPin(LC_CARD *card,
-                                            unsigned int pid);
-
 /*@}*/
 
 

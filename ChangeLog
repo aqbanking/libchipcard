@@ -2,6 +2,10 @@
 2005/08/24: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - reworked starcos card stuff (to make the card of Petric Frank work)
+- cleaned up cards/starcos (removed functions which are now in 
+  the corresponding crypttoken)
+- disabled tool rsacard2 completely: This has now been obsoleted by gwen's
+  gct-tool
 
 
 2005/08/23: Martin Preuss<martin@libchipcard.de>

@@ -442,6 +442,9 @@ LC_CLIENT_RESULT LC_Card_SelectCardAndApp(LC_CARD *card,
     return LC_Client_ResultCmdError;
   }
 
+  free(card->selectedApp);
+  card->selectedApp=strdup(appName);
+
   return LC_Client_ResultOk;
 }
 
@@ -464,7 +467,7 @@ int LC_Card_SelectApp(LC_CARD *card, const char *appName){
 
 
 
-const char *LC_Card_SelectedApp(const LC_CARD *card) {
+const char *LC_Card_GetSelectedApp(const LC_CARD *card) {
   assert(card);
   return card->selectedApp;
 }

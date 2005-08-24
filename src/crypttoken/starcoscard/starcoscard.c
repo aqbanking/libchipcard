@@ -189,6 +189,8 @@ int LC_CryptTokenSTARCOS_Plugin_CheckToken(GWEN_PLUGIN *pl,
 	  }
 	}
 
+        GWEN_Buffer_AppendString(subTypeName,
+                                 LC_Card_GetSelectedApp(hcard));
         LC_Card_Close(hcard);
 	LC_Card_free(hcard);
     } /* if card is open */

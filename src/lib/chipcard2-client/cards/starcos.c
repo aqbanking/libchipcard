@@ -100,6 +100,7 @@ void LC_Starcos_freeData(void *bp, void *p){
   assert(bp);
   assert(p);
   scos=(LC_STARCOS*)p;
+  free(scos->appName);
   GWEN_Buffer_free(scos->bin_ef_gd_0);
   GWEN_DB_Group_free(scos->db_ef_gd_0);
   LC_Starcos_KeyDescr_List_free(scos->keyDescriptors);
@@ -226,15 +227,41 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
+  LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
 
-  res=LC_Starcos__Reopen(card, "starcos");
+  assert(card);
+  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
+  assert(scos);
+
+  if (scos->appName)
+    res=LC_Starcos__Reopen(card, scos->appName);
+  else
+    res=LC_Client_ResultCmdError;
+  if (res==LC_Client_ResultCmdError)
+    res=LC_Starcos__Reopen(card, "starcos");
   if (res==LC_Client_ResultCmdError)
     res=LC_Starcos__Reopen(card, "starcos-hvb");
   if (res==LC_Client_ResultCmdError)
     res=LC_Starcos__Reopen(card, "starcos-vr");
 
   return res;
+}
+
+
+
+void LC_Starcos_SetAppName(LC_CARD *card, const char *s){
+  LC_STARCOS *scos;
+
+  assert(card);
+  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
+  assert(scos);
+
+  free(scos->appName);
+  if (s)
+    scos->appName=strdup(s);
+  else
+    scos->appName=0;
 }
 
 
@@ -283,119 +310,6 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_Starcos_VerifyPin(LC_CARD *card,
-                                      unsigned int pid,
-                                      const char *pin){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  dbReq=GWEN_DB_Group_new("VerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  if (pin)
-    GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                         "pin", pin);
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_SecureVerifyPin(LC_CARD *card,
-                                            unsigned int pid){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  dbReq=GWEN_DB_Group_new("SecureVerifyPin");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetLongTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_ModifyPin(LC_CARD *card,
-                                      unsigned int pid,
-                                      const char *oldpin,
-                                      const char *newpin){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(oldpin);
-  assert(newpin);
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  dbReq=GWEN_DB_Group_new("ModifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                       "oldpin", oldpin);
-  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                       "newpin", newpin);
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_SecureModifyPin(LC_CARD *card,
-                                            unsigned int pid){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  dbReq=GWEN_DB_Group_new("SecureModifyPin");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetLongTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
 LC_CLIENT_RESULT LC_Starcos_GetPinStatus(LC_CARD *card,
                                          unsigned int pid,
                                          int *maxErrors,
@@ -438,65 +352,6 @@ LC_CLIENT_RESULT LC_Starcos_GetPinStatus(LC_CARD *card,
 
   return res;
 }
-
-
-
-LC_CLIENT_RESULT LC_Starcos_VerifyInitialPin(LC_CARD *card,
-                                             unsigned int pid){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  dbReq=GWEN_DB_Group_new("VerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pin", scos->initialPin, sizeof(scos->initialPin));
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Starcos_ModifyInitialPin(LC_CARD *card,
-                                             unsigned int pid,
-                                             const char *newpin){
-  LC_STARCOS *scos;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(newpin);
-
-  assert(card);
-  scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
-  assert(scos);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  dbReq=GWEN_DB_Group_new("ModifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "oldpin", scos->initialPin, sizeof(scos->initialPin));
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", pid);
-  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                       "newpin", newpin);
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
 
 
 
