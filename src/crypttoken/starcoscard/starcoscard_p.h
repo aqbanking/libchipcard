@@ -56,13 +56,8 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct,
 /**
  * pids: CardHolder Pin=0x90, Gateway Pin=0x91
  */
-int LC_CryptTokenSTARCOS__EnterPin(GWEN_CRYPTTOKEN *ct,
-                                   LC_CARD *hcard,
-                                   GWEN_CRYPTTOKEN_PINTYPE pt,
-                                   int pid);
 
-int LC_CryptTokenSTARCOS_VerifyPin(GWEN_CRYPTTOKEN *ct,
-                                   GWEN_CRYPTTOKEN_PINTYPE pt);
+int LC_CryptTokenSTARCOS__Open(GWEN_CRYPTTOKEN *ct, int manage);
 
 
 int LC_CryptTokenSTARCOS_Open(GWEN_CRYPTTOKEN *ct, int manage);
@@ -157,11 +152,22 @@ int LC_CryptTokenSTARCOS_GenerateKey(GWEN_CRYPTTOKEN *ct,
                                      const GWEN_CRYPTTOKEN_KEYINFO *ki,
                                      GWEN_CRYPTKEY **key);
 
-int LC_CryptTokenSTARCOS__ResultToError(LC_CLIENT_RESULT res);
-
 int LC_CryptTokenSTARCOS_Status_toCtStatus(int i);
 int LC_CryptTokenSTARCOS_Status_fromCtStatus(int i);
 
+
+int LC_CryptTokenSTARCOS__VerifyPin(GWEN_CRYPTTOKEN *ct,
+                                    LC_CARD *hcard,
+                                    GWEN_CRYPTTOKEN_PINTYPE pt);
+
+int LC_CryptTokenSTARCOS__ChangePin(GWEN_CRYPTTOKEN *ct,
+                                    LC_CARD *hcard,
+                                    GWEN_CRYPTTOKEN_PINTYPE pt);
+
+int LC_CryptTokenSTARCOS_ChangePin(GWEN_CRYPTTOKEN *ct,
+                                   GWEN_CRYPTTOKEN_PINTYPE pt);
+int LC_CryptTokenSTARCOS_VerifyPin(GWEN_CRYPTTOKEN *ct,
+                                   GWEN_CRYPTTOKEN_PINTYPE pt);
 
 #endif
 

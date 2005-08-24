@@ -21,6 +21,7 @@
 #include <gwenhywfar/debug.h>
 #include <chipcard2-client/cards/starcos.h>
 #include <chipcard2-client/cards/processorcard.h>
+#include <chipcard2-client/crypttoken/ct_card.h>
 
 
 GWEN_INHERIT(GWEN_CRYPTTOKEN, LC_CT_STARCOS)
@@ -239,6 +240,8 @@ GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,
   GWEN_CryptToken_SetWriteKeyFn(ct, LC_CryptTokenSTARCOS_WriteKey);
   GWEN_CryptToken_SetGenerateKeyFn(ct, LC_CryptTokenSTARCOS_GenerateKey);
   GWEN_CryptToken_SetFillUserListFn(ct, LC_CryptTokenSTARCOS_FillUserList);
+
+  GWEN_CryptToken_SetChangePinFn(ct, LC_CryptTokenSTARCOS_ChangePin);
   return ct;
 }
 
@@ -251,218 +254,6 @@ void LC_CryptTokenSTARCOS_FreeData(void *bp, void *p) {
   if (lct->card)
     LC_Card_free(lct->card);
   GWEN_FREE_OBJECT(lct);
-}
-
-
-
-int LC_CryptTokenSTARCOS__EnterPin(GWEN_CRYPTTOKEN *ct,
-                                   LC_CARD *hcard,
-                                   GWEN_CRYPTTOKEN_PINTYPE pt,
-                                   int pid) {
-  LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
-
-  assert(ct);
-  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
-  assert(lct);
-
-  assert(hcard);
-
-  if ((pt!=GWEN_CryptToken_PinType_Manage) &&
-      (LC_Card_GetReaderFlags(hcard) & LC_CARD_READERFLAGS_KEYPAD)) {
-    int mres;
-
-    DBG_INFO(LC_LOGDOMAIN,"Terminal has a keypad, will ask for pin.");
-    /* tell the user about pin verification */
-    mres=GWEN_CryptManager_BeginEnterPin(lct->pluginManager,
-                                         ct,
-                                         pt);
-    if (mres) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction");
-      return mres;
-    }
-
-    res=LC_Starcos_SecureVerifyPin(hcard, pid);
-    if (res!=LC_Client_ResultOk) {
-      /* tell the user about end of pin verification */
-      GWEN_CryptManager_EndEnterPin(lct->pluginManager,
-                                    ct,
-                                    pt, 0);
-      DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
-                LC_Card_GetLastSW1(hcard),
-                LC_Card_GetLastSW2(hcard),
-                LC_Card_GetLastText(hcard));
-
-      if (LC_Card_GetLastSW1(hcard)==0x63) {
-	switch (LC_Card_GetLastSW2(hcard)) {
-        case 0xc0: /* no error left */
-          return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
-        case 0xc1: /* one left */
-          return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
-        case 0xc2: /* two left */
-          return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
-        default:   /* unknown error */
-          return GWEN_ERROR_CT_BAD_PIN;
-        } // switch
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x69 &&
-               LC_Card_GetLastSW2(hcard)==0x83) {
-        DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x64 &&
-               LC_Card_GetLastSW2(hcard)==0x01) {
-        DBG_ERROR(LC_LOGDOMAIN, "Aborted by user");
-        return GWEN_ERROR_USER_ABORTED;
-      }
-      else {
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-    } /* if not ok */
-    else {
-      /* PIN ok */
-      DBG_INFO(LC_LOGDOMAIN, "Pin ok");
-      GWEN_CryptManager_EndEnterPin(lct->pluginManager,
-                                    ct,
-                                    pt, 1);
-    }
-  } /* if hasKeyPad */
-  else {
-    char pinBuffer[64];
-    int mres;
-    int pinLength;
-    GWEN_TYPE_UINT32 pflags=0;
-
-    DBG_INFO(LC_LOGDOMAIN, "No keypad (or disabled), will ask for PIN");
-    memset(pinBuffer, 0, sizeof(pinBuffer));
-
-    if (pt==GWEN_CryptToken_PinType_Manage)
-      pflags|=GWEN_CRYPTTOKEN_GETPIN_FLAGS_ALLOW_DEFAULT;
-    pflags|=GWEN_CRYPTTOKEN_GETPIN_FLAGS_NUMERIC;
-    mres=GWEN_CryptManager_GetPin(lct->pluginManager,
-                                  ct,
-				  pt,
-				  GWEN_CryptToken_PinEncoding_ASCII,
-				  pflags,
-                                  pinBuffer,
-				  4, 10, &pinLength);
-    if (mres==GWEN_ERROR_CT_DEFAULT_PIN) {
-      DBG_INFO(LC_LOGDOMAIN, "Verifying the default PIN");
-      res=LC_Starcos_VerifyInitialPin(hcard, pid);
-    }
-    else if (mres==0) {
-      DBG_INFO(LC_LOGDOMAIN, "Verifying the PIN");
-      res=LC_Starcos_VerifyPin(hcard, pid, pinBuffer);
-    }
-    else {
-      DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
-      memset(pinBuffer, 0, sizeof(pinBuffer));
-      return mres;
-    }
-
-    if (res!=LC_Client_ResultOk) {
-      DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
-                LC_Card_GetLastSW1(hcard),
-                LC_Card_GetLastSW2(hcard),
-                LC_Card_GetLastText(hcard));
-
-      if (LC_Card_GetLastSW1(hcard)==0x63) {
-        /* TODO: Set Pin status */
-        switch (LC_Card_GetLastSW2(hcard)) {
-        case 0xc0: /* no error left */
-          return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
-        case 0xc1: /* one left */
-          return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
-        case 0xc2: /* two left */
-          return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
-        default:
-          return GWEN_ERROR_CT_BAD_PIN;
-        } // switch
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x69 &&
-               LC_Card_GetLastSW2(hcard)==0x83) {
-        /* TODO: Set Pin status */
-        DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-      else if (LC_Card_GetLastSW1(hcard)==0x64 &&
-               LC_Card_GetLastSW2(hcard)==0x01) {
-        return GWEN_ERROR_USER_ABORTED;
-      }
-      else {
-        DBG_ERROR(LC_LOGDOMAIN, "Unknown error");
-        return GWEN_ERROR_CT_IO_ERROR;
-      }
-    } // if not ok
-    else {
-      DBG_INFO(LC_LOGDOMAIN, "PIN ok");
-      /* TODO: Set Pin Status */
-    }
-  } // if no keyPad
-
-  return 0;
-}
-
-
-
-int LC_CryptTokenSTARCOS_VerifyPin(GWEN_CRYPTTOKEN *ct,
-                                   GWEN_CRYPTTOKEN_PINTYPE pt) {
-  LC_CT_STARCOS *lct;
-  int pid;
-  LC_CLIENT_RESULT res;
-  int maxErrors;
-  int currentErrors;
-  int force;
-  int rv;
-
-  assert(ct);
-  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
-  assert(lct);
-
-  force=GWEN_CryptToken_GetFlags(ct) & GWEN_CRYPTTOKEN_FLAGS_FORCE_PIN_ENTRY;
-  if (pt==GWEN_CryptToken_PinType_Access) {
-    if (lct->haveChPin)
-      return 0;
-    pid=LC_Starcos_GetChPinId(lct->card);
-  }
-  else if (pt==GWEN_CryptToken_PinType_Manage) {
-    if (lct->haveEgPin)
-      return 0;
-    pid=LC_Starcos_GetEgPinId(lct->card);
-  }
-  else {
-    DBG_ERROR(LC_LOGDOMAIN, "Unknown pin type \"%s\"",
-              GWEN_CryptToken_PinType_toString(pt));
-    return GWEN_ERROR_INVALID;
-  }
-
-  /* enter pin */
-  res=LC_Starcos_GetPinStatus(lct->card,
-                              pid,
-                              &maxErrors,
-                              &currentErrors);
-  if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Unable to read status of pin %x (%d)", pid, res);
-    return LC_CryptTokenSTARCOS__ResultToError(res);
-  }
-
-  if ((currentErrors!=maxErrors) && !force) {
-    DBG_ERROR(LC_LOGDOMAIN,
-              "Bad pin entered at least once before, aborting");
-    return GWEN_ERROR_ABORTED;
-  }
-
-  rv=LC_CryptTokenSTARCOS__EnterPin(ct, lct->card, pt, pid);
-  if (rv) {
-    DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
-    return rv;
-  }
-
-  if (pt==GWEN_CryptToken_PinType_Access)
-    lct->haveChPin=1;
-  else if (pt==GWEN_CryptToken_PinType_Manage)
-    lct->haveEgPin=1;
-  return 0;
 }
 
 
@@ -592,7 +383,7 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
 
 
 
-int LC_CryptTokenSTARCOS_Open(GWEN_CRYPTTOKEN *ct, int manage) {
+int LC_CryptTokenSTARCOS__Open(GWEN_CRYPTTOKEN *ct, int manage) {
   LC_CT_STARCOS *lct;
   int rv;
   GWEN_XMLNODE *node;
@@ -639,7 +430,48 @@ int LC_CryptTokenSTARCOS_Open(GWEN_CRYPTTOKEN *ct, int manage) {
 
 
 
+int LC_CryptTokenSTARCOS_Open(GWEN_CRYPTTOKEN *ct, int manage) {
+  LC_CT_STARCOS *lct;
+  int rv;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  rv=LC_CryptTokenSTARCOS__Open(ct, manage);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+    return rv;
+  }
+
+  return 0;
+}
+
+
+
 int LC_CryptTokenSTARCOS_Create(GWEN_CRYPTTOKEN *ct) {
+  LC_CT_STARCOS *lct;
+  int rv;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  rv=LC_CryptTokenSTARCOS__Open(ct, 0);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+    return rv;
+  }
+
+  rv=LC_CryptToken_ChangePin(lct->pluginManager, ct,
+                             lct->card,
+                             GWEN_CryptToken_PinType_Access,
+                             1);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+    LC_CryptTokenSTARCOS_Close(ct);
+    return rv;
+  }
   return 0;
 }
 
@@ -1299,51 +1131,6 @@ int LC_CryptTokenSTARCOS_ReadKey(GWEN_CRYPTTOKEN *ct,
 
 
 
-int LC_CryptTokenSTARCOS__ResultToError(LC_CLIENT_RESULT res) {
-  int rv;
-
-  switch(res) {
-  case LC_Client_ResultOk:
-    rv=0;
-    break;
-  case LC_Client_ResultWait:
-    rv=GWEN_ERROR_TIMEOUT;
-    break;
-  case LC_Client_ResultIpcError:
-  case LC_Client_ResultCmdError:
-  case LC_Client_ResultDataError:
-    rv=GWEN_ERROR_CT_IO_ERROR;
-    break;
-
-  case LC_Client_ResultAborted:
-    rv=GWEN_ERROR_USER_ABORTED;
-    break;
-
-  case LC_Client_ResultInvalid:
-    rv=GWEN_ERROR_INVALID;
-    break;
-
-  case LC_Client_ResultNoData:
-    rv=GWEN_ERROR_NO_DATA;
-    break;
-
-  case LC_Client_ResultCardRemoved:
-    rv=GWEN_ERROR_CT_REMOVED;
-    break;
-
-  case LC_Client_ResultNotSupported:
-    rv=GWEN_ERROR_CT_NOT_SUPPORTED;
-    break;
-
-  case LC_Client_ResultInternal:
-  case LC_Client_ResultGeneric:
-  default:
-    rv=GWEN_ERROR_GENERIC;
-    break;
-  }
-
-  return rv;
-}
 
 
 
@@ -1420,7 +1207,7 @@ int LC_CryptTokenSTARCOS_WriteKey(GWEN_CRYPTTOKEN *ct,
     if (res!=LC_Client_ResultOk) {
       DBG_ERROR(LC_LOGDOMAIN, "Unable to write public key %x (%d)",
 		kid, res);
-      return LC_CryptTokenSTARCOS__ResultToError(res);
+      return LC_CryptToken_ResultToError(res);
     }
 
     ks=GWEN_KeySpec_dup(GWEN_CryptKey_GetKeySpec(key));
@@ -1429,7 +1216,7 @@ int LC_CryptTokenSTARCOS_WriteKey(GWEN_CRYPTTOKEN *ct,
 
     res=LC_Starcos_SetKeySpec(lct->card, kid, ks);
     GWEN_KeySpec_free(ks);
-    rv=LC_CryptTokenSTARCOS__ResultToError(res);
+    rv=LC_CryptToken_ResultToError(res);
   }
   else {
     GWEN_KEYSPEC *ks;
@@ -1442,7 +1229,7 @@ int LC_CryptTokenSTARCOS_WriteKey(GWEN_CRYPTTOKEN *ct,
     GWEN_KeySpec_SetStatus(ks, LC_STARCOS_KEY_STATUS_INACTIVE_FREE);
     res=LC_Starcos_SetKeySpec(lct->card, kid, ks);
     GWEN_KeySpec_free(ks);
-    rv=LC_CryptTokenSTARCOS__ResultToError(res);
+    rv=LC_CryptToken_ResultToError(res);
   }
 
   return rv;
@@ -1531,7 +1318,7 @@ int LC_CryptTokenSTARCOS_WriteKeySpec(GWEN_CRYPTTOKEN *ct,
   res=LC_Starcos_SetKeySpec(lct->card, kid, ks2);
   GWEN_KeySpec_free(ks2);
 
-  rv=LC_CryptTokenSTARCOS__ResultToError(res);
+  rv=LC_CryptToken_ResultToError(res);
   return rv;
 }
 
@@ -1597,9 +1384,109 @@ int LC_CryptTokenSTARCOS_GenerateKey(GWEN_CRYPTTOKEN *ct,
     res=LC_Starcos_ActivateKeyPair(lct->card, srcKid, dstKid, ks);
     GWEN_KeySpec_free(ks);
   }
-  rv=LC_CryptTokenSTARCOS__ResultToError(res);
+  rv=LC_CryptToken_ResultToError(res);
 
   return rv;
+}
+
+
+
+int LC_CryptTokenSTARCOS__VerifyPin(GWEN_CRYPTTOKEN *ct,
+                                    LC_CARD *hcard,
+                                    GWEN_CRYPTTOKEN_PINTYPE pt) {
+  LC_CT_STARCOS *lct;
+  int rv;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  if (pt==GWEN_CryptToken_PinType_Access) {
+    if (lct->haveChPin)
+      return 0;
+  }
+  else if (pt==GWEN_CryptToken_PinType_Manage) {
+    if (lct->haveEgPin)
+      return 0;
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN, "Unknown pin type \"%s\"",
+              GWEN_CryptToken_PinType_toString(pt));
+    return GWEN_ERROR_INVALID;
+  }
+
+  /* enter pin */
+  rv=LC_CryptToken_VerifyPin(lct->pluginManager, ct, hcard, pt);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
+    return rv;
+  }
+
+  if (pt==GWEN_CryptToken_PinType_Access)
+    lct->haveChPin=1;
+  else if (pt==GWEN_CryptToken_PinType_Manage)
+    lct->haveEgPin=1;
+  return 0;
+}
+
+
+
+int LC_CryptTokenSTARCOS__ChangePin(GWEN_CRYPTTOKEN *ct,
+                                    LC_CARD *hcard,
+                                    GWEN_CRYPTTOKEN_PINTYPE pt) {
+  LC_CT_STARCOS *lct;
+  int rv;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  if (lct->card==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card.");
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  if (pt!=GWEN_CryptToken_PinType_Access &&
+      pt==GWEN_CryptToken_PinType_Manage) {
+    DBG_ERROR(LC_LOGDOMAIN, "Unknown pin type \"%s\"",
+              GWEN_CryptToken_PinType_toString(pt));
+    return GWEN_ERROR_INVALID;
+  }
+
+  /* enter pin */
+  rv=LC_CryptToken_ChangePin(lct->pluginManager, ct, hcard, pt, 0);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
+    return rv;
+  }
+
+  return 0;
+}
+
+
+
+int LC_CryptTokenSTARCOS_ChangePin(GWEN_CRYPTTOKEN *ct,
+                                   GWEN_CRYPTTOKEN_PINTYPE pt) {
+  LC_CT_STARCOS *lct;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  return LC_CryptTokenSTARCOS__ChangePin(ct, lct->card, pt);
+}
+
+
+
+int LC_CryptTokenSTARCOS_VerifyPin(GWEN_CRYPTTOKEN *ct,
+                                   GWEN_CRYPTTOKEN_PINTYPE pt) {
+  LC_CT_STARCOS *lct;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  return LC_CryptTokenSTARCOS__VerifyPin(ct, lct->card, pt);
 }
 
 
