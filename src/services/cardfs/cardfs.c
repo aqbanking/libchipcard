@@ -92,7 +92,7 @@ GWEN_TYPE_UINT32 ServiceCardFS_Command(LC_CLIENT *cl,
                                        LC_SERVICECLIENT *scl,
                                        GWEN_DB_NODE *dbRequest,
                                        GWEN_DB_NODE *dbResponse) {
-
+  return 0;
 }
 
 
