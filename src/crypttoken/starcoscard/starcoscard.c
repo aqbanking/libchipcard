@@ -100,7 +100,7 @@ LC_CryptTokenSTARCOS_Plugin_CreateToken(GWEN_PLUGIN *pl,
   pm=GWEN_Plugin_GetManager(pl);
   assert(pm);
 
-  ct=LC_CryptTokenSTARCOS_new(pm, cpl->client, name);
+  ct=LC_CryptTokenSTARCOS_new(pm, cpl->client, subTypeName, name);
   assert(ct);
 
   return ct;
@@ -209,16 +209,15 @@ int LC_CryptTokenSTARCOS_Plugin_CheckToken(GWEN_PLUGIN *pl,
 
 GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,
                                           LC_CLIENT *lc,
+                                          const char *subTypeName,
                                           const char *name) {
   LC_CT_STARCOS *lct;
   GWEN_CRYPTTOKEN *ct;
 
-  DBG_ERROR(0, "Creating crypttoken (STARCOS)");
-
   /* create crypt token */
   ct=GWEN_CryptToken_new(pm,
                          GWEN_CryptToken_Device_Card,
-                         "starcoscard", 0, name);
+                         "starcoscard", subTypeName, name);
 
   /* inherit CryptToken: Set our own data */
   GWEN_NEW_OBJECT(LC_CT_STARCOS, lct);
@@ -308,11 +307,14 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
       rv=LC_Starcos_ExtendCard(hcard);
       if (rv) {
         DBG_ERROR(LC_LOGDOMAIN,
-                  "STARCOS card not available, please check your setup (%d)", rv);
+                  "STARCOS card not available, please check your setup (%d)",
+                  rv);
         LC_Card_free(hcard);
         LC_Client_StopWait(lct->client);
         return GWEN_ERROR_NOT_AVAILABLE;
       }
+
+      LC_Starcos_SetAppName(hcard, GWEN_CryptToken_GetTokenSubType(ct));
 
       res=LC_Card_Open(hcard);
       if (res!=LC_Client_ResultOk) {

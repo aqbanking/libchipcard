@@ -94,7 +94,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_GELDKARTE *gk;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening card as Geldkarte");
+  DBG_INFO(LC_LOGDOMAIN, "Opening card as Geldkarte");
 
   assert(card);
   gk=GWEN_INHERIT_GETDATA(LC_CARD, LC_GELDKARTE, card);
@@ -134,7 +134,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card){
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening Geldkarte");
+  DBG_INFO(LC_LOGDOMAIN, "Opening Geldkarte");
 
   assert(card);
   gk=GWEN_INHERIT_GETDATA(LC_CARD, LC_GELDKARTE, card);
@@ -463,7 +463,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
   ctxCount=0;
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   for (i=1; i<16; i++) {
-    DBG_NOTICE(LC_LOGDOMAIN, "Reading BLOG record %d", i);
+    DBG_INFO(LC_LOGDOMAIN, "Reading BLOG record %d", i);
     GWEN_Buffer_Reset(buf);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                               idx?idx:i, buf);
@@ -611,7 +611,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
     }
     if (bll) {
       LC_GeldKarte_BLog_List2_PushBack(bll, blog);
-      DBG_NOTICE(LC_LOGDOMAIN, "Added BLOG entry to list");
+      DBG_INFO(LC_LOGDOMAIN, "Added BLOG entry to list");
     }
     else
       LC_GeldKarte_BLog_free(blog);
@@ -651,7 +651,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
   ctxCount=0;
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   for (i=1; i<4; i++) {
-    DBG_NOTICE(LC_LOGDOMAIN, "Reading LLOG record %d", i);
+    DBG_INFO(LC_LOGDOMAIN, "Reading LLOG record %d", i);
     GWEN_Buffer_Reset(buf);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                               idx?idx:i, buf);
@@ -789,7 +789,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
     }
     if (bll) {
       LC_GeldKarte_LLog_List2_PushBack(bll, llog);
-      DBG_NOTICE(LC_LOGDOMAIN, "Added BLOG entry to list");
+      DBG_INFO(LC_LOGDOMAIN, "Added BLOG entry to list");
     }
     else
       LC_GeldKarte_LLog_free(llog);

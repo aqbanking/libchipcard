@@ -113,7 +113,7 @@ LC_CLIENT_RESULT LC_Starcos_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_STARCOS *scos;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening card as STARCOS card");
+  DBG_INFO(LC_LOGDOMAIN, "Opening card as STARCOS card");
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
@@ -150,7 +150,7 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbData;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening STARCOS card (%s)", appname);
+  DBG_INFO(LC_LOGDOMAIN, "Opening STARCOS card (%s)", appname);
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);

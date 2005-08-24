@@ -91,7 +91,7 @@ LC_CLIENT_RESULT LC_DDVCard_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_DDVCARD *ddv;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening card as DDV card");
+  DBG_INFO(LC_LOGDOMAIN, "Opening card as DDV card");
 
   assert(card);
   ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
@@ -127,7 +127,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
 
-  DBG_NOTICE(LC_LOGDOMAIN, "Opening DDV card");
+  DBG_INFO(LC_LOGDOMAIN, "Opening DDV card");
 
   assert(card);
   ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
@@ -231,7 +231,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
       GWEN_Buffer_free(mbuf);
     }
 
-    DBG_NOTICE(LC_LOGDOMAIN, "Card type is DDV 1");
+    DBG_INFO(LC_LOGDOMAIN, "Card type is DDV 1");
     ddv->ddvType=1;
   }
   else {
@@ -263,7 +263,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
       GWEN_Buffer_free(mbuf);
     }
 
-    DBG_NOTICE(LC_LOGDOMAIN, "Card type is DDV 0");
+    DBG_INFO(LC_LOGDOMAIN, "Card type is DDV 0");
     ddv->ddvType=0;
   }
 

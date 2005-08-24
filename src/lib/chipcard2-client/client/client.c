@@ -88,7 +88,7 @@ LC_CLIENT *LC_Client_new(const char *programName,
       }
     }
     else {
-      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelNotice);
+      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelWarning);
     }
   }
 
@@ -334,7 +334,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
         }
         LC_Server_SetCurrentCommand(sv, 0);
         LC_Server_SetStatus(sv, LC_ServerStatusConnected);
-        DBG_NOTICE(LC_LOGDOMAIN, "Connected");
+        DBG_INFO(LC_LOGDOMAIN, "Connected");
         done++;
       }
     }
@@ -368,7 +368,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
           }
         }
         else if (strcasecmp(name, "Notification")==0) {
-          DBG_NOTICE(LC_LOGDOMAIN, "Notification received");
+          DBG_INFO(LC_LOGDOMAIN, "Notification received");
           if (LC_Client_HandleNotification(cl, dbReq)) {
             DBG_WARN(LC_LOGDOMAIN, "Error handling Notification message");
           }
@@ -397,7 +397,7 @@ int LC_Client_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
                                           LC_Server_GetServerId(sv));
       if (nst!=GWEN_NetTransportStatusLConnected) {
         /* server is no longer connected */
-        DBG_NOTICE(LC_LOGDOMAIN, "Server is down");
+        DBG_INFO(LC_LOGDOMAIN, "Server is down");
         LC_Client_ServerDown(cl, sv);
         done++;
       }
@@ -693,7 +693,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
     f=fopen(GWEN_Buffer_GetStart(cfbuf), "r");
     if (f) {
       fclose(f);
-      DBG_NOTICE(LC_LOGDOMAIN, "Default certificate is \"%s\"",
+      DBG_INFO(LC_LOGDOMAIN, "Default certificate is \"%s\"",
                  GWEN_Buffer_GetStart(cfbuf));
       globalOwnCertFile=GWEN_Buffer_GetStart(cfbuf);
     }
@@ -802,7 +802,7 @@ int LC_Client_ReadConfig(LC_CLIENT *cl, GWEN_DB_NODE *db) {
                                                   LC_DEFAULT_PORT));
         if (strcasecmp(typ, "private")==0) {
           /* HTTP over SSL */
-          DBG_NOTICE(LC_LOGDOMAIN, "Using private socket");
+          DBG_INFO(LC_LOGDOMAIN, "Using private socket");
           sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
           tr=GWEN_NetTransportSSL_new(sk,
                                       certDir,
@@ -919,7 +919,7 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl, const char *fname){
   }
 
   dbConfig=GWEN_DB_Group_new("config");
-  DBG_NOTICE(LC_LOGDOMAIN, "Reading configuration from \"%s\"",
+  DBG_INFO(LC_LOGDOMAIN, "Reading configuration from \"%s\"",
              GWEN_Buffer_GetStart(buf));
   if (GWEN_DB_ReadFile(dbConfig,
                        GWEN_Buffer_GetStart(buf),
@@ -2114,10 +2114,10 @@ LC_Client_CheckExecCommand(LC_CLIENT *cl,
   }
   else {
     if (sw1!=-1 && sw2!=-1) {
-      DBG_NOTICE(LC_LOGDOMAIN, "Result: %s, SW1=%02x, SW2=%02x (%s)",
-                 resultTyp,
-                 sw1, sw2,
-                 resultText);
+      DBG_INFO(LC_LOGDOMAIN, "Result: %s, SW1=%02x, SW2=%02x (%s)",
+               resultTyp,
+               sw1, sw2,
+               resultText);
     }
     return LC_Client_ResultCmdError;
   }

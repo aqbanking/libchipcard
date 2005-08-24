@@ -239,7 +239,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
 	    GWEN_Buffer_free(mbuf);
 	    return LC_Client_ResultDataError;
 	  }
-	  DBG_NOTICE(LC_LOGDOMAIN, "Checksum ok");
+	  DBG_INFO(LC_LOGDOMAIN, "Checksum ok");
           checksumOk=1;
           break;
 	}

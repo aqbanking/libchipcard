@@ -46,6 +46,7 @@ struct LC_CT_STARCOS {
 
 GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,
                                           LC_CLIENT *lc,
+                                          const char *subTypeName,
                                           const char *name);
 
 void LC_CryptTokenSTARCOS_FreeData(void *bp, void *p);

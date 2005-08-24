@@ -21,6 +21,7 @@ noinst_HEADERS=\
   notifications_l.h \
   notifications_p.h \
   tlv_p.h \
+  pininfo_l.h \
   pininfo_p.h
 
 iheaderdir=${includedir}/chipcard2-client/client

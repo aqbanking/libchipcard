@@ -1,7 +1,8 @@
 <apps>
   <app name="starcos">
 
-    <crypttoken typeName="starcoscard" name="STARCOSCard">
+    <crypttoken typeName="starcoscard" subTypeName="starcos"
+                name="STARCOSCard">
 
       <flags>
         <flag>manages_signseq</flag>

@@ -513,9 +513,10 @@ LC_CARDMGR_RESULT LC_CardContext_CheckResponse(LC_CARDCONTEXT *ctx,
   }
   else if (strcasecmp(cmdName, "SelectEFS")==0){
     assert(ctx->tmpFileNode);
-    if (strcasecmp(GWEN_DB_GetCharValue(dbServerRsp, "result/type", 0, "error"),
+    if (strcasecmp(GWEN_DB_GetCharValue(dbServerRsp,
+                                        "result/type", 0, "error"),
                    "success")==0) {
-      DBG_NOTICE(LC_LOGDOMAIN, "EF selected");
+      DBG_INFO(LC_LOGDOMAIN, "EF selected");
       ctx->efNode=ctx->tmpFileNode;
     }
     ctx->tmpFileNode=0;
@@ -567,8 +568,8 @@ int LC_CardContext_GetRecordNumber(LC_CARDCONTEXT *ctx,
     DBG_ERROR(LC_LOGDOMAIN, "\"recnum\" needed in XML file");
     return -1;
   }
-  DBG_NOTICE(LC_LOGDOMAIN, "Record number is %d (from name=\"%s\")",
-             recNum, recName);
+  DBG_INFO(LC_LOGDOMAIN, "Record number is %d (from name=\"%s\")",
+           recNum, recName);
   return recNum;
 }
 
