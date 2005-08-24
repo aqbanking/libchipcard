@@ -53,7 +53,7 @@
 
 int LC_CardServer_USBDevice_Up(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
   GWEN_DB_NODE *dbDriver;
-  GWEN_DB_NODE *dbReader;
+  GWEN_DB_NODE *dbReader = 0;
 
   dbDriver=GWEN_DB_GetFirstGroup(cs->dbDrivers);
   while(dbDriver) {
@@ -282,7 +282,7 @@ int LC_CardServer_USBDevice_Down(LC_CARDSERVER *cs, LC_USBDEVICE *ud) {
 
 int LC_CardServer_USBTTYDevice_Up(LC_CARDSERVER *cs, LC_USBTTYDEVICE *ud) {
   GWEN_DB_NODE *dbDriver;
-  GWEN_DB_NODE *dbReader;
+  GWEN_DB_NODE *dbReader = 0;
 
   dbDriver=GWEN_DB_GetFirstGroup(cs->dbDrivers);
   while(dbDriver) {
@@ -554,7 +554,7 @@ int LC_CardServer__USBDeviceToDB(LC_USBDEVICE *ud,
                                  GWEN_DB_NODE *dbDriverStore,
                                  GWEN_DB_NODE *dbReaderStore) {
   GWEN_DB_NODE *dbDriver;
-  GWEN_DB_NODE *dbReader;
+  GWEN_DB_NODE *dbReader = 0;
 
   dbDriver=GWEN_DB_GetFirstGroup(dbDrivers);
   while(dbDriver) {
@@ -609,7 +609,7 @@ int LC_CardServer__USBTTYDeviceToDB(LC_USBTTYDEVICE *ud,
                                     GWEN_DB_NODE *dbDriverStore,
                                     GWEN_DB_NODE *dbReaderStore) {
   GWEN_DB_NODE *dbDriver;
-  GWEN_DB_NODE *dbReader;
+  GWEN_DB_NODE *dbReader = 0;
 
   dbDriver=GWEN_DB_GetFirstGroup(dbDrivers);
   while(dbDriver) {
