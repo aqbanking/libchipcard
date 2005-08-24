@@ -31,7 +31,7 @@ all:
 	libtoolize -f --automake
 	@if test -r config.status; then \
 	   prefix=`grep '@prefix@' config.status |cut -d , -f 3`; \
-	   gwen_prefix=`grep '@GWEN_PREFIX@' config.status |cut -d , -f 3`; \
+	   gwen_prefix=`grep '@gwenhywfar_dir@' config.status |cut -d , -f 3`; \
 	 fi; \
 	 for A in "$${gwen_prefix}/share/aclocal" "$${prefix}/share/aclocal" m4; do \
 	   if test -d "$${A}"; then \

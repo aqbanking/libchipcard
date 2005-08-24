@@ -11,3 +11,4 @@ chipcard2-service
 libtool
 *-config
 stamp-h1
+config.h.in
