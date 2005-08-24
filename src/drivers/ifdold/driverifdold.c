@@ -321,7 +321,7 @@ GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
 
   if (toReader) {
     DBG_INFO(lg, "Sending command to reader:");
-    GWEN_Text_LogString(apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+    GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
     retval=dct->controlFn(LC_Slot_GetSlotNum(slot),
 			  apdu,
                           apdulen,
@@ -332,7 +332,7 @@ GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
       /* special treatment */
       int rlen;
 
-      GWEN_Text_LogString(buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
+      GWEN_Text_LogString((const char*)buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
       rlen=buffer[2];
       if ((rlen+4)==*bufferlen) {
 	unsigned char *pSrc;
@@ -354,7 +354,7 @@ GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
 
     DBG_INFO(lg,
              "Sending command to card (bufferlen=%d):", tmplen);
-    GWEN_Text_LogString(apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+    GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
     txHeader.protocol=LC_Slot_GetProtocolInfo(slot);
     //txHeader.protocol=1;
     txHeader.length=sizeof(SCARD_IO_HEADER);
@@ -371,7 +371,7 @@ GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
 
   if (retval==0) {
     DBG_INFO(lg, "Response:");
-    GWEN_Text_LogString(buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
+    GWEN_Text_LogString((const char*)buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
   }
 
   if (retval!=0) {

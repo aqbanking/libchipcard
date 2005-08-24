@@ -269,7 +269,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
 
   DBG_INFO(lg,
            "Sending command:");
-  GWEN_Text_LogString(apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+  GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
   DBG_DEBUG(lg,
             "CTN=%d, SAD=%d, DAD=%d, CLA=%02x, INS=%02x, P1=%02x, P2=%02x",
             ReaderCTAPI_GetCtn(r), sad, dad,
@@ -280,7 +280,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
                      &dad,
                      &sad,
                      apdulen,
-                     (char*)apdu,
+                     (unsigned char*)apdu,
                      &lr,
                      buffer);
   DBG_NOTICE(lg, "Returned from dataFn (%d)", retval);
@@ -297,7 +297,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
 
   DBG_INFO(lg,
            "Received response:");
-  GWEN_Text_LogString(buffer, lr, lg, GWEN_LoggerLevelInfo);
+  GWEN_Text_LogString((const char*)buffer, lr, lg, GWEN_LoggerLevelInfo);
 
   if ((unsigned char)buffer[lr-2]!=0x90) {
     if ((unsigned char)buffer[lr-2]!=0x62) {
@@ -554,7 +554,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
   if (lr<17) {
     DBG_ERROR(LC_Reader_GetLogger(r),
               "Too short response when requesting reader information");
-    GWEN_Text_LogString(responseBuffer, lr,
+    GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LC_Reader_GetLogger(r),
                         GWEN_LoggerLevelError);
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
@@ -566,7 +566,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
     DBG_WARN(LC_Reader_GetLogger(r),
              "No/bad tag received when requesting reader information (%02x)",
              responseBuffer[0]);
-    GWEN_Text_LogString(responseBuffer, lr,
+    GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LC_Reader_GetLogger(r),
                         GWEN_LoggerLevelError);
     p=responseBuffer;

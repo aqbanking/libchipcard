@@ -156,7 +156,7 @@ void CTAPI_APDU_Dump(CTAPI_APDU *apdu){
 
     tbuf=GWEN_Buffer_new(0, 256, 0, 1);
     fprintf(stderr, "Data (%d bytes):\n", apdu->dlen);
-    GWEN_Text_DumpString2Buffer(apdu->data, apdu->dlen, tbuf, 2);
+    GWEN_Text_DumpString2Buffer((const char*)apdu->data, apdu->dlen, tbuf, 2);
     GWEN_Buffer_free(tbuf);
   }
 }
@@ -330,7 +330,7 @@ char CT_data(unsigned short ctn,
   }
 
   DBG_ERROR(CT_API_LOGDOMAIN, "Sending APDU:");
-  GWEN_Text_LogString(command, lenc,
+  GWEN_Text_LogString((const char*)command, lenc,
                       CT_API_LOGDOMAIN, GWEN_LoggerLevelError);
   apdu=CTAPI_APDU_new(command, lenc);
   if (!apdu) {
@@ -430,7 +430,7 @@ char CT_data(unsigned short ctn,
   CTAPI_APDU_free(apdu);
   DBG_ERROR(CT_API_LOGDOMAIN, "CTAPI-Result: %d", result);
   if (result==CT_API_RV_OK) {
-    GWEN_Text_LogString(response, *lenr,
+    GWEN_Text_LogString((const char*)response, *lenr,
                         CT_API_LOGDOMAIN, GWEN_LoggerLevelError);
   }
 

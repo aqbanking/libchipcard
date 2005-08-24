@@ -1824,7 +1824,7 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   }
 
   DBG_DEBUG(LC_Reader_GetLogger(r), "Executing command");
-  GWEN_Text_LogString(apdu, apdulen, 0, GWEN_LoggerLevelDebug);
+  GWEN_Text_LogString((const char*)apdu, apdulen, 0, GWEN_LoggerLevelDebug);
   dbRsp=GWEN_DB_Group_new("CardCommandResponse");
   rsplen=sizeof(rspbuffer)-1;
   retval=LC_Driver_SendAPDU(d, toReader, r, slot, apdu, apdulen,
@@ -1848,7 +1848,7 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
     else {
       /* init ok */
       DBG_DEBUG(LC_Reader_GetLogger(r), "Command succeeded");
-      GWEN_Text_LogString(rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
+      GWEN_Text_LogString((const char*)rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
 
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "OK");
