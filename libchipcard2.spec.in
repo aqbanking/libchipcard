@@ -43,6 +43,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/ldconfig
 Prefix: %{_prefix}
 BuildRequires: gwenhywfar-devel >= 1.15.0
+# Note: If you really don't want to use opensc, you can comment out
+# the following line, but please don't publish the resulting rpm
+# packages.
+BuildRequires: opensc-devel >= 0.9.4
 Provides: aqhbci-ddvcard
 
 %description
