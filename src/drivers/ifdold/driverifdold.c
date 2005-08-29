@@ -436,7 +436,7 @@ GWEN_TYPE_UINT32 DriverIFDOld_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
       GWEN_BUFFER *abuf;
 
       abuf=GWEN_Buffer_new(0, atrLen, 0, 1);
-      GWEN_Buffer_AppendBytes(abuf, atrBuffer, atrLen);
+      GWEN_Buffer_AppendBytes(abuf, (const char*)atrBuffer, atrLen);
       LC_Slot_SetAtr(sl, abuf);
     }
 

@@ -384,7 +384,7 @@ char CT_data(unsigned short ctn,
 
       rbuf=GWEN_Buffer_new(0, 300, 0, 1);
       res=LC_Card_ExecAPDU(ctx->card,
-                           command, lenc,
+                           (const char*)command, lenc,
                            rbuf,
                            (*dad==CT)?LC_Client_CmdTargetReader:
                            LC_Client_CmdTargetCard,
@@ -840,7 +840,7 @@ int CT__getPinId(CTAPI_APDU *apdu) {
   }
 
   dbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  GWEN_Buffer_AppendBytes(dbuf, apdu->data, apdu->dlen);
+  GWEN_Buffer_AppendBytes(dbuf, (const char*)apdu->data, apdu->dlen);
   GWEN_Buffer_Rewind(dbuf);
 
   /* find tag 0x52 */

@@ -363,7 +363,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
     GWEN_BUFFER *atr;
 
     atr=GWEN_Buffer_new(0, lr-2, 0, 1);
-    GWEN_Buffer_AppendBytes(atr, responseBuffer, lr-2);
+    GWEN_Buffer_AppendBytes(atr, (const char*)responseBuffer, lr-2);
     LC_Slot_SetAtr(sl, atr);
   }
   if (responseBuffer[lr-2]==0x90) {

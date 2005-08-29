@@ -203,7 +203,7 @@ LC_CLIENT_RESULT ServiceKVK_CheckReadBinary(LC_CLIENT *cl, LC_CARD *cd) {
 
 LC_CLIENT_RESULT ServiceKVK_CalcTagSize(LC_CLIENT *cl, LC_CARD *cd,
                                         unsigned int *tagSize) {
-  const unsigned char *p;
+  const char *p;
   GWEN_BUFFER *mbuf;
   unsigned int size;
   unsigned int pos;
@@ -278,7 +278,7 @@ LC_CLIENT_RESULT ServiceKVK_CalcTagSize(LC_CLIENT *cl, LC_CARD *cd,
 
 
 LC_CLIENT_RESULT ServiceKVK_HandleData(LC_CLIENT *cl, LC_CARD *cd) {
-  const unsigned char *p;
+  const char *p;
   GWEN_BUFFER *mbuf;
   unsigned int size;
   unsigned int pos;

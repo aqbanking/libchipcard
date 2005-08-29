@@ -418,7 +418,7 @@ void LC_MemoryCard__CalculateCapacity(LC_CARD *card){
   int i1, i2;
   int j1, j2;
   GWEN_BUFFER *atr;
-  const unsigned char *p;
+  const char *p;
 
   assert(card);
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
@@ -438,8 +438,8 @@ void LC_MemoryCard__CalculateCapacity(LC_CARD *card){
     return;
   }
 
-  i1=(p[1]>>3) & 0x0f; /* count of elements */
-  i2=p[1] & 0x07;      /* size of element */
+  i1=( ( (unsigned char)p[1] ) >> 3 ) & 0x0f; /* count of elements */
+  i2=( (unsigned char)p[1] ) & 0x07;      /* size of element */
 
   /* check element number */
   if (i1==0)

@@ -88,7 +88,7 @@ void LC_KVKCard_freeData(void *bp, void *p){
 
 LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
   LC_CLIENT_RESULT res;
-  const unsigned char *p;
+  const char *p;
   unsigned int size;
   unsigned int pos;
   unsigned int j;
