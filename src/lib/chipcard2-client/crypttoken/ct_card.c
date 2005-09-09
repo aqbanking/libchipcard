@@ -207,11 +207,7 @@ int LC_CryptToken__ChangePin(GWEN_PLUGIN_MANAGER *pluginManager,
       return mres;
     }
 
-    res=LC_Card_IsoPerformModification(hcard,
-                                       0,
-                                       LC_PinInfo_GetId(pi),
-                                       LC_PinInfo_GetEncoding(pi),
-                                       &triesLeft);
+    res=LC_Card_IsoPerformModification(hcard, 0, pi, &triesLeft);
 
     if (res!=LC_Client_ResultOk) {
       /* tell the user about end of pin verification */
@@ -365,9 +361,7 @@ int LC_CryptToken__ChangePin(GWEN_PLUGIN_MANAGER *pluginManager,
 
     DBG_INFO(LC_LOGDOMAIN, "Modifying the PIN");
     res=LC_Card_IsoModifyPin(hcard,
-                             0,
-                             LC_PinInfo_GetId(pi),
-                             LC_PinInfo_GetEncoding(pi),
+                             0, pi,
                              pinBuffer1,
                              pinLength1,
                              pinBuffer2,
@@ -490,11 +484,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
       return mres;
     }
 
-    res=LC_Card_IsoPerformVerification(hcard,
-                                       0,
-                                       LC_PinInfo_GetId(pi),
-                                       LC_PinInfo_GetEncoding(pi),
-                                       &triesLeft);
+    res=LC_Card_IsoPerformVerification(hcard, 0, pi, &triesLeft);
 
     if (res!=LC_Client_ResultOk) {
       /* tell the user about end of pin verification */
@@ -592,8 +582,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     DBG_INFO(LC_LOGDOMAIN, "Verifying the PIN");
     res=LC_Card_IsoVerifyPin(hcard,
                              0,
-                             LC_PinInfo_GetId(pi),
-                             LC_PinInfo_GetEncoding(pi),
+                             pi,
                              pinBuffer,
                              pinLength,
                              &triesLeft);

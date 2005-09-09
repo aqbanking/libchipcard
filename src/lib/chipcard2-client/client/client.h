@@ -413,6 +413,12 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
                                           GWEN_DB_NODE *dbData,
                                           GWEN_DB_NODE *dbCmdResp);
 
+/**
+ * Logs the given result with the loglevel "info".
+ */
+void LC_Card_ShowError(LC_CARD *card, LC_CLIENT_RESULT res,
+                       const char *failedCommand);
+
 
 /*@}*/
 

@@ -337,8 +337,7 @@ LC_CLIENT_RESULT (*LC_CARD_ISOUPDATERECORD_FN)(LC_CARD *card,
 typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOVERIFYPIN_FN)(LC_CARD *card,
                                             GWEN_TYPE_UINT32 flags,
-                                            int identifier,
-                                            LC_PININFO_ENCODING pe,
+                                            const LC_PININFO *pi,
                                             const char *ptr,
                                             unsigned int size,
                                             int *triesLeft);
@@ -346,8 +345,7 @@ LC_CLIENT_RESULT (*LC_CARD_ISOVERIFYPIN_FN)(LC_CARD *card,
 typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOMODIFYPIN_FN)(LC_CARD *card,
                                             GWEN_TYPE_UINT32 flags,
-                                            int identifier,
-                                            LC_PININFO_ENCODING pe,
+                                            const LC_PININFO *pi,
                                             const char *oldptr,
                                             unsigned int oldsize,
                                             const char *newptr,
@@ -357,15 +355,13 @@ LC_CLIENT_RESULT (*LC_CARD_ISOMODIFYPIN_FN)(LC_CARD *card,
 typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOPERFORMVERIFICATION_FN)(LC_CARD *card,
                                                       GWEN_TYPE_UINT32 flags,
-                                                      int identifier,
-                                                      LC_PININFO_ENCODING pe,
+                                                      const LC_PININFO *pi,
                                                       int *triesLeft);
 
 typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOPERFORMMODIFICATION_FN)(LC_CARD *card,
                                                       GWEN_TYPE_UINT32 flags,
-                                                      int identifier,
-                                                      LC_PININFO_ENCODING pe,
+                                                      const LC_PININFO *pi,
                                                       int *triesLeft);
 
 
@@ -483,8 +479,7 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
-                                      int identifier,
-                                      LC_PININFO_ENCODING pe,
+                                      const LC_PININFO *pi,
                                       const char *ptr,
                                       unsigned int size,
                                       int *triesLeft);
@@ -492,8 +487,7 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
-                                      int identifier,
-                                      LC_PININFO_ENCODING pe,
+                                      const LC_PININFO *pi,
                                       const char *oldptr,
                                       unsigned int oldsize,
                                       const char *newptr,
@@ -503,15 +497,13 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
                                                 GWEN_TYPE_UINT32 flags,
-                                                int identifier,
-                                                LC_PININFO_ENCODING pe,
+                                                const LC_PININFO *pi,
                                                 int *triesLeft);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
                                                 GWEN_TYPE_UINT32 flags,
-                                                int identifier,
-                                                LC_PININFO_ENCODING pe,
+                                                const LC_PININFO *pi,
                                                 int *triesLeft);
 
 

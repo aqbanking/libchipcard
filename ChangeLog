@@ -1,4 +1,10 @@
 
+2005/09/09: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changed ISO verify/modify functions: Use LC_PININFO instead of only a few
+  elements of it
+
+
 ===========================================================================
 MARK: released version 1.9.15beta (2005/08/24)
 ===========================================================================

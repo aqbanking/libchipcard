@@ -1,2 +1,2 @@
-- fixed memory card and kvk card: MemoryCard no longer selects the MF,
-  and KVKCard ignores cmd-errors when selecting the MF
+- changed ISO verify/modify functions: Use LC_PININFO instead of only a few
+  elements of it

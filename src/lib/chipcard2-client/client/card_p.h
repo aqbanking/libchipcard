@@ -113,22 +113,19 @@ LC_CLIENT_RESULT LC_Card__IsoAppendRecord(LC_CARD *card,
                                           unsigned int size);
 LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
-                                       int identifier,
-                                       LC_PININFO_ENCODING pe,
+                                       const LC_PININFO *pi,
                                        const char *ptr,
                                        unsigned int size,
                                        int *triesLeft);
 
 LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
-                                                 int identifier,
-                                                 LC_PININFO_ENCODING pe,
+                                                 const LC_PININFO *pi,
                                                  int *triesLeft);
 
 LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
-                                       int identifier,
-                                       LC_PININFO_ENCODING pe,
+                                       const LC_PININFO *pi,
                                        const char *oldptr,
                                        unsigned int oldsize,
                                        const char *newptr,
@@ -137,8 +134,7 @@ LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
-                                                 int identifier,
-                                                 LC_PININFO_ENCODING pe,
+                                                 const LC_PININFO *pi,
                                                  int *triesLeft);
 
 

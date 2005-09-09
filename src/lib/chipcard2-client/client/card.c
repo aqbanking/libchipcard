@@ -474,6 +474,76 @@ const char *LC_Card_GetSelectedApp(const LC_CARD *card) {
 
 
 
+void LC_Card_ShowError(LC_CARD *card, LC_CLIENT_RESULT res,
+                       const char *failedCommand) {
+  const char *s;
+
+  switch(res) {
+  case LC_Client_ResultOk:
+    s="Ok.";
+    break;
+  case LC_Client_ResultWait:
+    s="Timeout.";
+    break;
+  case LC_Client_ResultIpcError:
+    s="IPC error.";
+    break;
+  case LC_Client_ResultCmdError:
+    s="Command error.";
+    break;
+  case LC_Client_ResultDataError:
+    s="Data error.";
+    break;
+  case LC_Client_ResultAborted:
+    s="Aborted.";
+    break;
+  case LC_Client_ResultInvalid:
+    s="Invalid argument to command.";
+    break;
+  case LC_Client_ResultInternal:
+    s="Internal error.";
+    break;
+  case LC_Client_ResultGeneric:
+    s="Generic error.";
+    break;
+  default:
+    s="Unknown error.";
+    break;
+  }
+
+  if (res==LC_Client_ResultCmdError) {
+    int sw1;
+    int sw2;
+
+    sw1=LC_Card_GetLastSW1(card);
+    sw2=LC_Card_GetLastSW2(card);
+    if (sw1!=-1 && sw2!=-1) {
+      DBG_INFO(LC_LOGDOMAIN,
+               "Error in \"%s\": %s (SW1=%02x, SW2=%02x)\n",
+               failedCommand, s, sw1, sw2);
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN,
+               "Error in \"%s\": %s\n",
+               failedCommand, s);
+    }
+    s=LC_Card_GetLastResult(card);
+    if (s) {
+      DBG_INFO(LC_LOGDOMAIN, "- Result: %s\n", s);
+    }
+    s=LC_Card_GetLastText(card);
+    if (s) {
+      DBG_INFO(LC_LOGDOMAIN, "- Text: %s\n", s);
+    }
+  }
+  else {
+    DBG_INFO(LC_LOGDOMAIN,
+             "Error in \"%s\": %s\n", failedCommand, s);
+  }
+}
+
+
+
 LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                                      GWEN_DB_NODE *dbReq,
                                      GWEN_DB_NODE *dbRsp,
@@ -489,20 +559,25 @@ LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
   res=LC_Client_CheckResponse_Wait(card->client, rqid, timeout);
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
-      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      DBG_NOTICE(LC_LOGDOMAIN, "User aborted");
       LC_Client_DeleteRequest(card->client, rqid);
     }
     else {
-      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"execCommand\"");
+      DBG_INFO(LC_LOGDOMAIN, "No response for request \"execCommand\"");
     }
     return res;
   }
   res=LC_Client_CheckExecCommand(card->client, rqid, dbRsp);
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN,
-	      "Error response for request \"execCommand\" (%d)", res);
-    DBG_ERROR(LC_LOGDOMAIN, "Request:");
-    GWEN_DB_Dump(dbReq, stderr, 2);
+    GWEN_BUFFER *cbuf;
+
+    cbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    GWEN_Buffer_AppendString(cbuf, "execCommand(");
+    GWEN_Buffer_AppendString(cbuf, GWEN_DB_GroupName(dbReq));
+    GWEN_Buffer_AppendString(cbuf, ")");
+
+    LC_Card_ShowError(card, res, GWEN_Buffer_GetStart(cbuf));
+    GWEN_Buffer_free(cbuf);
     return LC_Client_ResultCmdError;
   }
 
@@ -1093,17 +1168,16 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
-                                      int identifier,
-                                      LC_PININFO_ENCODING pe,
+                                      const LC_PININFO *pi,
                                       const char *ptr,
                                       unsigned int size,
                                       int *triesLeft) {
   assert(card);
   if (card->verifyPinFn)
-    return card->verifyPinFn(card, flags, identifier, pe, ptr, size,
-                             triesLeft);
+    return card->verifyPinFn(card, flags, pi, ptr, size,
+			     triesLeft);
   else
-    return LC_Card__IsoVerifyPin(card, flags, identifier, pe, ptr, size,
+    return LC_Card__IsoVerifyPin(card, flags, pi, ptr, size,
                                  triesLeft);
 }
 
@@ -1111,8 +1185,7 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
-                                      int identifier,
-                                      LC_PININFO_ENCODING pe,
+                                      const LC_PININFO *pi,
                                       const char *oldptr,
                                       unsigned int oldsize,
                                       const char *newptr,
@@ -1120,13 +1193,13 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       int *triesLeft) {
   assert(card);
   if (card->modifyPinFn)
-    return card->modifyPinFn(card, flags, identifier, pe,
+    return card->modifyPinFn(card, flags, pi,
                              oldptr, oldsize,
                              newptr, newsize,
                              triesLeft);
   else
-    return LC_Card__IsoModifyPin(card, flags, identifier, pe,
-                                 oldptr, oldsize,
+    return LC_Card__IsoModifyPin(card, flags, pi,
+				 oldptr, oldsize,
                                  newptr, newsize,
                                  triesLeft);
 }
@@ -1135,15 +1208,14 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
                                                 GWEN_TYPE_UINT32 flags,
-                                                int identifier,
-                                                LC_PININFO_ENCODING pe,
+                                                const LC_PININFO *pi,
                                                 int *triesLeft) {
   assert(card);
   if (card->performVerificationFn)
-    return card->performVerificationFn(card, flags, identifier, pe,
+    return card->performVerificationFn(card, flags, pi,
                                        triesLeft);
   else
-    return LC_Card__IsoPerformVerification(card, flags, identifier, pe,
+    return LC_Card__IsoPerformVerification(card, flags, pi,
                                            triesLeft);
 }
 
@@ -1151,15 +1223,14 @@ LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
                                                 GWEN_TYPE_UINT32 flags,
-                                                int identifier,
-                                                LC_PININFO_ENCODING pe,
+                                                const LC_PININFO *pi,
                                                 int *triesLeft) {
   assert(card);
   if (card->performModificationFn)
-    return card->performModificationFn(card, flags, identifier, pe,
+    return card->performModificationFn(card, flags, pi,
                                        triesLeft);
   else
-    return LC_Card__IsoPerformModification(card, flags, identifier, pe,
+    return LC_Card__IsoPerformModification(card, flags, pi,
                                            triesLeft);
 }
 
@@ -1618,8 +1689,7 @@ LC_CLIENT_RESULT LC_Card__IsoAppendRecord(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
-                                       int identifier,
-                                       LC_PININFO_ENCODING pe,
+                                       const LC_PININFO *pi,
                                        const char *ptr,
                                        unsigned int size,
                                        int *triesLeft) {
@@ -1632,8 +1702,9 @@ LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
 
   dbReq=GWEN_DB_Group_new("IsoVerifyPin");
   dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", identifier);
+  LC_PinInfo_toDb(pi, dbReq);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
 
   if (ptr && size) {
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
@@ -1665,8 +1736,7 @@ LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
-                                       int identifier,
-                                       LC_PININFO_ENCODING pe,
+                                       const LC_PININFO *pi,
                                        const char *oldptr,
                                        unsigned int oldsize,
                                        const char *newptr,
@@ -1681,8 +1751,9 @@ LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
 
   dbReq=GWEN_DB_Group_new("IsoModifyPin");
   dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", identifier);
+  LC_PinInfo_toDb(pi, dbReq);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
 
   if (oldptr && oldsize) {
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
@@ -1718,8 +1789,7 @@ LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
-                                                 int identifier,
-                                                 LC_PININFO_ENCODING pe,
+                                                 const LC_PININFO *pi,
                                                  int *triesLeft) {
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
@@ -1728,7 +1798,7 @@ LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(pe) {
+  switch(LC_PinInfo_GetEncoding(pi)) {
   case LC_PinInfo_EncodingBin:
     dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bin");
     break;
@@ -1743,13 +1813,14 @@ LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
     break;
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
-              LC_PinInfo_Encoding_toString(pe));
+              LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
     return LC_Client_ResultInvalid;
   }
 
   dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", identifier);
+  LC_PinInfo_toDb(pi, dbReq);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
 
   res=LC_Card_ExecCommand(card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
@@ -1777,8 +1848,7 @@ LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
-                                                 int identifier,
-                                                 LC_PININFO_ENCODING pe,
+                                                 const LC_PININFO *pi,
                                                  int *triesLeft) {
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
@@ -1787,7 +1857,7 @@ LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(pe) {
+  switch(LC_PinInfo_GetEncoding(pi)) {
   case LC_PinInfo_EncodingBin:
     dbReq=GWEN_DB_Group_new("IsoPerformModification_Bin");
     break;
@@ -1802,13 +1872,14 @@ LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
     break;
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
-              LC_PinInfo_Encoding_toString(pe));
+	      LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
     return LC_Client_ResultInvalid;
   }
 
   dbResp=GWEN_DB_Group_new("response");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "pid", identifier);
+  LC_PinInfo_toDb(pi, dbReq);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
 
   res=LC_Card_ExecCommand(card, dbReq, dbResp,
                           LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
