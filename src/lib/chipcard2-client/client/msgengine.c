@@ -395,36 +395,42 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
       }
     }
 
-    /* transform from special characters to ASCII */
+    /* Transform from special characters to Latin-1. The resulting
+       encoding is ISO 8859-1 / Latin-1 (not only ASCII!)  due to
+       the implicit encoding of the Umlaut 'char' constants in
+       this source code file. FIXME: If the returned string is
+       expected in utf-8 then it needs additional processing
+       afterwards, e.g. by iconv(3), but of course this also
+       changes the length of the corresponding string buffer! */
     if (kvk) {
       GWEN_TYPE_UINT32 size;
       GWEN_TYPE_UINT32 j;
-      unsigned char *p;
+      char *p; /* GWEN_Buffer_GetStart returns a 'char*' */
 
       size=GWEN_Buffer_GetPos(vbuf)-vpos;
       p=GWEN_Buffer_GetStart(vbuf)+vpos;
       for (j=0; j<size; j++) {
-        switch(*p) {
+        switch((unsigned char)*p) {
         case LC_KVK_UMLAUT_AE:
-          *p='Ä';
+          *p=(char)'Ä';
           break;
         case LC_KVK_UMLAUT_OE:
-          *p='Ö';
+          *p=(char)'Ö';
           break;
         case LC_KVK_UMLAUT_UE:
-          *p='Ü';
+          *p=(char)'Ü';
           break;
         case LC_KVK_UMLAUT_ae:
-          *p='ä';
+          *p=(char)'ä';
           break;
         case LC_KVK_UMLAUT_oe:
-          *p='ö';
+          *p=(char)'ö';
           break;
         case LC_KVK_UMLAUT_ue:
-          *p='ü';
+          *p=(char)'ü';
           break;
         case LC_KVK_UMLAUT_ss:
-          *p='ß';
+          *p=(char)'ß';
           break;
         default:
           break;

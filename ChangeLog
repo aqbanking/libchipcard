@@ -1,3 +1,12 @@
+2005-09-13  Christian Stimming <stimming@tuhh.de>
+
+	* src/lib/chipcard2-client/client/msgengine.c: Fix gcc4 signedness
+	warnings by adding explicit casts where the code previously used
+	implicit casts/typeconversions. Watch out: The msgengine code for
+	an XML node of type "ascii" (needed with KVK cards) might need
+	more thought about the encoding of the resulting string. Currently
+	the resulting string will be in latin1 encoding, *not* in
+	utf8. That should be documented in the API somewhere.
 
 2005/09/09: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
