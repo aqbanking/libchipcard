@@ -257,8 +257,8 @@ int LC_CryptToken__ChangePin(GWEN_PLUGIN_MANAGER *pluginManager,
   else {
     char pinBuffer1[64];
     char pinBuffer2[64];
-    int pinLength1;
-    int pinLength2;
+    unsigned int pinLength1;
+    unsigned int pinLength2;
     int mres;
     int pinMaxLen;
     GWEN_TYPE_UINT32 pflags=0;
@@ -535,7 +535,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     char pinBuffer[64];
     int mres;
     int pinMaxLen;
-    int pinLength;
+    unsigned int pinLength;
     GWEN_TYPE_UINT32 pflags=0;
     GWEN_CRYPTTOKEN_PINENCODING pe;
     int triesLeft=-1;
