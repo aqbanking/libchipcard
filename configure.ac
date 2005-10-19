@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=15
-CHIPCARD_VERSION_BUILD=2
+CHIPCARD_VERSION_BUILD=5
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -459,8 +459,9 @@ ln -s "${lprefix}/src/lib/chipcard2.h" chipcard2/chipcard2.h
 #
 # create header directory for server, make symlinks
 #
-lc_modules="server driver common"
+lc_modules="server server2 driver common"
 lc_server_modules="commands"
+#lc_server2_modules=""
 
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
@@ -512,6 +513,30 @@ for sm in $lc_server_modules; do
             ;;
       *)   
             ln -s "${lprefix}/src/lib/chipcard2-server/server/${sm}/${f}" "chipcard2-server/server/${sm}/${f}"
+            ;;
+    esac
+  done
+done
+
+
+
+#
+# for new server core
+#
+
+# symlink all headers from src/lib/chipcard/server2/*
+for sm in $lc_server2_modules; do
+  mkdir chipcard2-server/server2/${sm}
+  hfiles=`( cd "${srcdir}/src/lib/chipcard2-server/server2/${sm}" && ls *.h 2>/dev/null )`
+  for f in ${hfiles}; do
+    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-server/server2/${sm}/${f}"
+    case ${f} in
+      *_p.h)
+            ;;
+      *_l.h)
+            ;;
+      *)   
+            ln -s "${lprefix}/src/lib/chipcard2-server/server2/${sm}/${f}" "chipcard2-server/server2/${sm}/${f}"
             ;;
     esac
   done
@@ -637,6 +662,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/Makefile
                  src/lib/version.h
                  src/lib/chipcard2.h
+                 src/lib/sharedstuff/Makefile
                  src/lib/chipcard2-client/Makefile
                  src/lib/chipcard2-client/ressource.rc
                  src/lib/chipcard2-client/cards/Makefile
@@ -652,6 +678,12 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-server/driver/Makefile
                  src/lib/chipcard2-server/server/Makefile
                  src/lib/chipcard2-server/server/commands/Makefile
+                 src/lib/chipcard2-server/server2/Makefile
+                 src/lib/chipcard2-server/server2/devicemanager/Makefile
+                 src/lib/chipcard2-server/server2/cardmanager/Makefile
+                 src/lib/chipcard2-server/server2/clientmanager/Makefile
+                 src/lib/chipcard2-server/server2/commandmanager/Makefile
+                 src/lib/chipcard2-server/server2/servicemanager/Makefile
                  src/lib/chipcard2-service/Makefile
                  src/lib/chipcard2-service/ressource.rc
                  src/crypttoken/Makefile
@@ -661,8 +693,11 @@ AC_CONFIG_FILES([Makefile
                  src/crypttoken/starcoscard/starcoscard.xml
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
+                 src/drivers/ctapi/ctapi.xml
                  src/drivers/ifd/Makefile
+                 src/drivers/ifd/ifd.xml
                  src/drivers/ifdold/Makefile
+                 src/drivers/ifdold/ifdold.xml
                  src/drivers/pcsc/Makefile
                  src/fake_ctapi/Makefile
                  src/fake_ctapi/ressource.rc

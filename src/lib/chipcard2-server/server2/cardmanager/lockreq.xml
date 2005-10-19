@@ -1,0 +1,38 @@
+<typedefs>
+
+  <type id="GWEN_TIME" >
+    <functions>
+      <function type="todb" name="GWEN_Time_toDb" />
+      <function type="fromdb" name="GWEN_Time_fromDb" />
+      <function type="dup" name="GWEN_Time_dup" />
+      <function type="free" name="GWEN_Time_free" />
+    </functions>
+  </type>
+
+  <type id="GWEN_TYPE_UINT32" dbtype="int" />
+
+</typedefs>
+
+
+<types>
+  <type id="LCCM_LOCKREQUEST" 
+        prefix="LCCM_LockRequest" 
+        class="LockRequest"
+        access="lib"
+        filename="lockrequest"
+        list="lib" >
+    <headers>
+      <header type="sys" >gwenhywfar/types.h</header>
+      <header type="sys" >gwenhywfar/gwentime.h</header>
+    </headers>
+    
+    <elem name="requestId" type="GWEN_TYPE_UINT32" />
+    <elem name="clientId" type="GWEN_TYPE_UINT32" />
+    <elem name="lockTime" type="GWEN_TIME" ptr="1" />
+    <elem name="duration" type="int" />
+    <elem name="lockUntil" type="GWEN_TIME" ptr="1" />
+  </type>
+  
+  
+  
+</types>

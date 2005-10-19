@@ -11,13 +11,21 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_CLIENT_MSGENGINE_L_H
-#define CHIPCARD_CLIENT_MSGENGINE_L_H
 
-#include <gwenhywfar/msgengine.h>
-#include <chipcard2-client/client/msgengine.h>
+#ifndef CHIPCARD_SERVER2_CMD_CARD_P_H
+#define CHIPCARD_SERVER2_CMD_CARD_P_H
+
+#include "cmd_card_l.h"
 
 
-#endif /* CHIPCARD_CLIENT_MSGENGINE_L_H */
+typedef struct LCCMD_CARD LCCMD_CARD;
+struct LCCMD_CARD {
+  GWEN_XMLNODE *cardNode;
+};
 
+
+void LCCMD_Card_FreeData(void *bp, void *p);
+
+
+#endif /* CHIPCARD_SERVER2_CMD_CARD_P_H */
 

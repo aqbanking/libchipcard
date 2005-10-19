@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "server_l.h"
+#include "fullserver_l.h"
 
 
 int test1(int argc, char **argv) {
@@ -157,6 +159,143 @@ int test4(int argc, char **argv) {
 }
 
 
+#if 0
+int test5(int argc, char **argv) {
+  LC_PCIMONITOR *um;
+
+  um=LC_PciMonitor_new();
+
+  if (LC_PciMonitor_Scan(um)) {
+    fprintf(stderr, "Could not read PCI files.\n");
+    return 2;
+  }
+
+  if (LC_PciMonitor_Scan(um)) {
+    fprintf(stderr, "Could not read PCI files.\n");
+    return 2;
+  }
+
+  return 0;
+}
+#endif
+
+
+int test6(int argc, char **argv) {
+  LCS_SERVER *cs;
+  LCDM_DEVICEMANAGER *dm;
+  GWEN_DB_NODE *dbConfig;
+  int rv;
+  time_t t0;
+  int isOn=0;
+
+  dbConfig=GWEN_DB_Group_new("config");
+  if (GWEN_DB_ReadFile(dbConfig,
+                       "lstest.conf",
+                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+    fprintf(stderr, "Could not load test config.\n");
+    return 2;
+  }
+  cs=LCS_FullServer_new();
+  rv=LCS_FullServer_Init(cs, dbConfig);
+  if (rv) {
+    fprintf(stderr, "Error initializing server.\n");
+    return 3;
+  }
+
+  dm=LCS_Server_GetDeviceManager(cs);
+  assert(dm);
+
+  LCS_Server_BeginUseReaders(cs);
+  isOn=1;
+
+  t0=time(0);
+  fprintf(stderr, "Starting server.\n");
+  for (;;) {
+    GWEN_NETCONNECTION_WORKRESULT res;
+    time_t t1;
+
+    for (;;) {
+      fprintf(stderr, "Working (%d)...\n", isOn);
+      rv=LCS_FullServer_Work(cs);
+      if (rv!=0) {
+        fprintf(stderr, "Change.\n");
+      }
+      else
+        break;
+    }
+    res=GWEN_Net_HeartBeat(2000);
+    if (res==GWEN_NetConnectionWorkResult_Error) {
+      fprintf(stderr, "ERROR: Error while working (%d)\n", res);
+      break;
+    }
+    t1=time(0);
+    if (difftime(t1, t0)>30) {
+      if (isOn) {
+        fprintf(stderr, "================== Turning readers off.\n");
+        LCS_Server_EndUseReaders(cs, 1);
+        isOn=0;
+      }
+      else {
+        fprintf(stderr, "================== Turning readers on.\n");
+        LCS_Server_BeginUseReaders(cs);
+        isOn=1;
+      }
+      t0=time(0);
+    }
+  }
+
+  return 0;
+}
+
+
+
+int test7(int argc, char **argv) {
+  LCS_SERVER *cs;
+  LCDM_DEVICEMANAGER *dm;
+  GWEN_DB_NODE *dbConfig;
+  int rv;
+
+  dbConfig=GWEN_DB_Group_new("config");
+  if (GWEN_DB_ReadFile(dbConfig,
+                       "lstest.conf",
+                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+    fprintf(stderr, "Could not load test config.\n");
+    return 2;
+  }
+  cs=LCS_FullServer_new();
+  rv=LCS_FullServer_Init(cs, dbConfig);
+  if (rv) {
+    fprintf(stderr, "Error initializing server.\n");
+    return 3;
+  }
+
+  dm=LCS_Server_GetDeviceManager(cs);
+  assert(dm);
+
+  fprintf(stderr, "Starting server.\n");
+  for (;;) {
+    GWEN_NETCONNECTION_WORKRESULT res;
+
+    for (;;) {
+      fprintf(stderr, "Working ...\n");
+      rv=LCS_FullServer_Work(cs);
+      if (rv!=0) {
+	fprintf(stderr, "Change.\n");
+      }
+      else
+	break;
+    }
+    res=GWEN_Net_HeartBeat(2000);
+    if (res==GWEN_NetConnectionWorkResult_Error) {
+      fprintf(stderr, "ERROR: Error while working (%d)\n", res);
+      break;
+    }
+  }
+
+  return 0;
+}
+
+
 
 int main(int argc, char **argv) {
   if (argc<2) {
@@ -167,7 +306,7 @@ int main(int argc, char **argv) {
   //                 "server.log",
   //                 GWEN_LoggerTypeFile,
   //                 GWEN_LoggerFacilityUser);
-  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelNotice);
+  GWEN_Logger_SetLevel(0, GWEN_LoggerLevelDebug);
 
   if (strcasecmp(argv[1], "test1")==0)
     return test1(argc, argv);
@@ -177,6 +316,14 @@ int main(int argc, char **argv) {
     return test3(argc, argv);
   else if (strcasecmp(argv[1], "test4")==0)
     return test4(argc, argv);
+#if 0
+  else if (strcasecmp(argv[1], "test5")==0)
+    return test5(argc, argv);
+#endif
+  else if (strcasecmp(argv[1], "test6")==0)
+    return test6(argc, argv);
+  else if (strcasecmp(argv[1], "test7")==0)
+    return test7(argc, argv);
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", argv[1]);
     return 1;

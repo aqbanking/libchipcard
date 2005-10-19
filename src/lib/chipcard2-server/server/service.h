@@ -14,14 +14,9 @@
 #ifndef CHIPCARD_SERVER_SERVICE_H
 #define CHIPCARD_SERVER_SERVICE_H
 
-/** service provided by a client */
-#define LC_SERVICE_FLAGS_CLIENT   0x00000001
-#define LC_SERVICE_FLAGS_AUTOLOAD 0x00000002
-#define LC_SERVICE_FLAGS_SILENT   0x00000004
-
-
 typedef struct LC_SERVICE LC_SERVICE;
 
+#include <chipcard2/chipcard2.h>
 #include <chipcard2-server/server/request.h>
 
 #include <gwenhywfar/process.h>
@@ -32,19 +27,6 @@ typedef struct LC_SERVICE LC_SERVICE;
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_SERVICE, LC_Service);
-
-
-typedef enum {
-  LC_ServiceStatusDown=0,
-  LC_ServiceStatusStarted,
-  LC_ServiceStatusUp,
-  LC_ServiceStatusSilentRunning,
-  LC_ServiceStatusStopping,
-  LC_ServiceStatusAborted,
-  LC_ServiceStatusDisabled,
-  LC_ServiceStatusUnknown=999
-} LC_SERVICE_STATUS;
-
 
 
 LC_SERVICE *LC_Service_new();

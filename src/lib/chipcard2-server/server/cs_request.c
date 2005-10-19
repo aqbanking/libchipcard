@@ -792,8 +792,8 @@ int LC_CardServer_HandleStartWait(LC_CARDSERVER *cs,
   /* allow all cards to be seen */
   LC_Client_DelAllCards(cl);
 
-  flags=LC_DriverInfo_ReaderFlagsFromDb(dbReq, "body/flags");
-  mask=LC_DriverInfo_ReaderFlagsFromDb(dbReq, "body/mask");
+  flags=LC_ReaderFlags_fromDb(dbReq, "body/flags");
+  mask=LC_ReaderFlags_fromDb(dbReq, "body/mask");
 
   readers=0;
   r=LC_Reader_List_First(cs->readers);

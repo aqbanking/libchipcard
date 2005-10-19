@@ -1,7 +1,11 @@
 INCLUDES=@all_includes@
 
+EXTRA_DIST=kvks.xml.in kvks.xml
+
 servicedir=@LC_SERVICE_PATH@
 service_PROGRAMS=kvks
+service_DATA=kvks.xml
+
 
 if IS_WINDOWS
   SERVICE_LIB=-lchipcard2sv32_$(LIBCHIPCARD_SO_EFFECTIVE)

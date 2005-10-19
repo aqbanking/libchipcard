@@ -1,4 +1,4 @@
-SUBDIRS=common server driver
+SUBDIRS=common server server2 driver
 
 DEFS=@DEFS@ \
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \
@@ -11,13 +11,17 @@ noinst_LTLIBRARIES=libchipcard2s.la libchipcard2d.la
 lib_LTLIBRARIES=libchipcard2i.la
 
 libchipcard2s_la_SOURCES=dummy.c
-libchipcard2s_la_LIBADD=server/libserver.la common/libcommon.la
+libchipcard2s_la_LIBADD=\
+  server/libserver.la \
+  server2/libserver2.la \
+  common/libcommon.la  \
+  ../sharedstuff/libsharedstuff.la
 
 libchipcard2d_la_SOURCES=dummy.c
-libchipcard2d_la_LIBADD= driver/libdriver.la common/libcommon.la @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
+libchipcard2d_la_LIBADD= driver/libdriver.la common/libcommon.la ../sharedstuff/libsharedstuff.la @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 
 libchipcard2i_la_SOURCES=dummy.c
-libchipcard2i_la_LIBADD=common/libcommon.la @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
+libchipcard2i_la_LIBADD=common/libcommon.la ../sharedstuff/libsharedstuff.la @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 libchipcard2i_la_LDFLAGS= \
   @STRIPALL@ -version-info \
    @LIBCHIPCARD_SO_CURRENT@:@LIBCHIPCARD_SO_REVISION@:@LIBCHIPCARD_SO_AGE@

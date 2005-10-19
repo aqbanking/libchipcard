@@ -1,7 +1,10 @@
 INCLUDES=@all_includes@
 
+EXTRA_DIST=ifd.xml.in
+
 driverdir=@LC_DEVICEDRIVER_PATH@
 driver_PROGRAMS=ifd
+driver_DATA=ifd.xml
 
 noinst_HEADERS=\
   driverifd_p.h \

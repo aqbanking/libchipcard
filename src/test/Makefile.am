@@ -1,4 +1,7 @@
-INCLUDES=@all_includes@
+INCLUDES=-I$(top_srcdir)/src/lib/chipcard2-server/server \
+  -I$(top_srcdir)/src/lib/chipcard2-server/server2 \
+  -I$(top_srcdir)/src/lib/chipcard2-server/server2/devicemanager \
+  @all_includes@
 
 if IS_WINDOWS
   CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)

@@ -11,38 +11,13 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_CLIENT_MSGENGINE_H
-#define CHIPCARD_CLIENT_MSGENGINE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef CHIPCARD2_MSGENGINE_L_H
+#define CHIPCARD2_MSGENGINE_L_H
 
 #include <gwenhywfar/msgengine.h>
-#include <chipcard2/chipcard2.h>
-
-/**
- * @file msgengine_l.h
- *
- * This message engine implements a few new types:
- * <ul>
- *   <li>byte</li>
- *   <li>word (bigEndian="1")</li>
- *   <li>dword (bigEndian="1")</li>
- *   <li>bytes (size="-1") </li>
- *   <li>tlv (tlvType="BER"||"SIMPLE") </li>
- * </ul>
- */
-
-CHIPCARD_API
-GWEN_MSGENGINE *LC_MsgEngine_new();
+#include <chipcard2-client/client/msgengine.h>
 
 
-#ifdef __cplusplus
-}
-#endif
-
-
-#endif /* CHIPCARD_CLIENT_MSGENGINE_H */
+#endif /* CHIPCARD2_MSGENGINE_L_H */
 
 

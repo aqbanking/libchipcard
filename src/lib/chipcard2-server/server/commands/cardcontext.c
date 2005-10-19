@@ -985,7 +985,7 @@ GWEN_TYPE_UINT32 LC_CardContext_GetReaderFlags(LC_CARD *card) {
     return LC_Reader_GetFlags(r);
   }
 
-  flags=LC_DriverInfo_ReaderFlagsFromXml(nflags, "flag");
+  flags=LC_ReaderFlags_fromXml(nflags, "flag");
 
   return flags;
 }

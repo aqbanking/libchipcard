@@ -33,6 +33,56 @@ static GWEN_TYPE_UINT32 LC_Driver_LastId=0;
 
 
 
+GWEN_TYPE_UINT32 LC_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name) {
+  const char *p;
+  int i;
+  GWEN_TYPE_UINT32 flags=0;
+
+  for (i=0; ; i++) {
+    p=GWEN_DB_GetCharValue(db, name, i, 0);
+    if (!p)
+      break;
+    if (strcasecmp(p, "auto")==0)
+      flags|=LC_DRIVER_FLAGS_AUTO;
+    else if (strcasecmp(p, "remote")==0)
+      flags|=LC_DRIVER_FLAGS_REMOTE;
+    else if (strcasecmp(p, "has_verify_fn")==0)
+      flags|=LC_DRIVER_FLAGS_HAS_VERIFY_FN;
+    else if (strcasecmp(p, "has_modify_fn")==0)
+      flags|=LC_DRIVER_FLAGS_HAS_MODIFY_FN;
+    else {
+      DBG_WARN(0, "Unknown driver flag \"%s\"", p);
+    }
+  }
+
+  return flags;
+}
+
+
+
+int LC_Driver_Flag_toDb(GWEN_DB_NODE *db, const char *name,
+                        GWEN_TYPE_UINT32 flags) {
+  GWEN_DB_DeleteVar(db, name);
+  if (flags & LC_DRIVER_FLAGS_AUTO)
+    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "auto"))
+      return -1;
+  if (flags & LC_DRIVER_FLAGS_REMOTE)
+    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "remote"))
+      return -1;
+  if (flags & LC_DRIVER_FLAGS_HAS_VERIFY_FN)
+    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name,
+                             "has_verify_fn"))
+      return -1;
+  if (flags & LC_DRIVER_FLAGS_HAS_MODIFY_FN)
+    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name,
+                             "has_modify_fn"))
+      return -1;
+
+  return 0;
+}
+
+
+
 LC_DRIVER *LC_Driver_new(){
   LC_DRIVER *d;
 
@@ -116,6 +166,10 @@ LC_DRIVER *LC_Driver_FromDb(GWEN_DB_NODE *db){
   if (p)
     d->logFile=strdup(p);
 
+  d->driverFlags=(LC_Driver_Flag_fromDb(db, "flags") &
+                  ~LC_DRIVER_FLAGS_RUNTIME_MASK);
+
+
   d->idleSince=time(0);
 
   return d;
@@ -178,6 +232,11 @@ void LC_Driver_ToDb(const LC_DRIVER *d, GWEN_DB_NODE *db){
     assert(dbT);
     GWEN_DB_AddGroupChildren(dbT, d->driverVars);
   }
+
+  /* store driver flags */
+  LC_Driver_Flag_toDb(db, "flags",
+                      d->driverFlags & ~LC_DRIVER_FLAGS_RUNTIME_MASK);
+
 }
 
 

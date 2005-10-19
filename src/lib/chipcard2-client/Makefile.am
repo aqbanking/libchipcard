@@ -14,7 +14,8 @@ libchipcard2c_la_LIBADD= @gwenhywfar_libs@ \
   cards/libcards.la \
   mon/libmon.la \
   fs/libfs.la \
-  crypttoken/libctcard.la
+  crypttoken/libctcard.la \
+  ../sharedstuff/libsharedstuff.la
 
 libchipcard2c_la_LDFLAGS= \
   @STRIPALL@ -version-info \

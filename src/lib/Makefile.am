@@ -1,4 +1,4 @@
-SUBDIRS=chipcard2-server chipcard2-client chipcard2-service
+SUBDIRS=sharedstuff chipcard2-server chipcard2-client chipcard2-service
 
 EXTRA_DIST=chipcard2.h.in version.h.in
 

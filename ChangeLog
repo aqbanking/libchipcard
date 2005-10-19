@@ -1,3 +1,33 @@
+
+2005/10/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- complete redesing of the server core.
+  Divided core into multiple submodules which are quite independant from each
+  other. This makes it easier to debug the code if necessary.
+  New subgroups:
+   - CardManager
+   - ClientManager
+   - DeviceManager
+   - ServiceManager
+  This transition is not yet complete. The new core also handles folders much
+  better (i.e. no hardcoded folders).
+- format of server configuration file changed slightly (should still read most
+  existing config files, though)
+
+
+2005/09/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started working on a new server core: 
+  - better separation of different aspects of the card server
+  - makes use of GWEN_PathManager and GWEN_Plugin (no more hardcoding of
+    paths into the source, neither by direct hardcoding nor by configure)
+
+
+2005/09/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- KVK service now cleans up used cards (releases them)
+
+
 2005-09-13  Christian Stimming <stimming@tuhh.de>
 
 	* src/lib/chipcard2-client/client/msgengine.c: Fix gcc4 signedness

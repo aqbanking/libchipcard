@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_CLIENT_MSGENGINE_P_H
-#define CHIPCARD_CLIENT_MSGENGINE_P_H
+#ifndef CHIPCARD2_MSGENGINE_P_H
+#define CHIPCARD2_MSGENGINE_P_H
 
 
 #include "msgengine_l.h"
@@ -75,6 +75,6 @@ GWEN_TYPE_UINT32 LC_MsgEngine__ToBCD(GWEN_TYPE_UINT32 value);
 
 
 
-#endif /* CHIPCARD_CLIENT_MSGENGINE_P_H */
+#endif /* CHIPCARD2_MSGENGINE_P_H */
 
 

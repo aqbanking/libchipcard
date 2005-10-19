@@ -25,23 +25,23 @@ typedef struct LC_DRIVER LC_DRIVER;
 #include <time.h>
 
 /** driver is a remote driver, not started by the server */
-#define LC_DRIVER_FLAGS_AUTO   0x00000001
-#define LC_DRIVER_FLAGS_REMOTE 0x00000002
+#define LC_DRIVER_FLAGS_RUNTIME_MASK  0xffff0000
+#define LC_DRIVER_FLAGS_AUTO          0x00010000
+#define LC_DRIVER_FLAGS_REMOTE        0x00020000
+
+#define LC_DRIVER_FLAGS_HAS_VERIFY_FN 0x00000001
+#define LC_DRIVER_FLAGS_HAS_MODIFY_FN 0x00000002
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_DRIVER, LC_Driver);
 
 
-typedef enum {
-  LC_DriverStatusDown=0,
-  LC_DriverStatusStarted,
-  LC_DriverStatusUp,
-  LC_DriverStatusStopping,
-  LC_DriverStatusAborted,
-  LC_DriverStatusDisabled,
-  LC_DriverStatusUnknown=999
-} LC_DRIVER_STATUS;
+#include <chipcard2/chipcard2.h>
 
+
+GWEN_TYPE_UINT32 LC_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name);
+int LC_Driver_Flag_toDb(GWEN_DB_NODE *db, const char *name,
+                        GWEN_TYPE_UINT32 flags);
 
 
 LC_DRIVER *LC_Driver_new();

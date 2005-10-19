@@ -1,7 +1,10 @@
 INCLUDES=@all_includes@
 
+EXTRA_DIST=ifdold.xml.in
+
 driverdir=@LC_DEVICEDRIVER_PATH@
 driver_PROGRAMS=ifdold
+driver_DATA=ifdold.xml
 
 noinst_HEADERS=\
   driverifdold_p.h \

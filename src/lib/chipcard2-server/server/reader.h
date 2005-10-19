@@ -31,19 +31,6 @@ typedef struct LC_READER LC_READER;
 GWEN_LIST_FUNCTION_DEFS(LC_READER, LC_Reader);
 
 
-typedef enum {
-  LC_ReaderStatusDown=0,
-  LC_ReaderStatusWaitForDriver,
-  LC_ReaderStatusWaitForReaderUp,
-  LC_ReaderStatusWaitForReaderDown,
-  LC_ReaderStatusUp,
-  LC_ReaderStatusAborted,
-  LC_ReaderStatusDisabled,
-  LC_ReaderStatusUnknown=999
-} LC_READER_STATUS;
-
-
-
 LC_READER *LC_Reader_new(LC_DRIVER *d);
 LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db);
 void LC_Reader_free(LC_READER *r);

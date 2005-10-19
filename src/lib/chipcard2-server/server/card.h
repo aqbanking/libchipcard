@@ -29,22 +29,6 @@ typedef struct LC_CARD LC_CARD;
 #include <stdio.h>
 
 
-typedef enum {
-  LC_CardStatusInserted=0,
-  LC_CardStatusRemoved,
-  LC_CardStatusOrphaned,
-
-  LC_CardStatusUnknown=999
-} LC_CARD_STATUS;
-
-
-typedef enum {
-  LC_CardTypeUnknown=0,
-  LC_CardTypeProcessor,
-  LC_CardTypeMemory
-} LC_CARD_TYPE;
-
-
 GWEN_LIST_FUNCTION_DEFS(LC_CARD, LC_Card);
 
 

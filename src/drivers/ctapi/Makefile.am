@@ -1,7 +1,10 @@
 INCLUDES=@all_includes@
 
+EXTRA_DIST=ctapi.xml.in
+
 driverdir=@LC_DEVICEDRIVER_PATH@
 driver_PROGRAMS=ctapi
+driver_DATA=ctapi.xml
 
 noinst_HEADERS=\
   driverctapi_p.h \

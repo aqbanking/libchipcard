@@ -131,7 +131,7 @@ LC_READER *LC_Reader_FromDb(LC_DRIVER *d, GWEN_DB_NODE *db){
   r->vendorId=GWEN_DB_GetIntValue(db, "vendorId", 0, 0);
   r->productId=GWEN_DB_GetIntValue(db, "productId", 0, 0);
 
-  r->flags=LC_DriverInfo_ReaderFlagsFromDb(db, "flags");
+  r->flags=LC_ReaderFlags_fromDb(db, "flags");
 
   r->idleSince=time(0);
 

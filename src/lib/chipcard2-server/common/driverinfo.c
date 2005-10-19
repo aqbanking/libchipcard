@@ -335,6 +335,41 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node) {
   GWEN_StringList_free(slNames);
   GWEN_StringList_free(slDirs);
 
+  /* read driver flags */
+  n=GWEN_XMLNode_FindFirstTag(node, "flags", "osname", OS_SHORTNAME);
+  if (!n)
+    n=GWEN_XMLNode_FindFirstTag(node, "flags", "ostype", OS_TYPE);
+  if (!n)
+    n=GWEN_XMLNode_FindFirstTag(node, "flags", "ostype", 0);
+  if (!n) {
+    n=GWEN_XMLNode_FindFirstTag(node, "flags", 0, 0);
+    while(n) {
+      if (GWEN_XMLNode_GetProperty(n, "osname", 0)==0 &&
+          GWEN_XMLNode_GetProperty(n, "ostype", 0)==0)
+        break;
+      n=GWEN_XMLNode_FindNextTag(n, "flags", 0, 0);
+    } /* while */
+  }
+  if (n) {
+    GWEN_XMLNODE *nn;
+
+    nn=GWEN_XMLNode_FindFirstTag(n, "flag", 0, 0);
+    while(nn) {
+      const char *value;
+      GWEN_XMLNODE *nd;
+
+      nd=GWEN_XMLNode_GetFirstData(nn);
+      if (nd)
+	value=GWEN_XMLNode_GetData(nd);
+      else
+	value="";
+      GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+			   "flags", value);
+
+      nn=GWEN_XMLNode_FindNextTag(nn, "flag", 0, 0);
+    } /* while */
+  }
+
   return db;
 }
 
@@ -361,14 +396,19 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                        "shortName", p);
 
-  p=GWEN_XMLNode_GetProperty(node, "com", "serial");
+  p=GWEN_XMLNode_GetProperty(node, "busType", "serial");
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-		       "comType", p);
+                       "busType", p);
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
 		      "slots",
 		      atoi(GWEN_XMLNode_GetProperty(node, "slots", "1")));
 
+  if (1==sscanf(GWEN_XMLNode_GetProperty(node, "busId", "-1"),
+                "%i", &i))
+    if (i!=-1)
+      GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
+                          "busId", i);
   if (1==sscanf(GWEN_XMLNode_GetProperty(node, "vendor", "-1"),
                 "%i", &i))
     if (i!=-1)
@@ -552,70 +592,6 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
 
 
 
-GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromDb(GWEN_DB_NODE *db,
-                                                 const char *name) {
-  int i;
-  const char *p;
-  GWEN_TYPE_UINT32 flags=0;
-
-  for (i=0; ; i++) {
-    p=GWEN_DB_GetCharValue(db, name, i, 0);
-    if (!p)
-      break;
-    if (strcasecmp(p, "keypad")==0)
-      flags|=LC_READER_FLAGS_KEYPAD;
-    else if (strcasecmp(p, "display")==0)
-      flags|=LC_READER_FLAGS_DISPLAY;
-    else if (strcasecmp(p, "noinfo")==0)
-      flags|=LC_READER_FLAGS_NOINFO;
-    else if (strcasecmp(p, "remote")==0)
-      flags|=LC_READER_FLAGS_REMOTE;
-    else if (strcasecmp(p, "auto")==0)
-      flags|=LC_READER_FLAGS_AUTO;
-    else {
-      DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
-    }
-  } /* for */
-
-  return flags;
-}
-
-
-
-GWEN_TYPE_UINT32 LC_DriverInfo_ReaderFlagsFromXml(GWEN_XMLNODE *node,
-                                                  const char *name) {
-  const char *p;
-  GWEN_TYPE_UINT32 flags=0;
-  GWEN_XMLNODE *n;
-
-  n=GWEN_XMLNode_FindFirstTag(node, name, 0, 0);
-  while(n) {
-    GWEN_XMLNODE *nn;
-
-    nn=GWEN_XMLNode_GetFirstData(n);
-    if (nn) {
-      p=GWEN_XMLNode_GetData(nn);
-      assert(p);
-
-      if (strcasecmp(p, "keypad")==0)
-        flags|=LC_READER_FLAGS_KEYPAD;
-      else if (strcasecmp(p, "display")==0)
-        flags|=LC_READER_FLAGS_DISPLAY;
-      else if (strcasecmp(p, "noinfo")==0)
-        flags|=LC_READER_FLAGS_NOINFO;
-      else if (strcasecmp(p, "remote")==0)
-        flags|=LC_READER_FLAGS_REMOTE;
-      else if (strcasecmp(p, "auto")==0)
-        flags|=LC_READER_FLAGS_AUTO;
-      else {
-        DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
-      }
-    }
-    n=GWEN_XMLNode_FindNextTag(n, name, 0, 0);
-  } /* while */
-
-  return flags;
-}
 
 
 

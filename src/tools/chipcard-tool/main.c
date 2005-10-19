@@ -199,7 +199,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
   }
 
   fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (res==LC_Client_ResultCmdError && card) {
     fprintf(stderr, "  Last card command result:\n");
     fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
             LC_Card_GetLastSW1(card),

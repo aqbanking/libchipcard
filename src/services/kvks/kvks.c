@@ -633,7 +633,7 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
     break;
 
   case KVKSStatus_Error:
-    DBG_ERROR(0, "Card is in ERROR status");
+    DBG_ERROR(0, "Card is in ERROR status.");
     break;
 
   default:
@@ -694,6 +694,33 @@ int ServiceKVK_Work(LC_CLIENT *cl) {
     } /* while */
     LC_Card_List2Iterator_free(cit);
   }
+
+
+  /* sort out cards which are to be removed */
+  for (;;) {
+    int removedSome=0;
+
+    cit=LC_Card_List2_First(kvks->cards);
+    if (cit) {
+      card=LC_Card_List2Iterator_Data(cit);
+      while(card) {
+        KVKS_STATUS kst;
+
+        kst=KVKSCard_GetStatus(card);
+        if (kst==KVKSStatus_Done ||
+            kst==KVKSStatus_Error) {
+          LC_Card_List2_Erase(kvks->cards, cit);
+          removedSome++;
+          break;
+        }
+        card=LC_Card_List2Iterator_Next(cit);
+      } /* while */
+      LC_Card_List2Iterator_free(cit);
+    }
+    if (!removedSome)
+      break;
+  }
+
 
   return doneSomething?0:1;
 }
@@ -864,6 +891,12 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
 
 int main(int argc, char **argv) {
   LC_CLIENT *sv;
+
+#ifdef HAVE_RANDOM
+  srandom(time(0));
+#else
+  srand(time(0));
+#endif
 
   sv=ServiceKVK_new(argc, argv);
   if (!sv) {

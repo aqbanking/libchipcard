@@ -2191,7 +2191,7 @@ LC_CLIENT_RESULT LC_Client_StartWait(LC_CLIENT *cl,
   res=LC_Client_CheckStartWait(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"startWait\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2222,7 +2222,7 @@ LC_CLIENT_RESULT LC_Client_StopWait(LC_CLIENT *cl) {
   res=LC_Client_CheckStopWait(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"stopWait\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2387,7 +2387,7 @@ LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags){
   res=LC_Client_CheckSetNotify(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"setNotify\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2534,7 +2534,7 @@ LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
   res=LC_Client_CheckGetDriverVar(cl, rqid, vbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"GetDriverVar\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2635,7 +2635,7 @@ LC_CLIENT_RESULT LC_Client_CardCheck(LC_CLIENT *cl, LC_CARD *card){
   res=LC_Client_CheckCardCheck(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CardCheck\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2732,7 +2732,7 @@ LC_CLIENT_RESULT LC_Client_CardReset(LC_CLIENT *cl,
   res=LC_Client_CheckCardReset(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CardReset\"");
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -2846,7 +2846,7 @@ LC_Client_OpenService(LC_CLIENT *cl,
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"OpenService\"");
     LC_Client_DeleteRequest(cl, rqid);
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   LC_Client_DeleteRequest(cl, rqid);
@@ -2955,7 +2955,7 @@ LC_CLIENT_RESULT LC_Client_CloseService(LC_CLIENT *cl,
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"CloseService\"");
     LC_Client_DeleteRequest(cl, rqid);
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   LC_Client_DeleteRequest(cl, rqid);
@@ -3076,7 +3076,7 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"ServiceCommand\"");
     LC_Client_DeleteRequest(cl, rqid);
-    return LC_Client_ResultCmdError;
+    return res;
   }
 
   LC_Client_DeleteRequest(cl, rqid);
