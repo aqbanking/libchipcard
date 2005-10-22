@@ -22,9 +22,5 @@
 
 static int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl);
 
-static int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk);
-static int LC_PcmciaScanner_GetTuple(int fd, unsigned char code,
-                                     ds_ioctl_arg_t *arg);
-
 
 #endif /* CHIPCARD_SERVER_PCIMONITOR_P_H */

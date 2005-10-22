@@ -15,7 +15,6 @@
 # include <config.h>
 #endif
 
-#include "pcmciascanner_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/directory.h>
@@ -42,6 +41,8 @@
 # include <pcmcia/cistpl.h>
 # include <pcmcia/ds.h>
 #endif
+
+#include "pcmciascanner_p.h"
 
 
 GWEN_INHERIT(LC_DEVSCANNER, LC_PCMCIA_SCANNER)

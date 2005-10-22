@@ -31,11 +31,13 @@ struct LC_PCMCIA_SCANNER {
 };
 
 
-void LC_PcmciaScanner_FreeData(void *bp, void *p);
-int LC_PcmciaScanner_GetDevMajor();
+static void LC_PcmciaScanner_FreeData(void *bp, void *p);
+static int LC_PcmciaScanner_GetDevMajor();
 
-int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk);
+static int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk);
 
+static int LC_PcmciaScanner_GetTuple(int fd, unsigned char code,
+                                     ds_ioctl_arg_t *arg);
 
 #endif /* CHIPCARD_SERVER_PCMCIAMONITOR_P_H */
 

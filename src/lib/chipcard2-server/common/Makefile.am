@@ -7,7 +7,6 @@ noinst_LTLIBRARIES=libcommon.la
 noinst_HEADERS=\
   card_p.h \
   devmonitor_p.h \
-  usbmonitor_p.h \
   pciscanner_p.h \
   pciscanner_l.h \
   pcmciascanner_p.h \
@@ -15,8 +14,7 @@ noinst_HEADERS=\
   usbrawscanner_p.h \
   usbrawscanner_l.h \
   usbttyscanner_p.h \
-  usbttyscanner_l.h \
-  usbttymonitor_p.h
+  usbttyscanner_l.h
 
 
 iheaderdir=${includedir}/chipcard2-server/common
