@@ -77,3 +77,15 @@ int LCS_Server_SendErrorResponse(LCS_SERVER *cs,
 }
 
 
+
+void LCS_Server_DumpState(const LCS_SERVER *cs) {
+  if (!cs) {
+    fprintf(stderr, "No Server.\n");
+    return;
+  }
+  else {
+    LCDM_DeviceManager_DumpState(cs->deviceManager);
+  }
+}
+
+

@@ -77,5 +77,8 @@ int LCCM_CardManager_CheckAccess(LCCM_CARDMANAGER *cm,
 int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm);
 
 
+void LCCM_CardManager_DumpState(const LCCM_CARDMANAGER *cm);
+
+
 #endif /* CHIPCARD_SERVER2_CM_CARDMGR_L_H */
 

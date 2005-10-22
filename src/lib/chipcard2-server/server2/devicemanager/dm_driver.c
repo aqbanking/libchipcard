@@ -568,6 +568,7 @@ int LCDM_Driver_CheckTimeout(const LCDM_DRIVER *d) {
 
 void LCDM_Driver_Dump(const LCDM_DRIVER *d, FILE *f, int indent) {
   int i;
+  GWEN_DB_NODE *dbT;
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");
@@ -577,43 +578,66 @@ void LCDM_Driver_Dump(const LCDM_DRIVER *d, FILE *f, int indent) {
   fprintf(f, "Driver\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Type : %s\n", d->driverType);
+  fprintf(f, "Type            : %s\n", d->driverType);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Name : %s\n", d->driverName);
+  fprintf(f, "Name            : %s\n", d->driverName);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "DataDir : %s\n", d->driverDataDir);
+  fprintf(f, "DataDir         : %s\n", d->driverDataDir);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "LogFile : %s\n", d->logFile);
+  fprintf(f, "LogFile         : %s\n", d->logFile);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Library : %s\n", d->libraryFile);
+  fprintf(f, "Library         : %s\n", d->libraryFile);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Customer : %s\n", d->customerId);
+  fprintf(f, "Customer        : %s\n", d->customerId);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "MaxReaders : %d\n", d->maxReaders);
+  fprintf(f, "MaxReaders      : %d\n", d->maxReaders);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
   fprintf(f, "Vars:\n");
   GWEN_DB_Dump(d->driverVars, f, indent+2);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Id : %04x\n", d->driverId);
+  fprintf(f, "Id              : %04x\n", d->driverId);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "IPC-Id : %04x\n", d->ipcId);
+  fprintf(f, "IPC-Id          : %04x\n", d->ipcId);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Status : %d\n", d->status);
+  fprintf(f, "Status          : %s (%d)\n",
+          LC_DriverStatus_toString(d->status),
+          d->status);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "ActiveReaders : %d\n", d->activeReadersCount);
+  fprintf(f, "ActiveReaders   : %d\n", d->activeReadersCount);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
+  fprintf(f, "AssignedReaders : %d\n", d->assignedReaders);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+
+  dbT=GWEN_DB_Group_new("flags");
+  LCDM_Driver_Flag_toDb(dbT, "flags", d->driverFlags);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Driver flags : ");
+  for (i=0; ; i++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbT, "flags", i, 0);
+    if (!s)
+      break;
+    if (i)
+      fprintf(f, ", ");
+    fprintf(f, "%s", s);
+  }
+  GWEN_DB_Group_free(dbT);
+  fprintf(stderr, "\n");
 }
 
 

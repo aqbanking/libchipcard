@@ -229,6 +229,7 @@ int LCS_Server_SendErrorResponse(LCS_SERVER *cs,
                                  int code,
                                  const char *text);
 
+void LCS_Server_DumpState(const LCS_SERVER *cs);
 
 
 #endif /* CHIPCARD_SERVER2_SERVER_L_H */

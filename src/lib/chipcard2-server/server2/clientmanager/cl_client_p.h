@@ -36,6 +36,8 @@ struct LCCL_CLIENT {
   GWEN_TYPE_UINT32 notifyMask;
 
   GWEN_TYPE_UINT32 usage;
+
+  int destroy;
 };
 
 

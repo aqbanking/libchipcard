@@ -405,6 +405,14 @@ void LCDM_DeviceManager_AbandonDriver(LCDM_DEVICEMANAGER *dm,
                                       LC_DRIVER_STATUS newSt,
                                       const char *reason) {
   LCDM_READER *r;
+  GWEN_TYPE_UINT32 ipcId;
+
+  ipcId=LCDM_Driver_GetIpcId(d);
+  if (ipcId!=0) {
+    /* remove IPC node */
+    GWEN_IPCManager_RemoveClient(dm->ipcManager, ipcId);
+    LCDM_Driver_SetIpcId(d, 0);
+  }
 
   if (LCDM_Driver_GetStatus(d)!= newSt) {
     LCDM_Driver_SetStatus(d, newSt);
@@ -772,8 +780,15 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   if (!(dflags & LCDM_DRIVER_FLAGS_REMOTE) &&
       (dflags & LCDM_DRIVER_FLAGS_AUTO) &&
       (LCDM_Driver_GetAssignedReadersCount(d)==0)){
+    GWEN_TYPE_UINT32 ipcId;
+
     DBG_NOTICE(0, "Driver \"%s\" is unused, removing it",
                LCDM_Driver_GetDriverName(d));
+    ipcId=LCDM_Driver_GetIpcId(d);
+    if (ipcId!=0)
+      /* remove IPC node */
+      GWEN_IPCManager_RemoveClient(dm->ipcManager, ipcId);
+
     LCDM_Driver_List_Del(d);
     LCDM_Driver_free(d);
     return 1;
@@ -837,12 +852,18 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
         dst=LC_DriverStatusDown;
         LCDM_Driver_SetStatus(d, dst);
         LCS_Server_DriverChg(dm->server,
-                                     LCDM_Driver_GetDriverId(d),
-                                     LCDM_Driver_GetDriverType(d),
-                                     LCDM_Driver_GetDriverName(d),
-                                     LCDM_Driver_GetLibraryFile(d),
-                                     dst,
-                                     "Driver terminated normally");
+                             LCDM_Driver_GetDriverId(d),
+                             LCDM_Driver_GetDriverType(d),
+                             LCDM_Driver_GetDriverName(d),
+                             LCDM_Driver_GetLibraryFile(d),
+                             dst,
+                             "Driver terminated normally");
+        if (LCDM_Driver_GetIpcId(d)) {
+          /* remove IPC node */
+          GWEN_IPCManager_RemoveClient(dm->ipcManager,
+                                       LCDM_Driver_GetIpcId(d));
+          LCDM_Driver_SetIpcId(d, 0);
+        }
         done++;
       }
       else if (pst==GWEN_ProcessStateAborted) {
@@ -1460,7 +1481,9 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
     if ((LCDM_Reader_GetFlags(r) & LC_READER_FLAGS_AUTO) &&
 	LCDM_Reader_GetUsageCount(r)==0) {
       DBG_NOTICE(0, "Reader \"%s\" is no longer active, removing it",
-		 LCDM_Reader_GetReaderName(r));
+                 LCDM_Reader_GetReaderName(r));
+      LCDM_Driver_DecAssignedReadersCount(LCDM_Reader_GetDriver(r));
+
       LCDM_Reader_List_Del(r);
       LCDM_Reader_free(r);
       return 1; /* we did something */
@@ -1724,6 +1747,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     /* create driver from DB */
     d=LCDM_Driver_fromDb(dbDriver);
     assert(d);
+    LCDM_Driver_SetIpcId(d, nodeId);
     driverId=LCDM_Driver_GetDriverId(d);
     LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_REMOTE);
     LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_AUTO);
@@ -1749,7 +1773,9 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
       DBG_WARN(0, "Could not remove request");
       abort();
     }
-    LCDM_Driver_SetStatus(d, LC_DriverStatusAborted);
+    LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusAborted,
+                                     "No readers in driver message");
+
     if (driverCreated) {
       LCDM_Driver_List_Del(d);
       LCDM_Driver_free(d);
@@ -1763,6 +1789,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
     r=LCDM_Reader_fromDb(d, dbReader);
     assert(r);
+    LCDM_Driver_IncAssignedReadersCount(d);
     DBG_NOTICE(0, "Adding reader \"%s\" (enumerated by the driver)",
                LCDM_Reader_GetReaderName(r));
     if (LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE)
@@ -1781,8 +1808,6 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
      * if necessary */
     if (dm->readerUsage)
       LCDM_Reader_IncUsageCount(r, dm->readerUsage);
-
-    LCDM_Driver_IncAssignedReadersCount(d);
 
     dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");
   } /* while */
@@ -2571,6 +2596,31 @@ const char *LCDM_DeviceManager_GetDriverVar(LCDM_DEVICEMANAGER *dm,
 }
 
 
+
+void LCDM_DeviceManager_DumpState(const LCDM_DEVICEMANAGER *dm) {
+  if (!dm) {
+    fprintf(stderr, "No device manager.\n");
+    return;
+  }
+  else {
+    LCDM_DRIVER *d;
+    LCDM_READER *r;
+
+    fprintf(stderr, "DeviceManager\n");
+    fprintf(stderr, "=====================================\n");
+    d=LCDM_Driver_List_First(dm->drivers);
+    while(d) {
+      LCDM_Driver_Dump(d, stderr, 2);
+      d=LCDM_Driver_List_Next(d);
+    }
+
+    r=LCDM_Reader_List_First(dm->readers);
+    while(r) {
+      LCDM_Reader_Dump(r, stderr, 2);
+      r=LCDM_Reader_List_Next(r);
+    }
+  }
+}
 
 
 

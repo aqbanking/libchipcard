@@ -417,7 +417,24 @@ int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm){
 }
 
 
+void LCCM_CardManager_DumpState(const LCCM_CARDMANAGER *cm) {
+  if (!cm) {
+    fprintf(stderr, "No card manager.\n");
+    return;
+  }
+  else {
+    LCCO_CARD *card;
 
+    fprintf(stderr, "CardManager\n");
+    fprintf(stderr, "=====================================\n");
+    fprintf(stderr, "Cards: %d\n", LCCO_Card_List_GetCount(cm->cards));
+    card=LCCO_Card_List_First(cm->cards);
+    while(card) {
+      LCCO_Card_Dump(card, stderr, 2);
+      card=LCCO_Card_List_Next(card);
+    }
+  }
+}
 
 
 

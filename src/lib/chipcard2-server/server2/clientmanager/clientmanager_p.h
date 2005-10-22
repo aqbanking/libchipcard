@@ -149,5 +149,9 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq);
 
+void LCCL_ClientManager_CheckClient(LCCL_CLIENTMANAGER *clm,
+                                    LCCL_CLIENT *cl);
+void LCCL_ClientManager_CheckClients(LCCL_CLIENTMANAGER *clm);
+
 
 #endif /* CHIPCARD_SERVER_CL_CLIENTMGR_P_H */

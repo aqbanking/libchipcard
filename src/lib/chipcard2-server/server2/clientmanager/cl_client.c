@@ -253,6 +253,78 @@ void LCCL_Client_SetMaxClientLocks(LCCL_CLIENT *cl, int i) {
 
 
 
+int LCCL_Client_GetWantDestroy(const LCCL_CLIENT *cl) {
+  assert(cl);
+  return cl->destroy;
+}
+
+
+
+void LCCL_Client_SetWantDestroy(LCCL_CLIENT *cl, int i) {
+  assert(cl);
+  cl->destroy=i;
+}
+
+
+
+void LCCL_Client_Dump(const LCCL_CLIENT *cl, FILE *f, int indent) {
+  int i;
+  GWEN_DB_NODE *dbT;
+
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "--------------------------\n");
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Client\n");
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Id           : %08x\n", cl->clientId);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "App          : %s\n", cl->appName);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "User         : %s\n", cl->userName);
+
+  dbT=GWEN_DB_Group_new("notify");
+  LC_NotifyFlags_toDb(dbT, "flags", cl->notifyFlags);
+  LC_NotifyFlags_toDb(dbT, "mask", cl->notifyFlags);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Notify flags : ");
+  for (i=0; ; i++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbT, "flags", i, 0);
+    if (!s)
+      break;
+    if (i)
+      fprintf(f, ", ");
+    fprintf(f, "%s", s);
+  }
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Notify mask  : ");
+  for (i=0; ; i++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbT, "mask", i, 0);
+    if (!s)
+      break;
+    if (i)
+      fprintf(f, ", ");
+    fprintf(f, "%s", s);
+  }
+  GWEN_DB_Group_free(dbT);
+  fprintf(stderr, "\n");
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Wait requests: %d\n", cl->waitRequestCount);
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Want destroy : %d\n", cl->destroy);
+}
 
 
 

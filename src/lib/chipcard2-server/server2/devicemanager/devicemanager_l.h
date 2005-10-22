@@ -92,6 +92,8 @@ const char *LCDM_DeviceManager_GetDriverVar(LCDM_DEVICEMANAGER *dm,
                                             LCCO_CARD *card,
                                             const char *vname);
 
+void LCDM_DeviceManager_DumpState(const LCDM_DEVICEMANAGER *dm);
+
 
 #endif /* CHIPCARD_SERVER_DEVICEMANAGER_L_H */
 

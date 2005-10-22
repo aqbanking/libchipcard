@@ -494,7 +494,7 @@ void familySignalHandler(int s, int child) {
   case SIGUSR1:
 #ifdef USR1_DUMPS
     if (cardServer) {
-      //LC_CardServer_DumpState(cardServer);
+      LCS_FullServer_DumpState(cardServer);
     }
     GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
     GWEN_Net_Dump();

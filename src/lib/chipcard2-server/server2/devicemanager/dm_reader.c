@@ -543,6 +543,7 @@ void LCDM_Reader_SetCurrentRequestId(LCDM_READER *r, GWEN_TYPE_UINT32 rid) {
 
 void LCDM_Reader_Dump(const LCDM_READER *r, FILE *f, int indent) {
   int i;
+  GWEN_DB_NODE *dbT;
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");
@@ -552,22 +553,39 @@ void LCDM_Reader_Dump(const LCDM_READER *r, FILE *f, int indent) {
   fprintf(f, "Reader\n");
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Name : %s\n", r->readerName);
+  fprintf(f, "Name   : %s\n", r->readerName);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Type : %s\n", r->readerType);
+  fprintf(f, "Type   : %s\n", r->readerType);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Slots : %d\n", r->slots);
+  fprintf(f, "Slots  : %d\n", r->slots);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Usage : %d\n", r->usageCount);
+  fprintf(f, "Usage  : %d\n", r->usageCount);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Status : %d\n", r->status);
+  fprintf(f, "Status : %s (%d)\n",
+          LC_ReaderStatus_toString(r->status),
+          r->status);
+
+  dbT=GWEN_DB_Group_new("flags");
+  LC_ReaderFlags_toDb(dbT, "flags", r->flags);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
-  fprintf(f, "Flags  : %08x\n", r->flags);
+  fprintf(f, "Flags  : ");
+  for (i=0; ; i++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbT, "flags", i, 0);
+    if (!s)
+      break;
+    if (i)
+      fprintf(f, ", ");
+    fprintf(f, "%s", s);
+  }
+  GWEN_DB_Group_free(dbT);
+  fprintf(stderr, "\n");
 }
 
 

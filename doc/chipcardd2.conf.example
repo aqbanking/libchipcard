@@ -370,6 +370,25 @@ DeviceManager {
     }
   } # driver
 
+  # ---------------------------------------------------------------------------
+  # driver section for a Cherry Keyboard Reader 1501
+  #
+
+  driver {
+    char driverType="ctapi"
+    char driverName="cherry_ctapi"
+    char driverDataDir="/var/lib/chipcard2/drivers/ctapi"
+    char libraryFile="/usr/lib/libctapi_cherry.so"
+  
+    reader {
+      char readerType="cherry_keyboard"
+      char readerName="cherry_1501"
+      int port="3"                        # value here doesn't matter
+      int slots="1"
+      char busType="serial"
+    }
+  } # driver
+
 } # DeviceManager
 
 

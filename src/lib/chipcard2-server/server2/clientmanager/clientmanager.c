@@ -84,6 +84,7 @@ int LCCL_ClientManager_Fini(LCCL_CLIENTMANAGER *clm, GWEN_DB_NODE *db) {
 
 
 int LCCL_ClientManager_Work(LCCL_CLIENTMANAGER *clm) {
+  LCCL_ClientManager_CheckClients(clm);
   return 0;
 }
 
@@ -284,13 +285,7 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
     LCCL_Client_ResetRequestCount(cl);
   }
 
-  /* finally destroy client */
-  DBG_NOTICE(0, "Removing client %08x [%s/%s]",
-             LCCL_Client_GetClientId(cl),
-             LCCL_Client_GetApplicationName(cl),
-             LCCL_Client_GetUserName(cl));
-  LCCL_Client_List_Del(cl);
-  LCCL_Client_free(cl);
+  LCCL_Client_SetWantDestroy(cl, 1);
 }
 
 
@@ -318,9 +313,66 @@ void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
 
 
 
+void LCCL_ClientManager_CheckClient(LCCL_CLIENTMANAGER *clm,
+                                    LCCL_CLIENT *cl) {
+  assert(cl);
+  if (LCCL_Client_GetWantDestroy(cl)) {
+    /* remove IPC node */
+    GWEN_IPCManager_RemoveClient(clm->ipcManager,
+                                 LCCL_Client_GetClientId(cl));
+
+    /* finally destroy client */
+    DBG_NOTICE(0, "Removing client %08x [%s/%s]",
+               LCCL_Client_GetClientId(cl),
+               LCCL_Client_GetApplicationName(cl),
+               LCCL_Client_GetUserName(cl));
+    LCCL_Client_List_Del(cl);
+    LCCL_Client_free(cl);
+  }
+}
+
+
+
+void LCCL_ClientManager_CheckClients(LCCL_CLIENTMANAGER *clm) {
+  LCCL_CLIENT *cl;
+
+  assert(clm);
+  cl=LCCL_Client_List_First(clm->clients);
+  while(cl) {
+    LCCL_CLIENT *clNext;
+
+    clNext=LCCL_Client_List_Next(cl);
+    LCCL_ClientManager_CheckClient(clm, cl);
+    cl=clNext;
+  }
+}
+
+
+
 int LCCL_ClientManager_GetClientCount(const LCCL_CLIENTMANAGER *clm) {
   assert(clm);
   return LCCL_Client_List_GetCount(clm->clients);
+}
+
+
+
+void LCCL_ClientManager_DumpState(const LCCL_CLIENTMANAGER *clm) {
+  if (!clm) {
+    fprintf(stderr, "No client manager.\n");
+    return;
+  }
+  else {
+    LCCL_CLIENT *client;
+
+    fprintf(stderr, "ClientManager\n");
+    fprintf(stderr, "=====================================\n");
+    fprintf(stderr, "Clients: %d\n", LCCL_Client_List_GetCount(clm->clients));
+    client=LCCL_Client_List_First(clm->clients);
+    while(client) {
+      LCCL_Client_Dump(client, stderr, 2);
+      client=LCCL_Client_List_Next(client);
+    }
+  }
 }
 
 

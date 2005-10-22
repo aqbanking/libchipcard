@@ -1,18 +1,19 @@
 
                                  Content
-                 --------------------------------------------
-                 1. Introduction
-                 2. Needed Components
-                 3. Server Setup
-                 4. Starting The Daemon
-                 5. Server Environment Variables
-                 6. Client Setup
-                 7. Using Libchipcard2 in your own Projects
-                 8. Remote Drivers
-                 9. Using OpenSC with Libchipcard2
-                 10. Using Libchipcard2 With MacOS
-                 11. Using the OpenSource Generic CCID Driver
-                 --------------------------------------------
+              -------------------------------------------------------
+              1. Introduction
+              2. Needed Components
+              3. Server Setup
+              4. Starting The Daemon
+              5. Server Environment Variables
+              6. Client Setup
+              7. Using Libchipcard2 in your own Projects
+              8. Remote Drivers
+              9. Using OpenSC with Libchipcard2
+              10. Using Libchipcard2 With MacOS
+              11. Using the OpenSource Generic CCID Driver
+              12. Changes in Server Configuration File in 1.9.16alpha
+              -------------------------------------------------------
 
 
 
@@ -34,6 +35,7 @@ Libchipcard2 needs the following packages:
 - LibUSB     http://libusb.sf.net/              [strongly recommended]
 - LibSysFS   http://linux-diag.sf.net/          [recommended]
 - OpenSC     http://www.opensc.org/             [optional]
+- Kernel sources (needed for PCMCIA)            [optional]
 
 If LibUSB is available at compile time it will be used to scan the USB bus
 for new devices. Fortunately LibUSB is ported to the major *nix-alike 
@@ -47,6 +49,10 @@ for these systems LibSysFS (part of sysfsutils) is needed.
 
 If OpenSC is installed then the OpenSC-driver for Libchipcard2 is built and
 installed. This driver allows OpenSC to use Libchipcard.
+
+If the kernel sources are installed at compile time then the PCMCIA scanner
+code is built. This allows to detect PCMCIA-based card readers.
+
 
 
 3. Server Setup
@@ -102,6 +108,9 @@ You can do most of that additional setup with the following command:
 This will create all files necessary for "private" or "secure" mode (such as
 Diffie-Hellman-parameters, a self-signed certificate etc).
 
+You have to create the server configuration file first (e.g. by just copying
+one of the example files provided by this package).
+
 Please refer to the file doc/CERTIFICATES for details.
 
 
@@ -136,19 +145,25 @@ The option "-f" makes the daemon stay in the foreground. In this case you can
 stop it using CTRL-C.
 
 
+Please note that the server doesn't start if the there is no line in the
+configuration file saying "enabled=1".
+
+
 
 5. Server Environment Variables
 ===============================
 
 
-LC_DRIVER_LOGLEVEL
-------------------
-Loglevel to be used for drivers.
+LCDM_DRIVER_LOGLEVEL
+--------------------
+Loglevel to be used for drivers. 
+Version before 1.9.16alpha used LC_DRIVER_LOGLEVEL" instead.
 
 
-LC_SERVICE_LOGLEVEL
-------------------
-Loglevel to be used for services.
+LCSV_SERVICE_LOGLEVEL
+---------------------
+Loglevel to be used for services. 
+Version before 1.9.16alpha used "LC_SERVICE_LOGLEVEL" instead.
 
 
 LC_CTAPI_LOGLEVEL
@@ -210,11 +225,11 @@ the OpenSC configuration file variable "app/reader_drivers".
 You will also have to add a driver section to that configuration file below
 "app":
 
-  ----------------------------------------
+  ----------------------------------------X8
   reader_driver chipcard2 {
     module = /usr/lib/reader-libchipcard2;
   }
-  ----------------------------------------
+  ----------------------------------------X8
   
 Such a section allows OpenSC to dynamically load the driver module.
 
@@ -240,7 +255,7 @@ The configuration files are then expected in /sw/chipcard2-server.
 
 Libchipcard2 1.9.12beta and later has improved support for this GPL licensed
 driver. However, since Libchipcard2 uses this driver directly (i.e. without
-using PC/SC) you will have to compile the driver youself.
+using PC/SC) you will have to compile the driver yourself.
 I suggest using version ccid-0.9.3 or better. To *compile* the driver you need
 libpcsclite (but don't install the pcscd if you want to work with 
 Libchipcard2). After compiling the driver you can safely uninstall
@@ -261,7 +276,83 @@ own lowlevel/ifd folder.
 
 
 
-Martin Preuss, Hamburg/Germany, 2005/03/15
+12. Changes in Server Configuration File in 1.9.16alpha
+=======================================================
+
+For 1.9.16alpha the server engine has been completely rewritten. It is now
+much easier to extend and it works much cleaner.
+
+However, the new modular design of the server made it necessary to change the
+structure of the configuration file a little.
+
+The current version of Libchipcard2 should be able to read existing files,
+but new files should be created according to the new format (see example
+files in doc/). Existing files should be modified.
+
+The changes are really minor:
+- "Driver" sections are now below the new section "DeviceManager" instead of
+  root
+- "Service" sections have moved from toplevel to below "ServiceManager"
+- "Reader" sections now use the variable "busType" instead of "com" to specify
+  how the reader is connected
+
+
+The new structure of the configuration file is this:
+
+  -------------------------------------------------------------------X8
+
+  Server {
+    # server settings, haven't changed since previous versions, neither in
+    # location nor in content
+  }
+  
+  DeviceManager {
+    # This is a new section, it contains the drivers which have been at the
+    # topmost level of the configuration file in previous versions.
+    
+    Driver {
+      # Driver section, the content itself isunchanged
+      
+      Reader {
+        # The driver section contains a single change, which doesn't pose much
+        # of a problem since a driver and reader section was mostly used with
+        # serial devices.
+        # The variable "com" (or sometimes "comType") was replaced by the
+        # variable "busType" (this is due to the internal reorganization).
+        # The following table shows how to convert existing settings:
+        #
+        #   Previously (com="")  I    New (busType="")
+        #   ---------------------+--------------------
+        #   com="serial"         I    busType="serial"
+        #   com="usb"            I    busType="UsbRaw"
+        #   com="usbserial"      I    busType="UsbTty"
+        #       ---              I    busType="Pci"
+        #       ---              I    busType="Pcmcia"
+        #   -------------------------------------------
+        # This allowed me to implement additional bus types (like PCMCIA).
+        
+      } # Reader
+    } # Driver
+  } # DeviceManager
+
+  CardManager {
+    # This is a new optional section which contains some card-related
+    # settings (see example in doc/)
+  } # CardManager
+  
+  ServiceManager {
+    # This section now contains the "Service" sections which were found in the
+    # topmost level in previous files.
+    
+    Service {
+      # This is a service section as in previous versions. The only change is
+      # that this section is now below "ServiceManager".
+    } # Service
+  }
+  -------------------------------------------------------------------X8
+
+
+Martin Preuss, Hamburg/Germany, 2005/10/22
 
 
 

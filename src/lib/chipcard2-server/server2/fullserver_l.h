@@ -46,5 +46,7 @@ int LCS_FullServer_Work(LCS_SERVER *cs);
 
 int LCS_FullServer_GetClientCount(LCS_SERVER *cs);
 
+void LCS_FullServer_DumpState(const LCS_SERVER *cs);
+
 #endif /* CHIPCARD_SERVER2_FULLSERVER_L_H */
 

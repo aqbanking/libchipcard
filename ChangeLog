@@ -4,6 +4,9 @@
 - added support for pcmcia device detection
 - completed transition to new server code
 - gcc 4 fixes
+- implemented driver blacklisting (allows to have multiple driver information
+  files for one reader)
+- code cleanup (server now releases unneeded ressources)
 
 
 2005/10/20: Martin Preuss<martin@libchipcard.de>

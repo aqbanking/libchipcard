@@ -68,6 +68,11 @@ void LCCL_Client_SetMaxClientLockTime(LCCL_CLIENT *cl, int i);
 int LCCL_Client_GetMaxClientLocks(const LCCL_CLIENT *cl);
 void LCCL_Client_SetMaxClientLocks(LCCL_CLIENT *cl, int i);
 
+int LCCL_Client_GetWantDestroy(const LCCL_CLIENT *cl);
+void LCCL_Client_SetWantDestroy(LCCL_CLIENT *cl, int i);
+
+
+void LCCL_Client_Dump(const LCCL_CLIENT *cl, FILE *f, int indent);
 
 #endif /* CHIPCARD_SERVER_CL_CLIENT_L_H */
 

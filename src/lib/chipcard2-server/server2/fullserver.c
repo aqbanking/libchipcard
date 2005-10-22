@@ -490,6 +490,23 @@ int LCS_FullServer_GetClientCount(LCS_SERVER *cs) {
 
 
 
+void LCS_FullServer_DumpState(const LCS_SERVER *cs) {
+  if (!cs) {
+    fprintf(stderr, "No Server.\n");
+    return;
+  }
+  else {
+    LCS_FULLSERVER *fs;
+  
+    assert(cs);
+    fs=GWEN_INHERIT_GETDATA(LCS_SERVER, LCS_FULLSERVER, cs);
+    assert(fs);
+
+    LCS_Server_DumpState(cs);
+    LCCL_ClientManager_DumpState(fs->clientManager);
+    LCCM_CardManager_DumpState(fs->cardManager);
+  }
+}
 
 
 
