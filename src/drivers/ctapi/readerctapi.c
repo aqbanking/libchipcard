@@ -27,24 +27,24 @@
 #include <ctype.h>
 
 
-GWEN_INHERIT(LC_READER, READER_CTAPI)
+GWEN_INHERIT(LCD_READER, READER_CTAPI)
 
 
 
 
-LC_READER *ReaderCTAPI_new(GWEN_TYPE_UINT32 readerId,
+LCD_READER *ReaderCTAPI_new(GWEN_TYPE_UINT32 readerId,
                            const char *name,
                            int port,
                            unsigned int slots,
                            GWEN_TYPE_UINT32 flags,
                            int ctn){
-  LC_READER *r;
+  LCD_READER *r;
   READER_CTAPI *rc;
 
-  r=LC_Reader_new(readerId, name, port, slots, flags);
+  r=LCD_Reader_new(readerId, name, port, slots, flags);
   assert(r);
   GWEN_NEW_OBJECT(READER_CTAPI, rc);
-  GWEN_INHERIT_SETDATA(LC_READER, READER_CTAPI, r, rc, ReaderCTAPI_freeData);
+  GWEN_INHERIT_SETDATA(LCD_READER, READER_CTAPI, r, rc, ReaderCTAPI_freeData);
 
   rc->ctn=ctn;
   return r;
@@ -62,11 +62,11 @@ void ReaderCTAPI_freeData(void *bp, void *p){
 
 
 
-int ReaderCTAPI_GetCtn(const LC_READER *r){
+int ReaderCTAPI_GetCtn(const LCD_READER *r){
   READER_CTAPI *rc;
 
   assert(r);
-  rc=GWEN_INHERIT_GETDATA(LC_READER, READER_CTAPI, r);
+  rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CTAPI, r);
   assert(rc);
 
   return rc->ctn;
@@ -74,11 +74,11 @@ int ReaderCTAPI_GetCtn(const LC_READER *r){
 
 
 
-void ReaderCTAPI_SetCtn(LC_READER *r, int ctn){
+void ReaderCTAPI_SetCtn(LCD_READER *r, int ctn){
   READER_CTAPI *rc;
 
   assert(r);
-  rc=GWEN_INHERIT_GETDATA(LC_READER, READER_CTAPI, r);
+  rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CTAPI, r);
   assert(rc);
 
   rc->ctn=ctn;

@@ -15,12 +15,13 @@
 #define CHIPCARD_SERVER_DEVMONITOR_P_H
 
 
-#include <chipcard2-server/common/devmonitor.h>
+#include "devmonitor.h"
 
 
 
 struct LC_DEVICE {
   GWEN_LIST_ELEMENT(LC_DEVICE);
+  char *path;
   LC_DEVICE_BUSTYPE busType;
   GWEN_TYPE_UINT32 devicePos;
   GWEN_TYPE_UINT32 busId;
@@ -30,21 +31,23 @@ struct LC_DEVICE {
 };
 
 
-struct LC_DEVMONITOR {
-  GWEN_INHERIT_ELEMENT(LC_DEVMONITOR);
-  LC_DEVICE_LIST *currentDevices;
-  LC_DEVICE_LIST *newDevices;
-  LC_DEVICE_LIST *lostDevices;
-
-  GWEN_IDLIST *lastList;
-
-  LC_DEVMONITOR_READ_DEVS_FN readDevsFn;
-
+struct LC_DEVSCANNER {
+  GWEN_INHERIT_ELEMENT(LC_DEVSCANNER);
+  GWEN_LIST_ELEMENT(LC_DEVSCANNER);
+  LC_DEVSCANNER_READ_DEVS_FN readDevsFn;
 };
 
 
+int LC_DevScanner_ReadDevs(LC_DEVSCANNER *um, LC_DEVICE_LIST *dl);
 
-int LC_DevMonitor_ReadDevs(LC_DEVMONITOR *um, LC_DEVICE_LIST *dl);
+
+struct LC_DEVMONITOR {
+  LC_DEVSCANNER_LIST *scanners;
+
+  LC_DEVICE_LIST *currentDevices;
+  LC_DEVICE_LIST *newDevices;
+  LC_DEVICE_LIST *lostDevices;
+};
 
 
 

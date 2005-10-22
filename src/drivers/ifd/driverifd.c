@@ -28,39 +28,39 @@
 
 #include <unistd.h>
 
-GWEN_INHERIT(LC_DRIVER, DRIVER_IFD)
+GWEN_INHERIT(LCD_DRIVER, DRIVER_IFD)
 
 
 
-LC_DRIVER *DriverIFD_new(int argc, char **argv) {
+LCD_DRIVER *DriverIFD_new(int argc, char **argv) {
   DRIVER_IFD *dct;
-  LC_DRIVER *d;
+  LCD_DRIVER *d;
   int rv;
 
-  d=LC_Driver_new();
+  d=LCD_Driver_new();
   if (!d) {
     DBG_ERROR(0, "Could not create driver, aborting");
     return 0;
   }
   GWEN_NEW_OBJECT(DRIVER_IFD, dct);
-  GWEN_INHERIT_SETDATA(LC_DRIVER, DRIVER_IFD,
+  GWEN_INHERIT_SETDATA(LCD_DRIVER, DRIVER_IFD,
                        d, dct,
                        DriverIFD_freeData);
 
-  LC_Driver_SetSendApduFn(d, DriverIFD_SendAPDU);
-  LC_Driver_SetConnectSlotFn(d, DriverIFD_ConnectSlot);
-  LC_Driver_SetDisconnectSlotFn(d, DriverIFD_DisconnectSlot);
-  LC_Driver_SetConnectReaderFn(d, DriverIFD_ConnectReader);
-  LC_Driver_SetDisconnectReaderFn(d, DriverIFD_DisconnectReader);
-  LC_Driver_SetResetSlotFn(d, DriverIFD_ResetSlot);
-  LC_Driver_SetReaderStatusFn(d, DriverIFD_ReaderStatus);
-  LC_Driver_SetReaderInfoFn(d, DriverIFD_ReaderInfo);
-  LC_Driver_SetGetErrorTextFn(d, DriverIFD_GetErrorText);
+  LCD_Driver_SetSendApduFn(d, DriverIFD_SendAPDU);
+  LCD_Driver_SetConnectSlotFn(d, DriverIFD_ConnectSlot);
+  LCD_Driver_SetDisconnectSlotFn(d, DriverIFD_DisconnectSlot);
+  LCD_Driver_SetConnectReaderFn(d, DriverIFD_ConnectReader);
+  LCD_Driver_SetDisconnectReaderFn(d, DriverIFD_DisconnectReader);
+  LCD_Driver_SetResetSlotFn(d, DriverIFD_ResetSlot);
+  LCD_Driver_SetReaderStatusFn(d, DriverIFD_ReaderStatus);
+  LCD_Driver_SetReaderInfoFn(d, DriverIFD_ReaderInfo);
+  LCD_Driver_SetGetErrorTextFn(d, DriverIFD_GetErrorText);
 
-  rv=LC_Driver_Init(d, argc, argv);
+  rv=LCD_Driver_Init(d, argc, argv);
   if (rv) {
     DBG_ERROR(0, "Could not init driver (%d)", rv);
-    LC_Driver_free(d);
+    LCD_Driver_free(d);
     return 0;
   }
 
@@ -86,27 +86,27 @@ void DriverIFD_freeData(void *bp, void *p) {
 }
 
 
-int DriverIFD_Start(LC_DRIVER *d) {
+int DriverIFD_Start(LCD_DRIVER *d) {
   GWEN_ERRORCODE err;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
 
   GWEN_LibLoader_free(dct->libLoader);
   dct->libLoader=GWEN_LibLoader_new();
   err=GWEN_LibLoader_OpenLibrary(dct->libLoader,
-                                 LC_Driver_GetLibraryFile(d));
+                                 LCD_Driver_GetLibraryFile(d));
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Loading library")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Loading library")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -116,11 +116,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -130,11 +130,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -144,11 +144,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -158,11 +158,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -172,11 +172,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -186,11 +186,11 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -200,16 +200,16 @@ int DriverIFD_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
   /* send status report to server */
-  if (LC_Driver_Connect(d, "OK", "Library loaded")) {
+  if (LCD_Driver_Connect(d, "OK", "Library loaded")) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;
@@ -220,12 +220,12 @@ int DriverIFD_Start(LC_DRIVER *d) {
 
 
 
-const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverIFD_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
   const char *s;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
   switch (err) {
@@ -295,10 +295,10 @@ int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
                                     int toReader,
-                                    LC_READER *r,
-                                    LC_SLOT *slot,
+                                    LCD_READER *r,
+                                    LCD_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
                                     unsigned char *buffer,
@@ -309,10 +309,10 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
   const char *lg;
   GWEN_TYPE_UINT32 controlCode;
 
-  lg=LC_Reader_GetLogger(r);
+  lg=LCD_Reader_GetLogger(r);
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
   assert(apdu);
@@ -332,7 +332,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
     DBG_INFO(lg,
              "Sending command to reader (ControlCode=%08x):", controlCode);
     GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
-    retval=dct->controlFn(LC_Slot_GetSlotNum(slot),
+    retval=dct->controlFn(LCD_Slot_GetSlotNum(slot),
                           controlCode,
                           apdu+4,
                           apdulen-4,
@@ -367,11 +367,11 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
     DBG_INFO(lg,
              "Sending command to card (bufferlen=%d):", tmplen);
     GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
-    txHeader.protocol=LC_Slot_GetProtocolInfo(slot);
+    txHeader.protocol=LCD_Slot_GetProtocolInfo(slot);
     //txHeader.protocol=1;
     txHeader.length=sizeof(SCARD_IO_HEADER);
     rxHeader.length=sizeof(SCARD_IO_HEADER);
-    retval=dct->transmitFn(LC_Slot_GetSlotNum(slot),
+    retval=dct->transmitFn(LCD_Slot_GetSlotNum(slot),
                            txHeader,
                            apdu,
                            apdulen,
@@ -412,36 +412,36 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
   DRIVER_IFD *dct;
-  LC_READER *r;
+  LCD_READER *r;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
-  r=LC_Slot_GetReader(sl);
+  r=LCD_Slot_GetReader(sl);
   assert(r);
 
-  DBG_INFO(LC_Reader_GetLogger(r),
-	   "Connecting slot %d", LC_Slot_GetSlotNum(sl));
+  DBG_INFO(LCD_Reader_GetLogger(r),
+	   "Connecting slot %d", LCD_Slot_GetSlotNum(sl));
 
   atrLen=sizeof(atrBuffer);
-  LC_Slot_SetAtr(sl, 0);
-  retval=dct->powerIccFn(LC_Slot_GetSlotNum(sl),
+  LCD_Slot_SetAtr(sl, 0);
+  retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                          IFD_POWER_UP,
                          atrBuffer,
 			 &atrLen);
   if (retval==IFD_ICC_PRESENT || retval==0) {
     int proto;
 
-    DBG_INFO(LC_Reader_GetLogger(r), "Card present.");
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+    DBG_INFO(LCD_Reader_GetLogger(r), "Card present.");
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
     if (retval==0) {
-      LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+      LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
     }
 
     if (atrLen) {
@@ -449,32 +449,32 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
       abuf=GWEN_Buffer_new(0, atrLen, 0, 1);
       GWEN_Buffer_AppendBytes(abuf, (const char*)atrBuffer, atrLen);
-      LC_Slot_SetAtr(sl, abuf);
+      LCD_Slot_SetAtr(sl, abuf);
     }
 
     proto=DriverIFD_ExtractProtocolInfo(atrBuffer, atrLen);
     if (proto==0) {
-      DBG_NOTICE(LC_Reader_GetLogger(r),
+      DBG_NOTICE(LCD_Reader_GetLogger(r),
                  "Protocol is 0, assuming memorycard");
-      LC_Slot_SubFlags(sl, LC_SLOT_FLAGS_PROCESSORCARD);
+      LCD_Slot_SubFlags(sl, LCD_SLOT_FLAGS_PROCESSORCARD);
     }
     else {
-      LC_Slot_AddFlags(sl, LC_SLOT_FLAGS_PROCESSORCARD);
+      LCD_Slot_AddFlags(sl, LCD_SLOT_FLAGS_PROCESSORCARD);
     }
-    LC_Slot_SetProtocolInfo(sl, proto);
+    LCD_Slot_SetProtocolInfo(sl, proto);
   }
   else if (retval==IFD_ICC_NOT_PRESENT) {
-    DBG_NOTICE(LC_Reader_GetLogger(r), "No card inserted");
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+    DBG_NOTICE(LCD_Reader_GetLogger(r), "No card inserted");
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   else {
-    DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+    DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
 	       "IFD: Soft error %d", (int)retval);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
     if (retval==IFD_ERROR_POWER_ACTION) {
-      DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+      DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
 		 "IFD: Ignoring error, assuming missing card");
     }
     else
@@ -485,136 +485,136 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
 
-  DBG_INFO(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
-           "Disconnecting slot %d", LC_Slot_GetSlotNum(sl));
+  DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+           "Disconnecting slot %d", LCD_Slot_GetSlotNum(sl));
 
   atrLen=sizeof(atrBuffer);
-  retval=dct->powerIccFn(LC_Slot_GetSlotNum(sl),
+  retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                          IFD_POWER_DOWN,
                          atrBuffer,
                          &atrLen);
   if (retval==IFD_NOT_SUPPORTED || retval==IFD_NOT_SUPPORTED) {
     atrLen=sizeof(atrBuffer);
-    retval=dct->powerIccFn(LC_Slot_GetSlotNum(sl),
+    retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                            IFD_RESET,
                            atrBuffer,
                            &atrLen);
   }
   if (retval!=0) {
-    DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+    DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
                "IFD: Soft error %d", (int)retval);
   }
 
-  LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+  LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   GWEN_TYPE_UINT32 atrLen;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
 
-  DBG_INFO(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
-           "Resetting slot %d", LC_Slot_GetSlotNum(sl));
+  DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+           "Resetting slot %d", LCD_Slot_GetSlotNum(sl));
 
   atrLen=sizeof(atrBuffer);
-  retval=dct->powerIccFn(LC_Slot_GetSlotNum(sl),
+  retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                          IFD_RESET,
                          atrBuffer,
                          &atrLen);
 
   if (retval==IFD_ICC_PRESENT) {
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   else if (retval==0) {
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   else {
-    DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+    DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
                "IFD: Soft error %d", (int)retval);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
   }
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slList;
+GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slList;
   long retval;
   DRIVER_IFD *dct;
   int oks;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
-  DBG_DEBUG(LC_Reader_GetLogger(r),
+  DBG_DEBUG(LCD_Reader_GetLogger(r),
             "Checking reader status for reader \"%08x\"",
-            LC_Reader_GetReaderId(r));
+            LCD_Reader_GetReaderId(r));
 
-  slList=LC_Reader_GetSlots(r);
+  slList=LCD_Reader_GetSlots(r);
   oks=0;
-  sl=LC_Slot_List_First(slList);
+  sl=LCD_Slot_List_First(slList);
   while(sl) {
     int slotNum;
 
-    slotNum=LC_Slot_GetSlotNum(sl);
-    retval=dct->presenceFn(LC_Slot_GetSlotNum(sl));
+    slotNum=LCD_Slot_GetSlotNum(sl);
+    retval=dct->presenceFn(LCD_Slot_GetSlotNum(sl));
     if (retval==IFD_ICC_PRESENT) {
       oks++;
-      if (!(LC_Slot_GetLastStatus(sl) & LC_SLOT_STATUS_CARD_CONNECTED)) {
+      if (!(LCD_Slot_GetLastStatus(sl) & LCD_SLOT_STATUS_CARD_CONNECTED)) {
         /* card is not connected, try to do so */
-        if (LC_Driver_ConnectSlot(d, sl)) {
-          LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
-          LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+        if (LCD_Driver_ConnectSlot(d, sl)) {
+          LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
+          LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
         }
       }
       else {
-        LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+        LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
       }
     }
     else if (retval==IFD_ICC_NOT_PRESENT){
       /* no card present, so there can be no card connected */
       oks++;
-      LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
-      LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+      LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
+      LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
     }
     else {
-      DBG_NOTICE(LC_Reader_GetLogger(r),
+      DBG_NOTICE(LCD_Reader_GetLogger(r),
                  "IFD: Soft error %d", (int)retval);
-      LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
-      LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-      LC_Slot_AddStatus(sl, LC_SLOT_STATUS_DISABLED);
+      LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
+      LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+      LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_DISABLED);
     }
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   if (!oks) {
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "All slots disabled, returning error");
     return DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE;
   }
@@ -623,19 +623,19 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                       GWEN_BUFFER *buf) {
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
-  DBG_DEBUG(LC_Reader_GetLogger(r),
+  DBG_DEBUG(LCD_Reader_GetLogger(r),
             "Requesting information about reader \"%08x\"",
-            LC_Reader_GetReaderId(r));
+            LCD_Reader_GetReaderId(r));
 
-  DBG_WARN(LC_Reader_GetLogger(r),
+  DBG_WARN(LCD_Reader_GetLogger(r),
            "ReaderInfo() not yet supported for IFD drivers");
 
   return DRIVER_IFD_ERROR_NOT_SUPPORTED;
@@ -643,43 +643,43 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r) {
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slotList;
+GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slotList;
   unsigned int oks;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
   assert(r);
-  slotList=LC_Reader_GetSlots(r);
+  slotList=LCD_Reader_GetSlots(r);
   assert(slotList);
   oks=0;
-  sl=LC_Slot_List_First(slotList);
+  sl=LCD_Slot_List_First(slotList);
   while(sl) {
     long retval;
 
-    retval=dct->createChannelFn(LC_Slot_GetSlotNum(sl),
-                                LC_Reader_GetPort(r));
+    retval=dct->createChannelFn(LCD_Slot_GetSlotNum(sl),
+                                LCD_Reader_GetPort(r));
     if (retval==0) {
-      if (!LC_Driver_ConnectSlot(d, sl)) {
+      if (!LCD_Driver_ConnectSlot(d, sl)) {
         oks++;
       }
     }
     else {
-      DBG_ERROR(LC_Reader_GetLogger(r),
+      DBG_ERROR(LCD_Reader_GetLogger(r),
 		"IFD error on createChannel %d/%d: %ld",
-		LC_Slot_GetSlotNum(sl),
-		LC_Reader_GetPort(r),
+		LCD_Slot_GetSlotNum(sl),
+		LCD_Reader_GetPort(r),
 		retval);
     }
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   if (!oks) {
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
     return DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED;
   }
@@ -688,37 +688,37 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LC_DRIVER *d, LC_READER *r) {
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slotList;
+GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slotList;
   unsigned int oks;
   DRIVER_IFD *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_IFD, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
   assert(r);
-  slotList=LC_Reader_GetSlots(r);
+  slotList=LCD_Reader_GetSlots(r);
   assert(slotList);
   oks=0;
-  sl=LC_Slot_List_First(slotList);
+  sl=LCD_Slot_List_First(slotList);
   while(sl) {
     long retval;
 
-    if (!LC_Driver_DisconnectSlot(d, sl))
+    if (!LCD_Driver_DisconnectSlot(d, sl))
       oks++;
-    retval=dct->closeChannelFn(LC_Slot_GetSlotNum(sl));
+    retval=dct->closeChannelFn(LCD_Slot_GetSlotNum(sl));
     if (retval!=0) {
-      DBG_ERROR(LC_Reader_GetLogger(r),
+      DBG_ERROR(LCD_Reader_GetLogger(r),
                 "Error closing channel %d (%d)",
-                LC_Slot_GetSlotNum(sl), (int)retval);
+                LCD_Slot_GetSlotNum(sl), (int)retval);
     }
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   if (!oks) {
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
     return DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED;
   }

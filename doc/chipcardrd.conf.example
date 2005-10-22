@@ -29,6 +29,19 @@ enabled="1"
 int restartTime="10"
 
 
+
+# ---------------------------------------------------------------------------
+# local server, using Unix Domain Sockets which can only be
+# connected from the very same machine. This is the preferred mode on 
+# *nix systems (like Linux, *BSD etc, but not on Windows which does not
+# support Unix Domain sockets).
+#
+server {
+  typ="local"                 
+  addr="/var/run/chipcard2.comm"
+} # server
+
+
 # ---------------------------------------------------------------------------
 # private server using SSL secured sockets.
 # New certificates are stored in the folder given by "newcertdir",
@@ -36,7 +49,7 @@ int restartTime="10"
 # This is the recommended mode on systems which can't use "local" (e.g.
 # Windows).
 #
-server {
+server.inactive {
   typ="private"
   addr="127.0.0.1"
   port="55555"

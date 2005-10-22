@@ -1,7 +1,13 @@
 
+2005/10/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for pcmcia device detection
+- completed transition to new server code
+
+
 2005/10/20: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
-- complete redesing of the server core.
+- complete redesign of the server core.
   Divided core into multiple submodules which are quite independant from each
   other. This makes it easier to debug the code if necessary.
   New subgroups:

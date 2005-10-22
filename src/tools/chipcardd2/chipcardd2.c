@@ -31,6 +31,7 @@
 
 
 #include "chipcardd2_p.h"
+#include "fullserver_l.h"
 
 #include <gwenhywfar/inetsocket.h>
 
@@ -73,13 +74,14 @@ static int ShortFailCounter=0;
 static GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
   Chipcard_AskAddCertResult=GWEN_NetTransportSSL_AskAddCertResultNo;
 
-static LC_CARDSERVER *cardServer=0;
+static LCS_SERVER *cardServer=0;
+
 
 
 #define k_PRG "chipcardd2"
 #define k_PRG_VERSION_INFO \
-  "chipcardd v1.9.0 (part of libchipcard v"CHIPCARD_VERSION_STRING")\n"\
-  "(c) 2004 Martin Preuss<martin@libchipcard.de>\n"\
+  "chipcardd (part of libchipcard v"CHIPCARD_VERSION_STRING")\n"\
+  "(c) 2005 Martin Preuss<martin@libchipcard.de>\n"\
   "This program is free software licensed under GPL.\n"\
   "See COPYING for details.\n"
 
@@ -491,8 +493,9 @@ void familySignalHandler(int s, int child) {
 #ifdef SIGUSR1
   case SIGUSR1:
 #ifdef USR1_DUMPS
-    if (cardServer)
-      LC_CardServer_DumpState(cardServer);
+    if (cardServer) {
+      //LC_CardServer_DumpState(cardServer);
+    }
     GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
     GWEN_Net_Dump();
 #else
@@ -987,14 +990,14 @@ int server(ARGUMENTS *args) {
   }
 
   DBG_INFO(0, "Will now initialize server.");
-  cardServer=LC_CardServer_new(0);
-  if (LC_CardServer_ReadConfig(cardServer, db)) {
+  cardServer=LCS_FullServer_new();
+  rv=LCS_FullServer_Init(cardServer, db);
+  if (rv) {
     fprintf(stderr,I18N("Could not initialize server.\n"));
-    LC_CardServer_free(cardServer);
+    LCS_Server_free(cardServer);
     GWEN_DB_Group_free(db);
     return RETURNVALUE_SETUP;
   }
-  GWEN_DB_Group_free(db);
 
   /* loop */
   DBG_INFO(0, "Ready to service requests.");
@@ -1006,19 +1009,19 @@ int server(ARGUMENTS *args) {
     while(1) {
       int clientsBefore;
 
-      clientsBefore=LC_CardServer_GetClientCount(cardServer);
-      rv=LC_CardServer_Work(cardServer);
+      clientsBefore=LCS_FullServer_GetClientCount(cardServer);
+      rv=LCS_FullServer_Work(cardServer);
       if (rv==-1) {
         DBG_INFO(0,
                  "ERROR: Error while working on hardware (%d)", rv);
         break;
       }
-      else if (rv==1)
+      else if (rv==0)
         break;
       if (args->runOnce && clientsBefore)
-        if (LC_CardServer_GetClientCount(cardServer)==0) {
+        if (LCS_FullServer_GetClientCount(cardServer)==0) {
           loopCount++;
-          LC_CardServer_DumpState(cardServer);
+          //LCS_FullServer_DumpState(cardServer);
           GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
           GWEN_Net_Dump();
 
@@ -1037,7 +1040,9 @@ int server(ARGUMENTS *args) {
   } /* while */
 
   DBG_INFO(0, "Will now deinitialize server.\n");
-  LC_CardServer_free(cardServer);
+  LCS_FullServer_Fini(cardServer, db);
+  GWEN_DB_Group_free(db);
+  LCS_Server_free(cardServer);
 
   DBG_INFO(0, "Chipcard Daemon exiting.\n");
   if (ChipcardDaemonHangup)

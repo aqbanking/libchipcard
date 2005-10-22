@@ -5,7 +5,7 @@ driver_PROGRAMS=pcsc
 
 pcsc_SOURCES=main.c
 
-pcsc_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
+pcsc_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 pcsc_LDFLAGS=@STRIPALL@
 

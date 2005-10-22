@@ -28,14 +28,14 @@
 
 
 
-GWEN_LIST_FUNCTIONS(LC_SLOT, LC_Slot);
+GWEN_LIST_FUNCTIONS(LCD_SLOT, LCD_Slot);
 
 
-LC_SLOT *LC_Slot_new(LC_READER *r, unsigned int slotNum){
-  LC_SLOT *sl;
+LCD_SLOT *LCD_Slot_new(LCD_READER *r, unsigned int slotNum){
+  LCD_SLOT *sl;
 
-  GWEN_NEW_OBJECT(LC_SLOT, sl);
-  GWEN_LIST_INIT(LC_SLOT, sl);
+  GWEN_NEW_OBJECT(LCD_SLOT, sl);
+  GWEN_LIST_INIT(LCD_SLOT, sl);
   sl->reader=r;
   sl->slotNum=slotNum;
 
@@ -44,9 +44,9 @@ LC_SLOT *LC_Slot_new(LC_READER *r, unsigned int slotNum){
 
 
 
-void LC_Slot_free(LC_SLOT *sl){
+void LCD_Slot_free(LCD_SLOT *sl){
   if (sl) {
-    GWEN_LIST_FINI(LC_SLOT, sl);
+    GWEN_LIST_FINI(LCD_SLOT, sl);
     GWEN_Buffer_free(sl->atr);
 
     GWEN_FREE_OBJECT(sl);
@@ -55,14 +55,14 @@ void LC_Slot_free(LC_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LC_Slot_GetStatus(const LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Slot_GetStatus(const LCD_SLOT *sl){
   assert(sl);
   return sl->status;
 }
 
 
 
-void LC_Slot_SetStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_SetStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   assert(sl);
   if (sl->status!=s) {
     sl->status=s;
@@ -72,7 +72,7 @@ void LC_Slot_SetStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
 
 
 
-void LC_Slot_AddStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_AddStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   GWEN_TYPE_UINT32 nst;
 
   assert(sl);
@@ -85,7 +85,7 @@ void LC_Slot_AddStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
 
 
 
-void LC_Slot_SubStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_SubStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   GWEN_TYPE_UINT32 nst;
 
   assert(sl);
@@ -98,28 +98,28 @@ void LC_Slot_SubStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
 
 
 
-LC_READER *LC_Slot_GetReader(const LC_SLOT *sl){
+LCD_READER *LCD_Slot_GetReader(const LCD_SLOT *sl){
   assert(sl);
   return sl->reader;
 }
 
 
 
-unsigned int LC_Slot_GetSlotNum(const LC_SLOT *sl){
+unsigned int LCD_Slot_GetSlotNum(const LCD_SLOT *sl){
   assert(sl);
   return sl->slotNum;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Slot_GetCardNum(const LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Slot_GetCardNum(const LCD_SLOT *sl){
   assert(sl);
   return sl->cardNum;
 }
 
 
 
-void LC_Slot_SetCardNum(LC_SLOT *sl, GWEN_TYPE_UINT32 i){
+void LCD_Slot_SetCardNum(LCD_SLOT *sl, GWEN_TYPE_UINT32 i){
   assert(sl);
   sl->cardNum=i;
 }
@@ -127,14 +127,14 @@ void LC_Slot_SetCardNum(LC_SLOT *sl, GWEN_TYPE_UINT32 i){
 
 
 
-GWEN_BUFFER *LC_Slot_GetAtr(const LC_SLOT *sl){
+GWEN_BUFFER *LCD_Slot_GetAtr(const LCD_SLOT *sl){
   assert(sl);
   return sl->atr;
 }
 
 
 
-void LC_Slot_SetAtr(LC_SLOT *sl, GWEN_BUFFER *atr){
+void LCD_Slot_SetAtr(LCD_SLOT *sl, GWEN_BUFFER *atr){
   assert(sl);
   if (sl->atr!=atr) {
     GWEN_Buffer_free(sl->atr);
@@ -144,63 +144,63 @@ void LC_Slot_SetAtr(LC_SLOT *sl, GWEN_BUFFER *atr){
 
 
 
-GWEN_TYPE_UINT32 LC_Slot_GetLastStatus(const LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Slot_GetLastStatus(const LCD_SLOT *sl){
   assert(sl);
   return sl->lastStatus;
 }
 
 
 
-void LC_Slot_SetLastStatus(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_SetLastStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   assert(sl);
   sl->lastStatus=s;
 }
 
 
 
-time_t LC_Slot_GetLastStatusChange(const LC_SLOT *sl){
+time_t LCD_Slot_GetLastStatusChange(const LCD_SLOT *sl){
   assert(sl);
   return sl->lastStatusChange;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Slot_GetFlags(const LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Slot_GetFlags(const LCD_SLOT *sl){
   assert(sl);
   return sl->flags;
 }
 
 
 
-void LC_Slot_SetFlags(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_SetFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   assert(sl);
   sl->flags=s;
 }
 
 
 
-void LC_Slot_AddFlags(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_AddFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   assert(sl);
   sl->flags|=s;
 }
 
 
 
-void LC_Slot_SubFlags(LC_SLOT *sl, GWEN_TYPE_UINT32 s){
+void LCD_Slot_SubFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s){
   assert(sl);
   sl->flags&=~s;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Slot_GetProtocolInfo(const LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Slot_GetProtocolInfo(const LCD_SLOT *sl){
   assert(sl);
   return sl->protocolInfo;
 }
 
 
 
-void LC_Slot_SetProtocolInfo(LC_SLOT *sl, GWEN_TYPE_UINT32 i){
+void LCD_Slot_SetProtocolInfo(LCD_SLOT *sl, GWEN_TYPE_UINT32 i){
   assert(sl);
   sl->protocolInfo=i;
 }

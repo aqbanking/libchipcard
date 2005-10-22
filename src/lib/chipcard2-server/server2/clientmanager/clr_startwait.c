@@ -172,7 +172,7 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
   else
     GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                          "cardtype", "UNKNOWN");
-  
+
   if (atr && atrLen) {
     GWEN_DB_SetBinValue(gr, GWEN_DB_FLAGS_OVERWRITE_VARS,
                         "atr", atr, atrLen);

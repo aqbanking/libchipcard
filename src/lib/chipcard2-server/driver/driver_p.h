@@ -14,19 +14,19 @@
 #ifndef CHIPCARD_DRIVER_DRIVER_P_H
 #define CHIPCARD_DRIVER_DRIVER_P_H
 
-#define LC_DRIVER_STARTTIMEOUT 20
+#define LCD_DRIVER_STARTTIMEOUT 20
 
-#define LC_DRIVER_MARK_DRIVER 1
+#define LCD_DRIVER_MARK_DRIVER 1
 
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/nettransportssl.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
 
 
-struct LC_DRIVER {
-  GWEN_INHERIT_ELEMENT(LC_DRIVER)
+struct LCD_DRIVER {
+  GWEN_INHERIT_ELEMENT(LCD_DRIVER)
   /* arguments */
   int verbous;                   /* -v */
   int secure;                    /* --secure */
@@ -55,57 +55,65 @@ struct LC_DRIVER {
   /* runtime data */
   int stopDriver;
   GWEN_IPCMANAGER *ipcManager;
-  LC_READER_LIST *readers;
+  LCD_READER_LIST *readers;
   GWEN_TYPE_UINT32 ipcId;
 
   GWEN_TYPE_UINT32 lastReaderId;
 
-  LC_DRIVER_SENDAPDU_FN sendApduFn;
-  LC_DRIVER_CONNECTSLOT_FN connectSlotFn;
-  LC_DRIVER_CONNECTREADER_FN connectReaderFn;
-  LC_DRIVER_DISCONNECTSLOT_FN disconnectSlotFn;
-  LC_DRIVER_DISCONNECTREADER_FN disconnectReaderFn;
-  LC_DRIVER_RESETSLOT_FN resetSlotFn;
-  LC_DRIVER_READERSTATUS_FN readerStatusFn;
-  LC_DRIVER_GETERRORTEXT_FN getErrorTextFn;
-  LC_DRIVER_READERINFO_FN readerInfoFn;
-  LC_DRIVER_CREATEREADER_FN createReaderFn;
+  LCD_DRIVER_SENDAPDU_FN sendApduFn;
+  LCD_DRIVER_CONNECTSLOT_FN connectSlotFn;
+  LCD_DRIVER_CONNECTREADER_FN connectReaderFn;
+  LCD_DRIVER_DISCONNECTSLOT_FN disconnectSlotFn;
+  LCD_DRIVER_DISCONNECTREADER_FN disconnectReaderFn;
+  LCD_DRIVER_RESETSLOT_FN resetSlotFn;
+  LCD_DRIVER_READERSTATUS_FN readerStatusFn;
+  LCD_DRIVER_GETERRORTEXT_FN getErrorTextFn;
+  LCD_DRIVER_READERINFO_FN readerInfoFn;
+  LCD_DRIVER_CREATEREADER_FN createReaderFn;
+
+  LCD_DRIVER_HANDLEREQUEST_FN handleRequestFn;
 };
 
 
-int LC_Driver__Work(LC_DRIVER *d, int timeout, int maxMsg);
+int LCD_Driver__Work(LCD_DRIVER *d, int timeout, int maxMsg);
 
 
-LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
+LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
                                                int argc, char **argv);
 
-int LC_Driver_ReplaceVar(const char *path,
+int LCD_Driver_ReplaceVar(const char *path,
                          const char *var,
                          const char *value,
                          GWEN_BUFFER *nbuf);
 
 GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-  LC_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
+  LCD_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
                        void *user_data);
 
 
-int LC_Driver_HandleStartReader(LC_DRIVER *d,
+int LCD_Driver_HandleRequest(LCD_DRIVER *d,
+                             GWEN_TYPE_UINT32 rid,
+                             const char *name,
+                             GWEN_DB_NODE *dbReq);
+
+
+int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
+                                 GWEN_TYPE_UINT32 rid,
+                                 GWEN_DB_NODE *dbReq);
+int LCD_Driver_HandleStopReader(LCD_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq);
-int LC_Driver_HandleStopReader(LC_DRIVER *d,
+int LCD_Driver_HandleResetCard(LCD_DRIVER *d,
                                GWEN_TYPE_UINT32 rid,
                                GWEN_DB_NODE *dbReq);
-int LC_Driver_HandleResetCard(LC_DRIVER *d,
-                              GWEN_TYPE_UINT32 rid,
-                              GWEN_DB_NODE *dbReq);
 
-int LC_Driver_HandleCardCommand(LC_DRIVER *d,
+int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
+                                 GWEN_TYPE_UINT32 rid,
+                                 GWEN_DB_NODE *dbReq);
+
+int LCD_Driver_HandleStopDriver(LCD_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq);
-
-int LC_Driver_HandleStopDriver(LC_DRIVER *d,
-                               GWEN_TYPE_UINT32 rid,
-                               GWEN_DB_NODE *dbReq);
 
 
 #endif /* CHIPCARD_DRIVER_DRIVER_P_H */

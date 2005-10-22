@@ -26,7 +26,7 @@
 typedef struct LCCMD_COMMANDMANAGER LCCMD_COMMANDMANAGER;
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/common/card.h>
+#include "common/card.h"
 
 
 LCCMD_COMMANDMANAGER *LCCMD_CommandManager_new();

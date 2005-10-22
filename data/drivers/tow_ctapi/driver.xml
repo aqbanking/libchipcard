@@ -29,7 +29,7 @@
   </vars>
 
   <readers>
-    <reader name="tow_cdm" com="serial" >
+    <reader name="tow_cdm" busType="serial" >
       <short>Towitoko Chipdrive Micro (Serial)</short>
       <ports>
         <port value="0">COM1</port>
@@ -46,8 +46,15 @@
       <image>tow_cdm.jpg</image>
     </reader>
 
-    <reader name="tow_usb" com="USBSerial" vendor="0x067b" product="0x2303">
+    <reader name="tow_usb" busType="UsbTty" 
+            vendor="0x067b" product="0x2303">
       <short>Towitoko Chipdrive Micro (USB)</short>
+
+      <autoport>
+        <mode>deviceId</mode>
+        <offset>32768</offset>
+      </autoport>
+      
       <ports>
         <port value="0x8000">USB0</port>
         <port value="0x8001">USB1</port>

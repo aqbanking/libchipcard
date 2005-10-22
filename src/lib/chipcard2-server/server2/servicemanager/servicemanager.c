@@ -63,7 +63,7 @@ int LCSV_ServiceManager_Init(LCSV_SERVICEMANAGER *svm, GWEN_DB_NODE *db) {
   GWEN_DB_NODE *dbT;
   const char *p;
 
-  DBG_INFO(0, "Initializing service manager");
+  DBG_INFO(0, "Initialising service manager");
   assert(svm);
 
   /* preset with reasonable values */

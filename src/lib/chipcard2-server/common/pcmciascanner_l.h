@@ -11,24 +11,13 @@
  ***************************************************************************/
 
 
+#ifndef CHIPCARD_SERVER_PCMCIASCANNER_L_H
+#define CHIPCARD_SERVER_PCMCIASCANNER_L_H
 
-#ifndef CHIPCARD_SERVER_CARD_L_H
-#define CHIPCARD_SERVER_CARD_L_H
+#include "devmonitor.h"
 
-#include <chipcard2-server/server/card.h>
-#include "commands/cardcontext_l.h"
-
-
-LC_CARDCONTEXT *LC_Card_GetContext(const LC_CARD *cd);
-
-/**
- * Takes over ownership of the card context.
- */
-void LC_Card_SetContext(LC_CARD *cd, LC_CARDCONTEXT *ctx);
-
-#endif /* CHIPCARD_SERVER_CARD_L_H */
+LC_DEVSCANNER *LC_PcmciaScanner_new();
 
 
 
-
-
+#endif /* CHIPCARD_SERVER_PCMCIASCANNER_L_H */

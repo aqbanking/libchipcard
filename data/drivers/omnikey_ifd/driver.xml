@@ -27,7 +27,8 @@
 
   <readers>
   
-    <reader name="omnikey_cm2020" com="USB" vendor="0x076b" product="0x0596" >
+    <reader name="omnikey_cm2020" busType="UsbRaw" 
+            vendor="0x076b" product="0x0596" >
       <short>Omnikey CardMan 2020</short>
       <!--
         <flags>
@@ -36,7 +37,8 @@
       -->
     </reader>
 
-    <reader name="omnikey_cm6020" com="USB" vendor="0x076b" product="0x1784" >
+    <reader name="omnikey_cm6020" busType="UsbRaw" 
+            vendor="0x076b" product="0x1784" >
       <short>Omnikey CardMan 6020</short>
       <!--
         <flags>
@@ -45,7 +47,8 @@
       -->
     </reader>
 
-    <reader name="fsc_usb" com="USB" vendor="0x08d4" product="0x0009" >
+    <reader name="fsc_usb" busType="UsbRaw" 
+            vendor="0x08d4" product="0x0009" >
       <short>FSC USB Smartcard Reader</short>
       <!--
         <flags>

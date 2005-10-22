@@ -29,7 +29,7 @@
 
 #include "chipcardd2_p.h"
 #include <gwenhywfar/directory.h>
-#include <chipcard2-server/common/driverinfo.h>
+#include "common/driverinfo.h"
 
 
 int addReader(ARGUMENTS *args) {
@@ -39,6 +39,7 @@ int addReader(ARGUMENTS *args) {
   GWEN_DB_NODE *dbReader;
   GWEN_DB_NODE *dbNewDriver;
   GWEN_DB_NODE *dbNewReader;
+  GWEN_DB_NODE *dbDeviceManager;
   GWEN_DB_NODE *dbTmp;
   int rport;
   FILE *f;
@@ -428,8 +429,8 @@ int addReader(ARGUMENTS *args) {
   GWEN_DB_SetIntValue(dbNewReader, GWEN_DB_FLAGS_DEFAULT, "port", rport);
   GWEN_DB_SetIntValue(dbNewReader, GWEN_DB_FLAGS_DEFAULT, "slots",
                       GWEN_DB_GetIntValue(dbReader, "slots", 0, 1));
-  GWEN_DB_SetCharValue(dbNewReader, GWEN_DB_FLAGS_DEFAULT, "comType",
-                       GWEN_DB_GetCharValue(dbReader, "comType",0,"serial"));
+  GWEN_DB_SetCharValue(dbNewReader, GWEN_DB_FLAGS_DEFAULT, "busType",
+                       GWEN_DB_GetCharValue(dbReader, "busType",0,"serial"));
   for (i=0; ; i++) {
     s=GWEN_DB_GetCharValue(dbReader, "flags", i, 0);
     if (!s)
@@ -437,7 +438,10 @@ int addReader(ARGUMENTS *args) {
     GWEN_DB_SetCharValue(dbNewReader, GWEN_DB_FLAGS_DEFAULT, "flags", s);
   }
 
-  GWEN_DB_AddGroup(dbConfig, dbNewDriver);
+  dbDeviceManager=GWEN_DB_GetGroup(dbConfig, GWEN_DB_FLAGS_DEFAULT,
+                                   "DeviceManager");
+  assert(dbDeviceManager);
+  GWEN_DB_AddGroup(dbDeviceManager, dbNewDriver);
 
   if (GWEN_Directory_GetPath(args->configFile, GWEN_PATH_FLAGS_VARIABLE)) {
     fprintf(stderr,

@@ -55,7 +55,7 @@ void LCCM_CardManager_free(LCCM_CARDMANAGER *cm) {
 int LCCM_CardManager_Init(LCCM_CARDMANAGER *cm, GWEN_DB_NODE *dbConfig) {
   GWEN_DB_NODE *dbT;
 
-  DBG_INFO(0, "Initializing card manager");
+  DBG_INFO(0, "Initialising card manager");
   assert(cm);
 
   cm->unusedTimeout=LCCM_CARDMANAGER_DEF_UNUSED_TIMEOUT;
@@ -292,7 +292,7 @@ int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm){
 
   assert(cm);
 
-  DBG_ERROR(0, "CardManager: Working");
+  DBG_VERBOUS(0, "CardManager: Working");
 
   card=LCCO_Card_List_First(cm->cards);
   while(card) {

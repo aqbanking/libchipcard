@@ -18,10 +18,10 @@ typedef struct DRIVER_IFDOLD DRIVER_IFDOLD;
 
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
-LC_DRIVER *DriverIFDOld_new(int argc, char **argv);
-int DriverIFDOld_Start(LC_DRIVER *d);
+LCD_DRIVER *DriverIFDOld_new(int argc, char **argv);
+int DriverIFDOld_Start(LCD_DRIVER *d);
 
 #endif /* CHIPCARD_DRIVER_IFDOLD_H */
 

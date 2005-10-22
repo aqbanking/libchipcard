@@ -17,8 +17,10 @@
 #define LC__DEVICE_FILE "/var/run/chipcard2/dev.state"
 
 
-typedef struct LC_DEVMONITOR LC_DEVMONITOR;
 typedef struct LC_DEVICE LC_DEVICE;
+typedef struct LC_DEVSCANNER LC_DEVSCANNER;
+typedef struct LC_DEVMONITOR LC_DEVMONITOR;
+
 
 #include <gwenhywfar/idlist.h>
 #include <gwenhywfar/misc.h>
@@ -40,18 +42,28 @@ const char *LC_Device_BusType_toString(LC_DEVICE_BUSTYPE i);
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_DEVICE, LC_Device)
-GWEN_INHERIT_FUNCTION_DEFS(LC_DEVMONITOR)
+GWEN_INHERIT_FUNCTION_DEFS(LC_DEVSCANNER)
+GWEN_LIST_FUNCTION_DEFS(LC_DEVSCANNER, LC_DevScanner)
 
 
-typedef int (*LC_DEVMONITOR_READ_DEVS_FN)(LC_DEVMONITOR *um,
+typedef int (*LC_DEVSCANNER_READ_DEVS_FN)(LC_DEVSCANNER *um,
                                           LC_DEVICE_LIST *dl);
 
 
-LC_DEVMONITOR *LC_DevMonitor_new();
-void LC_DevMonitor_SetReadDevsFn(LC_DEVMONITOR *um,
-                                 LC_DEVMONITOR_READ_DEVS_FN fn);
+LC_DEVSCANNER *LC_DevScanner_new();
+void LC_DevScanner_SetReadDevsFn(LC_DEVSCANNER *um,
+                                 LC_DEVSCANNER_READ_DEVS_FN fn);
 
+void LC_DevScanner_free(LC_DEVSCANNER *um);
+
+int LC_DevScanner_Scan(LC_DEVSCANNER *um,
+                       LC_DEVICE_LIST *devList);
+
+
+LC_DEVMONITOR *LC_DevMonitor_new();
 void LC_DevMonitor_free(LC_DEVMONITOR *um);
+
+void LC_DevMonitor_AddScanner(LC_DEVMONITOR *um, LC_DEVSCANNER *sc);
 
 int LC_DevMonitor_Scan(LC_DEVMONITOR *um);
 
@@ -84,6 +96,11 @@ LC_DEVICE *LC_Device_Get(LC_DEVICE_LIST *dl,
 
 GWEN_TYPE_UINT32 LC_Device_GetDevicePos(const LC_DEVICE *ud);
 void LC_Device_SetDevicePos(LC_DEVICE *ud, GWEN_TYPE_UINT32 i);
+
+const char *LC_Device_GetPath(const LC_DEVICE *ud);
+void LC_Device_SetPath(LC_DEVICE *ud, const char *s);
+
+LC_DEVICE_BUSTYPE LC_Device_GetBusType(const LC_DEVICE *ud);
 GWEN_TYPE_UINT32 LC_Device_GetBusId(const LC_DEVICE *ud);
 GWEN_TYPE_UINT32 LC_Device_GetDeviceId(const LC_DEVICE *ud);
 GWEN_TYPE_UINT32 LC_Device_GetVendorId(const LC_DEVICE *ud);

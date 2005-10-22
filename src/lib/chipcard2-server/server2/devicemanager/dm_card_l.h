@@ -16,7 +16,7 @@
 #define CHIPCARD_SERVER_DM_CARD_L_H
 
 #include "dm_reader_l.h"
-#include <chipcard2-server/common/card.h>
+#include "common/card.h"
 
 void LCDM_Card_extend(LCCO_CARD *cd,
                       LCDM_READER *r);

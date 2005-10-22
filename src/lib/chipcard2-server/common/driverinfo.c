@@ -78,7 +78,7 @@ int LC_DriverInfo_FindFile(GWEN_STRINGLIST *slDirs,
                 if (S_ISREG(st.st_mode)) {
                   GWEN_Directory_Close(dDir);
                   GWEN_Directory_free(dDir);
-                  DBG_INFO(0, "File found: %s", GWEN_Buffer_GetStart(nbuf));
+                  DBG_DEBUG(0, "File found: %s", GWEN_Buffer_GetStart(nbuf));
                   return 0;
                 }
                 else {
@@ -117,8 +117,8 @@ void LC_DriverInfo_SampleDirs(const char *dataDir, GWEN_STRINGLIST *sl) {
 
   d=GWEN_Directory_new();
   GWEN_Buffer_AppendString(buf, dataDir);
-  GWEN_Buffer_AppendByte(buf, '/');
-  GWEN_Buffer_AppendString(buf, "drivers");
+  //GWEN_Buffer_AppendByte(buf, '/');
+  //GWEN_Buffer_AppendString(buf, "drivers");
   dpos=GWEN_Buffer_GetPos(buf);
   if (!GWEN_Directory_Open(d, GWEN_Buffer_GetStart(buf))) {
     char buffer[256];
@@ -404,6 +404,10 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
 		      "slots",
 		      atoi(GWEN_XMLNode_GetProperty(node, "slots", "1")));
 
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
+                      "ctn",
+                      atoi(GWEN_XMLNode_GetProperty(node, "ctn", "1")));
+
   if (1==sscanf(GWEN_XMLNode_GetProperty(node, "busId", "-1"),
                 "%i", &i))
     if (i!=-1)
@@ -470,6 +474,63 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
       }
       n=GWEN_XMLNode_FindNextTag(n, "port", 0, 0);
     } /* while */
+  }
+
+  /* read autoport setings */
+  n=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "autoport");
+  if (n) {
+    GWEN_DB_NODE *dbAutoPort;
+    const char *s;
+    int i;
+
+    dbAutoPort=GWEN_DB_GetGroup(db, GWEN_DB_FLAGS_OVERWRITE_GROUPS,
+                                "autoport");
+
+    s=GWEN_XMLNode_GetCharValue(n, "mode", 0);
+    if (s) {
+      GWEN_DB_SetCharValue(dbAutoPort,
+                           GWEN_DB_FLAGS_DEFAULT,
+                           "mode", s);
+    }
+
+    /* split busorder (for mode=="pos") */
+    s=GWEN_XMLNode_GetCharValue(n, "busorder", 0);
+    if (s) {
+      char *scopy;
+      char *psc;
+
+      scopy=strdup(s);
+
+      psc=scopy;
+
+      while(psc && *psc) {
+        char *p;
+
+        p=strchr(psc, ' ');
+        if (p)
+          *(p++)=0;
+        GWEN_DB_SetCharValue(dbAutoPort,
+                             GWEN_DB_FLAGS_DEFAULT,
+                             "busorder", psc);
+        psc=p;
+      }
+      free(scopy);
+    }
+
+    /* sortkey (for mode=="pos") */
+    s=GWEN_XMLNode_GetCharValue(n, "sortkey", 0);
+    if (s) {
+      GWEN_DB_SetCharValue(dbAutoPort,
+                           GWEN_DB_FLAGS_DEFAULT,
+                           "sortkey", s);
+    }
+
+    /* offset */
+    i=GWEN_XMLNode_GetIntValue(n, "offset", 0);
+    GWEN_DB_SetIntValue(dbAutoPort,
+                        GWEN_DB_FLAGS_DEFAULT,
+                        "offset", i);
+
   }
 
   return db;

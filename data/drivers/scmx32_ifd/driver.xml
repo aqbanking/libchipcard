@@ -27,11 +27,20 @@
 
   <readers>
   
-    <reader name="scm" com="USB" vendor="0x04e6" product="0xe003" >
+    <reader name="scm" busType="UsbRaw" 
+            vendor="0x04e6" product="0xe003" >
       <short>SCM Chipdrive Pinpad X32</short>
       <flags>
         <flag>keypad</flag>
       </flags>
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>0</offset>
+      </autoport>
+
       <image>scm_pinpadX32.jpg</image>
     </reader>
     

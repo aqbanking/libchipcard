@@ -1,23 +1,24 @@
 INCLUDES=@all_includes@
 
-noinst_LTLIBRARIES=libdriver.la
+lib_LTLIBRARIES=libchipcard2d.la
 
 noinst_HEADERS=\
+  driver_l.h \
   driver_p.h \
+  reader_l.h \
   reader_p.h \
+  slot_l.h \
   slot_p.h
 
 
-iheaderdir=${includedir}/chipcard2-server/driver
-iheader_HEADERS=\
-  driver.h \
-  reader.h \
-  slot.h
-
-libdriver_la_SOURCES=\
+libchipcard2d_la_SOURCES=\
   driver.c \
   reader.c \
   slot.c
+
+libchipcard2d_la_LIBADD= \
+  ../common/libcommon.la \
+  ../../sharedstuff/libsharedstuff.la @gwenhywfar_libs@
 
 
 MAINTAINERCLEANFILES=Makefile.in

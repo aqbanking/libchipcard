@@ -17,12 +17,12 @@
 #include "driverctapi.h"
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
 
-#define LC_DRIVERCTAPI_DAD_CT   1
+#define LCD_DRIVERCTAPI_DAD_CT   1
 
-#define LC_DRIVERCTAPI_SAD_HOST 2
+#define LCD_DRIVERCTAPI_SAD_HOST 2
 
 #define DRIVER_CTAPI_ERROR_BAD_RESPONSE          1
 #define DRIVER_CTAPI_ERROR_NO_SLOTS_CONNECTED    2
@@ -60,30 +60,30 @@ void DriverCTAPI_freeData(void *bp, void *p);
 
 
 int DriverCTAPI_TransformDAD(int i);
-GWEN_TYPE_UINT32  DriverCTAPI_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32  DriverCTAPI_SendAPDU(LCD_DRIVER *d,
                                        int toReader,
-                                       LC_READER *r,
-                                       LC_SLOT *slot,
+                                       LCD_READER *r,
+                                       LCD_SLOT *slot,
                                        const unsigned char *apdu,
                                        unsigned int apdulen,
                                        unsigned char *buffer,
                                        int *bufferlen);
-GWEN_TYPE_UINT32  DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32  DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32  DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32  DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32  DriverCTAPI_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32  DriverCTAPI_DisconnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32  DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32  DriverCTAPI_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32  DriverCTAPI_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32  DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
 
-GWEN_TYPE_UINT32  DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r);
-const char *DriverCTAPI_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
+GWEN_TYPE_UINT32  DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
+const char *DriverCTAPI_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf);
 
-LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
+LCD_READER *DriverCTAPI_CreateReader(LCD_DRIVER *d,
                                     GWEN_TYPE_UINT32 readerId,
                                     const char *name,
                                     int port,

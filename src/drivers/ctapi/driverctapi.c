@@ -30,39 +30,39 @@
 #include <ctype.h>
 
 
-GWEN_INHERIT(LC_DRIVER, DRIVER_CTAPI)
+GWEN_INHERIT(LCD_DRIVER, DRIVER_CTAPI)
 
 
-LC_DRIVER *DriverCTAPI_new(int argc, char **argv) {
+LCD_DRIVER *DriverCTAPI_new(int argc, char **argv) {
   DRIVER_CTAPI *dct;
-  LC_DRIVER *d;
+  LCD_DRIVER *d;
   int rv;
 
-  d=LC_Driver_new(argc, argv);
+  d=LCD_Driver_new(argc, argv);
   if (!d) {
     DBG_ERROR(0, "Could not create driver, aborting");
     return 0;
   }
   GWEN_NEW_OBJECT(DRIVER_CTAPI, dct);
-  GWEN_INHERIT_SETDATA(LC_DRIVER, DRIVER_CTAPI,
+  GWEN_INHERIT_SETDATA(LCD_DRIVER, DRIVER_CTAPI,
                        d, dct,
                        DriverCTAPI_freeData);
 
-  LC_Driver_SetSendApduFn(d, DriverCTAPI_SendAPDU);
-  LC_Driver_SetConnectSlotFn(d, DriverCTAPI_ConnectSlot);
-  LC_Driver_SetDisconnectSlotFn(d, DriverCTAPI_DisconnectSlot);
-  LC_Driver_SetConnectReaderFn(d, DriverCTAPI_ConnectReader);
-  LC_Driver_SetDisconnectReaderFn(d, DriverCTAPI_DisconnectReader);
-  LC_Driver_SetResetSlotFn(d, DriverCTAPI_ResetSlot);
-  LC_Driver_SetReaderStatusFn(d, DriverCTAPI_ReaderStatus);
-  LC_Driver_SetReaderInfoFn(d, DriverCTAPI_ReaderInfo);
-  LC_Driver_SetCreateReaderFn(d, DriverCTAPI_CreateReader);
-  LC_Driver_SetGetErrorTextFn(d, DriverCTAPI_GetErrorText);
+  LCD_Driver_SetSendApduFn(d, DriverCTAPI_SendAPDU);
+  LCD_Driver_SetConnectSlotFn(d, DriverCTAPI_ConnectSlot);
+  LCD_Driver_SetDisconnectSlotFn(d, DriverCTAPI_DisconnectSlot);
+  LCD_Driver_SetConnectReaderFn(d, DriverCTAPI_ConnectReader);
+  LCD_Driver_SetDisconnectReaderFn(d, DriverCTAPI_DisconnectReader);
+  LCD_Driver_SetResetSlotFn(d, DriverCTAPI_ResetSlot);
+  LCD_Driver_SetReaderStatusFn(d, DriverCTAPI_ReaderStatus);
+  LCD_Driver_SetReaderInfoFn(d, DriverCTAPI_ReaderInfo);
+  LCD_Driver_SetCreateReaderFn(d, DriverCTAPI_CreateReader);
+  LCD_Driver_SetGetErrorTextFn(d, DriverCTAPI_GetErrorText);
 
-  rv=LC_Driver_Init(d, argc, argv);
+  rv=LCD_Driver_Init(d, argc, argv);
   if (rv) {
     DBG_ERROR(0, "Could not init driver (%d)", rv);
-    LC_Driver_free(d);
+    LCD_Driver_free(d);
     return 0;
   }
   return d;
@@ -88,26 +88,26 @@ void DriverCTAPI_freeData(void *bp, void *p) {
 
 
 
-int DriverCTAPI_Start(LC_DRIVER *d) {
+int DriverCTAPI_Start(LCD_DRIVER *d) {
   GWEN_ERRORCODE err;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
   GWEN_LibLoader_free(dct->libLoader);
   dct->libLoader=GWEN_LibLoader_new();
   err=GWEN_LibLoader_OpenLibrary(dct->libLoader,
-                                 LC_Driver_GetLibraryFile(d));
+                                 LCD_Driver_GetLibraryFile(d));
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Loading library")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Loading library")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -117,11 +117,11 @@ int DriverCTAPI_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -131,11 +131,11 @@ int DriverCTAPI_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
@@ -145,16 +145,16 @@ int DriverCTAPI_Start(LC_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LC_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
-    LC_Driver_Disconnect(d);
+    LCD_Driver_Disconnect(d);
     return -1;
   }
 
   /* send status report to server */
-  if (LC_Driver_Connect(d, "OK", "Library loaded")) {
+  if (LCD_Driver_Connect(d, "OK", "Library loaded")) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;
@@ -165,12 +165,12 @@ int DriverCTAPI_Start(LC_DRIVER *d) {
 
 
 
-const char *DriverCTAPI_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverCTAPI_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
   const char *s;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
   switch ((char)(err & 0xff)) {
@@ -231,10 +231,10 @@ int DriverCTAPI_TransformDAD(int i) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
                                       int toReader,
-                                      LC_READER *r,
-                                      LC_SLOT *slot,
+                                      LCD_READER *r,
+                                      LCD_SLOT *slot,
                                       const unsigned char *apdu,
                                       unsigned int apdulen,
                                       unsigned char *buffer,
@@ -247,7 +247,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
   const char *lg;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
   assert(r);
@@ -255,17 +255,17 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
   assert(apdulen>3);
   assert(buffer);
 
-  sad=LC_DRIVERCTAPI_SAD_HOST;
+  sad=LCD_DRIVERCTAPI_SAD_HOST;
   if (toReader)
-    dad=LC_DRIVERCTAPI_DAD_CT;
+    dad=LCD_DRIVERCTAPI_DAD_CT;
   else {
     if (slot)
-      dad=DriverCTAPI_TransformDAD(LC_Slot_GetSlotNum(slot));
+      dad=DriverCTAPI_TransformDAD(LCD_Slot_GetSlotNum(slot));
     else
-      dad=LC_DRIVERCTAPI_DAD_CT;
+      dad=LCD_DRIVERCTAPI_DAD_CT;
   }
 
-  lg=LC_Reader_GetLogger(r);
+  lg=LCD_Reader_GetLogger(r);
 
   DBG_INFO(lg,
            "Sending command:");
@@ -324,36 +324,36 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LC_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   unsigned char apdu[]={0x20, 0x12, 0x01, 0x01, 0x00};
   unsigned char responseBuffer[300];
   int lr;
   DRIVER_CTAPI *dct;
-  LC_READER *r;
+  LCD_READER *r;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  r=LC_Slot_GetReader(sl);
+  r=LCD_Slot_GetReader(sl);
   assert(r);
-  if (!(LC_Reader_GetStatus(r) & LC_READER_STATUS_UP)) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Reader has not been initialized");
+  if (!(LCD_Reader_GetStatus(r) & LCD_READER_STATUS_UP)) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Reader has not been initialized");
     return DRIVER_CTAPI_ERROR_READER_INIT;
   }
 
-  if (!(LC_Slot_GetStatus(sl) & LC_SLOT_STATUS_CARD_INSERTED)) {
-    DBG_INFO(LC_Reader_GetLogger(r),
+  if (!(LCD_Slot_GetStatus(sl) & LCD_SLOT_STATUS_CARD_INSERTED)) {
+    DBG_INFO(LCD_Reader_GetLogger(r),
              "No card in slot, will not connect");
     return 0;
   }
 
-  DBG_INFO(LC_Reader_GetLogger(r),
-           "Connecting slot %d", LC_Slot_GetSlotNum(sl));
-  apdu[2]=LC_Slot_GetSlotNum(sl)+1;
+  DBG_INFO(LCD_Reader_GetLogger(r),
+           "Connecting slot %d", LCD_Slot_GetSlotNum(sl));
+  apdu[2]=LCD_Slot_GetSlotNum(sl)+1;
 
   lr=sizeof(responseBuffer);
-  if (LC_Driver_SendAPDU(d, 1, r, sl, apdu, sizeof(apdu),
+  if (LCD_Driver_SendAPDU(d, 1, r, sl, apdu, sizeof(apdu),
                          responseBuffer,&lr)){
     return -1;
   }
@@ -364,43 +364,43 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
     atr=GWEN_Buffer_new(0, lr-2, 0, 1);
     GWEN_Buffer_AppendBytes(atr, (const char*)responseBuffer, lr-2);
-    LC_Slot_SetAtr(sl, atr);
+    LCD_Slot_SetAtr(sl, atr);
   }
   if (responseBuffer[lr-2]==0x90) {
     if (responseBuffer[lr-1]==1)
-      LC_Slot_AddFlags(sl, LC_SLOT_FLAGS_PROCESSORCARD);
+      LCD_Slot_AddFlags(sl, LCD_SLOT_FLAGS_PROCESSORCARD);
     else
-      LC_Slot_SubFlags(sl, LC_SLOT_FLAGS_PROCESSORCARD);
-    LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+      LCD_Slot_SubFlags(sl, LCD_SLOT_FLAGS_PROCESSORCARD);
+    LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   else {
-    DBG_INFO(LC_Reader_GetLogger(r),
+    DBG_INFO(LCD_Reader_GetLogger(r),
              "CTAPI: Soft error SW1=%02x, SW2=%02x",
              (unsigned char)responseBuffer[lr-2],
              (unsigned char)responseBuffer[lr-1]);
-    LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+    LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   unsigned char apdu[]={0x20, 0x14, 0x01, 0x00, 0x00};
   unsigned char responseBuffer[300];
   int lr;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  DBG_INFO(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
-           "Disconnecting slot %d", LC_Slot_GetSlotNum(sl));
+  DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+           "Disconnecting slot %d", LCD_Slot_GetSlotNum(sl));
 
-  apdu[2]=LC_Slot_GetSlotNum(sl)+1;
+  apdu[2]=LCD_Slot_GetSlotNum(sl)+1;
   lr=sizeof(responseBuffer);
-  if (LC_Driver_SendAPDU(d, 1, LC_Slot_GetReader(sl), sl, apdu, sizeof(apdu),
+  if (LCD_Driver_SendAPDU(d, 1, LCD_Slot_GetReader(sl), sl, apdu, sizeof(apdu),
                          responseBuffer,&lr)){
     return -1;
   }
@@ -409,35 +409,35 @@ GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl) {
     DBG_NOTICE(0, "Card disconnected");
   }
   else {
-    DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+    DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
                "CTAPI: Soft error SW1=%02x, SW2=%02x",
                (unsigned char)responseBuffer[lr-2],
                (unsigned char)responseBuffer[lr-1]);
   }
-  //LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
-  LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+  //LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
+  LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
+GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   GWEN_TYPE_UINT32 currStatus;
   int rv;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  DBG_NOTICE(LC_Reader_GetLogger(LC_Slot_GetReader(sl)),
+  DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
              "Resetting slot");
-  currStatus=LC_Slot_GetStatus(sl);
-  rv=LC_Driver_DisconnectSlot(d, sl);
-  DBG_ERROR(LC_Reader_GetLogger(LC_Slot_GetReader(sl)), "Slot reset");
+  currStatus=LCD_Slot_GetStatus(sl);
+  rv=LCD_Driver_DisconnectSlot(d, sl);
+  DBG_ERROR(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)), "Slot reset");
   GWEN_Socket_Select(0, 0, 0, 1000);
-  if (currStatus & LC_SLOT_STATUS_CARD_CONNECTED) {
-    rv|=LC_Driver_ConnectSlot(d, sl);
+  if (currStatus & LCD_SLOT_STATUS_CARD_CONNECTED) {
+    rv|=LCD_Driver_ConnectSlot(d, sl);
   }
   else
     rv=0;
@@ -446,29 +446,29 @@ GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LC_DRIVER *d, LC_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x80, 0x00};
   unsigned char responseBuffer[300];
   int lr;
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slList;
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slList;
   unsigned char *p;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
   sl=0;
-  DBG_DEBUG(LC_Reader_GetLogger(r),
+  DBG_DEBUG(LCD_Reader_GetLogger(r),
             "Checking reader status for reader \"%08x\"",
-            LC_Reader_GetReaderId(r));
+            LCD_Reader_GetReaderId(r));
 
   lr=sizeof(responseBuffer);
-  if (LC_Driver_SendAPDU(d, 1,
+  if (LCD_Driver_SendAPDU(d, 1,
                          r,
                          sl, apdu, sizeof(apdu), responseBuffer,&lr)){
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Error sending APDU");
     return DRIVER_CTAPI_ERROR_NO_SLOTS_AVAILABLE;
   }
@@ -480,45 +480,45 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
   else
     p=responseBuffer;
 
-  slList=LC_Reader_GetSlots(r);
-  sl=LC_Slot_List_First(slList);
+  slList=LCD_Reader_GetSlots(r);
+  sl=LCD_Slot_List_First(slList);
   while(sl) {
     int slotNum;
 
-    slotNum=LC_Slot_GetSlotNum(sl);
+    slotNum=LCD_Slot_GetSlotNum(sl);
     if (slotNum>=lr-2) {
-      DBG_ERROR(LC_Reader_GetLogger(r),
+      DBG_ERROR(LCD_Reader_GetLogger(r),
                 "No response for slot %d", slotNum);
     }
     else {
       if ((p[slotNum] & 0x1)) {
-        DBG_DEBUG(LC_Reader_GetLogger(r),
+        DBG_DEBUG(LCD_Reader_GetLogger(r),
                   "Slot %d has a card inserted", slotNum);
-        LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+        LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
       }
       else {
-        DBG_DEBUG(LC_Reader_GetLogger(r),
+        DBG_DEBUG(LCD_Reader_GetLogger(r),
                   "Slot %d has no card inserted", slotNum);
-        LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_INSERTED);
+        LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
       }
       if (((p[slotNum] & 0xc)==0x4)) {
-        DBG_DEBUG(LC_Reader_GetLogger(r),
+        DBG_DEBUG(LCD_Reader_GetLogger(r),
                   "Slot %d is connected", slotNum);
-        LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+        LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
       }
       else if (((p[slotNum] & 0xc)==0x0) && (p[slotNum] & 0x1)) {
-        DBG_DEBUG(LC_Reader_GetLogger(r),
+        DBG_DEBUG(LCD_Reader_GetLogger(r),
                   "No connection info, assuming slot %d is connected",
                   slotNum);
-        LC_Slot_AddStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+        LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
       }
       else {
-        DBG_DEBUG(LC_Reader_GetLogger(r),
+        DBG_DEBUG(LCD_Reader_GetLogger(r),
                   "Slot %d is not connected", slotNum);
-        LC_Slot_SubStatus(sl, LC_SLOT_STATUS_CARD_CONNECTED);
+        LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
       }
     }
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   return 0;
@@ -526,7 +526,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LC_DRIVER *d, LC_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x46, 0x00};
   unsigned char responseBuffer[300];
@@ -536,26 +536,26 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  DBG_NOTICE(LC_Reader_GetLogger(r),
+  DBG_NOTICE(LCD_Reader_GetLogger(r),
              "Requesting information about reader \"%08x\"",
-             LC_Reader_GetReaderId(r));
+             LCD_Reader_GetReaderId(r));
 
   lr=sizeof(responseBuffer);
-  if (LC_Driver_SendAPDU(d, 1,
+  if (LCD_Driver_SendAPDU(d, 1,
                          r, 0, apdu, sizeof(apdu), responseBuffer, &lr)){
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Error sending APDU");
     return DRIVER_CTAPI_ERROR_GENERIC;
   }
 
   if (lr<17) {
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Too short response when requesting reader information");
     GWEN_Text_LogString((const char*)responseBuffer, lr,
-                        LC_Reader_GetLogger(r),
+                        LCD_Reader_GetLogger(r),
                         GWEN_LoggerLevelError);
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
   }
@@ -563,11 +563,11 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
   /* check whether a complete tag is returned */
   if (responseBuffer[0]!=0x46 ||
       responseBuffer[1]!=lr-4) {
-    DBG_WARN(LC_Reader_GetLogger(r),
+    DBG_WARN(LCD_Reader_GetLogger(r),
              "No/bad tag received when requesting reader information (%02x)",
              responseBuffer[0]);
     GWEN_Text_LogString((const char*)responseBuffer, lr,
-                        LC_Reader_GetLogger(r),
+                        LCD_Reader_GetLogger(r),
                         GWEN_LoggerLevelError);
     p=responseBuffer;
   }
@@ -611,19 +611,19 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LC_DRIVER *d, LC_READER *r,
 
 
 
-LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
+LCD_READER *DriverCTAPI_CreateReader(LCD_DRIVER *d,
                                     GWEN_TYPE_UINT32 readerId,
                                     const char *name,
                                     int port,
                                     unsigned int slots,
                                     GWEN_TYPE_UINT32 flags){
-  LC_READER *r;
+  LCD_READER *r;
   DRIVER_CTAPI *dct;
 
   DBG_ERROR(0, "Creating reader...");
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
   r=ReaderCTAPI_new(readerId, name, port, slots, flags,
@@ -635,49 +635,49 @@ LC_READER *DriverCTAPI_CreateReader(LC_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r) {
+GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
 #if 0
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slotList;
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slotList;
   unsigned int oks;
 #endif
   char rvd;
   DRIVER_CTAPI *dct;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
   assert(r);
 
-  DBG_NOTICE(LC_Reader_GetLogger(r),
+  DBG_NOTICE(LCD_Reader_GetLogger(r),
              "Initializing CTAPI driver with %d, %d (%04x)",
-             ReaderCTAPI_GetCtn(r), LC_Reader_GetPort(r),
-             LC_Reader_GetPort(r));
-  rvd=dct->initFn(ReaderCTAPI_GetCtn(r), LC_Reader_GetPort(r));
+             ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r),
+             LCD_Reader_GetPort(r));
+  rvd=dct->initFn(ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r));
   if (rvd!=0) {
-    DBG_ERROR(LC_Reader_GetLogger(r),
+    DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not init reader \"%s\" at port %d : %d",
-              LC_Reader_GetName(r),
-              LC_Reader_GetPort(r),
+              LCD_Reader_GetName(r),
+              LCD_Reader_GetPort(r),
               rvd);
-    LC_Reader_SubStatus(r, LC_READER_STATUS_UP);
+    LCD_Reader_SubStatus(r, LCD_READER_STATUS_UP);
     return rvd;
   }
-  LC_Reader_AddStatus(r, LC_READER_STATUS_UP);
+  LCD_Reader_AddStatus(r, LCD_READER_STATUS_UP);
 
 #if 0
-  slotList=LC_Reader_GetSlots(r);
+  slotList=LCD_Reader_GetSlots(r);
   assert(slotList);
   oks=0;
-  sl=LC_Slot_List_First(slotList);
+  sl=LCD_Slot_List_First(slotList);
   while(sl) {
-    if (!LC_Driver_ConnectSlot(d, sl))
+    if (!LCD_Driver_ConnectSlot(d, sl))
       oks++;
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   if (!oks) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Could not connect any slot");
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Could not connect any slot");
     return DRIVER_CTAPI_ERROR_NO_SLOTS_CONNECTED;
   }
 #endif
@@ -686,46 +686,46 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LC_DRIVER *d, LC_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_DisconnectReader(LC_DRIVER *d, LC_READER *r) {
-  LC_SLOT *sl;
-  LC_SLOT_LIST *slotList;
+GWEN_TYPE_UINT32 DriverCTAPI_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
+  LCD_SLOT *sl;
+  LCD_SLOT_LIST *slotList;
   unsigned int oks;
   DRIVER_CTAPI *dct;
   char rvd;
 
   assert(d);
-  dct=GWEN_INHERIT_GETDATA(LC_DRIVER, DRIVER_CTAPI, d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  DBG_NOTICE(LC_Reader_GetLogger(r),
-             "Disconnecting reader %s", LC_Reader_GetName(r));
+  DBG_NOTICE(LCD_Reader_GetLogger(r),
+             "Disconnecting reader %s", LCD_Reader_GetName(r));
 
   assert(r);
-  slotList=LC_Reader_GetSlots(r);
+  slotList=LCD_Reader_GetSlots(r);
   assert(slotList);
   oks=0;
-  sl=LC_Slot_List_First(slotList);
+  sl=LCD_Slot_List_First(slotList);
   while(sl) {
-    if (!LC_Driver_DisconnectSlot(d, sl))
+    if (!LCD_Driver_DisconnectSlot(d, sl))
       oks++;
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
-  DBG_INFO(LC_Reader_GetLogger(r),
-           "Deinitializing reader %s", LC_Reader_GetName(r));
+  DBG_INFO(LCD_Reader_GetLogger(r),
+           "Deinitializing reader %s", LCD_Reader_GetName(r));
   rvd=dct->closeFn(ReaderCTAPI_GetCtn(r));
   if (rvd!=0) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Could not deinit reader \"%s\"",
-              LC_Reader_GetName(r));
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Could not deinit reader \"%s\"",
+              LCD_Reader_GetName(r));
     return rvd;
   }
   else {
-    DBG_INFO(LC_Reader_GetLogger(r),
-             "Deinitializing reader %s: done", LC_Reader_GetName(r));
+    DBG_INFO(LCD_Reader_GetLogger(r),
+             "Deinitializing reader %s: done", LCD_Reader_GetName(r));
   }
 
   if (!oks) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Could not disconnect any slot");
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Could not disconnect any slot");
     return DRIVER_CTAPI_ERROR_NO_SLOTS_DISCONNECTED;
   }
   return 0;

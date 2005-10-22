@@ -101,7 +101,7 @@ int LCS_Server_Work(LCS_SERVER *cs) {
   int rv;
 
   for (;;) {
-    DBG_INFO(0, "Letting IPC manager work");
+    DBG_VERBOUS(0, "Letting IPC manager work");
     rv=GWEN_IPCManager_Work(cs->ipcManager, 10);
     if (rv==0)
       done++;
@@ -110,7 +110,7 @@ int LCS_Server_Work(LCS_SERVER *cs) {
   }
 
   for (;;) {
-    DBG_INFO(0, "Handling incoming commands");
+    DBG_VERBOUS(0, "Handling incoming commands");
     rv=LCS_Server_HandleNextCommand(cs);
     if (rv==0)
       done++;
@@ -118,12 +118,12 @@ int LCS_Server_Work(LCS_SERVER *cs) {
       break;
   }
 
-  DBG_INFO(0, "Letting device manager work");
+  DBG_VERBOUS(0, "Letting device manager work");
   rv=LCDM_DeviceManager_Work(cs->deviceManager);
   if (rv!=0)
     done++;
 
-  DBG_INFO(0, "Letting request manager work");
+  DBG_VERBOUS(0, "Letting request manager work");
   rv=GWEN_IpcRequestManager_Work(cs->requestManager);
   if (rv!=1) /* "1" is correct here! */
     done++;

@@ -12,7 +12,7 @@ DEFS+=\
  -DDEF_SERVER_TRUSTEDCERTDIR=\"@libchipcard2d_config_am@/certificates/valid\"
 
 
-noinst_LTLIBRARIES=libserver2.la
+noinst_LTLIBRARIES=libchipcard2s.la
 
 noinst_HEADERS=\
   connection_l.h \
@@ -22,7 +22,7 @@ noinst_HEADERS=\
   fullserver_l.h \
   fullserver_p.h
 
-libserver2_la_SOURCES=\
+libchipcard2s_la_SOURCES=\
   connection.c \
   cs_init.c \
   cs_callbacks.c \
@@ -30,12 +30,12 @@ libserver2_la_SOURCES=\
   cs_work.c \
   fullserver.c
 
-libserver2_la_LIBADD=\
+libchipcard2s_la_LIBADD=\
   devicemanager/libdevmgr.la \
   cardmanager/libcardmgr.la \
   clientmanager/libclientmgr.la \
   commandmanager/libcommandmgr.la \
-  servicemanager/libservicemgr.la
+  servicemanager/libservicemgr.la 
 
 
 MAINTAINERCLEANFILES=Makefile.in

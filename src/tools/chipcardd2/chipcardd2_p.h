@@ -14,13 +14,13 @@
 #define CHIPCARDD2_P_H
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/server/cardserver.h>
+#include "fullserver_l.h"
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/net.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/nettransportssl.h>
-#include "cardserver_l.h"
+#include "fullserver_l.h"
 
 
 #define RETURNVALUE_PARAM   1

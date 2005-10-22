@@ -18,11 +18,11 @@ typedef struct DRIVER_CTAPI DRIVER_CTAPI;
 
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
-LC_DRIVER *DriverCTAPI_new(int argc, char **argv);
+LCD_DRIVER *DriverCTAPI_new(int argc, char **argv);
 void DriverCTAPI_free(DRIVER_CTAPI *dct);
-int DriverCTAPI_Start(LC_DRIVER *d);
+int DriverCTAPI_Start(LCD_DRIVER *d);
 
 
 

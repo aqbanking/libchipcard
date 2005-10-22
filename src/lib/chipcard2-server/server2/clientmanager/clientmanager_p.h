@@ -144,5 +144,10 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq);
 
+int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
+                                          GWEN_TYPE_UINT32 rid,
+                                          const char *name,
+                                          GWEN_DB_NODE *dbReq);
+
 
 #endif /* CHIPCARD_SERVER_CL_CLIENTMGR_P_H */

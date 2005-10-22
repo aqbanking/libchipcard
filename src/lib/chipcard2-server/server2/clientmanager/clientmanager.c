@@ -52,7 +52,7 @@ void LCCL_ClientManager_free(LCCL_CLIENTMANAGER *clm) {
 int LCCL_ClientManager_Init(LCCL_CLIENTMANAGER *clm, GWEN_DB_NODE *dbConfig) {
   GWEN_DB_NODE *dbT;
 
-  DBG_INFO(0, "Initializing client manager");
+  DBG_INFO(0, "Initialising client manager");
   assert(clm);
 
   clm->maxClientLockTime=LCCL_CLIENTMANAGER_DEF_MAX_CLIENT_LOCKTIME;
@@ -127,6 +127,9 @@ int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
   }
   else if (strcasecmp(name, "SelectCard")==0) {
     rv=LCCL_ClientManager_HandleSelectCard(clm, rid, name, dbReq);
+  }
+  else if (strcasecmp(name, "GetDriverVar")==0) {
+    rv=LCCL_ClientManager_HandleGetDriverVar(clm, rid, name, dbReq);
   }
   /* Insert more handlers here */
   else {
@@ -311,6 +314,13 @@ void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
                                              serviceName,
                                              newSt,
                                              reason);
+}
+
+
+
+int LCCL_ClientManager_GetClientCount(const LCCL_CLIENTMANAGER *clm) {
+  assert(clm);
+  return LCCL_Client_List_GetCount(clm->clients);
 }
 
 

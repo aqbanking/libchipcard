@@ -20,6 +20,7 @@
 # - Towitoko Chipdrive Pinpad
 # - Reiner SCT Cyberjack
 # - Kobil USB readers
+# and various others.
 #
 # For serial readers (or unknown readers) a driver section is needed.
 
@@ -32,6 +33,6 @@ server {
   # local server, using Unix Domain Sockets which can only be
   # connected from the very same machine
   typ="local"                 
-  addr="/tmp/.chipcard2/chipcard2.sock"
+  addr="/var/run/chipcard2.comm"
 } # server
 

@@ -46,10 +46,6 @@ struct LCDM_DRIVER {
 
   GWEN_TYPE_UINT32 ipcId;
 
-  int firstNewPort;                        /* derived from driverVars */
-  int autoPortOffset;                      /* derived from driverVars */
-  LCDM_DRIVER_AUTOPORTMODE autoPortMode;   /* derived from driverVars */
-
   /* total number of readers assigned to this driver (including inactive
    * ones) */
   int assignedReaders;

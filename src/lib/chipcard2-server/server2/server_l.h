@@ -65,7 +65,7 @@ GWEN_INHERIT_FUNCTION_DEFS(LCS_SERVER)
 
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/common/card.h>
+#include "common/card.h"
 #include "connection_l.h"
 #include "devicemanager/devicemanager_l.h"
 

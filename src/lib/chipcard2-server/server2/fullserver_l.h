@@ -44,7 +44,7 @@ void LCS_FullServer_SetServiceManager(LCS_SERVER *cs,
 /** @return 1 if something could be done */
 int LCS_FullServer_Work(LCS_SERVER *cs);
 
-
+int LCS_FullServer_GetClientCount(LCS_SERVER *cs);
 
 #endif /* CHIPCARD_SERVER2_FULLSERVER_L_H */
 

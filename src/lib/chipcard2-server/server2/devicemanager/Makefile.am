@@ -1,4 +1,4 @@
-INCLUDES=-I.. -I../.. @all_includes@
+INCLUDES=-I.. -I../.. -I../../common @all_includes@
 
 noinst_LTLIBRARIES=libdevmgr.la
 

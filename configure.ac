@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
 CHIPCARD_VERSION_PATCHLEVEL=15
-CHIPCARD_VERSION_BUILD=5
+CHIPCARD_VERSION_BUILD=6
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -424,6 +424,28 @@ AC_SUBST(I18N_CATALOG)
 
 ###-------------------------------------------------------------------------
 #
+# Search for kernel sources/includes
+#
+
+AC_MSG_CHECKING([for kernel sources (needed for PCMCIA support)])
+AC_ARG_WITH(kernel-sources,
+  [  --with-kernel-sources      path to the Linux kernel sources],
+  [kernel_sources="$withval"],
+  [kernel_sources="/usr/src/linux-`uname -r` /usr/src/linux"]
+)
+AQ_SEARCH_FOR_PATH([include/pcmcia/cistpl.h], [${kernel_sources}])
+if test "x$found_dir" = "x"; then
+  AC_MSG_WARN([Kernel sources not found, PCMCIA disabled])
+else
+  LC_KERNEL_INCLUDES="-I${found_dir}/include"
+  AC_SUBST(LC_KERNEL_INCLUDES)
+  AC_DEFINE(USE_PCMCIA, 1, [whether PCMCIA support is enabled])
+  AC_MSG_RESULT(${found_dir})
+fi
+
+
+###-------------------------------------------------------------------------
+#
 # check for MEMTRACE
 #
 AC_MSG_CHECKING(if MEMTRACE is wanted)
@@ -442,201 +464,8 @@ fi
 
 ###-------------------------------------------------------------------------
 #
-# create header directory for all, make symlinks
+# Create output files
 #
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-rm -Rf chipcard2
-mkdir chipcard2
-AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard2.h"
-ln -s "${lprefix}/src/lib/version.h" chipcard2/version.h
-ln -s "${lprefix}/src/lib/chipcard2.h" chipcard2/chipcard2.h
-
-
-
-###-------------------------------------------------------------------------
-#
-# create header directory for server, make symlinks
-#
-lc_modules="server server2 driver common"
-lc_server_modules="commands"
-#lc_server2_modules=""
-
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-rm -Rf chipcard2-server
-mkdir chipcard2-server
-
-# symlink all headers from src/lib/chipcard2-server
-hfiles=`( cd "${srcdir}/src/lib/chipcard2-server" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-server/${f}"
-  case ${f} in
-    *_p.h | *version.h | *chipcard2.h)
-              ;;
-    *)
-              ln -s "${lprefix}/src/lib/chipcard2-server/${f}" "chipcard2-server/${f}"
-              ;;
-  esac
-done
-
-# symlink all headers from src/lib/chipcard2-server/*
-for sm in $lc_modules; do
-  mkdir chipcard2-server/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/chipcard2-server/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-server/${sm}/${f}"
-    case ${f} in
-      *_p.h)
-            ;;
-      *_l.h)
-            ;;
-      *)   
-            ln -s "${lprefix}/src/lib/chipcard2-server/${sm}/${f}" "chipcard2-server/${sm}/${f}"
-            ;;
-    esac
-  done
-done
-
-# symlink all headers from src/lib/chipcard/server/*
-for sm in $lc_server_modules; do
-  mkdir chipcard2-server/server/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/chipcard2-server/server/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-server/server/${sm}/${f}"
-    case ${f} in
-      *_p.h)
-            ;;
-      *_l.h)
-            ;;
-      *)   
-            ln -s "${lprefix}/src/lib/chipcard2-server/server/${sm}/${f}" "chipcard2-server/server/${sm}/${f}"
-            ;;
-    esac
-  done
-done
-
-
-
-#
-# for new server core
-#
-
-# symlink all headers from src/lib/chipcard/server2/*
-for sm in $lc_server2_modules; do
-  mkdir chipcard2-server/server2/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/chipcard2-server/server2/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-server/server2/${sm}/${f}"
-    case ${f} in
-      *_p.h)
-            ;;
-      *_l.h)
-            ;;
-      *)   
-            ln -s "${lprefix}/src/lib/chipcard2-server/server2/${sm}/${f}" "chipcard2-server/server2/${sm}/${f}"
-            ;;
-    esac
-  done
-done
-
-
-
-###-------------------------------------------------------------------------
-#
-# create header directory for client, make symlinks
-#
-lc_modules="client cards mon fs crypttoken"
-lc_client_modules="apps lowlevel"
-
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-rm -Rf chipcard2-client
-mkdir chipcard2-client
-
-# symlink all headers from src/lib/chipcard2-client
-hfiles=`( cd "${srcdir}/src/lib/chipcard2-client" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/${f}"
-  case ${f} in
-    *_p.h | *version.h | *chipcard2.h)
-              ;;
-    *)
-              ln -s "${lprefix}/src/lib/chipcard2-client/${f}" "chipcard2-client/${f}"
-              ;;
-  esac
-done
-
-# symlink all headers from src/lib/chipcard2-client/*
-for sm in $lc_modules; do
-  mkdir chipcard2-client/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/chipcard2-client/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/${sm}/${f}"
-    case ${f} in
-      *_p.h)
-            ;;
-      *_l.h)
-            ;;
-      *)   
-            ln -s "${lprefix}/src/lib/chipcard2-client/${sm}/${f}" "chipcard2-client/${sm}/${f}"
-            ;;
-    esac
-  done
-done
-
-# symlink all headers from src/lib/chipcard2-client/client/*
-for sm in $lc_client_modules; do
-  mkdir chipcard2-client/client/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/chipcard2-client/client/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/client/${sm}/${f}"
-    case ${f} in
-      *_p.h)
-            ;;
-      *_l.h)
-            ;;
-      *)   
-            ln -s "${lprefix}/src/lib/chipcard2-client/client/${sm}/${f}" "chipcard2-client/client/${sm}/${f}"
-            ;;
-    esac
-  done
-done
-
-
-
-###-------------------------------------------------------------------------
-#
-# create header directory for service, make symlinks
-#
-
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-rm -Rf chipcard2-service
-mkdir chipcard2-service
-AQ_HEADER_FILES="${lprefix}/src/lib/chipcard2-service/version.h"
-
-# symlink all headers from src/lib/chipcard2-service
-hfiles=`( cd "${srcdir}/src/lib/chipcard2-service" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-service/${f}"
-  case ${f} in
-    *_p.h | *version.h | *chipcard2.h)
-              ;;
-    *)
-              ln -s "${lprefix}/src/lib/chipcard2-service/${f}" "chipcard2-service/${f}"
-              ;;
-  esac
-done
-
-
-
-
-###-------------------------------------------------------------------------
 AC_CONFIG_FILES([Makefile
                  chipcard2-client-config.in
                  chipcard2-server-config.in
@@ -676,8 +505,6 @@ AC_CONFIG_FILES([Makefile
                  src/lib/chipcard2-server/ressource.rc
                  src/lib/chipcard2-server/common/Makefile
                  src/lib/chipcard2-server/driver/Makefile
-                 src/lib/chipcard2-server/server/Makefile
-                 src/lib/chipcard2-server/server/commands/Makefile
                  src/lib/chipcard2-server/server2/Makefile
                  src/lib/chipcard2-server/server2/devicemanager/Makefile
                  src/lib/chipcard2-server/server2/cardmanager/Makefile
@@ -721,4 +548,137 @@ AC_CONFIG_FILES([Makefile
                  m4/Makefile
                 ])
 AC_OUTPUT
+
+
+
+###-------------------------------------------------------------------------
+#
+# create header directory for all, make symlinks
+#
+
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2
+mkdir chipcard2
+AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard2.h"
+ln -s "${lprefix}/src/lib/version.h" chipcard2/version.h
+ln -s "${lprefix}/src/lib/chipcard2.h" chipcard2/chipcard2.h
+
+
+
+###-------------------------------------------------------------------------
+#
+# create header directory for server, make symlinks
+#
+
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2-client
+mkdir chipcard2-client
+
+
+# symlink all headers from src/lib/sharedstuff/*
+mkdir chipcard2/sharedstuff
+hfiles=`( cd "${srcdir}/src/lib/sharedstuff" && ls *.h 2>/dev/null )`
+for f in ${hfiles}; do
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/sharedstuff/${f}"
+  case ${f} in
+    *_p.h)
+          ;;
+    *_l.h)
+          ;;
+    *)   
+          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard2/sharedstuff/${f}"
+          ;;
+  esac
+done
+
+
+###-------------------------------------------------------------------------
+#
+# create header directory for client, make symlinks
+#
+
+lc_modules="client cards mon fs crypttoken"
+lc_client_modules="apps lowlevel"
+
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2-client
+mkdir chipcard2-client
+
+# symlink all headers from src/lib/chipcard2-client
+hfiles=`( cd "${srcdir}/src/lib/chipcard2-client" && ls *.h 2>/dev/null )`
+for f in ${hfiles}; do
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/${f}"
+  case ${f} in
+    *_p.h | *version.h | *chipcard2.h)
+              ;;
+    *)
+              ln -s "${lprefix}/src/lib/chipcard2-client/${f}" "chipcard2-client/${f}"
+              ;;
+  esac
+done
+
+# symlink all headers from src/lib/chipcard2-client/*
+for sm in $lc_modules; do
+  mkdir chipcard2-client/${sm}
+  hfiles=`( cd "${srcdir}/src/lib/chipcard2-client/${sm}" && ls *.h 2>/dev/null )`
+  for f in ${hfiles}; do
+    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/${sm}/${f}"
+    case ${f} in
+      *_p.h | *_l.h)
+        ;;
+      *)   
+        ln -s "${lprefix}/src/lib/chipcard2-client/${sm}/${f}" "chipcard2-client/${sm}/${f}"
+        ;;
+    esac
+  done
+done
+
+# symlink all headers from src/lib/chipcard2-client/client/*
+for sm in $lc_client_modules; do
+  mkdir chipcard2-client/client/${sm}
+  hfiles=`( cd "${srcdir}/src/lib/chipcard2-client/client/${sm}" && ls *.h 2>/dev/null )`
+  for f in ${hfiles}; do
+    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-client/client/${sm}/${f}"
+    case ${f} in
+      *_p.h | *_l.h)
+        ;;
+      *)   
+        ln -s "${lprefix}/src/lib/chipcard2-client/client/${sm}/${f}" "chipcard2-client/client/${sm}/${f}"
+        ;;
+    esac
+  done
+done
+
+
+
+###-------------------------------------------------------------------------
+#
+# create header directory for service, make symlinks
+#
+
+lprefix="${srcdir}"
+lprefix=`( cd ${lprefix} ; pwd )`
+
+rm -Rf chipcard2-service
+mkdir chipcard2-service
+AQ_HEADER_FILES="${lprefix}/src/lib/chipcard2-service/version.h"
+
+# symlink all headers from src/lib/chipcard2-service
+hfiles=`( cd "${srcdir}/src/lib/chipcard2-service" && ls *.h 2>/dev/null )`
+for f in ${hfiles}; do
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/chipcard2-service/${f}"
+  case ${f} in
+    *_p.h | *version.h | *chipcard2.h)
+              ;;
+    *)
+              ln -s "${lprefix}/src/lib/chipcard2-service/${f}" "chipcard2-service/${f}"
+              ;;
+  esac
+done
 

@@ -36,7 +36,8 @@ GWEN_INHERIT_FUNCTION_DEFS(LCDM_DEVICEMANAGER)
 
 #include "server_l.h"
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/common/card.h>
+#include "common/card.h"
+#include "common/devmonitor.h"
 
 
 
@@ -86,6 +87,10 @@ int LCDM_DeviceManager_HandleRequest(LCDM_DEVICEMANAGER *dm,
 GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
                                                     LCCO_CARD *card,
                                                     GWEN_DB_NODE *dbCmd);
+
+const char *LCDM_DeviceManager_GetDriverVar(LCDM_DEVICEMANAGER *dm,
+                                            LCCO_CARD *card,
+                                            const char *vname);
 
 
 #endif /* CHIPCARD_SERVER_DEVICEMANAGER_L_H */

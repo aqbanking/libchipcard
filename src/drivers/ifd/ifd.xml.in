@@ -1,0 +1,23 @@
+<PluginDescr>
+  <plugin name="ifd" type="Libchipcard2_Driver" >
+    <version>@CHIPCARD_VERSION_STRING@</version>
+    <author>Martin Preuss(martin@libchipcard.de)</author>
+    <short>Driver using IFD lowlevel drivers (PC/SC)</short>
+    <descr>
+      Driver using IFD lowlevel drivers.
+      IFD drivers are used by PC/SC.
+    </descr>
+  </plugin>
+  
+  
+  <plugin name="ifd" type="Libchipcard2_Driver" lang="de" >
+    <version>@CHIPCARD_VERSION_STRING@</version>
+    <author>Martin Preuss(martin@libchipcard.de)</author>
+    <short>Treiber fuer IFD Lowlevel-Treiber</short>
+    <descr>
+      Dieser Treiber erlaubt die Verwendung von IFD-Treibern.
+      IFD-Treiber werden normalerweise von PC/SC verwendet.
+    </descr>
+  </plugin>
+</PluginDescr>
+

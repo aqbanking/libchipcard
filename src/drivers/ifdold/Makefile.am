@@ -1,4 +1,4 @@
-INCLUDES=@all_includes@
+INCLUDES=-I../../lib/chipcard2-server/driver @all_includes@
 
 EXTRA_DIST=ifdold.xml.in
 
@@ -14,7 +14,7 @@ ifdold_SOURCES=\
   driverifdold.c \
   main.c
 
-ifdold_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
+ifdold_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ifdold_LDFLAGS=@STRIPALL@
 

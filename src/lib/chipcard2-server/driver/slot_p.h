@@ -14,13 +14,13 @@
 #ifndef CHIPCARD_DRIVER_SLOT_P_H
 #define CHIPCARD_DRIVER_SLOT_P_H
 
-#include <chipcard2-server/driver/slot.h>
+#include "slot_l.h"
 
 
 
-struct LC_SLOT {
-  GWEN_LIST_ELEMENT(LC_SLOT);
-  LC_READER *reader;
+struct LCD_SLOT {
+  GWEN_LIST_ELEMENT(LCD_SLOT);
+  LCD_READER *reader;
   unsigned int slotNum;
   GWEN_TYPE_UINT32 cardNum;
   GWEN_BUFFER *atr;

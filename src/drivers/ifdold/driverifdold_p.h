@@ -17,7 +17,7 @@
 #include "driverifdold.h"
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
 
 #define IFD_POWER_UP           500
@@ -92,28 +92,28 @@ int DriverIFDOld_ExtractProtocolInfo(unsigned char *atr,
                                   unsigned int atrlen);
 
 
-GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverIFDOld_SendAPDU(LCD_DRIVER *d,
                                     int toReader,
-                                    LC_READER *r,
-                                    LC_SLOT *slot,
+                                    LCD_READER *r,
+                                    LCD_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
                                     unsigned char *buffer,
                                     int *bufferlen);
-GWEN_TYPE_UINT32 DriverIFDOld_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFDOld_ConnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFDOld_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFDOld_DisconnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFDOld_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFDOld_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
-GWEN_TYPE_UINT32 DriverIFDOld_ReaderStatus(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFDOld_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverIFDOld_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                       GWEN_BUFFER *buf);
 
-const char *DriverIFDOld_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
+const char *DriverIFDOld_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 
 

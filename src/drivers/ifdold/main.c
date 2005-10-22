@@ -24,7 +24,7 @@
 
 
 int main(int argc, char **argv) {
-  LC_DRIVER *d;
+  LCD_DRIVER *d;
 
   d=DriverIFDOld_new(argc, argv);
   if (!d) {
@@ -34,19 +34,19 @@ int main(int argc, char **argv) {
 
   if (DriverIFDOld_Start(d)) {
     DBG_ERROR(0, "Could not start driver");
-    LC_Driver_free(d);
+    LCD_Driver_free(d);
     return 1;
   }
 
-  if (LC_Driver_IsTestMode(d)) {
+  if (LCD_Driver_IsTestMode(d)) {
     DBG_INFO(0, "Driver is in test mode");
-    if (LC_Driver_Test(d)) {
+    if (LCD_Driver_Test(d)) {
       fprintf(stderr, "Reader is not available.\n");
       return 1;
     }
   }
   else {
-    if (LC_Driver_Work(d)) {
+    if (LCD_Driver_Work(d)) {
       DBG_ERROR(0, "An error occurred");
     }
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     GWEN_Socket_Select(0, 0, 0, 1000);
   }
 
-  LC_Driver_free(d);
+  LCD_Driver_free(d);
   return 0;
 }
 

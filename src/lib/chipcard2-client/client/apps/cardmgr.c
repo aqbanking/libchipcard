@@ -24,7 +24,7 @@
 #include <gwenhywfar/directory.h>
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/msgengine.h>
+#include <chipcard2/sharedstuff/msgengine.h>
 
 #include <stdlib.h>
 #include <assert.h>

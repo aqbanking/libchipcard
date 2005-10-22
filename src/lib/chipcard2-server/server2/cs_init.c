@@ -422,21 +422,21 @@ int LCS_Server_Init(LCS_SERVER *cs, GWEN_DB_NODE *db) {
     DBG_NOTICE(0, "Autoconfiguration enabled");
   }
 
-  DBG_INFO(0, "Initializing paths");
+  DBG_INFO(0, "Initialising paths");
   rv=LCS_Server__InitPaths(cs, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
     return rv;
   }
 
-  DBG_INFO(0, "Initializing IPC manager");
+  DBG_INFO(0, "Initialising IPC manager");
   rv=LCS_Server__InitListeners(cs, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
     return rv;
   }
 
-  DBG_INFO(0, "Initializing device manager");
+  DBG_INFO(0, "Initialising device manager");
   rv=LCDM_DeviceManager_Init(cs->deviceManager, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);

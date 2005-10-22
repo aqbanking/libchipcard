@@ -27,33 +27,33 @@
 
 
 
-GWEN_LIST_FUNCTIONS(LC_READER, LC_Reader);
-GWEN_INHERIT_FUNCTIONS(LC_READER);
+GWEN_LIST_FUNCTIONS(LCD_READER, LCD_Reader);
+GWEN_INHERIT_FUNCTIONS(LCD_READER);
 
 
-LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
+LCD_READER *LCD_Reader_new(GWEN_TYPE_UINT32 readerId,
                          const char *name,
                          int port,
                          unsigned int slots,
                          GWEN_TYPE_UINT32 flags){
-  LC_READER *r;
+  LCD_READER *r;
   unsigned int i;
 
-  GWEN_NEW_OBJECT(LC_READER, r);
-  GWEN_LIST_INIT(LC_READER, r);
-  GWEN_INHERIT_INIT(LC_READER, r);
+  GWEN_NEW_OBJECT(LCD_READER, r);
+  GWEN_LIST_INIT(LCD_READER, r);
+  GWEN_INHERIT_INIT(LCD_READER, r);
   r->readerId=readerId;
   if (name)
     r->name=strdup(name);
   r->port=port;
   r->readerFlags=flags;
-  r->slots=LC_Slot_List_new();
+  r->slots=LCD_Slot_List_new();
   /* create slots */
   for (i=0; i<slots; i++) {
-    LC_SLOT *sl;
+    LCD_SLOT *sl;
 
-    sl=LC_Slot_new(r, i);
-    LC_Slot_List_Add(sl, r->slots);
+    sl=LCD_Slot_new(r, i);
+    LCD_Slot_List_Add(sl, r->slots);
   } /* for */
 
   return r;
@@ -61,13 +61,13 @@ LC_READER *LC_Reader_new(GWEN_TYPE_UINT32 readerId,
 
 
 
-void LC_Reader_free(LC_READER *r){
+void LCD_Reader_free(LCD_READER *r){
   if (r) {
-    GWEN_INHERIT_FINI(LC_READER, r);
-    GWEN_LIST_FINI(LC_READER, r);
+    GWEN_INHERIT_FINI(LCD_READER, r);
+    GWEN_LIST_FINI(LCD_READER, r);
     free(r->readerType);
     free(r->name);
-    LC_Slot_List_free(r->slots);
+    LCD_Slot_List_free(r->slots);
     free(r->logger);
 
     GWEN_FREE_OBJECT(r);
@@ -76,49 +76,49 @@ void LC_Reader_free(LC_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetReaderId(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetReaderId(const LCD_READER *r){
   assert(r);
   return r->readerId;
 }
 
 
 
-void LC_Reader_SetReaderId(LC_READER *r, GWEN_TYPE_UINT32 id){
+void LCD_Reader_SetReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id){
   assert(r);
   r->readerId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetDriversReaderId(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetDriversReaderId(const LCD_READER *r){
   assert(r);
   return r->driversReaderId;
 }
 
 
 
-void LC_Reader_SetDriversReaderId(LC_READER *r, GWEN_TYPE_UINT32 id){
+void LCD_Reader_SetDriversReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id){
   assert(r);
   r->driversReaderId=id;
 }
 
 
 
-const char *LC_Reader_GetName(const LC_READER *r){
+const char *LCD_Reader_GetName(const LCD_READER *r){
   assert(r);
   return r->name;
 }
 
 
 
-const char *LC_Reader_GetReaderType(const LC_READER *r){
+const char *LCD_Reader_GetReaderType(const LCD_READER *r){
   assert(r);
   return r->readerType;
 }
 
 
 
-void LC_Reader_SetReaderType(LC_READER *r, const char *s){
+void LCD_Reader_SetReaderType(LCD_READER *r, const char *s){
   assert(r);
   free(r->readerType);
   if (s) r->readerType=strdup(s);
@@ -127,71 +127,71 @@ void LC_Reader_SetReaderType(LC_READER *r, const char *s){
 
 
 
-int LC_Reader_GetPort(const LC_READER *r){
+int LCD_Reader_GetPort(const LCD_READER *r){
   assert(r);
   return r->port;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetReaderFlags(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r){
   assert(r);
   return r->readerFlags;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetCardNum(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetCardNum(const LCD_READER *r){
   assert(r);
   return r->cardNum;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetStatus(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetStatus(const LCD_READER *r){
   assert(r);
   return r->status;
 }
 
 
 
-void LC_Reader_SetStatus(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SetStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->status=s;
 }
 
 
 
-void LC_Reader_AddStatus(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_AddStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->status|=s;
 }
 
 
 
-void LC_Reader_SubStatus(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SubStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->status&=~s;
 }
 
 
 
-LC_SLOT_LIST *LC_Reader_GetSlots(const LC_READER *r){
+LCD_SLOT_LIST *LCD_Reader_GetSlots(const LCD_READER *r){
   assert(r);
   return r->slots;
 }
 
 
 
-LC_SLOT *LC_Reader_FindSlot(const LC_READER *r, unsigned int slotnum){
-  LC_SLOT *sl;
+LCD_SLOT *LCD_Reader_FindSlot(const LCD_READER *r, unsigned int slotnum){
+  LCD_SLOT *sl;
 
   assert(r);
-  sl=LC_Slot_List_First(r->slots);
+  sl=LCD_Slot_List_First(r->slots);
   while(sl) {
-    if (LC_Slot_GetSlotNum(sl)==slotnum)
+    if (LCD_Slot_GetSlotNum(sl)==slotnum)
       return sl;
-    sl=LC_Slot_List_Next(sl);
+    sl=LCD_Slot_List_Next(sl);
   } /* while */
 
   return 0;
@@ -199,14 +199,14 @@ LC_SLOT *LC_Reader_FindSlot(const LC_READER *r, unsigned int slotnum){
 
 
 
-const char *LC_Reader_GetLogger(const LC_READER *r){
+const char *LCD_Reader_GetLogger(const LCD_READER *r){
   assert(r);
   return r->logger;
 }
 
 
 
-void LC_Reader_SetLogger(LC_READER *r, const char *logDomain){
+void LCD_Reader_SetLogger(LCD_READER *r, const char *logDomain){
   assert(r);
   free(r->logger);
   if (logDomain) r->logger=strdup(logDomain);
@@ -215,28 +215,28 @@ void LC_Reader_SetLogger(LC_READER *r, const char *logDomain){
 
 
 
-GWEN_TYPE_UINT32 LC_Reader_GetDriverFlags(const LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Reader_GetDriverFlags(const LCD_READER *r){
   assert(r);
   return r->driverFlags;
 }
 
 
 
-void LC_Reader_SetDriverFlags(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SetDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->driverFlags=s;
 }
 
 
 
-void LC_Reader_AddDriverFlags(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_AddDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->driverFlags|=s;
 }
 
 
 
-void LC_Reader_SubDriverFlags(LC_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SubDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->driverFlags&=~s;
 }

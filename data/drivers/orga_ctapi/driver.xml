@@ -24,7 +24,7 @@
   </lib>
 
   <readers>
-    <reader name="orga" com="COM">
+    <reader name="orga" busType="serial">
       <short>Orga</short>
       <flags>
       </flags>

@@ -29,13 +29,15 @@
 
   <readers>
 
-    <reader name="scm_scr331" com="USB" vendor="0x04e6" product="0xe001" >
+    <reader name="scm_scr331" busType="UsbRaw" 
+            vendor="0x04e6" product="0xe001" >
       <short>SCM SCR 331</short>
       <flags>
       </flags>
       <image>scm_scr331.jpg</image>
     </reader>
-    <reader name="scm_scr332" com="USB" vendor="0x04e6" product="0xe002" >
+    <reader name="scm_scr332" busType="UsbRaw" 
+            vendor="0x04e6" product="0xe002" >
       <short>SCM SCR 332</short>
       <flags>
       </flags>
@@ -49,43 +51,50 @@
       <image>scm_scr332b.jpg</image>
     </reader>
     -->
-    <reader name="scm_scr333" com="USB" vendor="0x04e6" product="0x5113" >
+    <reader name="scm_scr333" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5113" >
       <short>SCM SCR 333</short>
       <flags>
       </flags>
       <image>scm_scr333.jpg</image>
     </reader>
-    <reader name="scm_scr335" com="USB" vendor="0x04e6" product="0x5115" >
+    <reader name="scm_scr335" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5115" >
       <short>SCM SCR 335</short>
       <flags>
       </flags>
       <image>scm_scr335.jpg</image>
     </reader>
-    <reader name="scm_scr3310" com="USB" vendor="0x04e6" product="0x5116" >
+    <reader name="scm_scr3310" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5116" >
       <short>SCM SCR 3310</short>
       <flags>
       </flags>
       <image>scm_scr3310.jpg</image>
     </reader>
-    <reader name="scm_usb_sim" com="USB" vendor="0x04e6" product="0x5117" >
+    <reader name="scm_usb_sim" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5117" >
       <short>SCM USB SIM Card Reader</short>
       <flags>
       </flags>
       <image>scm_usb_sim.jpg</image>
     </reader>
-    <reader name="scm_usb_express_sim" com="USB" vendor="0x04e6" product="0x5118" >
+    <reader name="scm_usb_express_sim" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5118" >
       <short>SCM Expresscard USB SIM Card Reader</short>
       <flags>
       </flags>
       <image>scm_usb_express_sim.jpg</image>
     </reader>
-    <reader name="scm_usb_express_smart" com="USB" vendor="0x04e6" product="0x5119" >
+    <reader name="scm_usb_express_smart" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5119" >
       <short>SCM USB Expresscard Smart Card Reader</short>
       <flags>
       </flags>
       <image>scm_usb_express_smart.jpg</image>
     </reader>
-    <reader name="scm_scr338" com="USB" vendor="0x04e6" product="0x5151" >
+    <reader name="scm_scr338" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5151" >
       <short>SCM SCR 338</short>
       <flags>
       </flags>

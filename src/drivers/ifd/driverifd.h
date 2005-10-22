@@ -18,13 +18,10 @@ typedef struct DRIVER_IFD DRIVER_IFD;
 
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
-LC_DRIVER *DriverIFDOld_new(int argc, char **argv);
-int DriverIFDOld_Start(LC_DRIVER *d);
-
-LC_DRIVER *DriverIFD_new(int argc, char **argv);
-int DriverIFD_Start(LC_DRIVER *d);
+LCD_DRIVER *DriverIFD_new(int argc, char **argv);
+int DriverIFD_Start(LCD_DRIVER *d);
 
 
 

@@ -20,7 +20,7 @@
 #include <gwenhywfar/request.h>
 #include "clientmanager_l.h"
 #include "cl_client_l.h"
-#include <chipcard2-server/common/card.h>
+#include "common/card.h"
 
 
 typedef struct LCCL_REQUEST LCCL_REQUEST;

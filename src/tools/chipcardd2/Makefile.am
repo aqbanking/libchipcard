@@ -1,5 +1,7 @@
 
-INCLUDES=@all_includes@ -I../../lib/chipcard2-server/server
+INCLUDES=\
+  -I../../lib/chipcard2-server/server2\
+  -I../../lib/chipcard2-server/ @all_includes@
 
 DEFS=@DEFS@ \
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \
@@ -19,7 +21,11 @@ chipcardd2_SOURCES=\
   init.c \
   mkcert.c \
   chipcardd2.c
-chipcardd2_LDADD=-L../../lib/chipcard2-server -lchipcard2s @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
+
+chipcardd2_LDADD=\
+  ../../lib/chipcard2-server/server2/libchipcard2s.la \
+  ../../lib/chipcard2-server/common/libcommon.la  \
+  ../../lib/sharedstuff/libsharedstuff.la @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 chipcardd2_LDFLAGS=@STRIPALL@
 
 MAINTAINERCLEANFILES=Makefile.in

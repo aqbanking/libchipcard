@@ -88,28 +88,28 @@ int LCS_FullServer_Init(LCS_SERVER *cs, GWEN_DB_NODE *db) {
     return rv;
   }
 
-  DBG_INFO(0, "Initializing card manager");
+  DBG_INFO(0, "Initialising card manager");
   rv=LCCM_CardManager_Init(fs->cardManager, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
     return rv;
   }
 
-  DBG_INFO(0, "Initializing command manager");
+  DBG_INFO(0, "Initialising command manager");
   rv=LCCMD_CommandManager_Init(fs->commandManager, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
     return rv;
   }
 
-  DBG_INFO(0, "Initializing client manager");
+  DBG_INFO(0, "Initialising client manager");
   rv=LCCL_ClientManager_Init(fs->clientManager, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
     return rv;
   }
 
-  DBG_INFO(0, "Initializing service manager");
+  DBG_INFO(0, "Initialising service manager");
   rv=LCSV_ServiceManager_Init(fs->serviceManager, db);
   if (rv) {
     DBG_INFO(0, "here (%d)", rv);
@@ -415,19 +415,19 @@ int LCS_FullServer_Work(LCS_SERVER *cs) {
     done++;
 
   /* let card manager work */
-  DBG_INFO(0, "Letting card manager work");
+  DBG_VERBOUS(0, "Letting card manager work");
   rv=LCCM_CardManager_Work(fs->cardManager);
   if (rv!=0)
     done++;
 
   /* let client manager work */
-  DBG_INFO(0, "Letting client manager work");
+  DBG_VERBOUS(0, "Letting client manager work");
   rv=LCCL_ClientManager_Work(fs->clientManager);
   if (rv!=0)
     done++;
 
   /* let service manager work */
-  DBG_INFO(0, "Letting service manager work");
+  DBG_VERBOUS(0, "Letting service manager work");
   rv=LCSV_ServiceManager_Work(fs->serviceManager);
   if (rv!=0)
     done++;
@@ -473,6 +473,19 @@ int LCS_FullServer_HandleRequest(LCS_SERVER *cs,
   }
 
   return 1;
+}
+
+
+
+int LCS_FullServer_GetClientCount(LCS_SERVER *cs) {
+  LCS_FULLSERVER *fs;
+
+  assert(cs);
+  fs=GWEN_INHERIT_GETDATA(LCS_SERVER, LCS_FULLSERVER, cs);
+  assert(fs);
+
+  assert(fs->clientManager);
+  return LCCL_ClientManager_GetClientCount(fs->clientManager);
 }
 
 

@@ -36,7 +36,8 @@
 
   <readers>
   
-    <reader name="ccid_gempc_twin" com="USB" vendor="0x08e6" product="0x3437" >
+    <reader name="ccid_gempc_twin" busType="UsbRaw" 
+            vendor="0x08e6" product="0x3437" >
       <short>GemPC Twin</short>
       <!--
         <flags>
@@ -45,7 +46,8 @@
       -->
     </reader>
 
-    <reader name="ccid_gempc_key" com="USB" vendor="0x08e6" product="0x3438" >
+    <reader name="ccid_gempc_key" busType="UsbRaw"
+            vendor="0x08e6" product="0x3438" >
       <short>GemPC Key</short>
       <!--
         <flags>
@@ -54,7 +56,8 @@
       -->
     </reader>
 
-    <reader name="ccid_gempc_433" com="USB" vendor="0x08e6" product="0x4433" >
+    <reader name="ccid_gempc_433" busType="UsbRaw" 
+            vendor="0x08e6" product="0x4433" >
       <short>GemPC433 SL </short>
       <!--
         <flags>
@@ -63,7 +66,8 @@
       -->
     </reader>
 
-    <reader name="ccid_scm_331di" com="USB" vendor="0x04e6" product="0x5111" >
+    <reader name="ccid_scm_331di" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5111" >
       <short>SCM 331 DI </short>
       <!--
         <flags>
@@ -72,7 +76,8 @@
       -->
     </reader>
     
-    <reader name="ccid_scm_333" com="USB" vendor="0x04e6" product="0x5113" >
+    <reader name="ccid_scm_333" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5113" >
       <short>SCM 333</short>
       <!--
         <flags>
@@ -81,7 +86,8 @@
       -->
     </reader>
 
-    <reader name="ccid_scm_335" com="USB" vendor="0x04e6" product="0x5115" >
+    <reader name="ccid_scm_335" busType="UsbRaw" 
+            vendor="0x04e6" product="0x5115" >
       <short>SCM 335</short>
       <!--
         <flags>
@@ -90,7 +96,8 @@
       -->
     </reader>
 
-    <reader name="ccid_cardman" com="USB" vendor="0x076b" product="0x3021" >
+    <reader name="ccid_cardman" busType="UsbRaw" 
+            vendor="0x076b" product="0x3021" >
       <short>Omnikey CardMan 3121</short>
       <!--
         <flags>
@@ -99,7 +106,8 @@
       -->
     </reader>
 
-    <reader name="ccid_ltc31" com="USB" vendor="0x0783" product="0x0003" >
+    <reader name="ccid_ltc31" busType="UsbRaw" 
+            vendor="0x0783" product="0x0003" >
       <short>C3PO LTC31</short>
       <!--
         <flags>
@@ -108,7 +116,8 @@
       -->
     </reader>
 
-    <reader name="ccid_activcard" com="USB" vendor="0x09c3" product="0x0008" >
+    <reader name="ccid_activcard" busType="UsbRaw" 
+            vendor="0x09c3" product="0x0008" >
       <short>ActivCard</short>
       <!--
         <flags>
@@ -117,7 +126,8 @@
       -->
     </reader>
 
-    <reader name="ccid_sk3105" com="USB" vendor="0x047b" product="0x020b" >
+    <reader name="ccid_sk3105" busType="UsbRaw" 
+            vendor="0x047b" product="0x020b" >
       <short>Silitek SK-3105</short>
       <!--
         <flags>
@@ -126,21 +136,24 @@
       -->
     </reader>
 
-    <reader name="ccid_dell_sk3106" com="USB" vendor="0x413c" product="0x2100" >
+    <reader name="ccid_dell_sk3106" busType="UsbRaw" 
+            vendor="0x413c" product="0x2100" >
       <short>Dell Keyboard SK-3106</short>
         <flags>
           <flag>keypad</flag>
         </flags>
     </reader>
 
-    <reader name="ccid_dell_scrk" com="USB" vendor="0x413c" product="0x2101" >
+    <reader name="ccid_dell_scrk" busType="UsbRaw" 
+            vendor="0x413c" product="0x2101" >
       <short>Dell Smard Card Reader Keyboard</short>
         <flags>
           <flag>keypad</flag>
         </flags>
     </reader>
 
-    <reader name="ccid_cherry_xx33" com="USB" vendor="0x046a" product="0x0005" >
+    <reader name="ccid_cherry_xx33" busType="UsbRaw" 
+            vendor="0x046a" product="0x0005" >
       <short>Cherry XX33</short>
       <!--
         <flags>
@@ -149,7 +162,8 @@
       -->
     </reader>
 
-    <reader name="ccid_acr38" com="USB" vendor="0x072f" product="0x90cc" >
+    <reader name="ccid_acr38" busType="UsbRaw" 
+            vendor="0x072f" product="0x90cc" >
       <short>Advanced Card Systems ACR 38</short>
       <!--
         <flags>
@@ -158,7 +172,8 @@
       -->
     </reader>
 
-    <reader name="ccid_scm_x32" com="USB" vendor="0x04e6" product="0xe003" >
+    <reader name="ccid_scm_x32" busType="UsbRaw" 
+            vendor="0x04e6" product="0xe003" >
       <short>SCM Chipdrive Pinpad X32</short>
       <flags>
         <flag>keypad</flag>

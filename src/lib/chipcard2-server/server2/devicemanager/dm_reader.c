@@ -16,7 +16,7 @@
 
 
 #include "dm_reader_p.h"
-#include <chipcard2-server/common/driverinfo.h>
+#include "common/driverinfo.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
@@ -41,6 +41,7 @@ LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d){
   GWEN_NEW_OBJECT(LCDM_READER, r);
   DBG_MEM_INC("LCDM_READER", 0);
   GWEN_LIST_INIT(LCDM_READER, r);
+  r->refCount=1;
 
   r->driver=d;
 
@@ -65,6 +66,7 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
   GWEN_NEW_OBJECT(LCDM_READER, r);
   DBG_MEM_INC("LCDM_READER", 0);
   GWEN_LIST_INIT(LCDM_READER, r);
+  r->refCount=1;
 
   r->driver=d;
 
@@ -89,6 +91,7 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
 
   r->slots=GWEN_DB_GetIntValue(db, "slots", 0, 1);
   r->port=GWEN_DB_GetIntValue(db, "port", 0, 0);
+  r->ctn=GWEN_DB_GetIntValue(db, "ctn", 0, 0);
 
   p=GWEN_DB_GetCharValue(db, "busType", 0, 0);
   if (p)
@@ -108,14 +111,27 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
 
 void LCDM_Reader_free(LCDM_READER *r){
   if (r) {
-    DBG_MEM_DEC("LCDM_READER");
-    GWEN_LIST_FINI(LCDM_READER, r);
-    free(r->readerType);
-    free(r->readerName);
-    free(r->shortDescr);
-    free(r->readerInfo);
-    GWEN_FREE_OBJECT(r);
+    assert(r->refCount);
+    if (r->refCount==1) {
+      DBG_MEM_DEC("LCDM_READER");
+      GWEN_LIST_FINI(LCDM_READER, r);
+      free(r->readerType);
+      free(r->readerName);
+      free(r->shortDescr);
+      free(r->readerInfo);
+      GWEN_FREE_OBJECT(r);
+    }
+    else
+      r->refCount--;
   }
+}
+
+
+
+void LCDM_Reader_Attach(LCDM_READER *r) {
+  assert(r);
+  assert(r->refCount);
+  r->refCount++;
 }
 
 
@@ -160,6 +176,9 @@ void LCDM_Reader_toDb(const LCDM_READER *r, GWEN_DB_NODE *db){
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "port", r->port);
+
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "ctn", r->ctn);
 
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "busType",
@@ -342,6 +361,20 @@ void LCDM_Reader_SetPort(LCDM_READER *r, unsigned int i){
 
 
 
+unsigned int LCDM_Reader_GetCtn(const LCDM_READER *r) {
+  assert(r);
+  return r->ctn;
+}
+
+
+
+void LCDM_Reader_SetCtn(LCDM_READER *r, unsigned int i) {
+  assert(r);
+  r->ctn=i;
+}
+
+
+
 GWEN_TYPE_UINT32 LCDM_Reader_GetFlags(const LCDM_READER *r){
   assert(r);
   return r->flags;
@@ -504,20 +537,6 @@ GWEN_TYPE_UINT32 LCDM_Reader_GetCurrentRequestId(const LCDM_READER *r) {
 void LCDM_Reader_SetCurrentRequestId(LCDM_READER *r, GWEN_TYPE_UINT32 rid) {
   assert(r);
   r->currentRequestId=rid;
-}
-
-
-
-int LCDM_Reader_GetWantRestart(const LCDM_READER *r){
-  assert(r);
-  return r->wantRestart;
-}
-
-
-
-void LCDM_Reader_SetWantRestart(LCDM_READER *r, int wantRestart){
-  assert(r);
-  r->wantRestart=wantRestart;
 }
 
 

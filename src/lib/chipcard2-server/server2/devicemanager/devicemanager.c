@@ -18,7 +18,12 @@
 #include "devicemanager_p.h"
 #include "server_l.h"
 #include "dm_card_l.h"
-#include <chipcard2-server/common/driverinfo.h>
+#include "pciscanner_l.h"
+#include "pcmciascanner_l.h"
+#include "usbrawscanner_l.h"
+#include "usbttyscanner_l.h"
+
+#include "common/driverinfo.h"
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/pathmanager.h>
@@ -53,7 +58,7 @@ LCDM_DEVICEMANAGER *LCDM_DeviceManager_new(LCS_SERVER *server) {
   dm->readers=LCDM_Reader_List_new();
   dm->dbDrivers=GWEN_DB_Group_new("drivers");
   dm->dbConfigDrivers=GWEN_DB_Group_new("configDrivers");
-
+  dm->driverBlackList=GWEN_StringList_new();
 
   return dm;
 }
@@ -63,6 +68,8 @@ LCDM_DEVICEMANAGER *LCDM_DeviceManager_new(LCS_SERVER *server) {
 void LCDM_DeviceManager_free(LCDM_DEVICEMANAGER *dm) {
   if (dm) {
     GWEN_INHERIT_FINI(LCDM_DEVICEMANAGER, dm);
+    LC_DevMonitor_free(dm->deviceMonitor);
+    GWEN_StringList_free(dm->driverBlackList);
     free(dm->addrTypeForDrivers);
     free(dm->addrAddrForDrivers);
     GWEN_DB_Group_free(dm->dbDrivers);
@@ -78,13 +85,21 @@ void LCDM_DeviceManager_free(LCDM_DEVICEMANAGER *dm) {
 int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   GWEN_DB_NODE *dbT;
   const char *p;
+  int i;
 
-  DBG_INFO(0, "Initializing device manager");
+  DBG_INFO(0, "Initialising device manager");
   assert(dm);
   GWEN_DB_ClearGroup(dm->dbDrivers, 0);
 
+  GWEN_StringList_Clear(dm->driverBlackList);
+
   /* preset with reasonable values */
   dm->allowRemote=0;
+  dm->disableAutoConf=0;
+  dm->disablePciScan=0;
+  dm->disablePcmciaScan=0;
+  dm->disableUsbRawScan=0;
+  dm->disableUsbTtyScan=0;
   dm->driverStartDelay=LCDM_DEVICEMANAGER_DEF_DRIVER_START_DELAY;
   dm->driverStartTimeout=LCDM_DEVICEMANAGER_DEF_DRIVER_START_TIMEOUT;
   dm->driverStopTimeout=LCDM_DEVICEMANAGER_DEF_DRIVER_STOP_TIMEOUT;
@@ -97,6 +112,8 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   dm->readerIdleTimeout=LCDM_DEVICEMANAGER_DEF_READER_IDLE_TIMEOUT;
   dm->readerCommandTimeout=LCDM_DEVICEMANAGER_DEF_READER_COMMAND_TIMEOUT;
 
+  dm->hardwareScanInterval=LCDM_DEVICEMANAGER_DEF_HARDWARE_SCAN_INTERVAL;
+
   /* read configuration file */
   dbT=GWEN_DB_GetGroup(dbConfig, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
                        "DeviceManager");
@@ -106,8 +123,30 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
              "Please update the file.");
     dbT=dbConfig;
   }
+
+  /* read driver black list */
+  for (i=0; ; i++) {
+    p=GWEN_DB_GetCharValue(dbT, "driverBlackList", i, 0);
+    if (!p)
+      break;
+    GWEN_StringList_AppendString(dm->driverBlackList, p, 0, 1);
+  }
+
   if (dbT) {
-    dm->allowRemote=GWEN_DB_GetIntValue(dbT, "allowRemote", 0, 0);
+    int defval;
+
+    dm->allowRemote=GWEN_DB_GetIntValue(dbT, "allowRemote", 0,
+                                        dm->allowRemote);
+    dm->disableAutoConf=GWEN_DB_GetIntValue(dbT, "disableAutoConf", 0,
+                                            dm->disableAutoConf);
+    defval=dm->disableAutoConf;
+    dm->disablePciScan=GWEN_DB_GetIntValue(dbT, "disablePciScan", 0, defval);
+    dm->disablePcmciaScan=GWEN_DB_GetIntValue(dbT, "disablePcmciaScan", 0,
+                                              defval);
+    dm->disableUsbRawScan=GWEN_DB_GetIntValue(dbT, "disableUsbRawScan", 0,
+                                              defval);
+    dm->disableUsbTtyScan=GWEN_DB_GetIntValue(dbT, "disableUsbTtyScan", 0,
+                                              defval);
 
     /* read some timeout values */
 #define LCDM_DM_INIT_TIME(s) \
@@ -122,8 +161,14 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
     LCDM_DM_INIT_TIME(readerRestartTime)
     LCDM_DM_INIT_TIME(readerIdleTimeout)
     LCDM_DM_INIT_TIME(readerCommandTimeout)
+
+    LCDM_DM_INIT_TIME(hardwareScanInterval)
 #undef LCDM_DM_INIT_TIME
   }
+
+  /* ensure some minimum values */
+  if (dm->hardwareScanInterval<LCDM_DEVICEMANAGER_MIN_HARDWARE_SCAN_INTERVAL)
+    dm->hardwareScanInterval=LCDM_DEVICEMANAGER_MIN_HARDWARE_SCAN_INTERVAL;
 
   /* find config of server to be used for drivers */
   dbT=GWEN_DB_FindFirstGroup(dbConfig, "server");
@@ -153,14 +198,15 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   if (dbT==0)
     dbT=dbConfig;
 
+
   dbT=GWEN_DB_FindFirstGroup(dbT, "driver");
   while(dbT) {
     LCDM_DRIVER *d;
     GWEN_DB_NODE *dbR;
 
     /* driver section found, add it to global list and create a driver */
-    GWEN_DB_InsertGroup(dm->dbDrivers,
-                        GWEN_DB_Group_dup(dbT));
+    GWEN_DB_AddGroup(dm->dbDrivers,
+                     GWEN_DB_Group_dup(dbT));
     GWEN_DB_AddGroup(dm->dbConfigDrivers,
                      GWEN_DB_Group_dup(dbT));
 
@@ -168,27 +214,9 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
     assert(d);
 
     if (!LCDM_Driver_GetLogFile(d)) {
-      GWEN_BUFFER *lbuf;
-      GWEN_STRINGLIST *sl;
-      const char *s;
-
-      sl=GWEN_PathManager_GetPaths(LCS_PATH_DESTLIB,
-                                   LCS_PATH_SERVER_LOGDIR);
-      assert(sl);
-      s=GWEN_StringList_FirstString(sl);
-      assert(s);
-      lbuf=GWEN_Buffer_new(0, 256, 0, 1);
-
-      GWEN_Buffer_AppendString(lbuf, s);
-      LCS_Server_ReplaceVar(DIRSEP"drivers"DIRSEP"@driver@"
-                            DIRSEP"@reader@"
-                            ".log",
-                            "driver",
-                            LCDM_Driver_GetDriverName(d),
-                            lbuf);
-      LCDM_Driver_SetLogFile(d, GWEN_Buffer_GetStart(lbuf));
-      GWEN_Buffer_free(lbuf);
+      LCDM_DeviceManager_SetDriverLogFile(dm, d);
     }
+    LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_CONFIG);
 
     DBG_INFO(0, "Adding driver \"%s\"", LCDM_Driver_GetDriverName(d));
     LCDM_Driver_List_Add(d, dm->drivers);
@@ -200,7 +228,9 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
 
         /* reader section found */
         r=LCDM_Reader_fromDb(d, dbR);
-        assert(r);
+	assert(r);
+	/* readers from config are always expected to be active */
+	LCDM_Reader_SetIsAvailable(r, 1);
         LCDM_Driver_IncAssignedReadersCount(d);
         DBG_INFO(0, "Adding reader \"%s\"", LCDM_Reader_GetReaderName(r));
         /* readers from config file are always assumed available */
@@ -213,6 +243,51 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
     dbT=GWEN_DB_FindNextGroup(dbT, "driver");
   }
 
+  if (dm->disableAutoConf==0) {
+    LC_DEVSCANNER *scanner;
+    int scanners=0;
+
+    DBG_INFO(0, "Autoconfiguration enabled");
+    dm->deviceMonitor=LC_DevMonitor_new();
+    if (dm->disablePciScan==0) {
+      DBG_INFO(0, "Adding PCI bus scanner");
+      scanner=LC_PciScanner_new();
+      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+      scanners++;
+    }
+#ifdef USE_PCMCIA
+    if (dm->disablePcmciaScan==0) {
+      DBG_INFO(0, "Adding PCMCIA bus scanner");
+      scanner=LC_PcmciaScanner_new();
+      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+      scanners++;
+    }
+#endif
+    if (dm->disableUsbRawScan==0) {
+      DBG_INFO(0, "Adding USB bus scanner");
+      scanner=LC_UsbRawScanner_new();
+      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+      scanners++;
+    }
+    if (dm->disableUsbTtyScan==0) {
+      DBG_INFO(0, "Adding USB TTY bus scanner");
+      scanner=LC_UsbTtyScanner_new();
+      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+      scanners++;
+    }
+    dm->lastHardwareScan=0;
+    if (scanners==0) {
+      DBG_WARN(0,
+               "All hardware scanner modules disabled, "
+               "disabling autoconfig");
+      LC_DevMonitor_free(dm->deviceMonitor);
+      dm->deviceMonitor=0;
+      dm->disableAutoConf=1;
+    }
+  }
+
+  LCDM_DeviceManager_ReloadDrivers(dm);
+
   return 0;
 }
 
@@ -222,6 +297,10 @@ int LCDM_DeviceManager_Fini(LCDM_DEVICEMANAGER *dm) {
 
   DBG_INFO(0, "Deinitializing device manager");
 
+  LC_DevMonitor_free(dm->deviceMonitor);
+  dm->deviceMonitor=0;
+
+  GWEN_StringList_Clear(dm->driverBlackList);
   GWEN_DB_ClearGroup(dm->dbDrivers, 0);
   LCDM_Reader_List_Clear(dm->readers);
   LCDM_Driver_List_Clear(dm->drivers);
@@ -362,6 +441,7 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
   GWEN_STRINGLIST *sl;
   GWEN_STRINGLISTENTRY *se;
   GWEN_DB_NODE *dbDrivers;
+  GWEN_DB_NODE *dbT;
 
   DBG_INFO(0, "Reloading driver info files");
 
@@ -369,7 +449,7 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
                                LCS_PATH_DRIVER_INFODIR);
   assert(sl);
 
-  dbDrivers=GWEN_DB_Group_dup(dm->dbConfigDrivers);
+  dbDrivers=GWEN_DB_Group_new("drivers");
 
   se=GWEN_StringList_FirstEntry(sl);
   while(se) {
@@ -385,10 +465,26 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
     }
     se=GWEN_StringListEntry_Next(se);
   }
+  GWEN_StringList_free(sl);
 
   GWEN_DB_Group_free(dm->dbDrivers);
-  dm->dbDrivers=dbDrivers;
-  GWEN_StringList_free(sl);
+  dm->dbDrivers=GWEN_DB_Group_dup(dm->dbConfigDrivers);
+
+  /* remove all groups of drivers which are blacklisted, add all other */
+  while( (dbT=GWEN_DB_GetFirstGroup(dbDrivers)) ) {
+    const char *n;
+
+    GWEN_DB_UnlinkGroup(dbT);
+    n=GWEN_DB_GetCharValue(dbT, "driverName", 0, 0);
+    assert(n);
+    if (GWEN_StringList_HasString(dm->driverBlackList, n)) {
+      DBG_ERROR(0, "Removing driver \"%s\" (blacklisted)", n);
+      GWEN_DB_Group_free(dbT);
+    }
+    else
+      GWEN_DB_AddGroup(dm->dbDrivers, dbT);
+  }
+
   return 0;
 }
 
@@ -428,11 +524,13 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
 		      "slots", LCDM_Reader_GetSlots(r));
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		      "flags", LCDM_Reader_GetFlags(r));
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "ctn", LCDM_Reader_GetCtn(r));
   port=LCDM_Reader_GetPort(r);
   if (port==-1) {
-    port=LCDM_Driver_GetFirstNewPort(d)+(++(dm->nextNewPort));
-    DBG_INFO(0, "Assigning port %d to reader \"%s\"",
-	     port, LCDM_Reader_GetReaderName(r));
+    port=0;
+    DBG_INFO(0, "Assigning default port 0 to reader \"%s\"",
+             LCDM_Reader_GetReaderName(r));
   }
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		      "port", port);
@@ -667,8 +765,8 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   nid=LCDM_Driver_GetIpcId(d);
   dst=LCDM_Driver_GetStatus(d);
 
-  DBG_ERROR(0, "Checking driver %s (%d)",
-            LCDM_Driver_GetDriverName(d), dst);
+  DBG_VERBOUS(0, "Checking driver %s (%d)",
+              LCDM_Driver_GetDriverName(d), dst);
 
   dflags=LCDM_Driver_GetDriverFlags(d);
   if (!(dflags & LCDM_DRIVER_FLAGS_REMOTE) &&
@@ -917,7 +1015,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       done++;
     }
 
-    DBG_DEBUG(0, "Driver still running");
+    DBG_VERBOUS(0, "Driver still running");
     if (LCDM_Driver_GetActiveReadersCount(d)==0 &&
         dm->driverIdleTimeout) {
       time_t t;
@@ -994,7 +1092,8 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
   rst=LCDM_Reader_GetStatus(r);
   d=LCDM_Reader_GetDriver(r);
 
-  DBG_ERROR(0, "Checking reader %s (%d)", LCDM_Reader_GetReaderName(r), rst);
+  DBG_VERBOUS(0, "Checking reader %s (%d)",
+              LCDM_Reader_GetReaderName(r), rst);
 
   if (rst==LC_ReaderStatusWaitForStart) {
     if (LCDM_Reader_CheckTimeout(r)) {
@@ -1002,6 +1101,13 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
       LCDM_Reader_SetStatus(r, rst);
       LCDM_Reader_SetTimeout(r, dm->readerStartTimeout);
       didSomething++;
+    }
+  }
+
+  if (!LCDM_Reader_IsAvailable(r)) {
+    if (LCDM_Reader_GetStatus(r)!=LC_ReaderStatusDisabled) {
+      LCDM_DeviceManager_AbandonReader(dm, r, LC_ReaderStatusDisabled,
+				       "Reader no longer connected");
     }
   }
 
@@ -1350,6 +1456,17 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
     }
   } /* if readerStatusDown */
 
+  if (rst==LC_ReaderStatusDisabled) {
+    if ((LCDM_Reader_GetFlags(r) & LC_READER_FLAGS_AUTO) &&
+	LCDM_Reader_GetUsageCount(r)==0) {
+      DBG_NOTICE(0, "Reader \"%s\" is no longer active, removing it",
+		 LCDM_Reader_GetReaderName(r));
+      LCDM_Reader_List_Del(r);
+      LCDM_Reader_free(r);
+      return 1; /* we did something */
+    }
+  }
+
   if (didSomething)
     return 1;
   return 0;
@@ -1386,12 +1503,14 @@ int LCDM_DeviceManager_CheckReaders(LCDM_DEVICEMANAGER *dm) {
   assert(dm);
   r=LCDM_Reader_List_First(dm->readers);
   while(r) {
+    LCDM_READER *rnext;
     int rv;
 
+    rnext=LCDM_Reader_List_Next(r);
     rv=LCDM_DeviceManager_CheckReader(dm, r);
     if (rv!=0)
       done++;
-    r=LCDM_Reader_List_Next(r);
+    r=rnext;
   }
 
   if (done)
@@ -1405,16 +1524,21 @@ int LCDM_DeviceManager__Work(LCDM_DEVICEMANAGER *dm) {
   int done=0;
   int rv;
 
-  DBG_NOTICE(0, "Checking drivers.");
+  DBG_VERBOUS(0, "Maybe scanning for hardware changes");
+  rv=LCDM_DeviceManager_HardwareScan(dm);
+  if (rv!=0)
+    done++;
+
+  DBG_VERBOUS(0, "Checking drivers.");
   rv=LCDM_DeviceManager_CheckDrivers(dm);
   if (rv!=0) {
-    DBG_NOTICE(0, "Could work on drivers");
+    DBG_VERBOUS(0, "Could work on drivers");
     done++;
   }
-  DBG_NOTICE(0, "Checking readers.");
+  DBG_VERBOUS(0, "Checking readers.");
   rv=LCDM_DeviceManager_CheckReaders(dm);
   if (rv!=0) {
-    DBG_NOTICE(0, "Could work on readers");
+    DBG_VERBOUS(0, "Could work on readers");
     done++;
   }
 
@@ -1815,6 +1939,7 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   LCCO_Card_SetCardType(card, ct);
   LCCO_Card_SetDriverTypeName(card, LCDM_Driver_GetDriverName(d));
   LCCO_Card_SetReaderTypeName(card, LCDM_Reader_GetReaderType(r));
+  LCCO_Card_SetReaderFlags(card, LCDM_Reader_GetFlags(r));
   if (atr)
     LCCO_Card_SetAtr(card,
                      GWEN_Buffer_GetStart(atr),
@@ -2007,6 +2132,443 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
   return rid;
 }
 
+
+
+
+/* __________________________________________________________________________
+ * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ *                      Determining port values from device
+ * YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+ */
+
+
+int LCDM_DeviceManager__GetAutoPortByDeviceId(GWEN_DB_NODE *dbReader,
+					      const LC_DEVICE *dev) {
+  GWEN_DB_NODE *dbAutoPort;
+  int offset;
+  int port;
+
+  dbAutoPort=GWEN_DB_GetGroup(dbReader, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                              "autoport");
+  assert(dbAutoPort);
+  offset=GWEN_DB_GetIntValue(dbAutoPort, "offset", 0, 0);
+
+  port=LC_Device_GetDeviceId(dev);
+  port+=offset;
+
+  return port;
+}
+
+
+
+int LCDM_DeviceManager__GetAutoPortByPos(GWEN_DB_NODE *dbReader,
+					 const LC_DEVICE *dev,
+					 const LC_DEVICE_LIST *deviceList) {
+  GWEN_DB_NODE *dbAutoPort;
+  int pos=0;
+  int i;
+  LC_DEVICE_BUSTYPE busType;
+  int foundDev=0;
+  int offset;
+
+  dbAutoPort=GWEN_DB_GetGroup(dbReader, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+			      "autoport");
+  assert(dbAutoPort);
+  offset=GWEN_DB_GetIntValue(dbAutoPort, "offset", 0, 0);
+
+  for (i=0; ; i++) {
+    const char *bt;
+
+    bt=GWEN_DB_GetCharValue(dbAutoPort, "busorder", i, 0);
+    if (!bt)
+      break;
+    else {
+      busType=LC_Device_BusType_fromString(bt);
+      if (busType!=LC_Device_BusType_Unknown) {
+	const char *sortKey;
+
+	sortKey=GWEN_DB_GetCharValue(dbAutoPort, "sortKey", i, "vendorId");
+	if (strcasecmp(sortKey, "vendorId")==0) {
+	  LC_DEVICE *tdev;
+
+	  tdev=LC_Device_List_First(deviceList);
+	  while(tdev) {
+	    if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev) &&
+		LC_Device_GetBusId(tdev)==LC_Device_GetBusId(dev) &&
+		LC_Device_GetDeviceId(tdev)==LC_Device_GetDeviceId(dev)) {
+	      foundDev=1;
+	      break;
+	    }
+	    if (LC_Device_GetBusType(tdev)==busType &&
+		LC_Device_GetVendorId(tdev)==LC_Device_GetVendorId(dev)) {
+	      pos++;
+	    }
+	    tdev=LC_Device_List_Next(tdev);
+	  }
+	} /* if sorted by vendor */
+	else if (strcasecmp(sortKey, "productId")==0) {
+	  LC_DEVICE *tdev;
+
+	  tdev=LC_Device_List_First(deviceList);
+	  while(tdev) {
+	    if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev) &&
+		LC_Device_GetBusId(tdev)==LC_Device_GetBusId(dev) &&
+		LC_Device_GetDeviceId(tdev)==LC_Device_GetDeviceId(dev)) {
+	      foundDev=1;
+	      break;
+	    }
+	    if (LC_Device_GetBusType(tdev)==busType &&
+		LC_Device_GetVendorId(tdev)==LC_Device_GetVendorId(dev) &&
+		LC_Device_GetProductId(tdev)==LC_Device_GetProductId(dev)) {
+	      pos++;
+	    }
+	    tdev=LC_Device_List_Next(tdev);
+	  }
+	} /* if sorted by vendor and product */
+	else {
+	  DBG_ERROR(0, "Unknown sort key \"%s\"", sortKey);
+          return -1;
+	}
+      }
+      else {
+        DBG_WARN(0, "Unknown bus type \"%s\"", bt);
+      }
+    }
+    if (foundDev)
+      break;
+  } /* for busorder elements */
+
+  i=pos+offset;
+  return i;
+}
+
+
+
+int LCDM_DeviceManager__GetAutoPortByFixed(GWEN_DB_NODE *dbReader,
+					   const LC_DEVICE *dev) {
+  GWEN_DB_NODE *dbAutoPort;
+  GWEN_BUFFER *tbuf;
+  LC_DEVICE_BUSTYPE busType;
+  int port;
+
+  dbAutoPort=GWEN_DB_GetGroup(dbReader, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+			      "autoport");
+  assert(dbAutoPort);
+  tbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  GWEN_Buffer_AppendString(tbuf, "ports/");
+  busType=LC_Device_GetBusType(dev);
+  GWEN_Buffer_AppendString(tbuf, LC_Device_BusType_toString(busType));
+  GWEN_Buffer_AppendString(tbuf, "-fixed");
+  port=GWEN_DB_GetIntValue(dbReader, GWEN_Buffer_GetStart(tbuf), 0, 0);
+  GWEN_Buffer_free(tbuf);
+
+  return port;
+}
+
+
+
+int LCDM_DeviceManager_GetAutoPort(LCDM_DEVICEMANAGER *dm,
+				   GWEN_DB_NODE *dbReader,
+				   const LC_DEVICE *dev,
+				   const LC_DEVICE_LIST *deviceList) {
+  const char *s;
+  int port;
+
+  s=GWEN_DB_GetCharValue(dbReader, "autoport/mode", 0, 0);
+  if (!s) {
+    DBG_ERROR(0, "No autoport mode");
+    return -1;
+  }
+
+  if (strcasecmp(s, "deviceId")==0)
+    port=LCDM_DeviceManager__GetAutoPortByDeviceId(dbReader, dev);
+  else if (strcasecmp(s, "pos")==0)
+    port=LCDM_DeviceManager__GetAutoPortByPos(dbReader,
+					     dev, deviceList);
+  else if (strcasecmp(s, "fixed")==0)
+    port=LCDM_DeviceManager__GetAutoPortByFixed(dbReader, dev);
+  else {
+    DBG_ERROR(0, "Invalid autoport mode \"%s\"", s);
+    return -1;
+  }
+
+  return port;
+}
+
+
+
+void LCDM_DeviceManager_SetDriverLogFile(LCDM_DEVICEMANAGER *dm,
+                                         LCDM_DRIVER *d) {
+  GWEN_BUFFER *lbuf;
+  GWEN_STRINGLIST *sl;
+  const char *s;
+
+  sl=GWEN_PathManager_GetPaths(LCS_PATH_DESTLIB,
+                               LCS_PATH_SERVER_LOGDIR);
+  assert(sl);
+  s=GWEN_StringList_FirstString(sl);
+  assert(s);
+  lbuf=GWEN_Buffer_new(0, 256, 0, 1);
+
+  GWEN_Buffer_AppendString(lbuf, s);
+  LCS_Server_ReplaceVar(DIRSEP"drivers"DIRSEP"@driver@"
+                        DIRSEP"@reader@"
+                        ".log",
+                        "driver",
+                        LCDM_Driver_GetDriverName(d),
+                        lbuf);
+  LCDM_Driver_SetLogFile(d, GWEN_Buffer_GetStart(lbuf));
+  GWEN_Buffer_free(lbuf);
+  GWEN_StringList_free(sl);
+}
+
+
+
+int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
+				const LC_DEVICE *ud,
+				const LC_DEVICE_LIST *deviceList) {
+  GWEN_DB_NODE *dbDriver;
+  GWEN_DB_NODE *dbReader=0;
+  const char *busType;
+
+  DBG_DEBUG(0, "Device %s/%04x/%04x up",
+            LC_Device_BusType_toString(LC_Device_GetBusType(ud)),
+            LC_Device_GetVendorId(ud),
+            LC_Device_GetProductId(ud));
+
+  busType=LC_Device_BusType_toString(LC_Device_GetBusType(ud));
+
+  /* find driver and reader configuration */
+  dbDriver=GWEN_DB_FindFirstGroup(dm->dbDrivers, "driver");
+  while(dbDriver) {
+    dbReader=GWEN_DB_FindFirstGroup(dbDriver, "reader");
+    while(dbReader) {
+      if (strcasecmp(GWEN_DB_GetCharValue(dbReader,
+                                          "busType", 0,
+                                          "serial"),
+		     busType)==0) {
+	if ((GWEN_DB_GetIntValue(dbReader, "vendorId", 0, 0)==
+	     (int)LC_Device_GetVendorId(ud)) &&
+	    (GWEN_DB_GetIntValue(dbReader, "productId", 0, 0)==
+	     (int)LC_Device_GetProductId(ud))) {
+	  /* reader found */
+	  break;
+	}
+      }
+      dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");
+    } /* while */
+
+    if (dbReader)
+      break;
+    dbDriver=GWEN_DB_FindNextGroup(dbDriver, "driver");
+  } /* while */
+
+  if (dbDriver && dbReader) {
+    LCDM_DRIVER *d;
+    const char *dname;
+    const char *rtype;
+    GWEN_BUFFER *nbuf;
+    LCDM_READER *r;
+    char numbuf[32];
+    int port;
+
+    /* found reader and driver */
+    dname=GWEN_DB_GetCharValue(dbDriver, "driverName", 0, 0);
+    assert(dname);
+
+    rtype=GWEN_DB_GetCharValue(dbReader, "readerType", 0, 0);
+    assert(rtype);
+
+    d=LCDM_Driver_List_First(dm->drivers);
+    while(d) {
+      if (strcasecmp(LCDM_Driver_GetDriverName(d), dname)==0) {
+	if (LCDM_Driver_GetMaxReaders(d)>
+	    LCDM_Driver_GetAssignedReadersCount(d)) {
+	  DBG_NOTICE(0,
+		     "Reusing driver %s: MaxReaders: %d, Active Readers: %d",
+		     LCDM_Driver_GetDriverName(d),
+                     LCDM_Driver_GetMaxReaders(d),
+                     LCDM_Driver_GetAssignedReadersCount(d));
+	  break;
+	}
+      }
+      d=LCDM_Driver_List_Next(d);
+    } /* while */
+
+    if (!d) {
+      /* no driver exists, create one */
+      d=LCDM_Driver_fromDb(dbDriver);
+      assert(d);
+      if (!LCDM_Driver_GetLogFile(d)) {
+        LCDM_DeviceManager_SetDriverLogFile(dm, d);
+      }
+      LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_AUTO);
+      LCDM_Driver_List_Add(d, dm->drivers);
+    }
+
+    /* create reader */
+    r=LCDM_Reader_fromDb(d, dbReader);
+    assert(r);
+    LCDM_Driver_IncAssignedReadersCount(d);
+    LCDM_Reader_List_Add(r, dm->readers);
+    LCDM_Reader_AddFlags(r, LC_READER_FLAGS_AUTO);
+
+    nbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    snprintf(numbuf, sizeof(numbuf), "%d", ++(dm->lastAutoReader));
+    GWEN_Buffer_AppendString(nbuf, "auto");
+    GWEN_Buffer_AppendString(nbuf, numbuf);
+    GWEN_Buffer_AppendByte(nbuf, '-');
+    GWEN_Buffer_AppendString(nbuf, rtype);
+    LCDM_Reader_SetReaderName(r, GWEN_Buffer_GetStart(nbuf));
+    DBG_NOTICE(0, "AUTOCONFIG: Created new reader \"%s\" (%04x/%04x)",
+	       GWEN_Buffer_GetStart(nbuf),
+	       LC_Device_GetVendorId(ud),
+	       LC_Device_GetProductId(ud));
+    GWEN_Buffer_free(nbuf);
+
+    port=LCDM_DeviceManager_GetAutoPort(dm, dbReader, ud, deviceList);
+    if (port<0) {
+      DBG_WARN(0, "Could not automatically assign port, assuming 1");
+      port=1;
+    }
+    else {
+      DBG_NOTICE(0, "Automatically assigned port %d to reader \"%s\"",
+                 port, LCDM_Reader_GetReaderName(r));
+    }
+    LCDM_Reader_SetPort(r, port);
+    LCDM_Reader_SetBusType(r, LC_Device_GetBusType(ud));
+    LCDM_Reader_SetBusId(r, LC_Device_GetBusId(ud));
+    LCDM_Reader_SetDeviceId(r, LC_Device_GetDeviceId(ud));
+    LCDM_Reader_SetIsAvailable(r, 1);
+    LCDM_Reader_SetStatus(r, LC_ReaderStatusDown);
+    if (dm->readerUsage)
+      LCDM_Reader_IncUsageCount(r, dm->readerUsage);
+    LCS_Server_ReaderChg(dm->server,
+			 LCDM_Driver_GetDriverId(d),
+			 LCDM_Reader_GetReaderId(r),
+			 LCDM_Reader_GetReaderType(r),
+			 LCDM_Reader_GetReaderName(r),
+			 LC_ReaderStatusDown, "New reader detected");
+  }
+  else {
+    DBG_INFO(0, "Device %s/%04x/%04x is not a known reader",
+             LC_Device_BusType_toString(LC_Device_GetBusType(ud)),
+             LC_Device_GetVendorId(ud),
+             LC_Device_GetProductId(ud));
+  }
+
+  return 0;
+}
+
+
+
+int LCDM_DeviceManager_DeviceDown(LCDM_DEVICEMANAGER *dm,
+				  const LC_DEVICE *ud) {
+  LCDM_READER *r;
+
+  assert(dm);
+  assert(ud);
+
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetBusType(r)==LC_Device_GetBusType(ud) &&
+	LCDM_Reader_GetBusId(r)==LC_Device_GetBusId(ud) &&
+	LCDM_Reader_GetDeviceId(r)==LC_Device_GetDeviceId(ud)) {
+      DBG_NOTICE(0, "Reader \"%s\" disconnected",
+		 LCDM_Reader_GetReaderName(r));
+      LCDM_Reader_SetIsAvailable(r, 0);
+      /* the rest will be handled in the CheckReader function */
+      break;
+    }
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  return 0;
+}
+
+
+
+int LCDM_DeviceManager_HardwareScan(LCDM_DEVICEMANAGER *dm) {
+  time_t t1;
+  int reloadedDrivers=0;
+
+  if (dm->disableAutoConf)
+    return 0; /* nothing done */
+
+  t1=time(0);
+  if (dm->lastHardwareScan==0 ||
+      difftime(t1, dm->lastHardwareScan)>dm->hardwareScanInterval) {
+    int rv;
+
+    rv=LC_DevMonitor_Scan(dm->deviceMonitor);
+    dm->lastHardwareScan=t1;
+
+    if (rv==1) {
+      return 0; /* no changes */
+    }
+    else if (rv==0) {
+      LC_DEVICE_LIST *devFullList;
+      LC_DEVICE_LIST *devList;
+      LC_DEVICE *dev;
+      int changes=0;
+
+      DBG_NOTICE(0, "Changes in hardware list");
+      devFullList=LC_DevMonitor_GetCurrentDevices(dm->deviceMonitor);
+
+      /* first handle devices which went down */
+      devList=LC_DevMonitor_GetLostDevices(dm->deviceMonitor);
+      dev=LC_Device_List_First(devList);
+      while(dev) {
+        LCDM_DeviceManager_DeviceDown(dm, dev);
+        changes++;
+        dev=LC_Device_List_Next(dev);
+      }
+
+      /* then handle devices which are up */
+      devList=LC_DevMonitor_GetNewDevices(dm->deviceMonitor);
+      dev=LC_Device_List_First(devList);
+      while(dev) {
+        if (reloadedDrivers==0) {
+          LCDM_DeviceManager_ReloadDrivers(dm);
+          reloadedDrivers=1;
+        }
+
+        LCDM_DeviceManager_DeviceUp(dm, dev, devFullList);
+        changes++;
+        dev=LC_Device_List_Next(dev);
+      }
+
+      if (changes)
+        return 1;
+    }
+    else {
+      DBG_ERROR(0, "Error scanning");
+    }
+  }
+
+  return 0; /* nothing done */
+}
+
+
+
+const char *LCDM_DeviceManager_GetDriverVar(LCDM_DEVICEMANAGER *dm,
+                                            LCCO_CARD *card,
+                                            const char *vname) {
+  LCDM_READER *r;
+  LCDM_DRIVER *d;
+  GWEN_DB_NODE *dbT;
+
+  assert(dm);
+  r=LCDM_Card_GetReader(card);
+  assert(r);
+  d=LCDM_Reader_GetDriver(r);
+  assert(d);
+
+  dbT=LCDM_Driver_GetDriverVars(d);
+  assert(dbT);
+
+  return GWEN_DB_GetCharValue(dbT, vname, 0, 0);
+}
 
 
 

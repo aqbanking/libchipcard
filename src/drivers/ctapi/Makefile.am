@@ -1,4 +1,4 @@
-INCLUDES=@all_includes@
+INCLUDES=-I../../lib/chipcard2-server/driver @all_includes@
 
 EXTRA_DIST=ctapi.xml.in
 
@@ -17,7 +17,7 @@ ctapi_SOURCES=\
   readerctapi.c \
   main.c
 
-ctapi_LDADD=-L../../lib/chipcard2-server -lchipcard2d \
+ctapi_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ctapi_LDFLAGS=@STRIPALL@
 

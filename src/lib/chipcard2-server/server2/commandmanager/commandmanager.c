@@ -74,7 +74,7 @@ int LCCMD_CommandManager_Init(LCCMD_COMMANDMANAGER *mgr, GWEN_DB_NODE *db) {
   GWEN_DB_NODE *dbT;
   int rv;
 
-  DBG_INFO(0, "Initializing client manager");
+  DBG_INFO(0, "Initialising command manager");
   assert(mgr);
 
   mgr->xmlCards=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "cards");
@@ -200,7 +200,7 @@ int LCCMD_CommandManager__LoadCardFile(LCCMD_COMMANDMANAGER *mgr,
   assert(mgr);
   assert(fname);
 
-  DBG_INFO(0, "Loading card file \"%s\"", fname);
+  DBG_DEBUG(0, "Loading card file \"%s\"", fname);
 
   /* name matches */
   n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "card");
@@ -215,7 +215,7 @@ int LCCMD_CommandManager__LoadCardFile(LCCMD_COMMANDMANAGER *mgr,
 
   nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, "cards");
   if (!nn) {
-    DBG_INFO(0, "File \"%s\" does not contain <cards>", fname);
+    DBG_DEBUG(0, "File \"%s\" does not contain <cards>", fname);
     GWEN_XMLNode_free(n);
     return -1;
   }
@@ -287,8 +287,8 @@ int LCCMD_CommandManager___LoadCardFiles(LCCMD_COMMANDMANAGER *mgr,
             } /* if name longer than 3 chars */
           } /* if it is not a folder */
           else {
-            DBG_INFO(0, "Adding folder \"%s\"",
-                     GWEN_Buffer_GetStart(buf));
+            DBG_VERBOUS(0, "Adding folder \"%s\"",
+                        GWEN_Buffer_GetStart(buf));
             GWEN_StringList_AppendString(folders,
                                          GWEN_Buffer_GetStart(buf),
                                          0, 1);

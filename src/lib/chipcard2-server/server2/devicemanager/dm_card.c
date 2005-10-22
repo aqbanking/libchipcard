@@ -36,6 +36,7 @@ void LCDM_Card_extend(LCCO_CARD *cd,
 
   GWEN_NEW_OBJECT(LCDM_CARD, dc);
   dc->reader=r;
+  LCDM_Reader_Attach(dc->reader);
   GWEN_INHERIT_SETDATA(LCCO_CARD, LCDM_CARD, cd, dc,
                        LCDM_Card_FreeData);
 }
@@ -59,6 +60,7 @@ void LCDM_Card_FreeData(void *bp, void *p) {
   LCDM_CARD *dc;
 
   dc=(LCDM_CARD*)p;
+  LCDM_Reader_free(dc->reader);
   GWEN_FREE_OBJECT(p);
 }
 

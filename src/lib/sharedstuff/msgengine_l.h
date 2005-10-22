@@ -15,7 +15,7 @@
 #define CHIPCARD2_MSGENGINE_L_H
 
 #include <gwenhywfar/msgengine.h>
-#include <chipcard2-client/client/msgengine.h>
+#include "msgengine.h"
 
 
 #endif /* CHIPCARD2_MSGENGINE_L_H */

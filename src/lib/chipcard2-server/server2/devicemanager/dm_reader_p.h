@@ -17,7 +17,7 @@
 
 #include "dm_reader_l.h"
 
-#include <chipcard2-server/common/devmonitor.h>
+#include "common/devmonitor.h"
 
 
 struct LCDM_READER {
@@ -28,6 +28,7 @@ struct LCDM_READER {
   char *readerName;
   char *shortDescr;
   unsigned int slots;
+  unsigned int ctn;
   unsigned int port;
   GWEN_TYPE_UINT32 flags;
 
@@ -57,6 +58,7 @@ struct LCDM_READER {
    * to inactive cards!) */
   GWEN_TYPE_UINT32 usageCount;
 
+  GWEN_TYPE_UINT32 refCount;
 };
 
 

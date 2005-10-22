@@ -17,7 +17,7 @@
 #include "driverifd.h"
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard2-server/driver/driver.h>
+#include "driver_l.h"
 
 
 #define IFD_POWER_UP           500
@@ -59,13 +59,6 @@ typedef long (*IFDTRANSMIT_PTR)(GWEN_TYPE_UINT32 lun,
                                 GWEN_TYPE_UINT32 *RxBufferLen,
                                 SCARD_IO_HEADER *RxPci);
 
-#ifdef IFD_OLD
-typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
-                               const unsigned char *TxBuffer,
-                               GWEN_TYPE_UINT32 TxBufferLen,
-                               unsigned char *RxBuffer,
-                               GWEN_TYPE_UINT32 *RxBufferLen);
-#else
 typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
                                GWEN_TYPE_UINT32 controlCode,
                                const unsigned char *TxBuffer,
@@ -73,7 +66,6 @@ typedef long (*IFDCONTROL_PTR)(GWEN_TYPE_UINT32 lun,
                                unsigned char *RxBuffer,
                                GWEN_TYPE_UINT32 RxBufferLen,
                                GWEN_TYPE_UINT32 *pdwBytesReturned);
-#endif
 
 typedef long (*IFDPRESENCE_PTR)(GWEN_TYPE_UINT32 lun);
 
@@ -96,37 +88,34 @@ struct DRIVER_IFD {
 };
 
 
-#ifdef IFD_OLD
-#else
 void DriverIFD_freeData(void *bp, void *p);
 
 int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
                                   unsigned int atrlen);
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
                                     int toReader,
-                                    LC_READER *r,
-                                    LC_SLOT *slot,
+                                    LCD_READER *r,
+                                    LCD_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
                                     unsigned char *buffer,
                                     int *bufferlen);
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LC_DRIVER *d, LC_SLOT *sl);
+GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LC_DRIVER *d, LC_READER *r);
+GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LC_DRIVER *d, LC_READER *r,
+GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                       GWEN_BUFFER *buf);
 
-const char *DriverIFD_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err);
-#endif
+const char *DriverIFD_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 
 

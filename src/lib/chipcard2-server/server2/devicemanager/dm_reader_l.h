@@ -21,7 +21,7 @@ typedef struct LCDM_READER LCDM_READER;
 #include <gwenhywfar/misc.h>
 
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-server/common/devmonitor.h>
+#include "common/devmonitor.h"
 
 #include <time.h>
 
@@ -35,6 +35,7 @@ GWEN_LIST_FUNCTION_DEFS(LCDM_READER, LCDM_Reader);
 
 LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d);
 void LCDM_Reader_free(LCDM_READER *r);
+void LCDM_Reader_Attach(LCDM_READER *r);
 
 LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db);
 void LCDM_Reader_toDb(const LCDM_READER *r, GWEN_DB_NODE *db);
@@ -77,6 +78,9 @@ void LCDM_Reader_SetSlots(LCDM_READER *r, unsigned int i);
 
 unsigned int LCDM_Reader_GetPort(const LCDM_READER *r);
 void LCDM_Reader_SetPort(LCDM_READER *r, unsigned int i);
+
+unsigned int LCDM_Reader_GetCtn(const LCDM_READER *r);
+void LCDM_Reader_SetCtn(LCDM_READER *r, unsigned int i);
 
 const char *LCDM_Reader_GetShortDescr(const LCDM_READER *r);
 void LCDM_Reader_SetShortDescr(LCDM_READER *r, const char *s);

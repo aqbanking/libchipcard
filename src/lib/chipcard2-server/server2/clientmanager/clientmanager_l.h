@@ -72,6 +72,8 @@ void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
                                    LC_SERVICE_STATUS newSt,
                                    const char *reason);
 
+int LCCL_ClientManager_GetClientCount(const LCCL_CLIENTMANAGER *clm);
+
 /*@}*/
 
 

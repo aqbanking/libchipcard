@@ -28,6 +28,7 @@ typedef struct LCDM_DRIVER LCDM_DRIVER;
 #define LCDM_DRIVER_FLAGS_RUNTIME_MASK  0xffff0000
 #define LCDM_DRIVER_FLAGS_AUTO          0x00010000
 #define LCDM_DRIVER_FLAGS_REMOTE        0x00020000
+#define LCDM_DRIVER_FLAGS_CONFIG        0x00040000
 
 #define LCDM_DRIVER_FLAGS_HAS_VERIFY_FN 0x00000001
 #define LCDM_DRIVER_FLAGS_HAS_MODIFY_FN 0x00000002
@@ -36,20 +37,8 @@ typedef struct LCDM_DRIVER LCDM_DRIVER;
 GWEN_LIST_FUNCTION_DEFS(LCDM_DRIVER, LCDM_Driver);
 
 
-typedef enum {
-  LCDM_DriverAutoPortMode_Unknown=-1,
-  LCDM_DriverAutoPortMode_None=0,
-  LCDM_DriverAutoPortMode_VendorId,
-  LCDM_DriverAutoPortMode_ProductId
-} LCDM_DRIVER_AUTOPORTMODE;
-
 #include <chipcard2/chipcard2.h>
 #include "devicemanager_l.h"
-
-
-LCDM_DRIVER_AUTOPORTMODE LCDM_DriverAutoPortMode_fromString(const char *s);
-const char *LCDM_DriverAutoPortMode_toString(LCDM_DRIVER_AUTOPORTMODE i);
-
 
 
 GWEN_TYPE_UINT32 LCDM_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name);
@@ -123,11 +112,6 @@ void LCDM_Driver_SetTimeout(LCDM_DRIVER *d, int secs);
 int LCDM_Driver_CheckTimeout(const LCDM_DRIVER *d);
 
 GWEN_DB_NODE *LCDM_Driver_GetDriverVars(const LCDM_DRIVER *d);
-
-int LCDM_Driver_GetFirstNewPort(const LCDM_DRIVER *d);
-int LCDM_Driver_GetAutoPortOffset(const LCDM_DRIVER *d);
-LCDM_DRIVER_AUTOPORTMODE LCDM_Driver_GetAutoPortMode(const LCDM_DRIVER *d);
-
 
 void LCDM_Driver_Dump(const LCDM_DRIVER *d, FILE *f, int indent);
 

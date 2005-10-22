@@ -53,7 +53,7 @@ server {
   #
   # address the server is listening on (or socket file if type is "local")
   #
-  addr="/tmp/.chipcard2/chipcard2.sock"
+  addr="/var/run/chipcard2.comm"
   
   #
   # TCP port the server is listening on (not used if type is "local")

@@ -33,13 +33,13 @@
 
 #include <time.h>
 
-static GWEN_TYPE_UINT32 LC_Driver__LastCardNum=0;
+static GWEN_TYPE_UINT32 LCD_Driver__LastCardNum=0;
 
 
-GWEN_INHERIT_FUNCTIONS(LC_DRIVER)
+GWEN_INHERIT_FUNCTIONS(LCD_DRIVER)
 
 
-void LC_Driver_Usage(const char *prgName) {
+void LCD_Driver_Usage(const char *prgName) {
   fprintf(stdout,
           "%s [OPTONS] \n"
           "[-v]               verbous\n"
@@ -69,7 +69,7 @@ void LC_Driver_Usage(const char *prgName) {
 
 
 
-LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
+LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
                                                int argc, char **argv) {
   int i;
 
@@ -98,28 +98,28 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
     if (strcmp(argv[i],"--logfile")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       free(d->logFile);
       d->logFile=strdup(argv[i]);
     }
     else if (strcmp(argv[i],"--logtype")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->logType=GWEN_Logger_Name2Logtype(argv[i]);
       if (d->logType==GWEN_LoggerTypeUnknown) {
         DBG_ERROR(0, "Unknown log type \"%s\"\n", argv[i]);
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       }
     }
     else if (strcmp(argv[i],"--loglevel")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->logLevel=GWEN_Logger_Name2Level(argv[i]);
       if (d->logLevel==GWEN_LoggerLevelUnknown) {
         DBG_ERROR(0, "Unknown log level \"%s\"\n", argv[i]);
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       }
     }
     else if (strcmp(argv[i], "--accept-all-certs")==0) {
@@ -134,43 +134,43 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
     else if (strcmp(argv[i],"-t")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->typ=argv[i];
     }
     else if (strcmp(argv[i],"-i")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->driverId=argv[i];
     }
     else if (strcmp(argv[i],"-a")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->serverAddr=argv[i];
     }
     else if (strcmp(argv[i],"-p")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->serverPort=atoi(argv[i]);
     }
     else if (strcmp(argv[i],"-l")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->libraryFile=argv[i];
     }
     else if (strcmp(argv[i],"-c")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->certFile=argv[i];
     }
     else if (strcmp(argv[i],"-C")==0) {
       i++;
       if (i>=argc)
-        return LC_DriverCheckArgsResultError;
+        return LCD_DriverCheckArgsResultError;
       d->certDir=argv[i];
     }
     else if (strcmp(argv[i],"--test")==0) {
@@ -179,31 +179,31 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
     else if (strcmp(argv[i],"-rn")==0) {
       i++;
       if (i>=argc)
-	return LC_DriverCheckArgsResultError;
+	return LCD_DriverCheckArgsResultError;
       d->rname=argv[i];
     }
     else if (strcmp(argv[i],"-rp")==0) {
       i++;
       if (i>=argc)
-	return LC_DriverCheckArgsResultError;
+	return LCD_DriverCheckArgsResultError;
       d->rport=atoi(argv[i]);
     }
     else if (strcmp(argv[i],"-rs")==0) {
       i++;
       if (i>=argc)
-	return LC_DriverCheckArgsResultError;
+	return LCD_DriverCheckArgsResultError;
       d->rslots=atoi(argv[i]);
     }
     else if (strcmp(argv[i],"-rt")==0) {
       i++;
       if (i>=argc)
-	return LC_DriverCheckArgsResultError;
+	return LCD_DriverCheckArgsResultError;
       d->rtype=argv[i];
     }
     else if (strcmp(argv[i],"-dt")==0) {
       i++;
       if (i>=argc)
-	return LC_DriverCheckArgsResultError;
+	return LCD_DriverCheckArgsResultError;
       d->dtype=argv[i];
     }
     else if (strcmp(argv[i],"--remote")==0) {
@@ -211,18 +211,18 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
       d->remoteMode=1;
     }
     else if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
-      LC_Driver_Usage(argv[0]);
-      return LC_DriverCheckArgsResultHelp;
+      LCD_Driver_Usage(argv[0]);
+      return LCD_DriverCheckArgsResultHelp;
     }
     else if (strcmp(argv[i],"-V")==0 || strcmp(argv[i],"--version")==0) {
-      return LC_DriverCheckArgsResultVersion;
+      return LCD_DriverCheckArgsResultVersion;
     }
     else if (strcmp(argv[i],"-v")==0) {
       d->verbous=1;
     }
     else {
       DBG_ERROR(0, "Unknown argument \"%s\"", argv[i]);
-      return LC_DriverCheckArgsResultError;
+      return LCD_DriverCheckArgsResultError;
     }
     i++;
   } /* while */
@@ -231,17 +231,17 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
   if (!d->testMode) {
     if (!d->serverAddr) {
       DBG_ERROR(0, "Server address missing");
-      return LC_DriverCheckArgsResultError;
+      return LCD_DriverCheckArgsResultError;
     }
     if (!d->driverId && !d->remoteMode) {
       DBG_ERROR(0, "Driver id missing");
-      return LC_DriverCheckArgsResultError;
+      return LCD_DriverCheckArgsResultError;
     }
   }
 
   if (!d->libraryFile) {
     DBG_ERROR(0, "Name of driver library file missing");
-    return LC_DriverCheckArgsResultError;
+    return LCD_DriverCheckArgsResultError;
   }
 
   if (d->logFile==0) {
@@ -261,7 +261,7 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
       free(d->readerLogFile);
       d->readerLogFile=strdup(d->logFile);
       mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      LC_Driver_ReplaceVar(d->logFile, "reader", "driver", mbuf);
+      LCD_Driver_ReplaceVar(d->logFile, "reader", "driver", mbuf);
       free(d->logFile);
       d->logFile=strdup(GWEN_Buffer_GetStart(mbuf));
       GWEN_Buffer_free(mbuf);
@@ -273,27 +273,27 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
         !d->rtype ||
         !d->dtype) {
       DBG_ERROR(0, "Reader properties missing");
-      return LC_DriverCheckArgsResultError;
+      return LCD_DriverCheckArgsResultError;
     }
   }
 
   /* now setup reader if in remote mode */
   if (d->remoteMode) {
-    LC_READER *r;
+    LCD_READER *r;
 
     /* setup remote mode */
     DBG_ERROR(0, "Creating reader...");
-    r=LC_Driver_CreateReader(d, 0,
+    r=LCD_Driver_CreateReader(d, 0,
                              d->rname,
                              d->rport, d->rslots,
                              d->rflags);
     if (!r) {
       DBG_ERROR(0, "Could not create reader, aborting.");
-      return LC_DriverCheckArgsResultError;
+      return LCD_DriverCheckArgsResultError;
     }
-    LC_Reader_SetReaderType(r, d->rtype);
-    LC_Reader_SetDriversReaderId(r, ++(d->lastReaderId));
-    LC_Driver_AddReader(d, r);
+    LCD_Reader_SetReaderType(r, d->rtype);
+    LCD_Reader_SetDriversReaderId(r, ++(d->lastReaderId));
+    LCD_Driver_AddReader(d, r);
   }
 
   return 0;
@@ -301,15 +301,15 @@ LC_DRIVER_CHECKARGS_RESULT LC_Driver_CheckArgs(LC_DRIVER *d,
 
 
 
-int LC_Driver_Init(LC_DRIVER *d, int argc, char **argv) {
-  LC_DRIVER_CHECKARGS_RESULT res;
+int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
+  LCD_DRIVER_CHECKARGS_RESULT res;
   GWEN_NETTRANSPORT *tr;
   GWEN_SOCKET *sk;
   GWEN_INETADDRESS *addr;
   GWEN_TYPE_UINT32 sid;
 
-  res=LC_Driver_CheckArgs(d, argc, argv);
-  if (res!=LC_DriverCheckArgsResultOk) {
+  res=LCD_Driver_CheckArgs(d, argc, argv);
+  if (res!=LCD_DriverCheckArgsResultOk) {
     return -1;
   }
 
@@ -388,7 +388,7 @@ int LC_Driver_Init(LC_DRIVER *d, int argc, char **argv) {
     sid=GWEN_IPCManager_AddClient(d->ipcManager,
 				  tr,
 				  0,0,
-				  LC_DRIVER_MARK_DRIVER);
+				  LCD_DRIVER_MARK_DRIVER);
     if (sid==0) {
       DBG_ERROR(0, "Could not add IPC client");
       return -1;
@@ -402,24 +402,24 @@ int LC_Driver_Init(LC_DRIVER *d, int argc, char **argv) {
 
 
 
-LC_DRIVER *LC_Driver_new() {
-  LC_DRIVER *d;
+LCD_DRIVER *LCD_Driver_new() {
+  LCD_DRIVER *d;
 
-  GWEN_NEW_OBJECT(LC_DRIVER, d);
-  GWEN_INHERIT_INIT(LC_DRIVER, d);
-  d->readers=LC_Reader_List_new();
+  GWEN_NEW_OBJECT(LCD_DRIVER, d);
+  GWEN_INHERIT_INIT(LCD_DRIVER, d);
+  d->readers=LCD_Reader_List_new();
 
-  GWEN_NetTransportSSL_SetAskAddCertFn2(LC_Driver_AskAddCert, (void*)d);
+  GWEN_NetTransportSSL_SetAskAddCertFn2(LCD_Driver_AskAddCert, (void*)d);
 
   return d;
 }
 
 
 
-void LC_Driver_free(LC_DRIVER *d) {
+void LCD_Driver_free(LCD_DRIVER *d) {
   if (d) {
-    GWEN_INHERIT_FINI(LC_DRIVER, d);
-    LC_Reader_List_free(d->readers);
+    GWEN_INHERIT_FINI(LCD_DRIVER, d);
+    LCD_Reader_List_free(d->readers);
     GWEN_IPCManager_free(d->ipcManager);
     free(d->logFile);
     free(d->readerLogFile);
@@ -429,15 +429,15 @@ void LC_Driver_free(LC_DRIVER *d) {
 
 
 
-int LC_Driver_IsTestMode(const LC_DRIVER *d) {
+int LCD_Driver_IsTestMode(const LCD_DRIVER *d) {
   assert(d);
   return d->testMode;
 }
 
 
 
-int LC_Driver_Test(LC_DRIVER *d) {
-  LC_READER *r;
+int LCD_Driver_Test(LCD_DRIVER *d) {
+  LCD_READER *r;
   GWEN_TYPE_UINT32 res;
 
   assert(d);
@@ -446,7 +446,7 @@ int LC_Driver_Test(LC_DRIVER *d) {
     return -1;
   }
 
-  r=LC_Driver_CreateReader(d,
+  r=LCD_Driver_CreateReader(d,
                            1,
                            d->rname,
                            d->rport,
@@ -454,54 +454,54 @@ int LC_Driver_Test(LC_DRIVER *d) {
                            0);
   assert(r);
   fprintf(stdout, "Connecting reader...\n");
-  res=LC_Driver_ConnectReader(d, r);
+  res=LCD_Driver_ConnectReader(d, r);
   if (res!=0) {
     fprintf(stderr, "-> Could not connect reader (%s)\n",
-	    LC_Driver_GetErrorText(d, res));
-    LC_Reader_free(r);
+	    LCD_Driver_GetErrorText(d, res));
+    LCD_Reader_free(r);
     return -1;
   }
   fprintf(stdout, "-> Reader connected.\n");
 
   fprintf(stdout, "Disconnecting reader...\n");
-  res=LC_Driver_DisconnectReader(d, r);
+  res=LCD_Driver_DisconnectReader(d, r);
   if (res!=0) {
     fprintf(stderr, "-> Could not disconnect reader (%s)\n",
-	    LC_Driver_GetErrorText(d, res));
-    LC_Reader_free(r);
+	    LCD_Driver_GetErrorText(d, res));
+    LCD_Reader_free(r);
     return -1;
   }
   fprintf(stdout, "-> Reader disconnected.\n");
 
   fprintf(stdout, "Reader is available.\n");
-  LC_Reader_free(r);
+  LCD_Reader_free(r);
   return 0;
 }
 
 
 
-const char *LC_Driver_GetDriverDataDir(const LC_DRIVER *d){
+const char *LCD_Driver_GetDriverDataDir(const LCD_DRIVER *d){
   assert(d);
   return d->driverDataDir;
 }
 
 
 
-const char *LC_Driver_GetLibraryFile(const LC_DRIVER *d){
+const char *LCD_Driver_GetLibraryFile(const LCD_DRIVER *d){
   assert(d);
   return d->libraryFile;
 }
 
 
 
-const char *LC_Driver_GetDriverId(const LC_DRIVER *d){
+const char *LCD_Driver_GetDriverId(const LCD_DRIVER *d){
   assert(d);
   return d->driverId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_SendCommand(LC_DRIVER *d,
+GWEN_TYPE_UINT32 LCD_Driver_SendCommand(LCD_DRIVER *d,
                                        GWEN_DB_NODE *dbCommand) {
   return GWEN_IPCManager_SendRequest(d->ipcManager,
                                      d->ipcId, dbCommand);
@@ -509,7 +509,7 @@ GWEN_TYPE_UINT32 LC_Driver_SendCommand(LC_DRIVER *d,
 
 
 
-int LC_Driver_SendResponse(LC_DRIVER *d,
+int LCD_Driver_SendResponse(LCD_DRIVER *d,
                            GWEN_TYPE_UINT32 rid,
                            GWEN_DB_NODE *dbCommand) {
   return GWEN_IPCManager_SendResponse(d->ipcManager,
@@ -518,7 +518,7 @@ int LC_Driver_SendResponse(LC_DRIVER *d,
 
 
 
-int LC_Driver_SendResult(LC_DRIVER *d,
+int LCD_Driver_SendResult(LCD_DRIVER *d,
                          GWEN_TYPE_UINT32 rid,
                          const char *name,
                          const char *code,
@@ -531,20 +531,20 @@ int LC_Driver_SendResult(LC_DRIVER *d,
   if (text)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          "text", text);
-  return LC_Driver_SendResponse(d, rid, db);
+  return LCD_Driver_SendResponse(d, rid, db);
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_GetNextInRequest(LC_DRIVER *d) {
+GWEN_TYPE_UINT32 LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
   assert(d);
   return GWEN_IPCManager_GetNextInRequest(d->ipcManager,
-                                          LC_DRIVER_MARK_DRIVER);
+                                          LCD_DRIVER_MARK_DRIVER);
 }
 
 
 
-GWEN_DB_NODE *LC_Driver_GetInRequestData(LC_DRIVER *d,
+GWEN_DB_NODE *LCD_Driver_GetInRequestData(LCD_DRIVER *d,
                                          GWEN_TYPE_UINT32 rid) {
   assert(d);
   return GWEN_IPCManager_GetInRequestData(d->ipcManager, rid);
@@ -552,7 +552,7 @@ GWEN_DB_NODE *LC_Driver_GetInRequestData(LC_DRIVER *d,
 
 
 
-int LC_Driver__Work(LC_DRIVER *d, int timeout, int maxmsg){
+int LCD_Driver__Work(LCD_DRIVER *d, int timeout, int maxmsg){
   GWEN_NETCONNECTION_WORKRESULT res;
   int rv;
 
@@ -587,7 +587,7 @@ int LC_Driver__Work(LC_DRIVER *d, int timeout, int maxmsg){
 
 
 
-int LC_Driver_CheckResponses(GWEN_DB_NODE *db) {
+int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
   const char *name;
 
   name=GWEN_DB_GetCharValue(db, "command/vars/cmd", 0, 0);
@@ -622,7 +622,7 @@ int LC_Driver_CheckResponses(GWEN_DB_NODE *db) {
 
 
 
-int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
+int LCD_Driver_Connect(LCD_DRIVER *d, const char *code, const char *text){
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   time_t startt;
@@ -655,15 +655,15 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
    * some readers already, so we now inform the server about readers we can
    * offer.
    */
-  if (LC_Reader_List_GetCount(d->readers)) {
+  if (LCD_Reader_List_GetCount(d->readers)) {
     GWEN_DB_NODE *dbReaders;
-    LC_READER *r;
+    LCD_READER *r;
 
     dbReaders=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS,
                                "readers");
     assert(dbReaders);
 
-    r=LC_Reader_List_First(d->readers);
+    r=LCD_Reader_List_First(d->readers);
     while(r) {
       GWEN_DB_NODE *dbReader;
       GWEN_TYPE_UINT32 flags;
@@ -673,7 +673,7 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
       assert(dbReader);
       GWEN_DB_SetIntValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
                           "driversReaderId",
-                          LC_Reader_GetDriversReaderId(r));
+                          LCD_Reader_GetDriversReaderId(r));
       GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "readerType", d->rtype);
       GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -683,24 +683,10 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
       GWEN_DB_SetIntValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
                           "slots", d->rslots);
 
-      flags=LC_Reader_GetReaderFlags(r);
-      if (flags & LC_READER_FLAGS_KEYPAD)
-        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
-                             "readerflags", "KEYPAD");
-      if (flags & LC_READER_FLAGS_DISPLAY)
-        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
-                             "readerflags", "DISPLAY");
-      if (flags & LC_READER_FLAGS_NOINFO)
-        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
-                             "readerflags", "NOINFO");
-      if (flags & LC_READER_FLAGS_REMOTE)
-        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
-                             "readerflags", "REMOTE");
-      if (flags & LC_READER_FLAGS_AUTO)
-        GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_DEFAULT,
-                             "readerflags", "AUTO");
+      flags=LCD_Reader_GetReaderFlags(r);
+      LC_ReaderFlags_toDb(dbReader, "readerFlags", flags);
 
-      r=LC_Reader_List_Next(r);
+      r=LCD_Reader_List_Next(r);
     } /* while */
   } /* if readers */
 
@@ -729,13 +715,13 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
       break;
     }
     DBG_VERBOUS(0, "Working...");
-    if (LC_Driver__Work(d, 1000, 0)) {
+    if (LCD_Driver__Work(d, 1000, 0)) {
       DBG_ERROR(0, "Error at work");
       GWEN_IPCManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
       return -1;
     }
 
-    if (difftime(time(0), startt)>=LC_DRIVER_STARTTIMEOUT) {
+    if (difftime(time(0), startt)>=LCD_DRIVER_STARTTIMEOUT) {
       DBG_ERROR(0, "Timeout");
       GWEN_IPCManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
       return -1;
@@ -743,7 +729,7 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
   } /* while */
 
   DBG_DEBUG(0, "Answer received");
-  if (LC_Driver_CheckResponses(dbRsp)) {
+  if (LCD_Driver_CheckResponses(dbRsp)) {
     DBG_ERROR(0, "Error returned by server, aborting");
     GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 1);
     return -1;
@@ -756,7 +742,7 @@ int LC_Driver_Connect(LC_DRIVER *d, const char *code, const char *text){
 
 
 
-void LC_Driver_Disconnect(LC_DRIVER *d){
+void LCD_Driver_Disconnect(LCD_DRIVER *d){
   assert(d);
   if (d->testMode) {
     DBG_INFO(0, "Testmode, will not disconnect (since I'm not connected)");
@@ -770,96 +756,96 @@ void LC_Driver_Disconnect(LC_DRIVER *d){
 
 
 
-LC_READER *LC_Driver_FindReaderByName(const LC_DRIVER *d, const char *name) {
-  LC_READER *r;
+LCD_READER *LCD_Driver_FindReaderByName(const LCD_DRIVER *d, const char *name) {
+  LCD_READER *r;
 
   assert(d);
-  r=LC_Reader_List_First(d->readers);
+  r=LCD_Reader_List_First(d->readers);
   while(r) {
-    if (strcasecmp(name, LC_Reader_GetName(r))==0)
+    if (strcasecmp(name, LCD_Reader_GetName(r))==0)
       return r;
-    r=LC_Reader_List_Next(r);
+    r=LCD_Reader_List_Next(r);
   } /* while */
   return 0;
 }
 
 
 
-LC_READER *LC_Driver_FindReaderByPort(const LC_DRIVER *d, int port) {
-  LC_READER *r;
+LCD_READER *LCD_Driver_FindReaderByPort(const LCD_DRIVER *d, int port) {
+  LCD_READER *r;
 
   assert(d);
-  r=LC_Reader_List_First(d->readers);
+  r=LCD_Reader_List_First(d->readers);
   while(r) {
-    if (port==LC_Reader_GetPort(r))
+    if (port==LCD_Reader_GetPort(r))
       return r;
-    r=LC_Reader_List_Next(r);
+    r=LCD_Reader_List_Next(r);
   } /* while */
   return 0;
 }
 
 
 
-LC_READER *LC_Driver_FindReaderById(const LC_DRIVER *d, GWEN_TYPE_UINT32 id){
-  LC_READER *r;
+LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, GWEN_TYPE_UINT32 id){
+  LCD_READER *r;
 
   assert(d);
-  r=LC_Reader_List_First(d->readers);
+  r=LCD_Reader_List_First(d->readers);
   while(r) {
-    if (id==LC_Reader_GetReaderId(r))
+    if (id==LCD_Reader_GetReaderId(r))
       return r;
-    r=LC_Reader_List_Next(r);
+    r=LCD_Reader_List_Next(r);
   } /* while */
   return 0;
 }
 
 
 
-LC_READER *LC_Driver_FindReaderByDriversId(const LC_DRIVER *d,
+LCD_READER *LCD_Driver_FindReaderByDriversId(const LCD_DRIVER *d,
                                            GWEN_TYPE_UINT32 id){
-  LC_READER *r;
+  LCD_READER *r;
 
   assert(d);
-  r=LC_Reader_List_First(d->readers);
+  r=LCD_Reader_List_First(d->readers);
   while(r) {
-    if (id==LC_Reader_GetDriversReaderId(r))
+    if (id==LCD_Reader_GetDriversReaderId(r))
       return r;
-    r=LC_Reader_List_Next(r);
+    r=LCD_Reader_List_Next(r);
   } /* while */
   return 0;
 }
 
 
 
-void LC_Driver_AddReader(LC_DRIVER *d, LC_READER *r){
+void LCD_Driver_AddReader(LCD_DRIVER *d, LCD_READER *r){
   assert(d);
   assert(r);
 
-  LC_Reader_List_Add(r, d->readers);
+  LCD_Reader_List_Add(r, d->readers);
 }
 
 
 
-void LC_Driver_DelReader(LC_DRIVER *d, LC_READER *r){
+void LCD_Driver_DelReader(LCD_DRIVER *d, LCD_READER *r){
   assert(d);
   assert(r);
 
-  LC_Reader_List_Del(r);
+  LCD_Reader_List_Del(r);
 }
 
 
 
-LC_READER_LIST *LC_Driver_GetReaders(const LC_DRIVER *d){
+LCD_READER_LIST *LCD_Driver_GetReaders(const LCD_DRIVER *d){
   assert(d);
   return d->readers;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_SendAPDU(LC_DRIVER *d,
+GWEN_TYPE_UINT32 LCD_Driver_SendAPDU(LCD_DRIVER *d,
                                     int toReader,
-                                    LC_READER *r,
-                                    LC_SLOT *slot,
+                                    LCD_READER *r,
+                                    LCD_SLOT *slot,
                                     const unsigned char *apdu,
                                     unsigned int apdulen,
                                     unsigned char *buffer,
@@ -872,7 +858,7 @@ GWEN_TYPE_UINT32 LC_Driver_SendAPDU(LC_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->connectSlotFn);
   return d->connectSlotFn(d, sl);
@@ -880,20 +866,20 @@ GWEN_TYPE_UINT32 LC_Driver_ConnectSlot(LC_DRIVER *d, LC_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_ConnectReader(LC_DRIVER *d, LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r){
   GWEN_TYPE_UINT32 rv;
 
   assert(d);
   assert(d->connectReaderFn);
   rv=d->connectReaderFn(d, r);
   if (rv==0)
-    LC_Reader_AddStatus(r, LC_READER_STATUS_UP);
+    LCD_Reader_AddStatus(r, LCD_READER_STATUS_UP);
   return rv;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->disconnectSlotFn);
   return d->disconnectSlotFn(d, sl);
@@ -901,19 +887,19 @@ GWEN_TYPE_UINT32 LC_Driver_DisconnectSlot(LC_DRIVER *d, LC_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_DisconnectReader(LC_DRIVER *d, LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r){
   GWEN_TYPE_UINT32 rv;
 
   assert(d);
   assert(d->disconnectReaderFn);
   rv=d->disconnectReaderFn(d, r);
-  LC_Reader_SubStatus(r, LC_READER_STATUS_UP);
+  LCD_Reader_SubStatus(r, LCD_READER_STATUS_UP);
   return rv;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_ResetSlot(LC_DRIVER *d, LC_SLOT *sl){
+GWEN_TYPE_UINT32 LCD_Driver_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->resetSlotFn);
   return d->resetSlotFn(d, sl);
@@ -921,7 +907,7 @@ GWEN_TYPE_UINT32 LC_Driver_ResetSlot(LC_DRIVER *d, LC_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_ReaderStatus(LC_DRIVER *d, LC_READER *r){
+GWEN_TYPE_UINT32 LCD_Driver_ReaderStatus(LCD_DRIVER *d, LCD_READER *r){
   assert(d);
   assert(d->readerStatusFn);
   return d->readerStatusFn(d, r);
@@ -929,8 +915,8 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderStatus(LC_DRIVER *d, LC_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
-                                      LC_READER *r,
+GWEN_TYPE_UINT32 LCD_Driver_ReaderInfo(LCD_DRIVER *d,
+                                      LCD_READER *r,
                                       GWEN_BUFFER *buf){
   assert(d);
   assert(d->readerInfoFn);
@@ -939,17 +925,17 @@ GWEN_TYPE_UINT32 LC_Driver_ReaderInfo(LC_DRIVER *d,
 
 
 
-LC_READER *LC_Driver_CreateReader(LC_DRIVER *d,
+LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
                                   GWEN_TYPE_UINT32 readerId,
                                   const char *name,
                                   int port,
                                   unsigned int slots,
                                   GWEN_TYPE_UINT32 flags){
-  LC_READER *r;
+  LCD_READER *r;
 
   assert(d);
   if (d->createReaderFn==0) {
-    r=LC_Reader_new(readerId, name, port, slots, flags);
+    r=LCD_Reader_new(readerId, name, port, slots, flags);
   }
   else {
     r=d->createReaderFn(d, readerId, name, port, slots, flags);
@@ -960,7 +946,7 @@ LC_READER *LC_Driver_CreateReader(LC_DRIVER *d,
 
 
 
-const char *LC_Driver_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err){
+const char *LCD_Driver_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err){
   assert(d);
   assert(d->getErrorTextFn);
   return d->getErrorTextFn(d, err);
@@ -968,85 +954,93 @@ const char *LC_Driver_GetErrorText(LC_DRIVER *d, GWEN_TYPE_UINT32 err){
 
 
 
-void LC_Driver_SetSendApduFn(LC_DRIVER *d, LC_DRIVER_SENDAPDU_FN fn){
+void LCD_Driver_SetSendApduFn(LCD_DRIVER *d, LCD_DRIVER_SENDAPDU_FN fn){
   assert(d);
   d->sendApduFn=fn;
 }
 
 
 
-void LC_Driver_SetConnectSlotFn(LC_DRIVER *d, LC_DRIVER_CONNECTSLOT_FN fn){
+void LCD_Driver_SetConnectSlotFn(LCD_DRIVER *d, LCD_DRIVER_CONNECTSLOT_FN fn){
   assert(d);
   d->connectSlotFn=fn;
 }
 
 
 
-void LC_Driver_SetDisconnectSlotFn(LC_DRIVER *d,
-                                   LC_DRIVER_DISCONNECTSLOT_FN fn){
+void LCD_Driver_SetDisconnectSlotFn(LCD_DRIVER *d,
+                                   LCD_DRIVER_DISCONNECTSLOT_FN fn){
   assert(d);
   d->disconnectSlotFn=fn;
 }
 
 
 
-void LC_Driver_SetConnectReaderFn(LC_DRIVER *d,
-                                  LC_DRIVER_CONNECTREADER_FN fn){
+void LCD_Driver_SetConnectReaderFn(LCD_DRIVER *d,
+                                  LCD_DRIVER_CONNECTREADER_FN fn){
   assert(d);
   d->connectReaderFn=fn;
 }
 
 
 
-void LC_Driver_SetDisconnectReaderFn(LC_DRIVER *d,
-                                     LC_DRIVER_DISCONNECTREADER_FN fn){
+void LCD_Driver_SetDisconnectReaderFn(LCD_DRIVER *d,
+                                     LCD_DRIVER_DISCONNECTREADER_FN fn){
   assert(d);
   d->disconnectReaderFn=fn;
 }
 
 
 
-void LC_Driver_SetResetSlotFn(LC_DRIVER *d, LC_DRIVER_RESETSLOT_FN fn){
+void LCD_Driver_SetResetSlotFn(LCD_DRIVER *d, LCD_DRIVER_RESETSLOT_FN fn){
   assert(d);
   d->resetSlotFn=fn;
 }
 
 
 
-void LC_Driver_SetReaderStatusFn(LC_DRIVER *d,
-                                 LC_DRIVER_READERSTATUS_FN fn){
+void LCD_Driver_SetReaderStatusFn(LCD_DRIVER *d,
+                                 LCD_DRIVER_READERSTATUS_FN fn){
   assert(d);
   d->readerStatusFn=fn;
 }
 
 
 
-void LC_Driver_SetReaderInfoFn(LC_DRIVER *d,
-                               LC_DRIVER_READERINFO_FN fn){
+void LCD_Driver_SetReaderInfoFn(LCD_DRIVER *d,
+                               LCD_DRIVER_READERINFO_FN fn){
   assert(d);
   d->readerInfoFn=fn;
 }
 
 
 
-void LC_Driver_SetCreateReaderFn(LC_DRIVER *d,
-                                 LC_DRIVER_CREATEREADER_FN fn){
+void LCD_Driver_SetCreateReaderFn(LCD_DRIVER *d,
+                                 LCD_DRIVER_CREATEREADER_FN fn){
   assert(d);
   d->createReaderFn=fn;
 }
 
 
 
-void LC_Driver_SetGetErrorTextFn(LC_DRIVER *d,
-                                 LC_DRIVER_GETERRORTEXT_FN fn){
+void LCD_Driver_SetGetErrorTextFn(LCD_DRIVER *d,
+                                 LCD_DRIVER_GETERRORTEXT_FN fn){
   assert(d);
   d->getErrorTextFn=fn;
 }
 
 
 
-int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
-                                           LC_SLOT *sl) {
+void LCD_Driver_SetHandleRequestFn(LCD_DRIVER *d,
+                                   LCD_DRIVER_HANDLEREQUEST_FN fn) {
+  assert(d);
+  d->handleRequestFn=fn;
+}
+
+
+
+int LCD_Driver_SendStatusChangeNotification(LCD_DRIVER *d,
+                                           LCD_SLOT *sl) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
@@ -1054,25 +1048,25 @@ int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
   int cardnum;
   GWEN_BUFFER *atr;
   int isInserted;
-  LC_READER *r;
+  LCD_READER *r;
   GWEN_TYPE_UINT32 rid;
 
-  r=LC_Slot_GetReader(sl);
-  slot=LC_Slot_GetSlotNum(sl);
-  cardnum=LC_Slot_GetCardNum(sl);
-  atr=LC_Slot_GetAtr(sl);
-  isInserted=(LC_Slot_GetStatus(sl) & LC_SLOT_STATUS_CARD_CONNECTED);
+  r=LCD_Slot_GetReader(sl);
+  slot=LCD_Slot_GetSlotNum(sl);
+  cardnum=LCD_Slot_GetCardNum(sl);
+  atr=LCD_Slot_GetAtr(sl);
+  isInserted=(LCD_Slot_GetStatus(sl) & LCD_SLOT_STATUS_CARD_CONNECTED);
 
   dbReq=GWEN_DB_Group_new(isInserted?"CardInserted":"CardRemoved");
 
-  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Reader_GetReaderId(r));
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x", LCD_Reader_GetReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
 
   rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
-              LC_Reader_GetDriversReaderId(r));
+              LCD_Reader_GetDriversReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1091,7 +1085,7 @@ int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
                             "atr",
                             GWEN_Buffer_GetStart(atr),
                             GWEN_Buffer_GetUsedBytes(atr));
-    if (LC_Slot_GetFlags(sl) & LC_SLOT_FLAGS_PROCESSORCARD)
+    if (LCD_Slot_GetFlags(sl) & LCD_SLOT_FLAGS_PROCESSORCARD)
       GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "cardType", "PROCESSOR");
     else
@@ -1099,7 +1093,7 @@ int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
                            "cardType", "MEMORY");
   } /* if inserted */
 
-  rid=LC_Driver_SendCommand(d, dbReq);
+  rid=LCD_Driver_SendCommand(d, dbReq);
   if (rid==0) {
     DBG_ERROR(0, "Could not send command");
     return -1;
@@ -1112,8 +1106,8 @@ int LC_Driver_SendStatusChangeNotification(LC_DRIVER *d,
 
 
 
-int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
-                                          LC_READER *r,
+int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
+                                          LCD_READER *r,
                                           const char *text) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
@@ -1123,14 +1117,14 @@ int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
   assert(d);
   dbReq=GWEN_DB_Group_new("ReaderError");
 
-  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Reader_GetReaderId(r));
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x", LCD_Reader_GetReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
 
   rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
-              LC_Reader_GetDriversReaderId(r));
+              LCD_Reader_GetDriversReaderId(r));
   assert(rv>0 && rv<sizeof(numbuf)-1);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1139,7 +1133,7 @@ int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "text", text);
 
-  rid=LC_Driver_SendCommand(d, dbReq);
+  rid=LCD_Driver_SendCommand(d, dbReq);
   if (rid==0) {
     DBG_ERROR(0, "Could not send command");
     return -1;
@@ -1153,7 +1147,7 @@ int LC_Driver_SendReaderErrorNotification(LC_DRIVER *d,
 
 
 
-int LC_Driver_RemoveCommand(LC_DRIVER *d,
+int LCD_Driver_RemoveCommand(LCD_DRIVER *d,
                             GWEN_TYPE_UINT32 rid,
                             int outbound){
   assert(d);
@@ -1162,90 +1156,90 @@ int LC_Driver_RemoveCommand(LC_DRIVER *d,
 
 
 
-int LC_Driver_CheckStatusChanges(LC_DRIVER *d) {
-  LC_READER *r;
+int LCD_Driver_CheckStatusChanges(LCD_DRIVER *d) {
+  LCD_READER *r;
 
-  r=LC_Reader_List_First(LC_Driver_GetReaders(d));
+  r=LCD_Reader_List_First(LCD_Driver_GetReaders(d));
   while(r) {
-    LC_READER *rnext;
+    LCD_READER *rnext;
     GWEN_TYPE_UINT32 retval;
 
-    rnext=LC_Reader_List_Next(r);
+    rnext=LCD_Reader_List_Next(r);
 
-    if (LC_Reader_GetStatus(r) & LC_READER_STATUS_UP) {
-      retval=LC_Driver_ReaderStatus(d, r);
+    if (LCD_Reader_GetStatus(r) & LCD_READER_STATUS_UP) {
+      retval=LCD_Driver_ReaderStatus(d, r);
       if (retval) {
-        DBG_ERROR(LC_Reader_GetLogger(r), "Error getting reader status");
-        LC_Driver_SendReaderErrorNotification(d, r,
-                                              LC_Driver_GetErrorText(d, retval));
-        DBG_NOTICE(LC_Reader_GetLogger(r),
+        DBG_ERROR(LCD_Reader_GetLogger(r), "Error getting reader status");
+        LCD_Driver_SendReaderErrorNotification(d, r,
+                                              LCD_Driver_GetErrorText(d, retval));
+        DBG_NOTICE(LCD_Reader_GetLogger(r),
                    "Reader \"%s\" had an error, shutting down",
-                   LC_Reader_GetName(r));
-        LC_Reader_List_Del(r);
-        LC_Reader_free(r);
+                   LCD_Reader_GetName(r));
+        LCD_Reader_List_Del(r);
+        LCD_Reader_free(r);
       }
       else {
-        LC_SLOT_LIST *slList;
-        LC_SLOT *sl;
+        LCD_SLOT_LIST *slList;
+        LCD_SLOT *sl;
   
-        slList=LC_Reader_GetSlots(r);
-        sl=LC_Slot_List_First(slList);
+        slList=LCD_Reader_GetSlots(r);
+        sl=LCD_Slot_List_First(slList);
         while(sl) {
           int isInserted;
           GWEN_TYPE_UINT32 newStatus, oldStatus;
           int cardNum;
   
-          newStatus=LC_Slot_GetStatus(sl);
-          if (!(newStatus & LC_SLOT_STATUS_DISABLED)) {
-            oldStatus=LC_Slot_GetLastStatus(sl);
+          newStatus=LCD_Slot_GetStatus(sl);
+          if (!(newStatus & LCD_SLOT_STATUS_DISABLED)) {
+            oldStatus=LCD_Slot_GetLastStatus(sl);
     
-            if (((newStatus^oldStatus) & LC_SLOT_STATUS_CARD_INSERTED) &&
-                /*!(newStatus & LC_SLOT_STATUS_CARD_CONNECTED) && */
-                (newStatus & LC_SLOT_STATUS_CARD_INSERTED)){
+            if (((newStatus^oldStatus) & LCD_SLOT_STATUS_CARD_INSERTED) &&
+                /*!(newStatus & LCD_SLOT_STATUS_CARD_CONNECTED) && */
+                (newStatus & LCD_SLOT_STATUS_CARD_INSERTED)){
               /* card has just been inserted, try to connect it */
-              DBG_NOTICE(LC_Reader_GetLogger(r),
+              DBG_NOTICE(LCD_Reader_GetLogger(r),
                          "Card inserted, trying to connect it");
-              if (LC_Driver_ConnectSlot(d, sl)) {
+              if (LCD_Driver_ConnectSlot(d, sl)) {
                 DBG_ERROR(0, "Card inserted, but I can't connect to it");
               }
-              newStatus=LC_Slot_GetStatus(sl);
+              newStatus=LCD_Slot_GetStatus(sl);
             }
     
-            isInserted=(newStatus & LC_SLOT_STATUS_CARD_CONNECTED);
+            isInserted=(newStatus & LCD_SLOT_STATUS_CARD_CONNECTED);
             if ((newStatus^oldStatus) &
-                (LC_SLOT_STATUS_CARD_CONNECTED)){
-              DBG_NOTICE(LC_Reader_GetLogger(r),
+                (LCD_SLOT_STATUS_CARD_CONNECTED)){
+              DBG_NOTICE(LCD_Reader_GetLogger(r),
                          "Status changed on slot %d (%08x->%08x) (cardnum %d)",
-                         LC_Slot_GetSlotNum(sl),
+                         LCD_Slot_GetSlotNum(sl),
                          oldStatus, newStatus,
-                         LC_Slot_GetCardNum(sl));
+                         LCD_Slot_GetCardNum(sl));
               if (isInserted) {
-                DBG_INFO(LC_Reader_GetLogger(r), "Card is now connected");
-                cardNum=++LC_Driver__LastCardNum;
-                LC_Slot_SetCardNum(sl, cardNum);
+                DBG_INFO(LCD_Reader_GetLogger(r), "Card is now connected");
+                cardNum=++LCD_Driver__LastCardNum;
+                LCD_Slot_SetCardNum(sl, cardNum);
               }
               else {
-                DBG_INFO(LC_Reader_GetLogger(r), "Card is not connected");
-                cardNum=LC_Slot_GetCardNum(sl);
+                DBG_INFO(LCD_Reader_GetLogger(r), "Card is not connected");
+                cardNum=LCD_Slot_GetCardNum(sl);
               }
   
-              DBG_INFO(LC_Reader_GetLogger(r), "Card number is %d", cardNum);
+              DBG_INFO(LCD_Reader_GetLogger(r), "Card number is %d", cardNum);
     
-              if (LC_Driver_SendStatusChangeNotification(d,
+              if (LCD_Driver_SendStatusChangeNotification(d,
                                                          sl)) {
                 DBG_ERROR(0, "Error sending status change notification");
               }
               else {
                 DBG_INFO(0, "Server informed");
               }
-              LC_Slot_SetLastStatus(sl, newStatus);
+              LCD_Slot_SetLastStatus(sl, newStatus);
             }
             else {
-              DBG_DEBUG(LC_Reader_GetLogger(r), "Status on slot %d unchanged",
-                         LC_Slot_GetSlotNum(sl));
+              DBG_DEBUG(LCD_Reader_GetLogger(r), "Status on slot %d unchanged",
+                         LCD_Slot_GetSlotNum(sl));
             }
           }
-          sl=LC_Slot_List_Next(sl);
+          sl=LCD_Slot_List_Next(sl);
         } /* while slots */
       } /* if getting reader status worked */
     } /* if reader is up */
@@ -1257,7 +1251,7 @@ int LC_Driver_CheckStatusChanges(LC_DRIVER *d) {
 
 
 
-int LC_Driver_HandleStartReader(LC_DRIVER *d,
+int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq){
   GWEN_TYPE_UINT32 readerId;
@@ -1266,7 +1260,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
   int port;
   int slots;
   GWEN_TYPE_UINT32 flags;
-  LC_READER *r;
+  LCD_READER *r;
   char numbuf[16];
   GWEN_TYPE_UINT32 retval;
   GWEN_DB_NODE *dbRsp;
@@ -1309,14 +1303,14 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                        "readerId", numbuf);
 
   /* check whether we have a reader of that id */
-  r=LC_Driver_FindReaderById(d, readerId);
+  r=LCD_Driver_FindReaderById(d, readerId);
   if (r) {
     DBG_WARN(0, "A reader with id \"%08x\" already exists", readerId);
 
-    DBG_NOTICE(LC_Reader_GetLogger(r), "Restarting reader");
-    retval=LC_Driver_DisconnectReader(d, r);
+    DBG_NOTICE(LCD_Reader_GetLogger(r), "Restarting reader");
+    retval=LCD_Driver_DisconnectReader(d, r);
     if (retval==0)
-      retval=LC_Driver_ConnectReader(d, r);
+      retval=LCD_Driver_ConnectReader(d, r);
 
     if (retval) {
       DBG_ERROR(0, "Could not restart reader");
@@ -1324,10 +1318,10 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                            "code", "ERROR");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "text",
-                           LC_Driver_GetErrorText(d, retval));
+                           LCD_Driver_GetErrorText(d, retval));
     }
     else {
-      if (LC_Reader_GetReaderFlags(r) & LC_READER_FLAGS_NOINFO) {
+      if (LCD_Reader_GetReaderFlags(r) & LC_READER_FLAGS_NOINFO) {
         DBG_WARN(0, "ReaderInfo disabled");
       }
       else {
@@ -1335,10 +1329,10 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
         GWEN_TYPE_UINT32 rv;
 
         ibuf=GWEN_Buffer_new(0, 256, 0, 1);
-        rv=LC_Driver_ReaderInfo(d, r, ibuf);
+        rv=LCD_Driver_ReaderInfo(d, r, ibuf);
         if (rv) {
           DBG_WARN(0, "ReaderInfo not available (%s)",
-                   LC_Driver_GetErrorText(d, rv));
+                   LCD_Driver_GetErrorText(d, rv));
         }
         else {
           GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1354,22 +1348,22 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                            "text", "Reader up and waiting");
     }
 
-    if (LC_Driver_SendResponse(d, rid, dbRsp)) {
+    if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
       DBG_ERROR(0, "Could not send response");
-      LC_Driver_RemoveCommand(d, rid, 0);
+      LCD_Driver_RemoveCommand(d, rid, 0);
       return -1;
     }
   } /* if reader found */
   else {
     /* search by driversReaderId */
     if (driversReaderId) {
-      r=LC_Driver_FindReaderByDriversId(d, driversReaderId);
+      r=LCD_Driver_FindReaderByDriversId(d, driversReaderId);
       if (r) {
-        if (LC_Reader_GetReaderId(r)==0) {
+        if (LCD_Reader_GetReaderId(r)==0) {
           /* The reader exists but has no reader id. So this is the first time
            * the reader has been accessed. Assign the reader id from the
            * server so that the next calls will find it. */
-          LC_Reader_SetReaderId(r, readerId);
+          LCD_Reader_SetReaderId(r, readerId);
         }
         else {
           DBG_ERROR(0, "Uups, reader already has an id ?");
@@ -1380,8 +1374,8 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                                "text",
                                "Internal error (reader already has an id)");
 
-          LC_Driver_SendResponse(d, rid, dbRsp);
-          LC_Driver_RemoveCommand(d, rid, 0);
+          LCD_Driver_SendResponse(d, rid, dbRsp);
+          LCD_Driver_RemoveCommand(d, rid, 0);
           return -1;
         }
       }
@@ -1395,7 +1389,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
 
     if (!r) {
       /* check whether we have a reader at that port */
-      r=LC_Driver_FindReaderByPort(d, port);
+      r=LCD_Driver_FindReaderByPort(d, port);
       if (r) {
         DBG_ERROR(0, "A reader with port \"%08x\" already exists", port);
         /* send error result */
@@ -1405,21 +1399,21 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
                              "text",
                              "There already is a reader at the given port");
   
-        LC_Driver_SendResponse(d, rid, dbRsp);
-        LC_Driver_RemoveCommand(d, rid, 0);
+        LCD_Driver_SendResponse(d, rid, dbRsp);
+        LCD_Driver_RemoveCommand(d, rid, 0);
         return -1;
       }
       /* if not found it is ok to create the reader */
-      r=LC_Driver_CreateReader(d, readerId, name, port, slots, flags);
+      r=LCD_Driver_CreateReader(d, readerId, name, port, slots, flags);
       assert(r);
-      LC_Driver_AddReader(d, r);
+      LCD_Driver_AddReader(d, r);
     }
 
     if (d->readerLogFile) {
       GWEN_BUFFER *mbuf;
 
       mbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      LC_Driver_ReplaceVar(d->readerLogFile, "reader", name, mbuf);
+      LCD_Driver_ReplaceVar(d->readerLogFile, "reader", name, mbuf);
       if (GWEN_Directory_GetPath(GWEN_Buffer_GetStart(mbuf),
                                  GWEN_PATH_FLAGS_VARIABLE)) {
         DBG_ERROR(0, "Could not create log file for reader \"%s\"", name);
@@ -1435,7 +1429,7 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
         else {
           DBG_NOTICE(0, "Reader \"%s\" logs to \"%s\"", name,
                      GWEN_Buffer_GetStart(mbuf));
-          LC_Reader_SetLogger(r, name);
+          LCD_Reader_SetLogger(r, name);
         }
         GWEN_Buffer_free(mbuf);
       }
@@ -1452,33 +1446,33 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
     GWEN_Logger_SetLevel(name, d->logLevel);
 
     /* init reader */
-    DBG_NOTICE(LC_Reader_GetLogger(r),
-               "Init reader %s", LC_Reader_GetName(r));
-    retval=LC_Driver_ConnectReader(d, r);
+    DBG_NOTICE(LCD_Reader_GetLogger(r),
+               "Init reader %s", LCD_Reader_GetName(r));
+    retval=LCD_Driver_ConnectReader(d, r);
     if (retval) {
-      DBG_ERROR(LC_Reader_GetLogger(r),
+      DBG_ERROR(LCD_Reader_GetLogger(r),
                 "Could not connect reader %s (%d: %s)",
-                LC_Reader_GetName(r),
+                LCD_Reader_GetName(r),
                 retval,
-                LC_Driver_GetErrorText(d, retval));
+                LCD_Driver_GetErrorText(d, retval));
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "ERROR");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "text",
-                           LC_Driver_GetErrorText(d, retval));
+                           LCD_Driver_GetErrorText(d, retval));
     }
     else {
       GWEN_BUFFER *ibuf;
       GWEN_TYPE_UINT32 rv;
 
       ibuf=GWEN_Buffer_new(0, 256, 0, 1);
-      rv=LC_Driver_ReaderInfo(d, r, ibuf);
+      rv=LCD_Driver_ReaderInfo(d, r, ibuf);
       if (rv) {
         DBG_WARN(0, "ReaderInfo not available (%s)",
-                 LC_Driver_GetErrorText(d, rv));
+                 LCD_Driver_GetErrorText(d, rv));
       }
       else {
-        DBG_NOTICE(LC_Reader_GetLogger(r), "ReaderInfo: %s",
+        DBG_NOTICE(LCD_Reader_GetLogger(r), "ReaderInfo: %s",
                    GWEN_Buffer_GetStart(ibuf));
         GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                              "info",
@@ -1486,27 +1480,27 @@ int LC_Driver_HandleStartReader(LC_DRIVER *d,
       }
       GWEN_Buffer_free(ibuf);
 
-      DBG_NOTICE(LC_Reader_GetLogger(r), "Reader up and waiting");
+      DBG_NOTICE(LCD_Reader_GetLogger(r), "Reader up and waiting");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "code", "OK");
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                            "text", "Reader up and waiting");
     }
 
-    if (LC_Driver_SendResponse(d, rid, dbRsp)) {
+    if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
       DBG_ERROR(0, "Could not send response");
-      LC_Driver_RemoveCommand(d, rid, 0);
+      LCD_Driver_RemoveCommand(d, rid, 0);
       return -1;
     }
-    DBG_NOTICE(LC_Reader_GetLogger(r), "Reader start handled");
+    DBG_NOTICE(LCD_Reader_GetLogger(r), "Reader start handled");
   }
-  LC_Driver_RemoveCommand(d, rid, 0);
+  LCD_Driver_RemoveCommand(d, rid, 0);
 
   return 0;
 }
 
 
-int LC_Driver_ReplaceVar(const char *path,
+int LCD_Driver_ReplaceVar(const char *path,
                          const char *var,
                          const char *value,
                          GWEN_BUFFER *nbuf) {
@@ -1538,12 +1532,12 @@ int LC_Driver_ReplaceVar(const char *path,
 }
 
 
-int LC_Driver_HandleStopReader(LC_DRIVER *d,
+int LCD_Driver_HandleStopReader(LCD_DRIVER *d,
                                GWEN_TYPE_UINT32 rid,
                                GWEN_DB_NODE *dbReq){
   GWEN_TYPE_UINT32 readerId;
   GWEN_DB_NODE *dbRsp;
-  LC_READER *r;
+  LCD_READER *r;
   char numbuf[16];
   GWEN_TYPE_UINT32 retval;
 
@@ -1558,7 +1552,7 @@ int LC_Driver_HandleStopReader(LC_DRIVER *d,
   }
 
   /* check whether we have a reader of that id */
-  r=LC_Driver_FindReaderById(d, readerId);
+  r=LCD_Driver_FindReaderById(d, readerId);
   if (!r) {
     DBG_ERROR(0, "A reader with id \"%08x\" does not exists", readerId);
     /* TODO: send error result */
@@ -1566,20 +1560,20 @@ int LC_Driver_HandleStopReader(LC_DRIVER *d,
   }
 
   /* deinit reader */
-  DBG_NOTICE(LC_Reader_GetLogger(r), "Disconnecting reader");
+  DBG_NOTICE(LCD_Reader_GetLogger(r), "Disconnecting reader");
   dbRsp=GWEN_DB_Group_new("StopReaderResponse");
-  retval=LC_Driver_DisconnectReader(d, r);
+  retval=LCD_Driver_DisconnectReader(d, r);
   if (retval!=0) {
-    DBG_INFO(LC_Reader_GetLogger(r), "Could not disconnect reader");
+    DBG_INFO(LCD_Reader_GetLogger(r), "Could not disconnect reader");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "ERROR");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text",
-                         LC_Driver_GetErrorText(d, retval));
+                         LCD_Driver_GetErrorText(d, retval));
   }
   else {
     /* init ok */
-    DBG_NOTICE(LC_Reader_GetLogger(r), "Deinit succeeded");
+    DBG_NOTICE(LCD_Reader_GetLogger(r), "Deinit succeeded");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "OK");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1591,29 +1585,29 @@ int LC_Driver_HandleStopReader(LC_DRIVER *d,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "readerId", numbuf);
-  if (LC_Driver_SendResponse(d, rid, dbRsp)) {
+  if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
-  LC_Driver_RemoveCommand(d, rid, 0);
+  LCD_Driver_RemoveCommand(d, rid, 0);
 
   DBG_NOTICE(0, "Reader down");
-  LC_Driver_DelReader(d, r);
-  LC_Reader_free(r);
+  LCD_Driver_DelReader(d, r);
+  LCD_Reader_free(r);
   return 0;
 }
 
 
 
-int LC_Driver_HandleResetCard(LC_DRIVER *d,
-                              GWEN_TYPE_UINT32 rid,
-                              GWEN_DB_NODE *dbReq){
+int LCD_Driver_HandleResetCard(LCD_DRIVER *d,
+                               GWEN_TYPE_UINT32 rid,
+                               GWEN_DB_NODE *dbReq){
   GWEN_TYPE_UINT32 readerId;
-  LC_READER *r;
+  LCD_READER *r;
   int slotNum;
   int cardNum;
-  LC_SLOT *slot;
+  LCD_SLOT *slot;
   char retval;
 
   assert(d);
@@ -1629,80 +1623,80 @@ int LC_Driver_HandleResetCard(LC_DRIVER *d,
   slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotnum", 0, -1);
   if (slotNum==-1) {
     DBG_ERROR(0, "Bad slot number");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
   cardNum=GWEN_DB_GetIntValue(dbReq, "body/cardnum", 0, -1);
   if (cardNum==-1) {
     DBG_ERROR(0, "Bad card number");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
   /* check whether we have a reader of that id */
-  r=LC_Driver_FindReaderById(d, readerId);
+  r=LCD_Driver_FindReaderById(d, readerId);
   if (!r) {
     DBG_ERROR(0, "A reader with id \"%08x\" does not exists", readerId);
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
   /* get the referenced slot */
-  slot=LC_Reader_FindSlot(r, slotNum);
+  slot=LCD_Reader_FindSlot(r, slotNum);
   if (!slot) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
-    LC_Driver_RemoveCommand(d, rid, 0);
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
-  if (LC_Slot_GetStatus(slot) & LC_SLOT_STATUS_DISABLED) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Slot \"%d\" disabled",
-              LC_Slot_GetSlotNum(slot));
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+  if (LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_DISABLED) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" disabled",
+              LCD_Slot_GetSlotNum(slot));
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
   /* check card number and reader status */
-  if ((LC_Slot_GetCardNum(slot)!=cardNum) ||
-      !(LC_Slot_GetStatus(slot) & LC_SLOT_STATUS_CARD_CONNECTED)) {
+  if ((LCD_Slot_GetCardNum(slot)!=cardNum) ||
+      !(LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_CARD_CONNECTED)) {
     DBG_ERROR(0, "Card \"%d\" has been removed", cardNum);
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
-  DBG_NOTICE(LC_Reader_GetLogger(r), "Resetting card");
-  retval=LC_Driver_ResetSlot(d, slot);
+  DBG_NOTICE(LCD_Reader_GetLogger(r), "Resetting card");
+  retval=LCD_Driver_ResetSlot(d, slot);
   if (retval!=0) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Error resetting slot (%d: %s)",
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Error resetting slot (%d: %s)",
               retval,
-              LC_Driver_GetErrorText(d, retval));
-    LC_Driver_SendReaderErrorNotification(d, r,
-                                          LC_Driver_GetErrorText(d, retval));
-    DBG_NOTICE(LC_Reader_GetLogger(r),
+              LCD_Driver_GetErrorText(d, retval));
+    LCD_Driver_SendReaderErrorNotification(d, r,
+                                          LCD_Driver_GetErrorText(d, retval));
+    DBG_NOTICE(LCD_Reader_GetLogger(r),
                "Reader \"%s\" had an error, shutting down",
-               LC_Reader_GetName(r));
-    LC_Reader_List_Del(r);
-    LC_Reader_free(r);
+               LCD_Reader_GetName(r));
+    LCD_Reader_List_Del(r);
+    LCD_Reader_free(r);
   }
   else {
     /* reset ok */
-    DBG_INFO(LC_Reader_GetLogger(r), "Reset succeeded");
+    DBG_INFO(LCD_Reader_GetLogger(r), "Reset succeeded");
   }
 
-  LC_Driver_RemoveCommand(d, rid, 0);
+  LCD_Driver_RemoveCommand(d, rid, 0);
 
   return 0;
 }
 
 
 
-int LC_Driver_HandleCardCommand(LC_DRIVER *d,
+int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq){
   GWEN_TYPE_UINT32 readerId;
   GWEN_DB_NODE *dbRsp;
-  LC_READER *r;
+  LCD_READER *r;
   char numbuf[16];
   unsigned char rspbuffer[300];
   const unsigned char *apdu;
@@ -1710,7 +1704,7 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   int rsplen;
   int slotNum;
   int cardNum;
-  LC_SLOT *slot;
+  LCD_SLOT *slot;
   char retval;
   const char *target;
   int toReader;
@@ -1731,21 +1725,21 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   if (!apdu || apdulen<4) {
     DBG_ERROR(0, "APDU too small");
     /* send error result */
-    LC_Driver_SendResult(d,
+    LCD_Driver_SendResult(d,
                          rid,
                          "CardCommandResponse",
                          "ERROR", "APDU too small");
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
   slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotnum", 0, -1);
   if (slotNum==-1) {
     DBG_ERROR(0, "Bad slot number");
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Bad slot number");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
@@ -1753,18 +1747,18 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   if (cardNum==-1) {
     DBG_ERROR(0, "Bad card number");
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Bad card number");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
   target=GWEN_DB_GetCharValue(dbReq, "body/target", 0, 0);
   if (!target) {
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "No target");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
   if (strcasecmp(target, "reader")==0)
@@ -1774,67 +1768,67 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
   else {
     DBG_ERROR(0, "Bad target \"%s\"", target);
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Bad target");
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
   /* check whether we have a reader of that id */
-  r=LC_Driver_FindReaderById(d, readerId);
+  r=LCD_Driver_FindReaderById(d, readerId);
   if (!r) {
     DBG_ERROR(0, "A reader with id \"%08x\" does not exists", readerId);
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Reader not found");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
   /* get the referenced slot */
-  slot=LC_Reader_FindSlot(r, slotNum);
+  slot=LCD_Reader_FindSlot(r, slotNum);
   if (!slot) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Slot not found");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
-  if (LC_Slot_GetStatus(slot) & LC_SLOT_STATUS_DISABLED) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Slot \"%d\" disabled",
-              LC_Slot_GetSlotNum(slot));
+  if (LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_DISABLED) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" disabled",
+              LCD_Slot_GetSlotNum(slot));
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Slot diabled");
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
   /* check card number and reader status */
-  if ((LC_Slot_GetCardNum(slot)!=cardNum) ||
-      !(LC_Slot_GetStatus(slot) & LC_SLOT_STATUS_CARD_CONNECTED)) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Card \"%d\" has been removed", cardNum);
+  if ((LCD_Slot_GetCardNum(slot)!=cardNum) ||
+      !(LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_CARD_CONNECTED)) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Card \"%d\" has been removed", cardNum);
     /* send error result */
-    LC_Driver_SendResult(d, rid, "CardCommandResponse",
+    LCD_Driver_SendResult(d, rid, "CardCommandResponse",
                          "ERROR", "Card has been removed");
-    LC_Driver_RemoveCommand(d, rid, 0);
-    return -1;
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
   }
 
-  DBG_DEBUG(LC_Reader_GetLogger(r), "Executing command");
+  DBG_DEBUG(LCD_Reader_GetLogger(r), "Executing command");
   GWEN_Text_LogString((const char*)apdu, apdulen, 0, GWEN_LoggerLevelDebug);
   dbRsp=GWEN_DB_Group_new("CardCommandResponse");
   rsplen=sizeof(rspbuffer)-1;
-  retval=LC_Driver_SendAPDU(d, toReader, r, slot, apdu, apdulen,
+  retval=LCD_Driver_SendAPDU(d, toReader, r, slot, apdu, apdulen,
                               rspbuffer, &rsplen);
   if (retval!=0) {
-    DBG_ERROR(LC_Reader_GetLogger(r), "Error executing APDU (%08x)", retval);
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Error executing APDU (%08x)", retval);
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "ERROR");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                         "text", LC_Driver_GetErrorText(d, retval));
+                         "text", LCD_Driver_GetErrorText(d, retval));
     readerError=retval;
   }
   else {
@@ -1847,7 +1841,7 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
     }
     else {
       /* init ok */
-      DBG_DEBUG(LC_Reader_GetLogger(r), "Command succeeded");
+      DBG_DEBUG(LCD_Reader_GetLogger(r), "Command succeeded");
       GWEN_Text_LogString((const char*)rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
 
       GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1870,23 +1864,23 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
                       "slotnum", slotNum);
   GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "cardnum", cardNum);
-  if (LC_Driver_SendResponse(d, rid, dbRsp)) {
+  if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response");
-    LC_Driver_RemoveCommand(d, rid, 0);
+    LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
-  LC_Driver_RemoveCommand(d, rid, 0);
+  LCD_Driver_RemoveCommand(d, rid, 0);
   DBG_DEBUG(0, "Response send");
 
   if (readerError) {
-    DBG_NOTICE(LC_Reader_GetLogger(r),
+    DBG_NOTICE(LCD_Reader_GetLogger(r),
                "Reader \"%s\" had an error, shutting down",
-               LC_Reader_GetName(r));
-    LC_Driver_SendReaderErrorNotification(d, r,
-                                          LC_Driver_GetErrorText(d,
-                                                                 readerError));
-    LC_Reader_List_Del(r);
-    LC_Reader_free(r);
+               LCD_Reader_GetName(r));
+    LCD_Driver_SendReaderErrorNotification(d, r,
+                                           LCD_Driver_GetErrorText(d,
+                                                                   readerError));
+    LCD_Reader_List_Del(r);
+    LCD_Reader_free(r);
   }
 
   return 0;
@@ -1894,37 +1888,37 @@ int LC_Driver_HandleCardCommand(LC_DRIVER *d,
 
 
 
-int LC_Driver_HandleStopDriver(LC_DRIVER *d,
+int LCD_Driver_HandleStopDriver(LCD_DRIVER *d,
                                GWEN_TYPE_UINT32 rid,
                                GWEN_DB_NODE *dbReq){
-  LC_READER_LIST *rl;
-  LC_READER *r;
+  LCD_READER_LIST *rl;
+  LCD_READER *r;
 
   assert(d);
   assert(dbReq);
 
-  rl=LC_Driver_GetReaders(d);
+  rl=LCD_Driver_GetReaders(d);
   assert(rl);
-  r=LC_Reader_List_First(rl);
+  r=LCD_Reader_List_First(rl);
   while(r) {
-    LC_READER *nr;
+    LCD_READER *nr;
 
-    nr=LC_Reader_List_Next(r);
+    nr=LCD_Reader_List_Next(r);
     /* deinit reader */
-    DBG_INFO(LC_Reader_GetLogger(r),
-             "Disconnecting reader \"%s\"", LC_Reader_GetName(r));
-    if (LC_Driver_DisconnectReader(d, r)) {
-      DBG_WARN(LC_Reader_GetLogger(r), "Could not disconnect reader");
+    DBG_INFO(LCD_Reader_GetLogger(r),
+             "Disconnecting reader \"%s\"", LCD_Reader_GetName(r));
+    if (LCD_Driver_DisconnectReader(d, r)) {
+      DBG_WARN(LCD_Reader_GetLogger(r), "Could not disconnect reader");
     }
     else {
-      DBG_INFO(LC_Reader_GetLogger(r), "Reader \"%s\" disconnected", LC_Reader_GetName(r));
+      DBG_INFO(LCD_Reader_GetLogger(r), "Reader \"%s\" disconnected", LCD_Reader_GetName(r));
     }
-    LC_Reader_List_Del(r);
-    LC_Reader_free(r);
+    LCD_Reader_List_Del(r);
+    LCD_Reader_free(r);
     r=nr;
   } /* while r */
 
-  LC_Driver_RemoveCommand(d, rid, 0);
+  LCD_Driver_RemoveCommand(d, rid, 0);
 
   DBG_NOTICE(0, "Driver down");
   d->stopDriver=1;
@@ -1933,8 +1927,46 @@ int LC_Driver_HandleStopDriver(LC_DRIVER *d,
 
 
 
+int LCD_Driver_HandleRequest(LCD_DRIVER *d,
+                             GWEN_TYPE_UINT32 rid,
+                             const char *name,
+                             GWEN_DB_NODE *dbReq){
+  int rv;
 
-int LC_Driver_Work(LC_DRIVER *d) {
+  DBG_NOTICE(0, "Incoming request \"%s\"", name);
+
+  /* if there is a virtual function set go ask the function first */
+  if (d->handleRequestFn) {
+    rv=d->handleRequestFn(d, rid, name, dbReq);
+    if (rv!=1)
+      return rv;
+  }
+
+  if (strcasecmp(name, "StartReader")==0) {
+    rv=LCD_Driver_HandleStartReader(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "StopReader")==0) {
+    rv=LCD_Driver_HandleStopReader(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "CardCommand")==0) {
+    rv=LCD_Driver_HandleCardCommand(d, rid, dbReq);
+   }
+  else if (strcasecmp(name, "ResetCard")==0) {
+    rv=LCD_Driver_HandleResetCard(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "StopDriver")==0) {
+    rv=LCD_Driver_HandleStopDriver(d, rid, dbReq);
+  }
+  else
+    rv=1; /* not handled */
+
+  return rv;
+}
+
+
+
+
+int LCD_Driver_Work(LCD_DRIVER *d) {
   time_t lastStatusCheckTime;
   time_t t1;
 
@@ -1944,20 +1976,11 @@ int LC_Driver_Work(LC_DRIVER *d) {
     GWEN_TYPE_UINT32 rid;
     int needHeartbeat;
 
-    res=GWEN_Net_HeartBeat(750);
-    if (res==GWEN_NetConnectionWorkResult_Error) {
-      DBG_ERROR(0, "Network error");
-      return -1;
-    }
-    else if (res==GWEN_NetConnectionWorkResult_NoChange) {
-      DBG_VERBOUS(0, "No activity");
-    }
-
     t1=time(0);
     if (difftime(t1, lastStatusCheckTime)>=1) {
       /* Do some hardware work */
       DBG_VERBOUS(0, "Checking for status changes");
-      LC_Driver_CheckStatusChanges(d);
+      LCD_Driver_CheckStatusChanges(d);
       lastStatusCheckTime=t1;
     }
 
@@ -1969,13 +1992,13 @@ int LC_Driver_Work(LC_DRIVER *d) {
       if (difftime(t1, lastStatusCheckTime)>=1) {
         /* Do some hardware work */
         DBG_VERBOUS(0, "Checking for status changes");
-        LC_Driver_CheckStatusChanges(d);
+        LCD_Driver_CheckStatusChanges(d);
         lastStatusCheckTime=t1;
       }
       for(j=0; ; j++) {
         int rv;
 
-        if (j>LC_DRIVER_IPC_MAXWORK) {
+        if (j>LCD_DRIVER_IPC_MAXWORK) {
           DBG_ERROR(0, "IPC running wild, aborting driver");
           return -1;
         }
@@ -1983,7 +2006,7 @@ int LC_Driver_Work(LC_DRIVER *d) {
         if (difftime(t1, lastStatusCheckTime)>=1) {
           /* Do some hardware work */
           DBG_VERBOUS(0, "Checking for status changes");
-          LC_Driver_CheckStatusChanges(d);
+          LCD_Driver_CheckStatusChanges(d);
           lastStatusCheckTime=t1;
         }
         /* work as long as possible */
@@ -1996,48 +2019,38 @@ int LC_Driver_Work(LC_DRIVER *d) {
           break;
       }
 
-      rid=LC_Driver_GetNextInRequest(d);
+      rid=LCD_Driver_GetNextInRequest(d);
       if (rid) {
         GWEN_DB_NODE *dbReq;
+        int rv;
         const char *name;
-        int didWhat;
 
-        dbReq=LC_Driver_GetInRequestData(d, rid);
+        dbReq=LCD_Driver_GetInRequestData(d, rid);
         assert(dbReq);
 
         /* we have an incoming message */
-        didWhat=1;
         name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
         if (!name) {
           DBG_ERROR(0, "Bad IPC command (no command name), discarding");
-          LC_Driver_RemoveCommand(d, rid, 0);
+          LCD_Driver_RemoveCommand(d, rid, 0);
         }
-        DBG_NOTICE(0, "Incoming request \"%s\"", name);
-        if (strcasecmp(name, "StartReader")==0) {
-          LC_Driver_HandleStartReader(d, rid, dbReq);
+        rv=LCD_Driver_HandleRequest(d, rid, name, dbReq);
+        if (rv==1) {
+          DBG_WARN(0, "Unknown command \"%s\", discarding", name);
+          if (GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 0)) {
+            DBG_ERROR(0, "Could not remove request");
+            abort();
+          }
         }
-        else if (strcasecmp(name, "StopReader")==0) {
-          LC_Driver_HandleStopReader(d, rid, dbReq);
-        }
-        else if (strcasecmp(name, "CardCommand")==0) {
-          LC_Driver_HandleCardCommand(d, rid, dbReq);
-        }
-        else if (strcasecmp(name, "ResetCard")==0) {
-          LC_Driver_HandleResetCard(d, rid, dbReq);
-        }
-        else if (strcasecmp(name, "StopDriver")==0) {
-          LC_Driver_HandleStopDriver(d, rid, dbReq);
+        else if (rv==-1) {
+          DBG_ERROR(0, "Error while handling request, going down");
+          return -1;
         }
         else {
-          DBG_WARN(0, "Unknown command \"%s\", discarding", name);
-          didWhat=0;
-        }
-
-        if (didWhat) {
           for(j=0; ; j++) {
             int rv;
 
-            if (j>LC_DRIVER_IPC_MAXWORK) {
+            if (j>LCD_DRIVER_IPC_MAXWORK) {
               DBG_ERROR(0, "IPC running wild, aborting driver");
               return -1;
             }
@@ -2051,11 +2064,20 @@ int LC_Driver_Work(LC_DRIVER *d) {
             else if (rv==1)
               break;
           }
-        } /* if didWhat */
+        } /* if something done */
       } /* if incoming request */
       else
         needHeartbeat=1;
     } /* while !needHeartbeat */
+
+    res=GWEN_Net_HeartBeat(750);
+    if (res==GWEN_NetConnectionWorkResult_Error) {
+      DBG_ERROR(0, "Network error");
+      return -1;
+    }
+    else if (res==GWEN_NetConnectionWorkResult_NoChange) {
+      DBG_VERBOUS(0, "No activity");
+    }
   } /* while driver is not to be stopped */
   return 0;
 }
@@ -2063,11 +2085,11 @@ int LC_Driver_Work(LC_DRIVER *d) {
 
 
 GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-LC_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
-                     void *user_data){
-  LC_DRIVER *d;
+LCD_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
+                      void *user_data){
+  LCD_DRIVER *d;
 
-  d=(LC_DRIVER*)user_data;
+  d=(LCD_DRIVER*)user_data;
   if (!d) {
     DBG_ERROR(0, "No user data in AskAddCert function");
     return GWEN_NetTransportSSL_AskAddCertResultNo;

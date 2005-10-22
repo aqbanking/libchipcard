@@ -17,7 +17,6 @@
 
 
 #include "devmonitor_p.h"
-#include "pcimonitor_l.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/directory.h>
@@ -37,6 +36,8 @@
 
 
 GWEN_LIST_FUNCTIONS(LC_DEVICE, LC_Device)
+GWEN_LIST_FUNCTIONS(LC_DEVSCANNER, LC_DevScanner)
+GWEN_INHERIT_FUNCTIONS(LC_DEVSCANNER)
 
 
 
@@ -98,9 +99,17 @@ LC_DEVICE *LC_Device_new(LC_DEVICE_BUSTYPE busType,
 void LC_Device_free(LC_DEVICE *ud) {
   if (ud) {
     GWEN_LIST_FINI(LC_DEVICE, ud);
+    free(ud->path);
     GWEN_FREE_OBJECT(ud);
     DBG_MEM_DEC("LC_DEVICE");
   }
+}
+
+
+
+LC_DEVICE_BUSTYPE LC_Device_GetBusType(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->busType;
 }
 
 
@@ -148,52 +157,18 @@ GWEN_TYPE_UINT32 LC_Device_GetProductId(const LC_DEVICE *ud){
 
 
 
-
-
-LC_DEVMONITOR *LC_DevMonitor_new() {
-  LC_DEVMONITOR *um;
-
-  GWEN_NEW_OBJECT(LC_DEVMONITOR, um);
-  DBG_MEM_INC("LC_DEVMONITOR", 0);
-  um->currentDevices=LC_Device_List_new();
-  um->newDevices=LC_Device_List_new();
-  um->lostDevices=LC_Device_List_new();
-
-  return um;
+const char *LC_Device_GetPath(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->path;
 }
 
 
 
-void LC_DevMonitor_free(LC_DEVMONITOR *um) {
-  if (um) {
-    GWEN_IdList_free(um->lastList);
-
-    LC_Device_List_free(um->currentDevices);
-    LC_Device_List_free(um->newDevices);
-    LC_Device_List_free(um->lostDevices);
-
-    GWEN_FREE_OBJECT(um);
-    DBG_MEM_DEC("LC_DEVMONITOR");
-  }
-}
-
-
-
-
-int LC_DevMonitor_ReadDevs(LC_DEVMONITOR *um, LC_DEVICE_LIST *dl) {
-  assert(um);
-  if (um->readDevsFn) {
-    int succ=0;
-
-    if (LC_PciMonitor_ReadDevs(dl)==0)
-      succ++;
-
-    if (!succ)
-      return -1;
-    return 0;
-  }
-  else
-    return um->readDevsFn(um, dl);
+void LC_Device_SetPath(LC_DEVICE *ud, const char *s) {
+  assert(ud);
+  free(ud->path);
+  if (s) ud->path=strdup(s);
+  else ud->path=0;
 }
 
 
@@ -240,25 +215,117 @@ LC_DEVICE *LC_Device_Get(LC_DEVICE_LIST *dl,
 
 
 
+
+
+
+
+LC_DEVSCANNER *LC_DevScanner_new() {
+  LC_DEVSCANNER *um;
+
+  GWEN_NEW_OBJECT(LC_DEVSCANNER, um);
+  DBG_MEM_INC("LC_DEVSCANNER", 0);
+  GWEN_INHERIT_INIT(LC_DEVSCANNER, um);
+  GWEN_LIST_INIT(LC_DEVSCANNER, um);
+
+  return um;
+}
+
+
+
+void LC_DevScanner_free(LC_DEVSCANNER *um) {
+  if (um) {
+    GWEN_LIST_FINI(LC_DEVSCANNER, um);
+    GWEN_INHERIT_FINI(LC_DEVSCANNER, um);
+    GWEN_FREE_OBJECT(um);
+    DBG_MEM_DEC("LC_DEVSCANNER");
+  }
+}
+
+
+
+
+int LC_DevScanner_ReadDevs(LC_DEVSCANNER *um, LC_DEVICE_LIST *dl) {
+  assert(um);
+  assert(um->readDevsFn);
+  return um->readDevsFn(um, dl);
+}
+
+
+
+void LC_DevScanner_SetReadDevsFn(LC_DEVSCANNER *um,
+                                 LC_DEVSCANNER_READ_DEVS_FN fn) {
+  assert(um);
+  um->readDevsFn=fn;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+LC_DEVMONITOR *LC_DevMonitor_new() {
+  LC_DEVMONITOR *um;
+
+  GWEN_NEW_OBJECT(LC_DEVMONITOR, um);
+  DBG_MEM_INC("LC_DEVMONITOR", 0);
+  um->currentDevices=LC_Device_List_new();
+  um->newDevices=LC_Device_List_new();
+  um->lostDevices=LC_Device_List_new();
+  um->scanners=LC_DevScanner_List_new();
+  return um;
+}
+
+
+
+void LC_DevMonitor_free(LC_DEVMONITOR *um) {
+  if (um) {
+    LC_DevScanner_List_free(um->scanners);
+    LC_Device_List_free(um->currentDevices);
+    LC_Device_List_free(um->newDevices);
+    LC_Device_List_free(um->lostDevices);
+
+    GWEN_FREE_OBJECT(um);
+    DBG_MEM_DEC("LC_DEVMONITOR");
+  }
+}
+
+
+
 int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
   LC_DEVICE_LIST *dl;
   LC_DEVICE *d;
-  int rv;
+  LC_DEVSCANNER *scanner;
+  int oks=0;
+  int changes=0;
 
   LC_Device_List_Clear(um->newDevices);
   LC_Device_List_Clear(um->lostDevices);
 
   dl=LC_Device_List_new();
 
-  rv=LC_DevMonitor_ReadDevs(um, dl);
-  if (rv==-1) {
-    DBG_INFO(0, "here");
+  scanner=LC_DevScanner_List_First(um->scanners);
+  while(scanner) {
+    int rv;
+
+    rv=LC_DevScanner_ReadDevs(scanner, dl);
+    if (rv==-1) {
+      DBG_INFO(0, "here");
+    }
+    else if (rv==0)
+      oks++;
+    scanner=LC_DevScanner_List_Next(scanner);
+  }
+
+  if (oks==0) {
+    DBG_INFO(0, "No scanner succeeded");
     LC_Device_List_free(dl);
     return -1;
-  }
-  else if (rv==1) {
-    LC_Device_List_free(dl);
-    return 1;
   }
 
   /* find new devices */
@@ -275,11 +342,12 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
     if (!dd) {
       LC_DEVICE *newd;
 
-      DBG_INFO(0, "Device %d/%d is new (%04x/%04x)",
-               d->busId,
-               d->deviceId,
-               d->vendorId,
-               d->productId);
+      DBG_DEBUG(0, "Device %s/%d/%d is new (%04x/%04x)",
+                LC_Device_BusType_toString(LC_Device_GetBusType(d)),
+                d->busId,
+                d->deviceId,
+                d->vendorId,
+                d->productId);
       newd=LC_Device_new(d->busType,
 			 d->busId,
 			 d->deviceId,
@@ -287,6 +355,7 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
 			 d->productId);
       newd->devicePos=d->devicePos;
       LC_Device_List_Add(newd, um->newDevices);
+      changes++;
     }
     d=LC_Device_List_Next(d);
   }
@@ -305,11 +374,12 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
     if (!dd) {
       LC_DEVICE *lostd;
 
-      DBG_INFO(0, "Device %d/%d was lost (%04x/%04x)",
-               d->busId,
-               d->deviceId,
-               d->vendorId,
-               d->productId);
+      DBG_DEBUG(0, "Device %s/%d/%d was lost (%04x/%04x)",
+                LC_Device_BusType_toString(LC_Device_GetBusType(d)),
+                d->busId,
+                d->deviceId,
+                d->vendorId,
+                d->productId);
       lostd=LC_Device_new(d->busType,
 			  d->busId,
 			  d->deviceId,
@@ -317,13 +387,16 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
 			  d->productId);
       lostd->devicePos=d->devicePos;
       LC_Device_List_Add(lostd, um->lostDevices);
+      changes++;
     }
     d=LC_Device_List_Next(d);
   }
 
   LC_Device_List_free(um->currentDevices);
   um->currentDevices=dl;
-  return 0;
+  if (changes)
+    return 0;
+  return 1;
 }
 
 
@@ -346,6 +419,15 @@ LC_DEVICE_LIST *LC_DevMonitor_GetCurrentDevices(const LC_DEVMONITOR *um){
   assert(um);
   return um->currentDevices;
 }
+
+
+
+void LC_DevMonitor_AddScanner(LC_DEVMONITOR *um, LC_DEVSCANNER *sc) {
+  assert(um);
+  assert(sc);
+  LC_DevScanner_List_Add(sc, um->scanners);
+}
+
 
 
 

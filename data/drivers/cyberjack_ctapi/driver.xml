@@ -1,4 +1,4 @@
-<!-- contains all readers again since cyberjack driver 2.0.6 -->
+<!-- contains all readers again since cyberjack driver 2.0.9 -->
 
 <driver name="cyberjack_ctapi" type="ctapi">
   <short>Driver for the Reiner-SCT Cyberjack</short>
@@ -19,40 +19,69 @@
     </locations>
 
     <downloads>
-      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.6/</url>
-      <filename>ctapi-cyberjack-2.0.6.tar.gz</filename>
+      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.9/</url>
+      <filename>ctapi-cyberjack-2.0.9.tar.bz2</filename>
     </downloads>
   </lib>
 
-  <vars>
-    <var name="autoPortOffset">1</var>
-    <var name="autoPortMode">vendorId</var>
-  </vars>
-
   <readers>
 
-    <reader name="cyberjack" com="USBSerial" vendor="0x0c4b" product="0x0100">
+    <!-- Old Cyberjack or Cyberjack E-com -->
+    <reader name="cyberjack" 
+            bustype="UsbTty"
+            vendor="0x0c4b" product="0x0100" >
       <short>Cyberjack pinpad or ecom</short>
+
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+
+      <autoport>
+        <mode>deviceId</mode>
+        <offset>32769</offset>
+      </autoport>
+
       <ports>
         <port value="0x8001">USB0</port>
         <port value="0x8002">USB1</port>
         <port value="0x8003">USB2</port>
         <port value="0x8004">USB3</port>
       </ports>
-      <flags>
-        <flag>keypad</flag>
-      </flags>
+
       <image>cyberjack_pinpad.jpg</image>
     </reader>
 
-    <reader name="cyberjack2" com="USB" vendor="0x0c4b" product="0x0300">
+
+    <!-- New Cyberjack -->
+    <reader name="cyberjack2" 
+            ctn="1" bustype="UsbRaw"
+            vendor="0x0c4b" product="0x0300">
       <short>Cyberjack pinpad</short>
       <flags>
         <flag>keypad</flag>
       </flags>
-      <image>cyberjack_pinpad.jpg</image>
-    </reader>
+      
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+      
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
 
+      <image>cyberjack_pinpad.jpg</image>
+
+    </reader>
 
   </readers>
 
@@ -72,42 +101,10 @@
     </locations>
     
     <downloads>
-      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.6/</url>
-      <filename>ctapi-cyberjack-2.0.6.tar.gz</filename>
+      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.9/</url>
+      <filename>ctapi-cyberjack-2.0.9.tar.bz2</filename>
     </downloads>
   </lib>
-
-  <vars osname="osx" >
-    <var name="autoPortOffset">1</var>
-    <var name="autoPortMode">vendorId</var>
-  </vars>
-
-  <readers osname="osx" >
-
-    <reader name="cyberjack" com="USB" vendor="0x0c4b" product="0x0100">
-      <short>Cyberjack pinpad or ecom</short>
-      <ports>
-        <port value="0x8001">USB0</port>
-        <port value="0x8002">USB1</port>
-        <port value="0x8003">USB2</port>
-        <port value="0x8004">USB3</port>
-      </ports>
-      <flags>
-        <flag>keypad</flag>
-      </flags>
-      <image>cyberjack_pinpad.jpg</image>
-    </reader>
-
-    <reader name="cyberjack2" com="USB" vendor="0x0c4b" product="0x0300">
-      <short>Cyberjack pinpad</short>
-      <flags>
-        <flag>keypad</flag>
-      </flags>
-      <image>cyberjack_pinpad.jpg</image>
-    </reader>
-
-
-  </readers>
 
 </driver>
 

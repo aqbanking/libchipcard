@@ -48,6 +48,8 @@ GWEN_TYPE_UINT32 LCDM_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name) {
       flags|=LCDM_DRIVER_FLAGS_HAS_VERIFY_FN;
     else if (strcasecmp(p, "has_modify_fn")==0)
       flags|=LCDM_DRIVER_FLAGS_HAS_MODIFY_FN;
+    else if (strcasecmp(p, "config")==0)
+      flags|=LCDM_DRIVER_FLAGS_CONFIG;
     else {
       DBG_WARN(0, "Unknown driver flag \"%s\"", p);
     }
@@ -67,6 +69,9 @@ int LCDM_Driver_Flag_toDb(GWEN_DB_NODE *db, const char *name,
   if (flags & LCDM_DRIVER_FLAGS_REMOTE)
     if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "remote"))
       return -1;
+  if (flags & LCDM_DRIVER_FLAGS_CONFIG)
+    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "config"))
+      return -1;
   if (flags & LCDM_DRIVER_FLAGS_HAS_VERIFY_FN)
     if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name,
                              "has_verify_fn"))
@@ -78,31 +83,6 @@ int LCDM_Driver_Flag_toDb(GWEN_DB_NODE *db, const char *name,
 
   return 0;
 }
-
-
-
-LCDM_DRIVER_AUTOPORTMODE LCDM_DriverAutoPortMode_fromString(const char *s) {
-  if (strcasecmp(s, "none")==0)
-    return LCDM_DriverAutoPortMode_None;
-  else if (strcasecmp(s, "vendorId")==0)
-    return LCDM_DriverAutoPortMode_VendorId;
-  else if (strcasecmp(s, "productId")==0)
-    return LCDM_DriverAutoPortMode_ProductId;
-  return LCDM_DriverAutoPortMode_Unknown;
-}
-
-
-
-const char *LCDM_DriverAutoPortMode_toString(LCDM_DRIVER_AUTOPORTMODE i) {
-  switch(i) {
-  case LCDM_DriverAutoPortMode_None:      return "none";
-  case LCDM_DriverAutoPortMode_VendorId:  return "vendorId";
-  case LCDM_DriverAutoPortMode_ProductId: return "productid";
-  default:                                return "unknown";
-  }
-}
-
-
 
 
 
@@ -121,8 +101,6 @@ LCDM_DRIVER *LCDM_Driver_new(){
     LCDM_Driver_LastId=time(0);
   d->driverId=++LCDM_Driver_LastId;
   d->maxReaders=1;
-
-  d->firstNewPort=100;
 
   return d;
 }
@@ -150,16 +128,6 @@ LCDM_DRIVER *LCDM_Driver_fromDb(GWEN_DB_NODE *db){
   }
   else
     d->driverVars=GWEN_DB_Group_new("vars");
-
-  d->firstNewPort=GWEN_DB_GetIntValue(d->driverVars, "firstNewPort", 0, 1000);
-  d->autoPortOffset=GWEN_DB_GetIntValue(d->driverVars,
-                                        "autoPortOffset", 0, -1);
-  p=GWEN_DB_GetCharValue(d->driverVars,
-                         "autoPortMode", 0, 0);
-  if (p)
-    d->autoPortMode=LCDM_DriverAutoPortMode_fromString(p);
-  else
-    d->autoPortMode=LCDM_DriverAutoPortMode_None;
 
   d->maxReaders=GWEN_DB_GetIntValue(db, "maxReaders", 0, 1);
 
@@ -272,26 +240,6 @@ int LCDM_Driver_GetMaxReaders(const LCDM_DRIVER *d){
 void LCDM_Driver_SetMaxReaders(LCDM_DRIVER *d, int maxReaders){
   assert(d);
   d->maxReaders=maxReaders;
-}
-
-
-
-int LCDM_Driver_GetFirstNewPort(const LCDM_DRIVER *d){
-  assert(d);
-  return d->firstNewPort;
-}
-
-
-
-int LCDM_Driver_GetAutoPortOffset(const LCDM_DRIVER *d){
-  assert(d);
-  return d->autoPortOffset;
-}
-
-
-LCDM_DRIVER_AUTOPORTMODE LCDM_Driver_GetAutoPortMode(const LCDM_DRIVER *d){
-  assert(d);
-  return d->autoPortMode;
 }
 
 
@@ -454,6 +402,9 @@ GWEN_TYPE_UINT32 LCDM_Driver_GetActiveReadersCount(const LCDM_DRIVER *d){
 
 void LCDM_Driver_IncActiveReadersCount(LCDM_DRIVER *d, int count){
   assert(d);
+  if (d->activeReadersCount==0) {
+    DBG_INFO(0, "Some readers active, driver leaving idle mode");
+  }
   d->activeReadersCount+=count;
   d->idleSince=(time_t)0;
 }
@@ -465,6 +416,7 @@ void LCDM_Driver_DecActiveReadersCount(LCDM_DRIVER *d, int count){
   assert(d->activeReadersCount>=count);
   d->activeReadersCount-=count;
   if (d->activeReadersCount==0) {
+    DBG_INFO(0, "No readers active, driver entering idle mode");
     d->idleSince=time(0);
   }
 }

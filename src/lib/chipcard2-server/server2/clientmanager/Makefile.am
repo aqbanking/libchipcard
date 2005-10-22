@@ -23,7 +23,8 @@ libclientmgr_la_SOURCES=\
   clr_execapdu.c \
   clr_cardreset.c \
   clr_execcommand.c \
-  clr_selectcard.c
+  clr_selectcard.c \
+  clr_getdrivervar.c
 
 
 MAINTAINERCLEANFILES=Makefile.in
