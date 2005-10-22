@@ -59,7 +59,11 @@ LC_DEVSCANNER *LC_PcmciaScanner_new() {
                        LC_PcmciaScanner_FreeData);
   LC_DevScanner_SetReadDevsFn(sc, LC_PcmciaScanner_ReadDevs);
   scp->devMajor=LC_PcmciaScanner_GetDevMajor();
-
+  if (scp->devMajor==-1) {
+    DBG_DEBUG(0,
+	      "Major device number for PCMCIA device not found. "
+	      "Maybe kernel module not loaded?");
+  }
   return sc;
 }
 
@@ -101,6 +105,7 @@ int LC_PcmciaScanner_GetDevMajor() {
 }
 
 
+#ifdef USE_PCMCIA
 
 int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk){
   LC_PCMCIA_SCANNER *scp;
@@ -147,6 +152,7 @@ int LC_PcmciaScanner_GetTuple(int fd, unsigned char code,
     return -1;
 }
 
+#endif /* USE_PCMCIA */
 
 
 int LC_PcmciaScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
@@ -161,9 +167,6 @@ int LC_PcmciaScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
   assert(scp);
 
   if (scp->devMajor==-1) {
-    DBG_ERROR(0,
-              "Major device number for PCMCIA device not found. "
-              "Maybe kernel module not loaded?");
     return -1;
   }
 

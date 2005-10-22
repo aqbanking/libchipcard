@@ -315,7 +315,7 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
 
     rv=LC_DevScanner_ReadDevs(scanner, dl);
     if (rv==-1) {
-      DBG_INFO(0, "here");
+      DBG_VERBOUS(0, "here");
     }
     else if (rv==0)
       oks++;
