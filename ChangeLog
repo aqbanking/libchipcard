@@ -3,6 +3,7 @@
 ------------------------------------------------
 - added support for pcmcia device detection
 - completed transition to new server code
+- gcc 4 fixes
 
 
 2005/10/20: Martin Preuss<martin@libchipcard.de>

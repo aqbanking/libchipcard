@@ -20,15 +20,15 @@ extern "C" {
 
 typedef struct LC_CARD LC_CARD;
 
-
-#define LC_CARD_READERFLAGS_KEYPAD  0x00010000
-#define LC_CARD_READERFLAGS_DISPLAY 0x00020000
-#define LC_CARD_READERFLAGS_NOINFO  0x00040000
-#define LC_CARD_READERFLAGS_REMOTE  0x00080000
-#define LC_CARD_READERFLAGS_AUTO    0x00100000
-
-
 #include <chipcard2/chipcard2.h>
+
+#define LC_CARD_READERFLAGS_KEYPAD  LC_READER_FLAGS_KEYPAD
+#define LC_CARD_READERFLAGS_DISPLAY LC_READER_FLAGS_DISPLAY
+#define LC_CARD_READERFLAGS_NOINFO  LC_READER_FLAGS_NOINFO
+#define LC_CARD_READERFLAGS_REMOTE  LC_READER_FLAGS_REMOTE
+#define LC_CARD_READERFLAGS_AUTO    LC_READER_FLAGS_AUTO
+
+
 #include <chipcard2-client/client/client.h>
 #include <chipcard2-client/client/pininfo.h>
 #include <gwenhywfar/buffer.h>
@@ -338,7 +338,7 @@ typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOVERIFYPIN_FN)(LC_CARD *card,
                                             GWEN_TYPE_UINT32 flags,
                                             const LC_PININFO *pi,
-                                            const char *ptr,
+                                            const unsigned char *ptr,
                                             unsigned int size,
                                             int *triesLeft);
 
@@ -346,9 +346,9 @@ typedef
 LC_CLIENT_RESULT (*LC_CARD_ISOMODIFYPIN_FN)(LC_CARD *card,
                                             GWEN_TYPE_UINT32 flags,
                                             const LC_PININFO *pi,
-                                            const char *oldptr,
+                                            const unsigned char *oldptr,
                                             unsigned int oldsize,
-                                            const char *newptr,
+                                            const unsigned char *newptr,
                                             unsigned int newsize,
                                             int *triesLeft);
 
@@ -480,7 +480,7 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       const LC_PININFO *pi,
-                                      const char *ptr,
+                                      const unsigned char *ptr,
                                       unsigned int size,
                                       int *triesLeft);
 
@@ -488,9 +488,9 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       const LC_PININFO *pi,
-                                      const char *oldptr,
+                                      const unsigned char *oldptr,
                                       unsigned int oldsize,
-                                      const char *newptr,
+                                      const unsigned char *newptr,
                                       unsigned int newsize,
                                       int *triesLeft);
 

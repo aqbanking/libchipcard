@@ -191,12 +191,12 @@ static int chipcard2_transmit(struct sc_reader *reader,
     int i;
 
     DBG_INFO(OPENSC_LOGDOMAIN, "Sending APDU: ");
-    GWEN_Text_LogString(sendbuf, sendsize,
+    GWEN_Text_LogString((char*)sendbuf, sendsize,
                         OPENSC_LOGDOMAIN,
                         GWEN_LoggerLevelInfo);
     rbuf=GWEN_Buffer_new(0, 300, 0, 1);
     res=LC_Card_ExecAPDU(priv->card,
-			 sendbuf, sendsize,
+			 (const char*)sendbuf, sendsize,
 			 rbuf,
 			 control?LC_Client_CmdTargetReader:LC_Client_CmdTargetCard,
 			 OPENSC_CHIPCARD2_COMMAND_TIMEOUT);
@@ -210,7 +210,7 @@ static int chipcard2_transmit(struct sc_reader *reader,
 	DBG_INFO(OPENSC_LOGDOMAIN, "Response received: ");
         memmove(recvbuf, GWEN_Buffer_GetStart(rbuf), i);
 	*recvsize=i;
-        GWEN_Text_LogString(recvbuf, *recvsize,
+        GWEN_Text_LogString((char*)recvbuf, *recvsize,
                             OPENSC_LOGDOMAIN,
                             GWEN_LoggerLevelInfo);
         result=0;

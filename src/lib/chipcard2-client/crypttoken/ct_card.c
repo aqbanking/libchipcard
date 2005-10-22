@@ -255,8 +255,8 @@ int LC_CryptToken__ChangePin(GWEN_PLUGIN_MANAGER *pluginManager,
     }
   } /* if hasKeyPad */
   else {
-    char pinBuffer1[64];
-    char pinBuffer2[64];
+    unsigned char pinBuffer1[64];
+    unsigned char pinBuffer2[64];
     unsigned int pinLength1;
     unsigned int pinLength2;
     int mres;
@@ -532,7 +532,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     }
   } /* if hasKeyPad */
   else {
-    char pinBuffer[64];
+    unsigned char pinBuffer[64];
     int mres;
     int pinMaxLen;
     unsigned int pinLength;

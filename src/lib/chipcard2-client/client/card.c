@@ -1169,7 +1169,7 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       const LC_PININFO *pi,
-                                      const char *ptr,
+                                      const unsigned char *ptr,
                                       unsigned int size,
                                       int *triesLeft) {
   assert(card);
@@ -1186,9 +1186,9 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       GWEN_TYPE_UINT32 flags,
                                       const LC_PININFO *pi,
-                                      const char *oldptr,
+                                      const unsigned char *oldptr,
                                       unsigned int oldsize,
-                                      const char *newptr,
+                                      const unsigned char *newptr,
                                       unsigned int newsize,
                                       int *triesLeft) {
   assert(card);
@@ -1690,7 +1690,7 @@ LC_CLIENT_RESULT LC_Card__IsoAppendRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
                                        const LC_PININFO *pi,
-                                       const char *ptr,
+                                       const unsigned char *ptr,
                                        unsigned int size,
                                        int *triesLeft) {
   GWEN_DB_NODE *dbReq;
@@ -1737,9 +1737,9 @@ LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
                                        GWEN_TYPE_UINT32 flags,
                                        const LC_PININFO *pi,
-                                       const char *oldptr,
+                                       const unsigned char *oldptr,
                                        unsigned int oldsize,
-                                       const char *newptr,
+                                       const unsigned char *newptr,
                                        unsigned int newsize,
                                        int *triesLeft) {
   GWEN_DB_NODE *dbReq;
