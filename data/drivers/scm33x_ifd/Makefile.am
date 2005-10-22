@@ -9,7 +9,7 @@ EXTRA_DIST=\
   starcos.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/scmx32_ifd/cards
+carddatadir=@libchipcard2s_config_am@/drivers/scm33x_ifd/cards
 carddata_DATA=\
   ddv0.xml \
   ddv1.xml \
@@ -18,7 +18,7 @@ carddata_DATA=\
   processorcard.xml \
   starcos.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/scmx32_ifd
+driverdatadir=@libchipcard2s_config_am@/drivers/scm33x_ifd
 driverdata_DATA=driver.xml
 
 

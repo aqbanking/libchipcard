@@ -44,7 +44,8 @@
       <image>scm_scr332.jpg</image>
     </reader>
     <!-- this reader is handled by driver scmx32_ifd
-    <reader name="scm_scr532" com="USB" vendor="0x04e6" product="0xe003" >
+    <reader name="scm_scr532" busType="UsbRaw" 
+            vendor="0x04e6" product="0xe003" >
       <short>SCM SCR 332</short>
       <flags>
       </flags>
