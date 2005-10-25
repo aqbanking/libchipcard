@@ -1,4 +1,15 @@
 
+2005/10/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added some libpcsc functions which are needed by some IFD drivers
+- added preliminary driver description for O2Micro (PCMCIA)
+
+
+===========================================================================
+MARK: released version 1.9.16alpha (2005/10/22)
+===========================================================================
+
+
 2005/10/22: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added support for pcmcia device detection

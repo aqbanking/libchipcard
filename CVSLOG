@@ -1,3 +1,2 @@
-- implemented driver blacklisting (allows to have multiple driver information
-  files for one reader)
-- code cleanup (server now releases unneeded ressources)
+- added some libpcsc functions which are needed by some IFD drivers
+- added preliminary driver description for O2Micro (PCMCIA)

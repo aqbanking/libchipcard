@@ -12,23 +12,3 @@ reader is done by those files.
 
 
 
-2. Description of "driver.xml"
-==============================
-
-The element "driver" may contain a subelement "vars" which influence
-Libchipcard2s' behaviour regarding the particular driver.
-The following variables are supported:
-
-autoPortOffset
---------------
-This variable is used when a driver needs an automatically assigned port (like
-the latest Cyberjack). For some drivers "0" must be used (which is the 
-default) but for the latest Cyberjack "1" is necessary.
-
-autoPortMode
-------------
-This variable describes how devices are to be counted when automatically
-assigning a port value. The following modes are supported:
- - productid: VendorId *and* ProductId must match to count a device
- - vendorId:  VendorId suffices
-

@@ -116,6 +116,14 @@ GWEN_TYPE_UINT32 DriverIFDOld_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
 const char *DriverIFDOld_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 
+/**
+ * These functions are needed by some drivers.
+ */
+/*@{*/
+void log_msg(const int priority, const char *fmt, ...);
+char *pcsc_stringify_error(long x);
+/*@}*/
+
 
 #endif /* CHIPCARD_DRIVER_IFDOLD_P_H */
 

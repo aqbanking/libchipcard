@@ -8,7 +8,8 @@ SUBDIRS=\
  orga_ctapi \
  scmx32_ifd \
  scm33x_ifd \
- tow_ctapi
+ tow_ctapi \
+ o2micro_ctapi
 
 EXTRA_DIST=README
 

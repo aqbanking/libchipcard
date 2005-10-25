@@ -26,7 +26,10 @@
 #include <gwenhywfar/inetsocket.h>
 #include <chipcard2/chipcard2.h>
 
+#include <stdio.h>
 #include <unistd.h>
+#include <stdarg.h>
+
 
 GWEN_INHERIT(LCD_DRIVER, DRIVER_IFD)
 
@@ -726,5 +729,39 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
 }
 
 
+
+void log_msg(const int priority, const char *fmt, ...) {
+  char msgBuf[512];
+  va_list argptr;
+
+  va_start(argptr, fmt);
+  vsnprintf(msgBuf, sizeof(msgBuf), fmt, argptr);
+  va_end(argptr);
+
+  switch(priority) {
+  case 1: /* PCSC_LOG_INFO */
+    DBG_INFO(0, "%s", msgBuf);
+    break;
+  case 2: /* PCSC_LOG_ERROR */
+  case 3: /* PCSC_LOG_CRITICAL */
+    DBG_ERROR(0, "%s", msgBuf);
+    break;
+  case 0: /* PCSC_LOG_DEBUG */
+  default:
+    DBG_DEBUG(0, "%s", msgBuf);
+    break;
+  } /* switch */
+}
+
+
+
+char *pcsc_stringify_error(long x) {
+  static char errbuf[256];
+
+  snprintf(errbuf, sizeof(errbuf),
+           "PC/SC-Error: %08lx",
+           (unsigned long) x);
+  return errbuf;
+}
 
 
