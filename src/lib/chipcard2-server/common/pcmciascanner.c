@@ -37,6 +37,7 @@
 #ifdef USE_PCMCIA
 # include <pcmcia/version.h>
 # include <pcmcia/cs_types.h>
+struct pcmcia_socket;
 # include <pcmcia/cs.h>
 # include <pcmcia/cistpl.h>
 # include <pcmcia/ds.h>
