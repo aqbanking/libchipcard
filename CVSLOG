@@ -1,2 +1,4 @@
 - added some libpcsc functions which are needed by some IFD drivers
 - added preliminary driver description for O2Micro (PCMCIA)
+- undid some of Christian's changes (LastFailedTime and ShortFailCounter are
+  actually needed, with them outcommented the server won't compile here)

@@ -203,6 +203,16 @@ int LC_Client_GetVeryLongTimeout(const LC_CLIENT *cl) {
 int LC_Client_CheckForError(GWEN_DB_NODE *db) {
   const char *name;
 
+  if (strcasecmp(GWEN_DB_GroupName(db), "error")==0) {
+    int numCode;
+    const char *txt;
+
+    numCode=GWEN_DB_GetIntValue(db, "code", 0, LC_ERROR_GENERIC);
+    txt=GWEN_DB_GetCharValue(db, "text", 0, "<empty>");
+    DBG_ERROR(0, "Error %d: %s", numCode, txt);
+    return numCode;
+  }
+
   name=GWEN_DB_GetCharValue(db, "command/vars/cmd", 0, 0);
   assert(name);
   if (strcasecmp(name, "Error")==0) {
