@@ -69,8 +69,10 @@ static int ChipcardDaemonHangup=0;
 static int ChipcardNannyStop=0;
 static int ChipcardNannySuspend=0;
 static int ChipcardNannyResume=0;
+#ifdef HAVE_FORK
 static time_t LastFailedTime=0;
 static int ShortFailCounter=0;
+#endif
 static GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
   Chipcard_AskAddCertResult=GWEN_NetTransportSSL_AskAddCertResultNo;
 

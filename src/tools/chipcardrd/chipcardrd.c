@@ -77,14 +77,18 @@ static char *ServerType=0;
 
 static int RestartTime=CHIPCARDRD_RESTART_TIME;
 
+#ifdef HAVE_FORK
 static int DaemonMode=1;
+#endif
 static int DriverDaemonStop=0;
 static int DriverDaemonHangup=0;
 static int DriverNannyStop=0;
 static int DriverNannySuspend=0;
 static int DriverNannyResume=0;
+#ifdef HAVE_FORK
 static time_t LastFailedTime=0;
 static int ShortFailCounter=0;
+#endif
 
 
 #define k_PRG "chipcardrd"
