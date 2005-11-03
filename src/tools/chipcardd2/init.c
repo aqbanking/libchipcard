@@ -32,7 +32,7 @@
 
 
 int init(ARGUMENTS *args) {
-  GWEN_DB_NODE *db;
+  GWEN_SSLCERTDESCR *cert;
 
   /* set some defaults */
   if (!args->commonName)
@@ -62,24 +62,24 @@ int init(ARGUMENTS *args) {
 
   /* generate Diffie-Hellman stuff */
   fprintf(stderr, "Generating DH parameters...\n");
-  if (GWEN_NetTransportSSL_GenerateDhFile(args->dhFile, 1024)) {
+  if (GWEN_NetLayerSsl_GenerateDhFile(args->dhFile, 1024)) {
     fprintf(stderr, "ERROR: Could not generate DH file.\n");
     return 2;
   }
 
   /* generate certificate */
   fprintf(stderr, "Generating self-signed certificate for server...\n");
-  db=GWEN_DB_Group_new("certData");
+  cert=GWEN_SslCertDescr_new();
   if (args->countryName)
-    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-                         "countryName", args->countryName);
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-                       "commonName", args->commonName);
-  if (GWEN_NetTransportSSL_GenerateCertAndKeyFile(args->certFile,
-                                                  1024,
-                                                  1,
-                                                  365*2,
-                                                  db)) {
+    GWEN_SslCertDescr_SetCountryName(cert, args->countryName);
+  if (args->commonName)
+    GWEN_SslCertDescr_SetCommonName(cert, args->commonName);
+
+  if (GWEN_NetLayerSsl_GenerateCertAndKeyFile(args->certFile,
+                                              1024,
+                                              1,
+                                              365*2,
+                                              cert)) {
     fprintf(stderr, "ERROR: Could not generate certificate.\n");
     return 2;
   }

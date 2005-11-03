@@ -73,8 +73,8 @@ static int ChipcardNannyResume=0;
 static time_t LastFailedTime=0;
 static int ShortFailCounter=0;
 #endif
-static GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-  Chipcard_AskAddCertResult=GWEN_NetTransportSSL_AskAddCertResultNo;
+static GWEN_NL_SSL_ASKADDCERT_RESULT
+  Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_No;
 
 static LCS_SERVER *cardServer=0;
 
@@ -332,10 +332,10 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
     }
 
     else if (strcmp(argv[i],"--accept-all-certs")==0) {
-      Chipcard_AskAddCertResult=GWEN_NetTransportSSL_AskAddCertResultTmp;
+      Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_Tmp;
     }
     else if (strcmp(argv[i],"--store-all-certs")==0) {
-      Chipcard_AskAddCertResult=GWEN_NetTransportSSL_AskAddCertResultIncoming;
+      Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_Incoming;
     }
     /* options for mkcert, init */
     else if (strcmp(argv[i],"--certfile")==0) {
@@ -499,7 +499,6 @@ void familySignalHandler(int s, int child) {
       LCS_FullServer_DumpState(cardServer);
     }
     GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
-    GWEN_Net_Dump();
 #else
     if (GWEN_Logger_GetLevel(0)<GWEN_LoggerLevelDebug) {
       DBG_NOTICE(0, "Got signal USR1, will increase log level");
@@ -642,16 +641,17 @@ int setSignalHandler(int child) {
 
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-askAddCert(GWEN_NETTRANSPORT *tr,
-           GWEN_DB_NODE *cert){
+GWEN_NL_SSL_ASKADDCERT_RESULT
+askAddCert(GWEN_NETLAYER *nl,
+           const GWEN_SSLCERTDESCR *cert,
+           void *user_data) {
   return Chipcard_AskAddCertResult;
 }
 
 
 
 /* TODO */
-int getPassword(GWEN_NETTRANSPORT *tr,
+int getPassword(GWEN_NETLAYER *nl,
                 char *buffer, int num,
                 int rwflag){
   return 0;
@@ -718,9 +718,6 @@ int server(ARGUMENTS *args) {
   int enabled;
   int loopCount;
   GWEN_DB_NODE *db;
-
-  GWEN_NetTransportSSL_SetGetPasswordFn(getPassword);
-  GWEN_NetTransportSSL_SetAskAddCertFn(askAddCert);
 
   pidfile=args->pidFile;
 
@@ -1005,7 +1002,7 @@ int server(ARGUMENTS *args) {
   DBG_INFO(0, "Ready to service requests.");
   loopCount=0;
   while (ChipcardDaemonStop==0 && ChipcardDaemonHangup==0) {
-    GWEN_NETCONNECTION_WORKRESULT res;
+    GWEN_NETLAYER_RESULT res;
     int rv;
 
     while(1) {
@@ -1025,7 +1022,6 @@ int server(ARGUMENTS *args) {
           loopCount++;
           //LCS_FullServer_DumpState(cardServer);
           GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
-          GWEN_Net_Dump();
 
           if (loopCount>=args->runOnce) {
             DBG_NOTICE(0, "%d client(s) served, going down.", loopCount);
@@ -1035,8 +1031,9 @@ int server(ARGUMENTS *args) {
         }
     }
     res=GWEN_Net_HeartBeat(2000);
-    if (res==GWEN_NetConnectionWorkResult_Error) {
+    if (res==GWEN_NetLayerResult_Error) {
       DBG_INFO(0, "ERROR: Error while working (%d)", res);
+      break;
     }
 
   } /* while */

@@ -73,7 +73,7 @@ void LCS_FullServer_CardRemoved(LCS_SERVER *cs,
                                 int slotNum,
                                 GWEN_TYPE_UINT32 cardNum);
 
-void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn);
+void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn);
 
 int LCS_FullServer_HandleRequest(LCS_SERVER *cs,
                                  GWEN_TYPE_UINT32 rid,

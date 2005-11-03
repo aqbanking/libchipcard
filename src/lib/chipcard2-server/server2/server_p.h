@@ -60,9 +60,12 @@ int LCS_Server__InitPaths(LCS_SERVER *cs, GWEN_DB_NODE *gr);
  * GWEN_NetConnection callbacks.
  */
 /*@{*/
-void LCS_Server__CallbackUp(GWEN_NETCONNECTION *conn);
-void LCS_Server__CallbackDown(GWEN_NETCONNECTION *conn);
+void LCS_Server__CallbackStatusChg(GWEN_NETLAYER *nl,
+                                   GWEN_NETLAYER_STATUS st);
 /*@}*/
+
+GWEN_NETLAYER *LCS_Server__CreateNetLayer(LCS_SERVER *cs, GWEN_DB_NODE *gr,
+                                          int active);
 
 
 /**
@@ -86,7 +89,7 @@ int LCS_Server_HandleRequest(LCS_SERVER *cs,
                              const char *name,
                              GWEN_DB_NODE *dbReq);
 
-void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn);
+void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn);
 
 
 #endif /* CHIPCARD_SERVER2_SERVER_P_H */

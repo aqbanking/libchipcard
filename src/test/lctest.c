@@ -13,8 +13,6 @@
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/netconnection.h>
-#include <gwenhywfar/nettransportssl.h>
 #include <gwenhywfar/inetsocket.h>
 #include "cbtest.h"
 
@@ -942,22 +940,6 @@ int test6(int argc, char **argv) {
 
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-askAddCert(GWEN_NETTRANSPORT *tr,
-           GWEN_DB_NODE *cert){
-  return GWEN_NetTransportSSL_AskAddCertResultPerm;
-}
-
-
-
-int getPassword(GWEN_NETTRANSPORT *tr,
-                char *buffer, int num,
-                int rwflag){
-  return 0;
-}
-
-
-
 int test7(int argc, char **argv) {
   LC_CLIENT *cl;
   GWEN_DB_NODE *db;
@@ -1127,40 +1109,6 @@ int test8(int argc, char **argv) {
   }
 
   LC_Client_free(cl);
-  return 0;
-}
-
-
-
-int test9(int argc, char **argv) {
-  GWEN_DB_NODE *db;
-
-  db=GWEN_DB_Group_new("certificate");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "countryName", "DE");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "commonName", "Martin Preuss");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "organizationName", "Aquamaniac");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "organizationalUnitName", "Libchipcard");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "localityName", "Hamburg");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "stateOrProvinceName", "Hamburg");
-
-  if (GWEN_NetTransportSSL_GenerateCertAndKeyFile("user.crt",
-                                                  1024,
-                                                  123,
-                                                  90,
-                                                  db)) {
-    fprintf(stderr, "Could not create certificate.\n");
-    GWEN_DB_Group_free(db);
-    return 1;
-  }
-
-  fprintf(stderr, "Certificate created.\n");
-  GWEN_DB_Group_free(db);
   return 0;
 }
 
@@ -3085,9 +3033,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  GWEN_NetTransportSSL_SetGetPasswordFn(getPassword);
-  GWEN_NetTransportSSL_SetAskAddCertFn(askAddCert);
-
   if (strcasecmp(argv[1], "test1")==0)
     return test1(argc, argv);
   else if (strcasecmp(argv[1], "test2")==0)
@@ -3104,8 +3049,6 @@ int main(int argc, char **argv) {
     return test7(argc, argv);
   else if (strcasecmp(argv[1], "test8")==0)
     return test8(argc, argv);
-  else if (strcasecmp(argv[1], "test9")==0)
-    return test9(argc, argv);
   else if (strcasecmp(argv[1], "test10")==0)
     return test10(argc, argv);
   else if (strcasecmp(argv[1], "test11")==0)

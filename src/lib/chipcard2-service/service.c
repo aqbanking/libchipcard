@@ -20,9 +20,10 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inherit.h>
-#include <gwenhywfar/nettransportsock.h>
-#include <gwenhywfar/nettransportssl.h>
-#include <gwenhywfar/net.h>
+#include <gwenhywfar/nl_socket.h>
+#include <gwenhywfar/nl_ssl.h>
+#include <gwenhywfar/nl_http.h>
+#include <gwenhywfar/net2.h>
 
 #include <chipcard2/chipcard2.h>
 

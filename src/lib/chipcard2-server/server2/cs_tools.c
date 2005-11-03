@@ -68,7 +68,7 @@ int LCS_Server_SendErrorResponse(LCS_SERVER *cs,
   if (text)
     GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", text);
-  if (GWEN_IPCManager_SendResponse(cs->ipcManager, rid, gr)) {
+  if (GWEN_IpcManager_SendResponse(cs->ipcManager, rid, gr)) {
     DBG_ERROR(0, "Could not send command");
     return -1;
   }

@@ -17,9 +17,9 @@
 #include "fullserver_l.h"
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/logger.h>
-#include <gwenhywfar/net.h>
+#include <gwenhywfar/net2.h>
+#include <gwenhywfar/nl_ssl.h>
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/nettransportssl.h>
 #include "fullserver_l.h"
 
 

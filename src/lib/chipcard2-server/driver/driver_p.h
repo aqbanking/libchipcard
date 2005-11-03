@@ -20,7 +20,7 @@
 
 
 #include <gwenhywfar/logger.h>
-#include <gwenhywfar/nettransportssl.h>
+#include <gwenhywfar/nl_ssl.h>
 #include "driver_l.h"
 
 
@@ -75,7 +75,7 @@ struct LCD_DRIVER {
 };
 
 
-int LCD_Driver__Work(LCD_DRIVER *d, int timeout, int maxMsg);
+int LCD_Driver__Work(LCD_DRIVER *d, int timeout);
 
 
 LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
@@ -86,9 +86,10 @@ int LCD_Driver_ReplaceVar(const char *path,
                          const char *value,
                          GWEN_BUFFER *nbuf);
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-  LCD_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
-                       void *user_data);
+GWEN_NL_SSL_ASKADDCERT_RESULT
+  LCD_Driver_AskAddCert(GWEN_NETLAYER *nl,
+                        const GWEN_SSLCERTDESCR *cert,
+                        void *user_data);
 
 
 int LCD_Driver_HandleRequest(LCD_DRIVER *d,

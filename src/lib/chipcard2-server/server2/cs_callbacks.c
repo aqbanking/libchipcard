@@ -22,19 +22,16 @@
 #include <gwenhywfar/directory.h>
 
 
-
-void LCS_Server__CallbackUp(GWEN_NETCONNECTION *conn) {
-}
-
-
-
-void LCS_Server__CallbackDown(GWEN_NETCONNECTION *conn) {
-  if (LCS_Connection_IsOfType(conn)) {
+void LCS_Server__CallbackStatusChg(GWEN_NETLAYER *nl,
+                                   GWEN_NETLAYER_STATUS nst) {
+  if (LCS_Connection_IsOfType(nl)) {
     LCS_SERVER *server;
 
-    DBG_NOTICE(0, "One of my connections is down");
-    server=LCS_Connection_GetServer(conn);
-    LCS_Server_ConnectionDown(server, conn);
+    if (nst==GWEN_NetLayerStatus_Disconnected) {
+      DBG_NOTICE(0, "One of my connections is down");
+      server=LCS_Connection_GetServer(nl);
+      LCS_Server_ConnectionDown(server, nl);
+    }
   }
   else {
     DBG_ERROR(0, "Hmm, not my connection...");
@@ -97,14 +94,14 @@ void LCS_Server_CardRemoved(LCS_SERVER *cs,
 
 
 
-void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
+void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
   assert(cs);
 
   /* check for service connection */
-  if (LCS_Connection_GetType(conn)==LCS_Connection_TypeDriver) {
+  if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Driver) {
     GWEN_TYPE_UINT32 ipcId;
 
-    ipcId=GWEN_IPCManager_GetClientForConnection(cs->ipcManager, conn);
+    ipcId=GWEN_IpcManager_GetClientForNetLayer(cs->ipcManager, conn);
     if (ipcId==0) {
       DBG_ERROR(0, "IPC id for broken connection not found");
       return;
@@ -116,7 +113,7 @@ void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
 
 
 
-void LCS_Server_ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
+void LCS_Server_ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
   assert(cs);
   if (cs->connectionDownFn)
     cs->connectionDownFn(cs, conn);

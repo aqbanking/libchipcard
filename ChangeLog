@@ -1,4 +1,9 @@
 
+2005/11/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to Gwen2 (now works with the latest CVS of Gwen)
+
+
 2005/10/25: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added some libpcsc functions which are needed by some IFD drivers

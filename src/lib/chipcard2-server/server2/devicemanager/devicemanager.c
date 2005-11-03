@@ -410,7 +410,7 @@ void LCDM_DeviceManager_AbandonDriver(LCDM_DEVICEMANAGER *dm,
   ipcId=LCDM_Driver_GetIpcId(d);
   if (ipcId!=0) {
     /* remove IPC node */
-    GWEN_IPCManager_RemoveClient(dm->ipcManager, ipcId);
+    GWEN_IpcManager_RemoveClient(dm->ipcManager, ipcId);
     LCDM_Driver_SetIpcId(d, 0);
   }
 
@@ -543,7 +543,7 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		      "port", port);
 
-  return GWEN_IPCManager_SendRequest(dm->ipcManager,
+  return GWEN_IpcManager_SendRequest(dm->ipcManager,
 				     LCDM_Driver_GetIpcId(d),
 				     dbReq);
 }
@@ -586,7 +586,7 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slots", LCDM_Reader_GetSlots(r));
 
-  return GWEN_IPCManager_SendRequest(dm->ipcManager,
+  return GWEN_IpcManager_SendRequest(dm->ipcManager,
 				     LCDM_Driver_GetIpcId(d),
 				     dbReq);
 }
@@ -609,7 +609,7 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driverId", numbuf);
 
-  return GWEN_IPCManager_SendRequest(dm->ipcManager,
+  return GWEN_IpcManager_SendRequest(dm->ipcManager,
                                      LCDM_Driver_GetIpcId(d),
                                      dbReq);
 }
@@ -787,7 +787,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
     ipcId=LCDM_Driver_GetIpcId(d);
     if (ipcId!=0)
       /* remove IPC node */
-      GWEN_IPCManager_RemoveClient(dm->ipcManager, ipcId);
+      GWEN_IpcManager_RemoveClient(dm->ipcManager, ipcId);
 
     LCDM_Driver_List_Del(d);
     LCDM_Driver_free(d);
@@ -860,7 +860,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
                              "Driver terminated normally");
         if (LCDM_Driver_GetIpcId(d)) {
           /* remove IPC node */
-          GWEN_IPCManager_RemoveClient(dm->ipcManager,
+          GWEN_IpcManager_RemoveClient(dm->ipcManager,
                                        LCDM_Driver_GetIpcId(d));
           LCDM_Driver_SetIpcId(d, 0);
         }
@@ -993,7 +993,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   if (dst==LC_DriverStatusUp) {
     GWEN_PROCESS *p;
     GWEN_PROCESS_STATE pst;
-    GWEN_NETCONNECTION *conn;
+    GWEN_NETLAYER *conn;
 
     /* check whether the driver really is still up and running */
     p=LCDM_Driver_GetProcess(d);
@@ -1019,11 +1019,11 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
     }
 
     /* check connection */
-    conn=GWEN_IPCManager_GetConnection(dm->ipcManager,
-                                       LCDM_Driver_GetIpcId(d));
+    conn=GWEN_IpcManager_GetNetLayer(dm->ipcManager,
+                                     LCDM_Driver_GetIpcId(d));
     assert(conn);
-    if (GWEN_NetConnection_GetStatus(conn)!=
-        GWEN_NetTransportStatusLConnected) {
+    if (GWEN_NetLayer_GetStatus(conn)!=
+        GWEN_NetLayerStatus_Connected) {
       DBG_ERROR(0, "Driver connection is down");
       p=LCDM_Driver_GetProcess(d);
       if (p) {
@@ -1176,7 +1176,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
 
     rid=LCDM_Reader_GetCurrentRequestId(r);
     assert(rid);
-    dbRsp=GWEN_IPCManager_GetResponseData(dm->ipcManager, rid);
+    dbRsp=GWEN_IpcManager_GetResponseData(dm->ipcManager, rid);
     if (dbRsp) {
       if (strcasecmp(GWEN_DB_GroupName(dbRsp), "error")==0) {
 	GWEN_BUFFER *ebuf;
@@ -1201,7 +1201,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
 
 	GWEN_Buffer_free(ebuf);
 	GWEN_DB_Group_free(dbRsp);
-        if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+        if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
           DBG_ERROR(0, "Request not found");
           abort();
         }
@@ -1212,9 +1212,9 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
         const char *s;
         const char *e;
 
-        s=GWEN_DB_GetCharValue(dbRsp, "body/code", 0, 0);
+        s=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, 0);
         assert(s);
-        e=GWEN_DB_GetCharValue(dbRsp, "body/text", 0, 0);
+        e=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, 0);
         if (strcasecmp(s, "error")==0) {
           GWEN_BUFFER *ebuf;
 
@@ -1235,7 +1235,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
 					   GWEN_Buffer_GetStart(ebuf));
           GWEN_Buffer_free(ebuf);
           GWEN_DB_Group_free(dbRsp);
-          if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+          if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
             DBG_ERROR(0, "Request not found");
             abort();
           }
@@ -1246,7 +1246,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
         else {
           const char *readerInfo;
 
-          readerInfo=GWEN_DB_GetCharValue(dbRsp, "body/info", 0, 0);
+          readerInfo=GWEN_DB_GetCharValue(dbRsp, "data/info", 0, 0);
           if (readerInfo) {
             DBG_NOTICE(0, "Reader \"%s\" is up (%s), info: %s",
 		       LCDM_Reader_GetReaderName(r),
@@ -1269,7 +1269,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                LC_ReaderStatusUp,
                                e?e:"Reader is up");
           GWEN_DB_Group_free(dbRsp);
-          if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+          if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
             DBG_ERROR(0, "Request not found");
             abort();
           }
@@ -1282,7 +1282,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
       if (LCDM_Reader_CheckTimeout(r)) {
 	/* reader timed out */
 	DBG_WARN(0, "Reader \"%s\" timed out", LCDM_Reader_GetReaderName(r));
-        if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+        if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
           DBG_ERROR(0, "Request not found");
           abort();
         }
@@ -1353,7 +1353,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
 
     rid=LCDM_Reader_GetCurrentRequestId(r);
     assert(rid);
-    dbRsp=GWEN_IPCManager_GetResponseData(dm->ipcManager, rid);
+    dbRsp=GWEN_IpcManager_GetResponseData(dm->ipcManager, rid);
     if (dbRsp) {
       if (strcasecmp(GWEN_DB_GroupName(dbRsp), "error")==0) {
 	GWEN_BUFFER *ebuf;
@@ -1377,7 +1377,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                          GWEN_Buffer_GetStart(ebuf));
 	GWEN_Buffer_free(ebuf);
 	GWEN_DB_Group_free(dbRsp);
-        if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+        if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
           DBG_ERROR(0, "Request not found");
           abort();
         }
@@ -1388,9 +1388,9 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
         const char *s;
         const char *e;
 
-        s=GWEN_DB_GetCharValue(dbRsp, "body/code", 0, 0);
+        s=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, 0);
         assert(s);
-        e=GWEN_DB_GetCharValue(dbRsp, "body/text", 0, 0);
+        e=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, 0);
         if (strcasecmp(s, "error")==0) {
           GWEN_BUFFER *ebuf;
 
@@ -1411,7 +1411,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
 					   GWEN_Buffer_GetStart(ebuf));
           GWEN_Buffer_free(ebuf);
           GWEN_DB_Group_free(dbRsp);
-          if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+          if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
             DBG_ERROR(0, "Request not found");
             abort();
           }
@@ -1431,7 +1431,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                LC_ReaderStatusDown,
                                "Reader is down as expected");
 	  GWEN_DB_Group_free(dbRsp);
-          if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 1)) {
+          if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 1)) {
             DBG_ERROR(0, "Request not found");
             abort();
           }
@@ -1640,14 +1640,14 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
   int i;
   GWEN_DB_NODE *dbReader;
   int driverCreated=0;
-  GWEN_NETCONNECTION *conn;
+  GWEN_NETLAYER *conn;
 
   assert(dbReq);
 
   nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
   if (!nodeId) {
     DBG_ERROR(0, "Invalid node id");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -1656,10 +1656,10 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
   DBG_INFO(0, "Driver %08x: DriverReady", nodeId);
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/driverId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/driverId", 0, "0"),
                 "%x", &i)) {
     DBG_ERROR(0, "Invalid driver id (%s)",
-              GWEN_DB_GetCharValue(dbReq, "body/driverId", 0, "0"));
+              GWEN_DB_GetCharValue(dbReq, "data/driverId", 0, "0"));
     LCS_Server_SendErrorResponse(dm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Invalid driver id");
@@ -1672,7 +1672,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
                                  LC_ERROR_INVALID,
                                  "Invalid driver id, "
                                  "remote drivers not allowed");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -1694,7 +1694,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
       LCS_Server_SendErrorResponse(dm->server, rid,
                                    LC_ERROR_INVALID,
                                    "Driver not found");
-      if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
@@ -1706,13 +1706,13 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     GWEN_DB_NODE *dbDriver;
 
     /* driver with id=0, must be a remote driver */
-    dtype=GWEN_DB_GetCharValue(dbReq, "body/driverType", 0, 0);
+    dtype=GWEN_DB_GetCharValue(dbReq, "data/driverType", 0, 0);
     if (!dtype) {
       DBG_ERROR(0, "No driver type given in remote driver");
       LCS_Server_SendErrorResponse(dm->server, rid,
                                    LC_ERROR_INVALID,
                                    "No driver type");
-      if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
@@ -1737,7 +1737,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
       LCS_Server_SendErrorResponse(dm->server, rid,
                                    LC_ERROR_INVALID,
                                    "Unknown driver type");
-      if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
@@ -1760,7 +1760,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
   /* create all readers enumerated by the driver */
   dbReader=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
-                            "body/readers");
+                            "data/readers");
   if (dbReader)
     dbReader=GWEN_DB_FindFirstGroup(dbReader, "reader");
 
@@ -1769,7 +1769,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     LCS_Server_SendErrorResponse(dm->server, rid,
                                  LC_ERROR_INVALID,
                                  "No readers in request");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -1816,8 +1816,8 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
   LCDM_Driver_SetIpcId(d, nodeId);
 
   /* check code */
-  code=GWEN_DB_GetCharValue(dbReq, "body/code", 0, "<none>");
-  text=GWEN_DB_GetCharValue(dbReq, "body/text", 0, "<none>");
+  code=GWEN_DB_GetCharValue(dbReq, "data/code", 0, "<none>");
+  text=GWEN_DB_GetCharValue(dbReq, "data/text", 0, "<none>");
   if (strcasecmp(code, "OK")!=0) {
     GWEN_BUFFER *ebuf;
 
@@ -1831,17 +1831,17 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
                                      LC_DriverStatusAborted,
                                      GWEN_Buffer_GetStart(ebuf));
     GWEN_Buffer_free(ebuf);
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
     return -1;
   }
 
-  conn=GWEN_IPCManager_GetConnection(dm->ipcManager, nodeId);
+  conn=GWEN_IpcManager_GetNetLayer(dm->ipcManager, nodeId);
   assert(conn);
   LCS_Server_UseConnectionFor(dm->server, conn,
-                              LCS_Connection_TypeDriver,
+                              LCS_Connection_Type_Driver,
                               nodeId);
 
   DBG_NOTICE(0, "Driver \"%08x\" is up (%s)", driverId, text);
@@ -1859,15 +1859,15 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 		       "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		       "text", "Driver registered");
-  if (GWEN_IPCManager_SendResponse(dm->ipcManager, rid, dbRsp)) {
+  if (GWEN_IpcManager_SendResponse(dm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
     return -1;
   }
-  if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
     DBG_WARN(0, "Could not remove request");
     abort();
   }
@@ -1896,7 +1896,7 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
   if (!nodeId) {
     DBG_ERROR(0, "Invalid node id");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -1906,21 +1906,21 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   DBG_INFO(0, "Driver %08x: Card inserted", nodeId);
 
   /* driver ready */
-  if (sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
              "%x",
 	     &readerId)!=1) {
     DBG_ERROR(0, "Bad reader id in command \"%s\"",
               GWEN_DB_GroupName(dbReq));
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
     return -1;
   }
 
-  slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotNum", 0, 0),
-  cardNum=GWEN_DB_GetIntValue(dbReq, "body/cardNum", 0, 0),
-  cardType=GWEN_DB_GetCharValue(dbReq, "body/cardType", 0, "unknown");
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotNum", 0, 0),
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardNum", 0, 0),
+  cardType=GWEN_DB_GetCharValue(dbReq, "data/cardType", 0, "unknown");
   if (strcasecmp(cardType, "processor")==0)
     ct=LC_CardTypeProcessor;
   else if (strcasecmp(cardType, "memory")==0)
@@ -1930,7 +1930,7 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
     ct=LC_CardTypeUnknown;
   }
   atr=0;
-  p=GWEN_DB_GetBinValue(dbReq, "body/atr", 0, 0, 0, &bs);
+  p=GWEN_DB_GetBinValue(dbReq, "data/atr", 0, 0, 0, &bs);
   if (p && bs) {
     atr=GWEN_Buffer_new(0, bs, 0, 1);
     GWEN_Buffer_AppendBytes(atr, p, bs);
@@ -1946,7 +1946,7 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   if (!r) {
     DBG_ERROR(0, "Reader \"%08x\" not found", readerId);
     GWEN_Buffer_free(atr);
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -1979,7 +1979,7 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   LCS_Server_NewCard(dm->server, card);
   LCCO_Card_free(card);
 
-  if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
     DBG_ERROR(0, "Could not remove request");
     abort();
   }
@@ -2001,7 +2001,7 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
   nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
   if (!nodeId) {
     DBG_ERROR(0, "Invalid node id");
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -2011,20 +2011,20 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
   DBG_NOTICE(0, "Driver %08x: Card removed", nodeId);
 
   /* driver ready */
-  if (sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
              "%x",
              &readerId)!=1) {
     DBG_ERROR(0, "Bad reader id in command \"%s\"",
 	      GWEN_DB_GroupName(dbReq));
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
     return -1;
   }
 
-  slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotNum", 0, 0),
-  cardNum=GWEN_DB_GetIntValue(dbReq, "body/cardNum", 0, 0),
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotNum", 0, 0),
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardNum", 0, 0),
 
   /* find reader */
   r=LCDM_Reader_List_First(dm->readers);
@@ -2035,7 +2035,7 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
   } /* while */
   if (!r) {
     DBG_ERROR(0, "Reader \"%08x\" not found", readerId);
-    if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -2044,7 +2044,7 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
 
   LCS_Server_CardRemoved(dm->server, readerId, slotNum, cardNum);
 
-  if (GWEN_IPCManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
     DBG_WARN(0, "Could not remove request");
     abort();
   }
@@ -2146,7 +2146,7 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetIntValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "cardnum", LCCO_Card_GetReadersCardId(card));
 
-  rid=GWEN_IPCManager_SendRequest(dm->ipcManager,
+  rid=GWEN_IpcManager_SendRequest(dm->ipcManager,
                                   LCDM_Driver_GetIpcId(d),
                                   dbCmd);
   if (rid==0) {

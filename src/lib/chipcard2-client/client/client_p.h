@@ -31,7 +31,9 @@
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/ipc.h>
-#include <gwenhywfar/nettransportssl.h>
+#include <gwenhywfar/nl_ssl.h>
+#include <gwenhywfar/nl_socket.h>
+#include <gwenhywfar/nl_http.h>
 #include <chipcard2-client/client/notifications.h>
 #include <chipcard2-client/client/lowlevel/server.h>
 #include <chipcard2-client/client/lowlevel/request.h>
@@ -55,6 +57,8 @@ struct LC_CLIENT {
   int shortTimeout;
   int longTimeout;
   int veryLongTimeout;
+
+  GWEN_NL_SSL_ASKADDCERT_RESULT askAddCertResult;
 
   LCM_MONITOR *monitor;
 
@@ -87,10 +91,7 @@ int LC_Client_StartConnect(LC_CLIENT *cl, LC_SERVER *sv);
 int LC_Client_Walk(LC_CLIENT *cl);
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-  LC_Client__AskAddCert(GWEN_NETTRANSPORT *tr,
-                        GWEN_DB_NODE *cert);
-int LC_Client__GetPassword(GWEN_NETTRANSPORT *tr,
+int LC_Client__GetPassword(GWEN_NETLAYER *nl,
                            char *buffer, int num,
                            int rwflag);
 
@@ -99,6 +100,14 @@ int LC_Client_HandleInRequest(LC_CLIENT *cl,
                               GWEN_DB_NODE *dbReq);
 int LC_Client_ServerDown(LC_CLIENT *cl, LC_SERVER *sv);
 
+
+int LC_Client__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
+                            const char *globalOwnCertFile);
+
+GWEN_NL_SSL_ASKADDCERT_RESULT
+  LC_Client_AskAddCert(GWEN_NETLAYER *nl,
+                       const GWEN_SSLCERTDESCR *cert,
+                       void *user_data);
 
 
 #endif /* CHIPCARD_CLIENT_CLIENT_P_H */

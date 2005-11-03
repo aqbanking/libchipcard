@@ -20,9 +20,10 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inherit.h>
-#include <gwenhywfar/nettransportsock.h>
-#include <gwenhywfar/nettransportssl.h>
-#include <gwenhywfar/net.h>
+#include <gwenhywfar/nl_socket.h>
+#include <gwenhywfar/nl_ssl.h>
+#include <gwenhywfar/nl_http.h>
+#include <gwenhywfar/net2.h>
 #include <gwenhywfar/directory.h>
 
 #include <chipcard2/chipcard2.h>
@@ -303,13 +304,21 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
 
 int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
   LCD_DRIVER_CHECKARGS_RESULT res;
-  GWEN_NETTRANSPORT *tr;
+  GWEN_NETLAYER *nl;
+  GWEN_NETLAYER *nlBase;
   GWEN_SOCKET *sk;
   GWEN_INETADDRESS *addr;
   GWEN_TYPE_UINT32 sid;
+  GWEN_URL *url;
 
   res=LCD_Driver_CheckArgs(d, argc, argv);
   if (res!=LCD_DriverCheckArgsResultOk) {
+    return -1;
+  }
+
+  url=GWEN_Url_fromString(d->serverAddr);
+  if (!url) {
+    DBG_ERROR(GWEN_LOGDOMAIN, "Bad URL: %s", d->serverAddr);
     return -1;
   }
 
@@ -333,14 +342,15 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
     DBG_NOTICE(0, "Starting driver \"%s\" with lowlevel \"%s\"",
                argv[0], d->libraryFile);
 
-    d->ipcManager=GWEN_IPCManager_new();
+    d->ipcManager=GWEN_IpcManager_new();
 
     if (strcasecmp(d->typ, "local")==0) {
       /* HTTP over UDS */
       sk=GWEN_Socket_new(GWEN_SocketTypeUnix);
       addr=GWEN_InetAddr_new(GWEN_AddressFamilyUnix);
       GWEN_InetAddr_SetAddress(addr, d->serverAddr);
-      tr=GWEN_NetTransportSocket_new(sk, 1);
+      nlBase=GWEN_NetLayerSocket_new(sk, 1);
+      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
     }
     else if (strcasecmp(d->typ, "public")==0) {
       /* HTTP over TCP */
@@ -348,47 +358,57 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
       addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
       GWEN_InetAddr_SetAddress(addr, d->serverAddr);
       GWEN_InetAddr_SetPort(addr, d->serverPort);
-      tr=GWEN_NetTransportSocket_new(sk, 1);
+      nlBase=GWEN_NetLayerSocket_new(sk, 1);
+      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
     }
     else {
+      sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
       addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
       GWEN_InetAddr_SetAddress(addr, d->serverAddr);
       GWEN_InetAddr_SetPort(addr, d->serverPort);
+      nlBase=GWEN_NetLayerSocket_new(sk, 1);
+      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+
       if (strcasecmp(d->typ, "private")==0) {
 	/* HTTP over SSL */
-	sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-	tr=GWEN_NetTransportSSL_new(sk,
-				    d->certDir,
-				    0,
-				    d->certFile,
-				    0,
-				    0,
-				    1);
+        nl=GWEN_NetLayerSsl_new(nlBase,
+                                d->certDir,
+                                0,
+                                d->certFile,
+                                0,
+                                0);
+        GWEN_NetLayer_free(nlBase);
+        GWEN_NetLayerSsl_SetAskAddCertFn(nl, LCD_Driver_AskAddCert, (void*)d);
+        nlBase=nl;
       }
       else if (strcasecmp(d->typ, "secure")==0) {
 	/* HTTP over SSL with certificates */
-	sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-	tr=GWEN_NetTransportSSL_new(sk,
-				    d->certDir,
-				    0,
-				    d->certFile,
-				    0,
-				    1,
-				    1);
+        nl=GWEN_NetLayerSsl_new(nlBase,
+                                d->certDir,
+                                0,
+                                d->certFile,
+                                0,
+                                1);
+        GWEN_NetLayer_free(nlBase);
+        nlBase=nl;
       }
       else {
 	DBG_ERROR(0, "Unknown mode \"%s\"", d->typ);
-	GWEN_InetAddr_free(addr);
+        GWEN_InetAddr_free(addr);
+        GWEN_Url_free(url);
         return -1;
       }
     }
-
-    GWEN_NetTransport_SetPeerAddr(tr, addr);
     GWEN_InetAddr_free(addr);
-    sid=GWEN_IPCManager_AddClient(d->ipcManager,
-				  tr,
-				  0,0,
-				  LCD_DRIVER_MARK_DRIVER);
+
+    nl=GWEN_NetLayerHttp_new(nlBase);
+    GWEN_NetLayer_free(nlBase);
+    GWEN_NetLayerHttp_SetOutCommand(nl, "POST", url);
+    GWEN_Url_free(url);
+
+    sid=GWEN_IpcManager_AddClient(d->ipcManager,
+                                  nl,
+                                  LCD_DRIVER_MARK_DRIVER);
     if (sid==0) {
       DBG_ERROR(0, "Could not add IPC client");
       return -1;
@@ -409,8 +429,6 @@ LCD_DRIVER *LCD_Driver_new() {
   GWEN_INHERIT_INIT(LCD_DRIVER, d);
   d->readers=LCD_Reader_List_new();
 
-  GWEN_NetTransportSSL_SetAskAddCertFn2(LCD_Driver_AskAddCert, (void*)d);
-
   return d;
 }
 
@@ -420,7 +438,7 @@ void LCD_Driver_free(LCD_DRIVER *d) {
   if (d) {
     GWEN_INHERIT_FINI(LCD_DRIVER, d);
     LCD_Reader_List_free(d->readers);
-    GWEN_IPCManager_free(d->ipcManager);
+    GWEN_IpcManager_free(d->ipcManager);
     free(d->logFile);
     free(d->readerLogFile);
     GWEN_FREE_OBJECT(d);
@@ -503,7 +521,7 @@ const char *LCD_Driver_GetDriverId(const LCD_DRIVER *d){
 
 GWEN_TYPE_UINT32 LCD_Driver_SendCommand(LCD_DRIVER *d,
                                        GWEN_DB_NODE *dbCommand) {
-  return GWEN_IPCManager_SendRequest(d->ipcManager,
+  return GWEN_IpcManager_SendRequest(d->ipcManager,
                                      d->ipcId, dbCommand);
 }
 
@@ -512,7 +530,7 @@ GWEN_TYPE_UINT32 LCD_Driver_SendCommand(LCD_DRIVER *d,
 int LCD_Driver_SendResponse(LCD_DRIVER *d,
                            GWEN_TYPE_UINT32 rid,
                            GWEN_DB_NODE *dbCommand) {
-  return GWEN_IPCManager_SendResponse(d->ipcManager,
+  return GWEN_IpcManager_SendResponse(d->ipcManager,
                                       rid, dbCommand);
 }
 
@@ -538,7 +556,7 @@ int LCD_Driver_SendResult(LCD_DRIVER *d,
 
 GWEN_TYPE_UINT32 LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
   assert(d);
-  return GWEN_IPCManager_GetNextInRequest(d->ipcManager,
+  return GWEN_IpcManager_GetNextInRequest(d->ipcManager,
                                           LCD_DRIVER_MARK_DRIVER);
 }
 
@@ -547,13 +565,13 @@ GWEN_TYPE_UINT32 LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
 GWEN_DB_NODE *LCD_Driver_GetInRequestData(LCD_DRIVER *d,
                                          GWEN_TYPE_UINT32 rid) {
   assert(d);
-  return GWEN_IPCManager_GetInRequestData(d->ipcManager, rid);
+  return GWEN_IpcManager_GetInRequestData(d->ipcManager, rid);
 }
 
 
 
-int LCD_Driver__Work(LCD_DRIVER *d, int timeout, int maxmsg){
-  GWEN_NETCONNECTION_WORKRESULT res;
+int LCD_Driver__Work(LCD_DRIVER *d, int timeout){
+  GWEN_NETLAYER_RESULT res;
   int rv;
 
   if (!GWEN_Net_HasActiveConnections()) {
@@ -562,18 +580,18 @@ int LCD_Driver__Work(LCD_DRIVER *d, int timeout, int maxmsg){
   }
 
   res=GWEN_Net_HeartBeat(timeout);
-  if (res==GWEN_NetConnectionWorkResult_Error) {
+  if (res==GWEN_NetLayerResult_Error) {
     DBG_ERROR(0, "Network error");
     return -1;
   }
-  else if (res==GWEN_NetConnectionWorkResult_NoChange) {
+  else if (res==GWEN_NetLayerResult_Idle) {
     DBG_VERBOUS(0, "No activity");
   }
 
   while(1) {
     DBG_DEBUG(0, "Driver: Working");
     /* activity detected, work with it */
-    rv=GWEN_IPCManager_Work(d->ipcManager, maxmsg);
+    rv=GWEN_IpcManager_Work(d->ipcManager);
     if (rv==-1) {
       DBG_ERROR(0, "Error while working with IPC");
       return -1;
@@ -600,7 +618,7 @@ int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
     return numCode;
   }
 
-  name=GWEN_DB_GetCharValue(db, "command/vars/cmd", 0, 0);
+  name=GWEN_DB_GetCharValue(db, "ipc/cmd", 0, 0);
   if (!name) {
     DBG_ERROR(0, "Bad IPC message (no command)");
     return -1;
@@ -609,11 +627,11 @@ int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
   if (strcasecmp(name, "Error")==0) {
     int numCode;
 
-    numCode=GWEN_DB_GetIntValue(db, "body/code", 0, -1);
+    numCode=GWEN_DB_GetIntValue(db, "data/code", 0, -1);
     if (numCode==-1) {
       const char *code;
 
-      code=GWEN_DB_GetCharValue(db, "body/code", 0, "ERROR");
+      code=GWEN_DB_GetCharValue(db, "data/code", 0, "ERROR");
       if (strcasecmp(code, "OK")!=0)
         numCode=LC_ERROR_GENERIC;
       else
@@ -623,7 +641,7 @@ int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
     if (numCode) {
       DBG_ERROR(0, "Error %d: %s", numCode,
                 GWEN_DB_GetCharValue(db,
-                                     "body/text", 0, "(empty)"));
+                                     "data/text", 0, "(empty)"));
       return -1;
     }
   }
@@ -707,7 +725,7 @@ int LCD_Driver_Connect(LCD_DRIVER *d, const char *code, const char *text){
     GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", text);
 
-  rid=GWEN_IPCManager_SendRequest(d->ipcManager,
+  rid=GWEN_IpcManager_SendRequest(d->ipcManager,
                                   d->ipcId,
                                   dbReq);
   if (rid==0) {
@@ -719,21 +737,21 @@ int LCD_Driver_Connect(LCD_DRIVER *d, const char *code, const char *text){
   DBG_INFO(0, "Sending Ready Report");
   dbRsp=0;
   while (1) {
-    dbRsp=GWEN_IPCManager_GetResponseData(d->ipcManager, rid);
+    dbRsp=GWEN_IpcManager_GetResponseData(d->ipcManager, rid);
     if (dbRsp) {
       DBG_DEBUG(0, "Command answered");
       break;
     }
     DBG_VERBOUS(0, "Working...");
-    if (LCD_Driver__Work(d, 1000, 0)) {
+    if (LCD_Driver__Work(d, 1000)) {
       DBG_ERROR(0, "Error at work");
-      GWEN_IPCManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
+      GWEN_IpcManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
       return -1;
     }
 
     if (difftime(time(0), startt)>=LCD_DRIVER_STARTTIMEOUT) {
       DBG_ERROR(0, "Timeout");
-      GWEN_IPCManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
+      GWEN_IpcManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
       return -1;
     }
   } /* while */
@@ -741,10 +759,10 @@ int LCD_Driver_Connect(LCD_DRIVER *d, const char *code, const char *text){
   DBG_DEBUG(0, "Answer received");
   if (LCD_Driver_CheckResponses(dbRsp)) {
     DBG_ERROR(0, "Error returned by server, aborting");
-    GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 1);
+    GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 1);
     return -1;
   }
-  GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 1);
+  GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 1);
 
   DBG_NOTICE(0, "Connected to server");
   return 0;
@@ -759,7 +777,7 @@ void LCD_Driver_Disconnect(LCD_DRIVER *d){
     return;
   }
 
-  if (GWEN_IPCManager_Disconnect(d->ipcManager, d->ipcId)) {
+  if (GWEN_IpcManager_Disconnect(d->ipcManager, d->ipcId)) {
     DBG_ERROR(0, "Error while disconnecting");
   }
 }
@@ -1109,7 +1127,7 @@ int LCD_Driver_SendStatusChangeNotification(LCD_DRIVER *d,
     return -1;
   }
 
-  GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 1);
+  GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 1);
   DBG_DEBUG(0, "Command sent");
   return 0;
 }
@@ -1149,7 +1167,7 @@ int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
     return -1;
   }
 
-  GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 1);
+  GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 1);
   DBG_DEBUG(0, "Command sent");
 
   return 0;
@@ -1161,7 +1179,7 @@ int LCD_Driver_RemoveCommand(LCD_DRIVER *d,
                             GWEN_TYPE_UINT32 rid,
                             int outbound){
   assert(d);
-  return GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, outbound);
+  return GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, outbound);
 }
 
 
@@ -1279,7 +1297,7 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
   assert(dbReq);
   DBG_NOTICE(0, "Command: Start reader");
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
                 "%x",
                 &readerId)) {
     DBG_ERROR(0, "Bad readerId");
@@ -1287,7 +1305,7 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
     return -1;
   }
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/driversReaderId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/driversReaderId", 0, "0"),
                 "%x",
                 &driversReaderId)) {
     DBG_ERROR(0, "Bad driversReaderId");
@@ -1295,10 +1313,10 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
     return -1;
   }
 
-  name=GWEN_DB_GetCharValue(dbReq, "body/name", 0, "noname");
-  port=GWEN_DB_GetIntValue(dbReq, "body/port", 0, 0);
-  flags=GWEN_DB_GetIntValue(dbReq, "body/flags", 0, 0);
-  slots=GWEN_DB_GetIntValue(dbReq, "body/slots", 0, 0);
+  name=GWEN_DB_GetCharValue(dbReq, "data/name", 0, "noname");
+  port=GWEN_DB_GetIntValue(dbReq, "data/port", 0, 0);
+  flags=GWEN_DB_GetIntValue(dbReq, "data/flags", 0, 0);
+  slots=GWEN_DB_GetIntValue(dbReq, "data/slots", 0, 0);
   if (!slots || slots>16) {
     DBG_ERROR(0, "Bad number of slots (%d)", slots);
     /* TODO: send error result */
@@ -1553,7 +1571,7 @@ int LCD_Driver_HandleStopReader(LCD_DRIVER *d,
 
   assert(d);
   assert(dbReq);
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
                 "%x",
                 &readerId)) {
     DBG_ERROR(0, "Bad readerId");
@@ -1622,7 +1640,7 @@ int LCD_Driver_HandleResetCard(LCD_DRIVER *d,
 
   assert(d);
   assert(dbReq);
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
                 "%x",
                 &readerId)) {
     DBG_ERROR(0, "Bad readerId");
@@ -1630,14 +1648,14 @@ int LCD_Driver_HandleResetCard(LCD_DRIVER *d,
     return -1;
   }
 
-  slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotnum", 0, -1);
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotnum", 0, -1);
   if (slotNum==-1) {
     DBG_ERROR(0, "Bad slot number");
     LCD_Driver_RemoveCommand(d, rid, 0);
     return -1;
   }
 
-  cardNum=GWEN_DB_GetIntValue(dbReq, "body/cardnum", 0, -1);
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardnum", 0, -1);
   if (cardNum==-1) {
     DBG_ERROR(0, "Bad card number");
     LCD_Driver_RemoveCommand(d, rid, 0);
@@ -1723,7 +1741,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
   assert(d);
   assert(dbReq);
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/readerId", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
                 "%x",
                 &readerId)) {
     DBG_ERROR(0, "Bad readerId");
@@ -1731,7 +1749,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
     return -1;
   }
 
-  apdu=GWEN_DB_GetBinValue(dbReq, "body/data", 0, 0, 0, &apdulen);
+  apdu=GWEN_DB_GetBinValue(dbReq, "data/data", 0, 0, 0, &apdulen);
   if (!apdu || apdulen<4) {
     DBG_ERROR(0, "APDU too small");
     /* send error result */
@@ -1743,7 +1761,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
     return 0;
   }
 
-  slotNum=GWEN_DB_GetIntValue(dbReq, "body/slotnum", 0, -1);
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotnum", 0, -1);
   if (slotNum==-1) {
     DBG_ERROR(0, "Bad slot number");
     /* send error result */
@@ -1753,7 +1771,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
     return -1;
   }
 
-  cardNum=GWEN_DB_GetIntValue(dbReq, "body/cardnum", 0, -1);
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardnum", 0, -1);
   if (cardNum==-1) {
     DBG_ERROR(0, "Bad card number");
     /* send error result */
@@ -1763,7 +1781,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
     return -1;
   }
 
-  target=GWEN_DB_GetCharValue(dbReq, "body/target", 0, 0);
+  target=GWEN_DB_GetCharValue(dbReq, "data/target", 0, 0);
   if (!target) {
     /* send error result */
     LCD_Driver_SendResult(d, rid, "CardCommandResponse",
@@ -1982,7 +2000,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
 
   lastStatusCheckTime=(time_t)0;
   while(!d->stopDriver) {
-    GWEN_NETCONNECTION_WORKRESULT res;
+    GWEN_NETLAYER_RESULT res;
     GWEN_TYPE_UINT32 rid;
     int needHeartbeat;
 
@@ -2020,7 +2038,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
           lastStatusCheckTime=t1;
         }
         /* work as long as possible */
-        rv=GWEN_IPCManager_Work(d->ipcManager, 10);
+        rv=GWEN_IpcManager_Work(d->ipcManager);
         if (rv==-1) {
           DBG_ERROR(0, "Error while working with IPC");
           return -1;
@@ -2039,7 +2057,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
         assert(dbReq);
 
         /* we have an incoming message */
-        name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
+        name=GWEN_DB_GetCharValue(dbReq, "ipc/cmd", 0, 0);
         if (!name) {
           DBG_ERROR(0, "Bad IPC command (no command name), discarding");
           LCD_Driver_RemoveCommand(d, rid, 0);
@@ -2047,7 +2065,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
         rv=LCD_Driver_HandleRequest(d, rid, name, dbReq);
         if (rv==1) {
           DBG_WARN(0, "Unknown command \"%s\", discarding", name);
-          if (GWEN_IPCManager_RemoveRequest(d->ipcManager, rid, 0)) {
+          if (GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 0)) {
             DBG_ERROR(0, "Could not remove request");
             abort();
           }
@@ -2066,7 +2084,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
             }
 
             /* work as long as possible (flush responses) */
-            rv=GWEN_IPCManager_Work(d->ipcManager, 10);
+            rv=GWEN_IpcManager_Work(d->ipcManager);
             if (rv==-1) {
               DBG_ERROR(0, "Error while working with IPC");
               return -1;
@@ -2081,11 +2099,11 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
     } /* while !needHeartbeat */
 
     res=GWEN_Net_HeartBeat(750);
-    if (res==GWEN_NetConnectionWorkResult_Error) {
+    if (res==GWEN_NetLayerResult_Error) {
       DBG_ERROR(0, "Network error");
       return -1;
     }
-    else if (res==GWEN_NetConnectionWorkResult_NoChange) {
+    else if (res==GWEN_NetLayerResult_Idle) {
       DBG_VERBOUS(0, "No activity");
     }
   } /* while driver is not to be stopped */
@@ -2094,20 +2112,21 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
 
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT
-LCD_Driver_AskAddCert(GWEN_NETTRANSPORT *tr, GWEN_DB_NODE *cert,
-                      void *user_data){
+GWEN_NL_SSL_ASKADDCERT_RESULT
+LCD_Driver_AskAddCert(GWEN_NETLAYER *nl,
+                      const GWEN_SSLCERTDESCR *cert,
+                      void *user_data) {
   LCD_DRIVER *d;
 
   d=(LCD_DRIVER*)user_data;
   if (!d) {
     DBG_ERROR(0, "No user data in AskAddCert function");
-    return GWEN_NetTransportSSL_AskAddCertResultNo;
+    return GWEN_NetLayerSsl_AskAddCertResult_No;
   }
 
   if (d->acceptAllCerts)
-    return GWEN_NetTransportSSL_AskAddCertResultTmp;
-  return GWEN_NetTransportSSL_AskAddCertResultNo;
+    return GWEN_NetLayerSsl_AskAddCertResult_Tmp;
+  return GWEN_NetLayerSsl_AskAddCertResult_No;
 }
 
 

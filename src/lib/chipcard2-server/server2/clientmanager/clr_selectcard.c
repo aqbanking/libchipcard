@@ -49,7 +49,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
   cmdm=LCS_FullServer_GetCommandManager(clm->server);
   assert(cmdm);
 
-  cmdVer=GWEN_DB_GetIntValue(dbReq, "body/cmdver", 0, 0);
+  cmdVer=GWEN_DB_GetIntValue(dbReq, "data/cmdver", 0, 0);
 
   /* get client */
   cl=LCCL_Client_List_First(clm->clients);
@@ -63,7 +63,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Unknown client id");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -75,13 +75,13 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
              LCCL_Client_GetApplicationName(cl),
              LCCL_Client_GetUserName(cl));
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "body/cardid", 0, "0"),
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/cardid", 0, "0"),
                 "%x", &cardId)) {
     DBG_ERROR(0, "Missing card id");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Missing card id");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -95,7 +95,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Card not found");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -108,7 +108,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_CARD_REMOVED,
                                  "Card has been removed");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -116,13 +116,13 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
   }
 
   /* check arguments */
-  typeName=GWEN_DB_GetCharValue(dbReq, "body/cardName", 0, 0);
+  typeName=GWEN_DB_GetCharValue(dbReq, "data/cardName", 0, 0);
   if (!typeName) {
     DBG_ERROR(0, "Missing card type name");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Missing card type name");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -136,7 +136,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  -rv,
                                  "Could not select card type");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -149,9 +149,9 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
                        "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "text", "Card type selected");
-  if (GWEN_IPCManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
+  if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response to client");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -159,7 +159,7 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
   }
 
   /* remove request */
-  if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
     DBG_ERROR(0, "Could not remove request");
     abort();
   }

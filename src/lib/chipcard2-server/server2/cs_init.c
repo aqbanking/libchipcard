@@ -20,14 +20,11 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/directory.h>
 
-//#include <gwenhywfar/version.h>
 #include <gwenhywfar/ipc.h>
 #include <gwenhywfar/pathmanager.h>
-#include <gwenhywfar/netconnectionhttp.h>
-#include <gwenhywfar/nettransportssl.h>
-#include <gwenhywfar/nettransportsock.h>
-//#include <gwenhywfar/net.h>
-//#include <gwenhywfar/text.h>
+#include <gwenhywfar/nl_http.h>
+#include <gwenhywfar/nl_ssl.h>
+#include <gwenhywfar/nl_socket.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -44,7 +41,7 @@ LCS_SERVER *LCS_Server_new() {
   GWEN_NEW_OBJECT(LCS_SERVER, cs);
   GWEN_INHERIT_INIT(LCS_SERVER, cs);
 
-  cs->ipcManager=GWEN_IPCManager_new();
+  cs->ipcManager=GWEN_IpcManager_new();
   cs->deviceManager=LCDM_DeviceManager_new(cs);
 
   /* set default callbacks */
@@ -62,7 +59,7 @@ void LCS_Server_free(LCS_SERVER *cs) {
 
     LCDM_DeviceManager_free(cs->deviceManager);
     GWEN_IpcRequestManager_free(cs->requestManager);
-    GWEN_IPCManager_free(cs->ipcManager);
+    GWEN_IpcManager_free(cs->ipcManager);
     GWEN_DB_Group_free(cs->dbConfig);
     GWEN_FREE_OBJECT(cs);
   }
@@ -73,12 +70,15 @@ void LCS_Server_free(LCS_SERVER *cs) {
 int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
   int permissions=0666;
   const char *typ;
-  GWEN_NETTRANSPORT *tr;
+  GWEN_NETLAYER *nl;
+  GWEN_NETLAYER *nlBase;
   GWEN_SOCKET *sk;
   GWEN_INETADDRESS *addr;
   GWEN_TYPE_UINT32 sid;
   const char *address;
-  GWEN_NETCONNECTION *conn;
+  int port;
+  GWEN_DB_NODE *dbHeader;
+  GWEN_URL *url;
 
   assert(cs);
   assert(gr);
@@ -90,6 +90,14 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
     DBG_ERROR(0, "No address given");
     return -1;
   }
+  url=GWEN_Url_fromString(address);
+  if (!url) {
+    DBG_ERROR(0, "Bad url: %s", address);
+    return -1;
+  }
+  port=GWEN_DB_GetIntValue(gr,
+                           "port", 0,
+                           LC_DEFAULT_PORT);
 
   if (strcasecmp(typ, "local")==0) {
     char *taddr, *p;
@@ -102,6 +110,7 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
     if (GWEN_Directory_GetPath(taddr, GWEN_PATH_FLAGS_CHECKROOT)) {
       DBG_ERROR(0, "Could not create path \"%s\"", taddr);
       free(taddr);
+      GWEN_Url_free(url);
       return -1;
     }
     free(taddr);
@@ -110,24 +119,17 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
     sk=GWEN_Socket_new(GWEN_SocketTypeUnix);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyUnix);
     GWEN_InetAddr_SetAddress(addr, address);
-    tr=GWEN_NetTransportSocket_new(sk, 1);
+    nlBase=GWEN_NetLayerSocket_new(sk, 1);
+    GWEN_NetLayer_SetLocalAddr(nlBase, addr);
   }
   else if (strcasecmp(typ, "public")==0) {
     /* HTTP over TCP */
     sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
-    GWEN_InetAddr_SetAddress(addr,
-                             GWEN_DB_GetCharValue
-                             (gr,
-                              "addr", 0,
-                              "0.0.0.0"
-                             )
-                            );
-    GWEN_InetAddr_SetPort(addr,
-                          GWEN_DB_GetIntValue(gr,
-                                              "port", 0,
-                                              LC_DEFAULT_PORT));
-    tr=GWEN_NetTransportSocket_new(sk, 1);
+    GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
+    GWEN_InetAddr_SetPort(addr, port);
+    nlBase=GWEN_NetLayerSocket_new(sk, 1);
+    GWEN_NetLayer_SetLocalAddr(nlBase, addr);
   }
   else {
     const char *certDir;
@@ -190,6 +192,7 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
           GWEN_Buffer_free(cdbuf);
           GWEN_Buffer_free(ncdbuf);
           GWEN_Buffer_free(dhbuf);
+          GWEN_Url_free(url);
           return rv;
         }
         dhFile=GWEN_Buffer_GetStart(dhbuf);
@@ -217,41 +220,40 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
           GWEN_Buffer_free(cdbuf);
           GWEN_Buffer_free(ncdbuf);
           GWEN_Buffer_free(dhbuf);
+          GWEN_Url_free(url);
           return rv;
         }
         ownCertFile=GWEN_Buffer_GetStart(cfbuf);
       }
     }
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
-    GWEN_InetAddr_SetAddress(addr,
-                             GWEN_DB_GetCharValue(gr,
-                                                  "addr", 0,
-                                                  "0.0.0.0"));
-    GWEN_InetAddr_SetPort(addr,
-                          GWEN_DB_GetIntValue(gr,
-                                              "port", 0,
-                                              LC_DEFAULT_PORT));
+    GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
+    GWEN_InetAddr_SetPort(addr, port);
+    sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
+    nlBase=GWEN_NetLayerSocket_new(sk, 1);
+    GWEN_NetLayer_SetLocalAddr(nlBase, addr);
+
     if (strcasecmp(typ, "private")==0) {
       /* HTTP over SSL */
-      sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-      tr=GWEN_NetTransportSSL_new(sk,
-                                  certDir,
-                                  newCertDir,
-                                  ownCertFile,
-                                  dhFile,
-                                  0,
-                                  1);
+      nl=GWEN_NetLayerSsl_new(nlBase,
+                              certDir,
+                              newCertDir,
+                              ownCertFile,
+                              dhFile,
+                              0);
+      GWEN_NetLayer_free(nlBase);
+      nlBase=nl;
     }
     else if (strcasecmp(typ, "secure")==0) {
       /* HTTP over SSL with certificates */
-      sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-      tr=GWEN_NetTransportSSL_new(sk,
-                                  certDir,
-                                  newCertDir,
-                                  ownCertFile,
-                                  dhFile,
-                                  1,
-                                  1);
+      nl=GWEN_NetLayerSsl_new(nlBase,
+                              certDir,
+                              newCertDir,
+                              ownCertFile,
+                              dhFile,
+                              1);
+      GWEN_NetLayer_free(nlBase);
+      nlBase=nl;
     }
     else {
       DBG_ERROR(0, "Unknown mode \"%s\"", typ);
@@ -260,6 +262,7 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
       GWEN_Buffer_free(cdbuf);
       GWEN_Buffer_free(ncdbuf);
       GWEN_Buffer_free(dhbuf);
+      GWEN_Url_free(url);
       return -1;
     }
     GWEN_Buffer_free(cfbuf);
@@ -268,38 +271,40 @@ int LCS_Server__InitListener(LCS_SERVER *cs, GWEN_DB_NODE *gr) {
     GWEN_Buffer_free(dhbuf);
 
     if (ciphers)
-      GWEN_NetTransportSSL_SetCipherList(tr, ciphers);
+      GWEN_NetLayerSsl_SetCiphers(nl, ciphers);
   }
-
-  GWEN_NetTransport_SetLocalAddr(tr, addr);
   GWEN_InetAddr_free(addr);
-  sid=GWEN_IPCManager_AddServer(cs->ipcManager,
-                                tr,
+
+  /* create HTTP layer, initialize it */
+  nl=GWEN_NetLayerHttp_new(nlBase);
+  GWEN_NetLayer_free(nlBase);
+
+  dbHeader=GWEN_NetLayerHttp_GetOutHeader(nl);
+
+  GWEN_NetLayerHttp_SetOutCommand(nl, "POST", url);
+
+  sid=GWEN_IpcManager_AddServer(cs->ipcManager,
+                                nl,
                                 LCS_MARK_SERVER);
   if (sid==0) {
-    DBG_ERROR(0, "Could not add service");
+    DBG_ERROR(0, "Could not add server");
     GWEN_DB_Dump(gr, stderr, 2);
+    GWEN_NetLayer_free(nl);
+    GWEN_Url_free(url);
     return -1;
   }
 
-  conn=GWEN_IPCManager_GetConnection(cs->ipcManager, sid);
-  assert(conn);
-  GWEN_NetConnectionHTTP_SetDefaultURL(conn, LCS_IPC_URL);
-  GWEN_IPCManager_SetUpFn(cs->ipcManager, sid, LCS_Server__CallbackUp);
-  GWEN_IPCManager_SetDownFn(cs->ipcManager, sid, LCS_Server__CallbackDown);
-
+  /* adjust unix domain socket */
   if (strcasecmp(typ, "local")==0) {
-    if (chmod(GWEN_DB_GetCharValue(gr,
-                                   "addr", 0,
-                                   LC_DEFAULT_UDS_SOCK),
-              permissions)) {
+    if (chmod(address, permissions)) {
       DBG_ERROR(0, "Could not change permissions for service");
       GWEN_DB_Dump(gr, stderr, 2);
+      GWEN_Url_free(url);
       return -1;
     }
   }
 
-  DBG_INFO(0, "Server added");
+  GWEN_Url_free(url);
 
   return 0;
 }

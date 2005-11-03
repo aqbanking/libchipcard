@@ -40,7 +40,6 @@
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
-#include <gwenhywfar/nettransportssl.h>
 
 #include <chipcard2/chipcard2.h>
 #include <chipcard2-client/client/client.h>
@@ -376,13 +375,6 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT _askAddCert(GWEN_NETTRANSPORT *tr,
-                                                   GWEN_DB_NODE *cert){
-  return GWEN_NetTransportSSL_AskAddCertResultTmp;
-}
-
-
-
 
 
 int main(int argc, char **argv) {
@@ -397,8 +389,6 @@ int main(int argc, char **argv) {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   LC_CLIENT_RESULT res;
-
-  GWEN_NetTransportSSL_SetAskAddCertFn(_askAddCert);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,

@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 
 
@@ -404,6 +405,10 @@ void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
   if (flags & LC_SERVICE_FLAGS_SILENT)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "silent");
 }
+
+
+
+
 
 
 

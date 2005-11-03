@@ -968,7 +968,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   algoByte=(unsigned char)(*GWEN_Buffer_GetStart(mbuf));
 
   dbKey=GWEN_DB_Group_new("key");
-  err=GWEN_CryptKey_ToDb(key, dbKey, 1);
+  err=GWEN_CryptKey_toDb(key, dbKey, 1);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(LC_LOGDOMAIN, err);
     GWEN_DB_Group_free(dbKey);
@@ -1185,7 +1185,7 @@ GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid) {
   GWEN_DB_SetBinValue(dbKey, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "data/e", p+modLen, 3);
 
-  key=GWEN_CryptKey_FromDb(dbKey);
+  key=GWEN_CryptKey_fromDb(dbKey);
   if (!key) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not create key from data");
     GWEN_DB_Group_free(dbKey);

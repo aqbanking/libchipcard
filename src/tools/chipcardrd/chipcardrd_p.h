@@ -16,10 +16,8 @@
 #include <chipcard2/chipcard2.h>
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/logger.h>
-#include <gwenhywfar/net.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/process.h>
-#include <gwenhywfar/nettransportssl.h>
 
 
 #define RETURNVALUE_PARAM   1

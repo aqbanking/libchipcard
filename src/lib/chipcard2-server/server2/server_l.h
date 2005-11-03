@@ -57,7 +57,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/buffer.h>
-#include <gwenhywfar/netconnection.h>
+#include <gwenhywfar/netlayer.h>
 
 
 typedef struct LCS_SERVER LCS_SERVER;
@@ -100,7 +100,7 @@ typedef int (*LCS_SERVER_HANDLEREQUEST_FN)(LCS_SERVER *cs,
                                            GWEN_DB_NODE *dbReq);
 
 typedef void (*LCS_SERVER_CONNECTION_DOWN_FN)(LCS_SERVER *cs,
-                                              GWEN_NETCONNECTION *conn);
+                                              GWEN_NETLAYER *conn);
 
 typedef void (*LCS_SERVER_SERVICE_CHG_FN)(LCS_SERVER *cs,
                                           GWEN_TYPE_UINT32 sid,
@@ -159,7 +159,7 @@ LCS_SERVER_SERVICE_CHG_FN
  * turn calls LCS_Server_ConnectionDown.
  */
 void LCS_Server_UseConnectionFor(LCS_SERVER *cs,
-                                 GWEN_NETCONNECTION *conn,
+                                 GWEN_NETLAYER *conn,
                                  LCS_CONNECTION_TYPE t,
                                  GWEN_TYPE_UINT32 ipcId);
 
@@ -198,7 +198,7 @@ void LCS_Server_CardRemoved(LCS_SERVER *cs,
                             GWEN_TYPE_UINT32 cardNum);
 
 void LCS_Server_ConnectionDown(LCS_SERVER *cs,
-                               GWEN_NETCONNECTION *conn);
+                               GWEN_NETLAYER *conn);
 
 void LCS_Server_ServiceChg(LCS_SERVER *cs,
                            GWEN_TYPE_UINT32 sid,

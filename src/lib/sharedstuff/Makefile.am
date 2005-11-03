@@ -4,7 +4,8 @@ noinst_LTLIBRARIES=libsharedstuff.la
 
 iheaderdir=${includedir}/chipcard2
 iheader_HEADERS=\
-  msgengine.h
+  msgengine.h \
+  misc.h
 
 noinst_HEADERS=\
   msgengine_l.h \

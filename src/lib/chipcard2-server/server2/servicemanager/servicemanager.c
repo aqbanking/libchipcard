@@ -226,7 +226,7 @@ GWEN_TYPE_UINT32 LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "serviceId", numbuf);
 
-  return GWEN_IPCManager_SendRequest(svm->ipcManager,
+  return GWEN_IpcManager_SendRequest(svm->ipcManager,
                                      LCSV_Service_GetIpcId(sv),
                                      dbReq);
 }
@@ -598,7 +598,7 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
   if (st==LC_ServiceStatusUp) {
     GWEN_PROCESS *p;
     GWEN_PROCESS_STATE pst;
-    GWEN_NETCONNECTION *conn;
+    GWEN_NETLAYER *conn;
 
     /* check whether the service really is still up and running */
     p=LCSV_Service_GetProcess(sv);
@@ -622,11 +622,11 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
     }
 
     /* check connection */
-    conn=GWEN_IPCManager_GetConnection(svm->ipcManager,
-                                       LCSV_Service_GetIpcId(sv));
+    conn=GWEN_IpcManager_GetNetLayer(svm->ipcManager,
+                                     LCSV_Service_GetIpcId(sv));
     assert(conn);
-    if (GWEN_NetConnection_GetStatus(conn)!=
-        GWEN_NetTransportStatusLConnected) {
+    if (GWEN_NetLayer_GetStatus(conn)!=
+        GWEN_NetLayerStatus_Connected) {
       DBG_ERROR(0, "Service connection is down");
       p=LCSV_Service_GetProcess(sv);
       if (p) {
@@ -830,7 +830,7 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
   nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
   if (!nodeId) {
     DBG_ERROR(0, "Invalid node id");
-    if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -839,9 +839,9 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
 
   DBG_INFO(0, "Service %08x: ServiceReady", nodeId);
 
-  p=GWEN_DB_GetCharValue(dbReq, "body/service/serviceId", 0, 0);
+  p=GWEN_DB_GetCharValue(dbReq, "data/service/serviceId", 0, 0);
   if (!p || !*p)
-    p=GWEN_DB_GetCharValue(dbReq, "body/serviceId", 0, "0");
+    p=GWEN_DB_GetCharValue(dbReq, "data/serviceId", 0, "0");
 
   if (1!=sscanf(p, "%x", &i)) {
     DBG_ERROR(0, "Invalid service id (%s)", p);
@@ -857,7 +857,7 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
                                  LC_ERROR_INVALID,
                                  "Invalid service id, "
                                  "client services not allowed");
-    if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
@@ -879,7 +879,7 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
       LCS_Server_SendErrorResponse(svm->server, rid,
                                    LC_ERROR_INVALID,
                                    "Service not found");
-      if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
@@ -893,27 +893,27 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
 
     /* service with id=0, must be a remote service */
     dbService=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
-                               "body/service");
+                               "data/service");
     if (!dbService) {
       DBG_ERROR(0, "No service group given in request");
       LCS_Server_SendErrorResponse(svm->server, rid,
                                    LC_ERROR_INVALID,
                                    "No service description");
-      if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
       return -1;
     }
 
-    sname=GWEN_DB_GetCharValue(dbReq, "body/service/serviceName", 0, 0);
-    stype=GWEN_DB_GetCharValue(dbReq, "body/service/serviceType", 0, 0);
+    sname=GWEN_DB_GetCharValue(dbReq, "data/service/serviceName", 0, 0);
+    stype=GWEN_DB_GetCharValue(dbReq, "data/service/serviceType", 0, 0);
     if (!stype) {
       DBG_ERROR(0, "No service type given in remote service");
       LCS_Server_SendErrorResponse(svm->server, rid,
                                    LC_ERROR_INVALID,
                                    "No service type");
-      if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
         DBG_WARN(0, "Could not remove request");
         abort();
       }
@@ -948,7 +948,7 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
   LCSV_Service_SetIpcId(sv, nodeId);
 
   /* check code */
-  text=GWEN_DB_GetCharValue(dbReq, "body/text", 0, "Service up");
+  text=GWEN_DB_GetCharValue(dbReq, "data/text", 0, "Service up");
 
   DBG_NOTICE(0, "Service \"%08x\" is up (%s)", serviceId, text);
   LCSV_Service_SetStatus(sv, LC_ServiceStatusUp);
@@ -964,15 +964,15 @@ int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
                        "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "text", "Service registered");
-  if (GWEN_IPCManager_SendResponse(svm->ipcManager, rid, dbRsp)) {
+  if (GWEN_IpcManager_SendResponse(svm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response");
-    if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
       DBG_WARN(0, "Could not remove request");
       abort();
     }
     return -1;
   }
-  if (GWEN_IPCManager_RemoveRequest(svm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(svm->ipcManager, rid, 0)) {
     DBG_WARN(0, "Could not remove request");
     abort();
   }
@@ -1055,7 +1055,7 @@ GWEN_TYPE_UINT32 LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
   GWEN_DB_SetCharValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "serviceId", numbuf);
 
-  rid=GWEN_IPCManager_SendRequest(svm->ipcManager,
+  rid=GWEN_IpcManager_SendRequest(svm->ipcManager,
                                   LCSV_Service_GetIpcId(sv),
                                   dbCmd);
   if (rid==0) {

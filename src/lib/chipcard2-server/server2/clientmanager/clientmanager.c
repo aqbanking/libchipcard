@@ -254,10 +254,10 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
       /* we own this card, so unlock it */
       rid=LCCL_ClientManager_SendResetCard(clm, card);
       if (rid) {
-        /* immediately remove this request, we don't expect an answer */
-        if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 1)) {
-          DBG_ERROR(0, "Could not remove request");
-          abort();
+	/* immediately remove this request, we don't expect an answer */
+	if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 1)) {
+	  DBG_ERROR(0, "Could not remove request");
+	  abort();
         }
       }
       else {
@@ -318,7 +318,7 @@ void LCCL_ClientManager_CheckClient(LCCL_CLIENTMANAGER *clm,
   assert(cl);
   if (LCCL_Client_GetWantDestroy(cl)) {
     /* remove IPC node */
-    GWEN_IPCManager_RemoveClient(clm->ipcManager,
+    GWEN_IpcManager_RemoveClient(clm->ipcManager,
                                  LCCL_Client_GetClientId(cl));
 
     /* finally destroy client */

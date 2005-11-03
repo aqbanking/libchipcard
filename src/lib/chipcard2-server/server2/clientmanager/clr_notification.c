@@ -116,14 +116,14 @@ int LCCL_ClientManager__SendNotification(LCCL_CLIENTMANAGER *clm,
   }
 
   /* send request (fire and forget) */
-  rid=GWEN_IPCManager_SendRequest(clm->ipcManager,
+  rid=GWEN_IpcManager_SendRequest(clm->ipcManager,
                                   LCCL_Client_GetClientId(cl),
                                   dbReq);
   if (rid==0) {
     DBG_INFO(0, "here");
     return -1;
   }
-  GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 1);
+  GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 1);
 
   /* done */
   return 0;
@@ -438,7 +438,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
   clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
   assert(clientId);
 
-  cmdVer=GWEN_DB_GetIntValue(dbReq, "body/cmdver", 0, 0);
+  cmdVer=GWEN_DB_GetIntValue(dbReq, "data/cmdver", 0, 0);
 
   cl=LCCL_Client_List_First(clm->clients);
   while(cl) {
@@ -451,7 +451,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Unknown client id");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -465,13 +465,13 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
 
   if (cmdVer>0) {
     /* newer commands */
-    flags=LC_NotifyFlags_fromDb(dbReq, "body/flags");
+    flags=LC_NotifyFlags_fromDb(dbReq, "data/flags");
     if (flags & ~LCCL_Client_GetNotifyMask(cl)) {
       DBG_ERROR(0, "Notification flags not allowed");
       LCS_Server_SendErrorResponse(clm->server, rid,
                                    LC_ERROR_INVALID,
                                    "Notification type/code not allowed");
-      if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
         DBG_ERROR(0, "Could not remove request");
         abort();
       }
@@ -486,7 +486,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
     for (i=0; ; i++) {
       const char *s;
 
-      s=GWEN_DB_GetCharValue(dbReq, "body/flag", i, 0);
+      s=GWEN_DB_GetCharValue(dbReq, "data/flag", i, 0);
       if (!s)
         break;
       else {
@@ -542,7 +542,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
       } /* if type/code pair found */
     } /* for */
     if (err) {
-      if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
         DBG_ERROR(0, "Could not remove request");
         abort();
       }
@@ -574,9 +574,9 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
                        "text", "Notification types/codes ok");
 
   /* send response */
-  if (GWEN_IPCManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
+  if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response to ClientReady");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -584,7 +584,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
   }
 
   /* remove request since we handled it */
-  if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
     DBG_ERROR(0, "Could not remove request");
     abort();
   }

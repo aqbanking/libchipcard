@@ -329,7 +329,7 @@ void LCS_FullServer_CardRemoved(LCS_SERVER *cs,
 
 
 
-void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
+void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
   LCS_FULLSERVER *fs;
 
   assert(cs);
@@ -341,13 +341,13 @@ void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
     fs->connectionDownFn(cs, conn);
 
   /* check for client connection */
-  if (LCS_Connection_GetType(conn)==LCS_Connection_TypeClient) {
+  if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Client) {
     GWEN_TYPE_UINT32 clientId;
 
     /* client is down, tell this to card manager and client manager */
     clientId=
-      GWEN_IPCManager_GetClientForConnection(LCS_Server_GetIpcManager(cs),
-                                             conn);
+      GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
+                                           conn);
     if (clientId==0) {
       DBG_WARN(0, "Client for connection not found");
       return;
@@ -361,11 +361,11 @@ void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETCONNECTION *conn) {
   }
 
   /* check for service connection */
-  else if (LCS_Connection_GetType(conn)==LCS_Connection_TypeService) {
+  else if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Service) {
     GWEN_TYPE_UINT32 ipcId;
 
-    ipcId=GWEN_IPCManager_GetClientForConnection(LCS_Server_GetIpcManager(cs),
-                                                 conn);
+    ipcId=GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
+                                               conn);
     if (ipcId==0) {
       DBG_ERROR(0, "IPC id for broken connection not found");
       return;

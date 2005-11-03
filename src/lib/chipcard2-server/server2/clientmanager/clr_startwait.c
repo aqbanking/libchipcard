@@ -37,7 +37,7 @@ int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
   clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
   assert(clientId);
 
-  cmdVer=GWEN_DB_GetIntValue(dbReq, "body/cmdver", 0, 0);
+  cmdVer=GWEN_DB_GetIntValue(dbReq, "data/cmdver", 0, 0);
 
   cl=LCCL_Client_List_First(clm->clients);
   while(cl) {
@@ -50,7 +50,7 @@ int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Unknown client id");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -81,9 +81,9 @@ int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
                          "code", "OK");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", "Waiting for cards");
-    if (GWEN_IPCManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
+    if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
       DBG_ERROR(0, "Could not send response to client");
-      if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
         DBG_ERROR(0, "Could not remove request");
         abort();
       }
@@ -91,7 +91,7 @@ int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
     }
   }
 
-  if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
     DBG_ERROR(0, "Could not remove request");
     abort();
   }
@@ -178,7 +178,7 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
                         "atr", atr, atrLen);
   } /* if ATR */
 
-  rid=GWEN_IPCManager_SendRequest(clm->ipcManager,
+  rid=GWEN_IpcManager_SendRequest(clm->ipcManager,
                                   LCCL_Client_GetClientId(cl),
                                   gr);
   if (rid==0) {
@@ -187,7 +187,7 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
   }
   else {
     /* remove request, we don't expect an answer */
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 1)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 1)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }

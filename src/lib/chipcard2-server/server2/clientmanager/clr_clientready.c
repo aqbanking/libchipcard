@@ -20,9 +20,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
-#include <gwenhywfar/netconnectionhttp.h>
-#include <gwenhywfar/nettransportssl.h>
-#include <gwenhywfar/nettransportsock.h>
+#include <gwenhywfar/nl_ssl.h>
 #include <gwenhywfar/version.h>
 
 
@@ -34,8 +32,8 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
   LCCL_CLIENT *cl;
   GWEN_TYPE_UINT32 clientId;
   GWEN_DB_NODE *dbRsp;
-  GWEN_NETCONNECTION *conn;
-  GWEN_NETTRANSPORT *tr;
+  GWEN_NETLAYER *conn;
+  GWEN_NETLAYER *nlSSL;
   const char *p;
 
   assert(dbReq);
@@ -59,37 +57,40 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
   LCCL_Client_SetMaxClientLocks(cl, clm->maxClientLocks);
   LCCL_Client_List_Add(cl, clm->clients);
 
-  conn=GWEN_IPCManager_GetConnection(clm->ipcManager, clientId);
+  conn=GWEN_IpcManager_GetNetLayer(clm->ipcManager, clientId);
   assert(conn);
   LCS_Server_UseConnectionFor(clm->server, conn,
-                              LCS_Connection_TypeClient,
+                              LCS_Connection_Type_Client,
                               clientId);
-  tr=GWEN_NetConnection_GetTransportLayer(conn);
-  assert(tr);
 
   LCCL_Client_SetUserName(cl, "nobody");
-  if (GWEN_NetTransportSSL_IsOfType(tr)){
+
+  nlSSL=GWEN_NetLayer_FindBaseLayer(conn, GWEN_NL_SSL_NAME);
+  if (nlSSL){
     DBG_INFO(0, "Got an SSL connection, checking...");
-    if (GWEN_NetTransportSSL_IsSecure(tr)) {
-      GWEN_DB_NODE *dbCert;
-      const char *p;
+    if (GWEN_NetLayerSsl_GetIsSecure(nlSSL)) {
+      const GWEN_SSLCERTDESCR *cert;
 
       DBG_INFO(0, "Got a secure SSL connection");
-      dbCert=GWEN_NetTransportSSL_GetPeerCertificate(tr);
-      assert(dbCert);
+      cert=GWEN_NetLayerSsl_GetPeerCertificate(nlSSL);
+      if (cert) {
+        const char *p;
 
-      p=GWEN_DB_GetCharValue(dbCert, "commonName", 0, "nobody");
-      DBG_NOTICE(0, "Verified peer is \"%s\"", p);
-      LCCL_Client_SetUserName(cl, p);
+        p=GWEN_SslCertDescr_GetCommonName(cert);
+        if (p) {
+          DBG_NOTICE(0, "Verified peer is \"%s\"", p);
+          LCCL_Client_SetUserName(cl, p);
+        }
+      }
     }
   }
 
-  p=GWEN_DB_GetCharValue(dbReq, "body/application", 0, "");
+  p=GWEN_DB_GetCharValue(dbReq, "data/application", 0, "");
   DBG_NOTICE(0, "Client \"%08x\" started (%s, Gwen %s, ChipCard %s)",
              clientId,
              p,
-	     GWEN_DB_GetCharValue(dbReq, "body/GwenVersion", 0, ""),
-	     GWEN_DB_GetCharValue(dbReq, "body/ChipcardVersion", 0, ""));
+	     GWEN_DB_GetCharValue(dbReq, "data/GwenVersion", 0, ""),
+	     GWEN_DB_GetCharValue(dbReq, "data/ChipcardVersion", 0, ""));
 
   LCCL_Client_SetApplicationName(cl, p);
 
@@ -106,9 +107,9 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
 		       "System", ""); /* TODO: Get system string */
 
   /* send response */
-  if (GWEN_IPCManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
+  if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response to ClientReady");
-    if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -116,7 +117,7 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
   }
 
   /* remove request */
-  if (GWEN_IPCManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+  if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
     DBG_ERROR(0, "Could not remove request");
     abort();
   }

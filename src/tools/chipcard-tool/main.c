@@ -18,7 +18,6 @@
 
 #include "global.h"
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/nettransportssl.h>
 
 #define PROGRAM_VERSION "1.9"
 
@@ -215,13 +214,6 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
-GWEN_NETTRANSPORTSSL_ASKADDCERT_RESULT _askAddCert(GWEN_NETTRANSPORT *tr,
-                                                   GWEN_DB_NODE *cert){
-  return GWEN_NetTransportSSL_AskAddCertResultTmp;
-}
-
-
-
 int main(int argc, char **argv) {
   int rv;
   GWEN_DB_NODE *db;
@@ -229,8 +221,6 @@ int main(int argc, char **argv) {
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
-
-  GWEN_NetTransportSSL_SetAskAddCertFn(_askAddCert);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,

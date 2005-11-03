@@ -60,17 +60,17 @@ int LCS_Server_HandleNextCommand(LCS_SERVER *cs) {
 
   assert(cs);
 
-  ridNext=GWEN_IPCManager_GetNextInRequest(cs->ipcManager, 0);
+  ridNext=GWEN_IpcManager_GetNextInRequest(cs->ipcManager, 0);
   if (!ridNext) {
     DBG_VERBOUS(0, "No incoming request");
     return 1;
   }
-  dbReq=GWEN_IPCManager_GetInRequestData(cs->ipcManager, ridNext);
+  dbReq=GWEN_IpcManager_GetInRequestData(cs->ipcManager, ridNext);
   assert(dbReq);
-  name=GWEN_DB_GetCharValue(dbReq, "command/vars/cmd", 0, 0);
+  name=GWEN_DB_GetCharValue(dbReq, "ipc/cmd", 0, 0);
   if (!name) {
     DBG_ERROR(0, "Bad IPC command (no command name), discarding");
-    if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, ridNext, 0)) {
+    if (GWEN_IpcManager_RemoveRequest(cs->ipcManager, ridNext, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
     }
@@ -84,7 +84,7 @@ int LCS_Server_HandleNextCommand(LCS_SERVER *cs) {
       DBG_ERROR(0, "Request \"%s\" not handled.", name);
       LCS_Server_SendErrorResponse(cs, ridNext, LC_ERROR_NOT_SUPPORTED,
                                    "Unknown command");
-      if (GWEN_IPCManager_RemoveRequest(cs->ipcManager, ridNext, 0)) {
+      if (GWEN_IpcManager_RemoveRequest(cs->ipcManager, ridNext, 0)) {
         DBG_ERROR(0, "Could not remove request");
         abort();
       }
@@ -102,7 +102,7 @@ int LCS_Server_Work(LCS_SERVER *cs) {
 
   for (;;) {
     DBG_VERBOUS(0, "Letting IPC manager work");
-    rv=GWEN_IPCManager_Work(cs->ipcManager, 10);
+    rv=GWEN_IpcManager_Work(cs->ipcManager);
     if (rv==0)
       done++;
     else
@@ -152,14 +152,14 @@ void LCS_Server_EndUseReaders(LCS_SERVER *cs, int count) {
 
 
 void LCS_Server_UseConnectionFor(LCS_SERVER *cs,
-                                 GWEN_NETCONNECTION *conn,
+                                 GWEN_NETLAYER *conn,
                                  LCS_CONNECTION_TYPE t,
                                  GWEN_TYPE_UINT32 ipcId) {
   LCS_Connection_TakeOver(conn);
   LCS_Connection_SetType(conn, t);
   LCS_Connection_SetServer(conn, cs);
 
-  GWEN_IPCManager_SetDownFn(cs->ipcManager, ipcId, LCS_Server__CallbackDown);
+  GWEN_NetLayer_SetStatusChangeFn(conn, LCS_Server__CallbackStatusChg);
 }
 
 

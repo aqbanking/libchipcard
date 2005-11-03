@@ -2,8 +2,8 @@
 
 #define GWEN_EXTEND_WAITCALLBACK
 #include <gwenhywfar/logger.h>
-#include <gwenhywfar/net.h>
-#include <gwenhywfar/nettransportssl.h>
+#include <gwenhywfar/net2.h>
+#include <gwenhywfar/nl_ssl.h>
 #include "cbtest.h"
 
 #include <stdlib.h>
@@ -19,40 +19,6 @@
 # include "pcmciascanner_l.h"
 #endif
 
-
-
-
-int test3(int argc, char **argv) {
-  GWEN_DB_NODE *db;
-
-  db=GWEN_DB_Group_new("certificate");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "countryName", "DE");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "commonName", "Martin Preuss");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "organizationName", "Aquamaniac");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "organizationalUnitName", "Libchipcard");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "localityName", "Hamburg");
-  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "stateOrProvinceName", "Hamburg");
-
-  if (GWEN_NetTransportSSL_GenerateCertAndKeyFile("test.crt",
-                                                  1024,
-                                                  123,
-                                                  90,
-                                                  db)) {
-    fprintf(stderr, "Could not create certificate.\n");
-    GWEN_DB_Group_free(db);
-    return 1;
-  }
-
-  fprintf(stderr, "Certificate created.\n");
-  GWEN_DB_Group_free(db);
-  return 0;
-}
 
 
 
@@ -87,7 +53,7 @@ int test6(int argc, char **argv) {
   t0=time(0);
   fprintf(stderr, "Starting server.\n");
   for (;;) {
-    GWEN_NETCONNECTION_WORKRESULT res;
+    GWEN_NETLAYER_RESULT res;
     time_t t1;
 
     for (;;) {
@@ -100,7 +66,7 @@ int test6(int argc, char **argv) {
         break;
     }
     res=GWEN_Net_HeartBeat(2000);
-    if (res==GWEN_NetConnectionWorkResult_Error) {
+    if (res==GWEN_NetLayerResult_Error) {
       fprintf(stderr, "ERROR: Error while working (%d)\n", res);
       break;
     }
@@ -150,7 +116,7 @@ int test7(int argc, char **argv) {
 
   fprintf(stderr, "Starting server.\n");
   for (;;) {
-    GWEN_NETCONNECTION_WORKRESULT res;
+    GWEN_NETLAYER_RESULT res;
 
     for (;;) {
       fprintf(stderr, "Working ...\n");
@@ -162,7 +128,7 @@ int test7(int argc, char **argv) {
 	break;
     }
     res=GWEN_Net_HeartBeat(2000);
-    if (res==GWEN_NetConnectionWorkResult_Error) {
+    if (res==GWEN_NetLayerResult_Error) {
       fprintf(stderr, "ERROR: Error while working (%d)\n", res);
       break;
     }
@@ -234,9 +200,7 @@ int main(int argc, char **argv) {
   //                 GWEN_LoggerFacilityUser);
   GWEN_Logger_SetLevel(0, GWEN_LoggerLevelInfo);
 
-  if (strcasecmp(argv[1], "test3")==0)
-    return test3(argc, argv);
-  else if (strcasecmp(argv[1], "test6")==0)
+  if (strcasecmp(argv[1], "test6")==0)
     return test6(argc, argv);
   else if (strcasecmp(argv[1], "test7")==0)
     return test7(argc, argv);
