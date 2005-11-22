@@ -83,3 +83,11 @@ install-srcdoc: $(PACKAGE).tag
 	   ); \
 	fi
 
+
+install-data-local:
+	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_PIDDIR@"
+	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_LOGDIR@"
+	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_NEWCERTDIR@"
+	$(mkinstalldirs) "$(DESTDIR)/@LC_LOWLEVELDRIVER_PATH@"
+	
+

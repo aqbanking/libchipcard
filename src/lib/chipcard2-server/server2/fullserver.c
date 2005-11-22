@@ -423,14 +423,18 @@ int LCS_FullServer_Work(LCS_SERVER *cs) {
   /* let client manager work */
   DBG_VERBOUS(0, "Letting client manager work");
   rv=LCCL_ClientManager_Work(fs->clientManager);
-  if (rv!=0)
+  if (rv!=0) {
+    DBG_VERBOUS(0, "change reported");
     done++;
+  }
 
   /* let service manager work */
   DBG_VERBOUS(0, "Letting service manager work");
   rv=LCSV_ServiceManager_Work(fs->serviceManager);
-  if (rv!=0)
+  if (rv!=0) {
+    DBG_VERBOUS(0, "change reported");
     done++;
+  }
 
   if (done)
     return 1;

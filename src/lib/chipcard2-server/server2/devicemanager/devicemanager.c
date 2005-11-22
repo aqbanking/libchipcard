@@ -73,6 +73,7 @@ void LCDM_DeviceManager_free(LCDM_DEVICEMANAGER *dm) {
     free(dm->addrTypeForDrivers);
     free(dm->addrAddrForDrivers);
     GWEN_DB_Group_free(dm->dbDrivers);
+    GWEN_DB_Group_free(dm->dbConfigDrivers);
     LCDM_Reader_List_free(dm->readers);
     LCDM_Driver_List_free(dm->drivers);
 
@@ -301,9 +302,12 @@ int LCDM_DeviceManager_Fini(LCDM_DEVICEMANAGER *dm) {
   dm->deviceMonitor=0;
 
   GWEN_StringList_Clear(dm->driverBlackList);
-  GWEN_DB_ClearGroup(dm->dbDrivers, 0);
   LCDM_Reader_List_Clear(dm->readers);
   LCDM_Driver_List_Clear(dm->drivers);
+  free(dm->addrTypeForDrivers);
+  free(dm->addrAddrForDrivers);
+  GWEN_DB_ClearGroup(dm->dbConfigDrivers, 0);
+  GWEN_DB_ClearGroup(dm->dbDrivers, 0);
 
   return 0;
 }
@@ -492,6 +496,8 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
     else
       GWEN_DB_AddGroup(dm->dbDrivers, dbT);
   }
+
+  GWEN_DB_Group_free(dbDrivers);
 
   return 0;
 }
@@ -1505,11 +1511,13 @@ int LCDM_DeviceManager_CheckDrivers(LCDM_DEVICEMANAGER *dm) {
   d=LCDM_Driver_List_First(dm->drivers);
   while(d) {
     int rv;
+    LCDM_DRIVER *dNext;
 
+    dNext=LCDM_Driver_List_Next(d);
     rv=LCDM_DeviceManager_CheckDriver(dm, d);
     if (rv!=0)
       done++;
-    d=LCDM_Driver_List_Next(d);
+    d=dNext;
   }
 
   if (done)
@@ -1965,10 +1973,13 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   LCCO_Card_SetDriverTypeName(card, LCDM_Driver_GetDriverName(d));
   LCCO_Card_SetReaderTypeName(card, LCDM_Reader_GetReaderType(r));
   LCCO_Card_SetReaderFlags(card, LCDM_Reader_GetFlags(r));
-  if (atr)
+  if (atr) {
     LCCO_Card_SetAtr(card,
                      GWEN_Buffer_GetStart(atr),
                      GWEN_Buffer_GetUsedBytes(atr));
+    GWEN_Buffer_free(atr);
+    atr=0;
+  }
   LCCO_Card_SetStatus(card, LC_CardStatusInserted);
   DBG_NOTICE(0, "Free card found with num \"%08x\" in reader \"%s\"(%08x)",
              LCCO_Card_GetReadersCardId(card),

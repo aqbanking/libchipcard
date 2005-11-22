@@ -171,6 +171,7 @@ int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	      LC_PCI_PROC_DIR);
   }
   GWEN_Directory_free(dDir);
+  GWEN_Buffer_free(nbuf);
   return 0;
 }
 

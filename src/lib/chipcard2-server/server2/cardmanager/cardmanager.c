@@ -307,7 +307,7 @@ int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm){
 
     if (currSt!=lastSt) {
       /* card status changed, this also sets the unusedSince time */
-      DBG_ERROR(0, "Card status changed");
+      DBG_INFO(0, "Card status changed");
       LCCM_Card_SetLastStatus(card, currSt);
     }
 
@@ -321,12 +321,12 @@ int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm){
 
         t1=time(0);
         if (difftime(t1, t)>cm->unusedTimeout) {
-          DBG_NOTICE(0, "Card too long unused");
+          DBG_DEBUG(0, "Card too long unused");
           /* check second timeout */
           t=LCCM_Card_GetLastAdTime(card);
           t1=time(0);
           if (difftime(t1, t)>cm->minimumKeepTime) {
-            DBG_NOTICE(0, "Keep time exceeded");
+            DBG_DEBUG(0, "Keep time exceeded");
 
             DBG_NOTICE(0, "Allowing reader to shut down");
             /* this does not immediately shut down the reader, but as long

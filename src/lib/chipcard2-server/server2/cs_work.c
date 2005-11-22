@@ -103,8 +103,10 @@ int LCS_Server_Work(LCS_SERVER *cs) {
   for (;;) {
     DBG_VERBOUS(0, "Letting IPC manager work");
     rv=GWEN_IpcManager_Work(cs->ipcManager);
-    if (rv==0)
+    if (rv==0) {
+      DBG_VERBOUS(0, "change reported");
       done++;
+    }
     else
       break;
   }
@@ -112,24 +114,31 @@ int LCS_Server_Work(LCS_SERVER *cs) {
   for (;;) {
     DBG_VERBOUS(0, "Handling incoming commands");
     rv=LCS_Server_HandleNextCommand(cs);
-    if (rv==0)
+    if (rv==0) {
+      DBG_VERBOUS(0, "change reported");
       done++;
+    }
     else
       break;
   }
 
   DBG_VERBOUS(0, "Letting device manager work");
   rv=LCDM_DeviceManager_Work(cs->deviceManager);
-  if (rv!=0)
+  if (rv!=0) {
+    DBG_VERBOUS(0, "change reported");
     done++;
-
+  }
   DBG_VERBOUS(0, "Letting request manager work");
   rv=GWEN_IpcRequestManager_Work(cs->requestManager);
-  if (rv!=1) /* "1" is correct here! */
+  if (rv!=1) { /* "1" is correct here! */
+    DBG_VERBOUS(0, "change reported");
     done++;
+  }
 
-  if (done)
+  if (done) {
+    DBG_VERBOUS(0, "Reporting change.");
     return 1;
+  }
   return 0;
 }
 

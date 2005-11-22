@@ -52,6 +52,8 @@ LCSV_SERVICEMANAGER *LCSV_ServiceManager_new(LCS_SERVER *server) {
 void LCSV_ServiceManager_free(LCSV_SERVICEMANAGER *svm) {
   if (svm) {
     LCSV_Service_List_free(svm->services);
+    free(svm->addrAddrForServices);
+    free(svm->addrTypeForServices);
     DBG_MEM_DEC("LCSV_SERVICEMANAGER");
     GWEN_FREE_OBJECT(svm);
   }

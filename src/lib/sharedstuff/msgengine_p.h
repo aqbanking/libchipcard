@@ -29,6 +29,7 @@
 typedef struct LC_MSGENGINE LC_MSGENGINE;
 
 struct LC_MSGENGINE {
+  int dummy;
 };
 
 

@@ -471,6 +471,7 @@ int LCS_Server_Fini(LCS_SERVER *cs, GWEN_DB_NODE *db) {
     GWEN_PluginManager_free(cs->driverPluginManager);
     cs->driverPluginManager=0;
   }
+
   return 0;
 }
 

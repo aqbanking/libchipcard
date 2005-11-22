@@ -1,4 +1,10 @@
 
+2005/11/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- cleanup: fixed some memory leaks discovered using valgrind
+- create some directories (e.g. log folder etc)
+
+
 2005/11/03: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - adapted to Gwen2 (now works with the latest CVS of Gwen)

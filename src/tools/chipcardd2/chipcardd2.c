@@ -1015,12 +1015,14 @@ int server(ARGUMENTS *args) {
                  "ERROR: Error while working on hardware (%d)", rv);
         break;
       }
-      else if (rv==0)
-        break;
+
       if (args->runOnce && clientsBefore)
         if (LCS_FullServer_GetClientCount(cardServer)==0) {
           loopCount++;
-          //LCS_FullServer_DumpState(cardServer);
+          DBG_NOTICE(0, "Clients handled: %d (max: %d)",
+                     loopCount,
+                     args->runOnce);
+          LCS_FullServer_DumpState(cardServer);
           GWEN_MemoryDebug_Dump(GWEN_MEMORY_DEBUG_MODE_SHORT);
 
           if (loopCount>=args->runOnce) {
@@ -1029,8 +1031,11 @@ int server(ARGUMENTS *args) {
             break;
           }
         }
+
+      if (rv==0)
+        break;
     }
-    res=GWEN_Net_HeartBeat(2000);
+    res=GWEN_Net_HeartBeat(750);
     if (res==GWEN_NetLayerResult_Error) {
       DBG_INFO(0, "ERROR: Error while working (%d)", res);
       break;
@@ -1087,7 +1092,7 @@ int main(int argc, char **argv) {
     return RETURNVALUE_SETUP;
   }
   GWEN_Logger_SetLevel(0, args->logLevel);
-  GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, GWEN_LoggerLevelNotice);
+  //GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, GWEN_LoggerLevelNotice);
 
 #ifdef HAVE_GETTEXT_ENVIRONMENT
   setlocale(LC_ALL,"");

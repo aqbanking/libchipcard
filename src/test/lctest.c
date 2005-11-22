@@ -3023,6 +3023,86 @@ int test35(int argc, char **argv) {
 
 
 
+int stressTest1(int argc, char **argv) {
+  LC_CLIENT *cl;
+  int loops;
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfigFile(cl, 0)) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  for (loops=1; loops<=100; loops++) {
+    LC_CARD *card;
+    LC_CLIENT_RESULT res;
+    int maxErrors;
+    int currentErrors;
+
+    fprintf(stderr, "INFO: Loop %d\n", loops);
+    res=LC_Client_StartWait(cl, 0, 0);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      LC_Client_free(cl);
+      return 2;
+    }
+
+    card=LC_Client_WaitForNextCard(cl, 30000);
+    if (!card) {
+      fprintf(stderr, "ERROR: No card found.\n");
+      LC_Client_free(cl);
+      return 2;
+    }
+  
+    if (LC_Starcos_ExtendCard(card)) {
+      fprintf(stderr, "Could not extend card as STARCOS card\n");
+      LC_Card_free(card);
+      LC_Client_free(cl);
+      return 2;
+    }
+
+    res=LC_Card_Open(card);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      LC_Card_free(card);
+      LC_Client_free(cl);
+      return 2;
+    }
+
+    res=LC_Client_StopWait(cl);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      LC_Card_free(card);
+      LC_Client_free(cl);
+      return 2;
+    }
+  
+    res=LC_Starcos_GetPinStatus(card, 0x90, &maxErrors, &currentErrors);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Could not get pin status.\n");
+      LC_Card_free(card);
+      LC_Client_free(cl);
+      return 2;
+    }
+
+    res=LC_Card_Close(card);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      LC_Card_free(card);
+      LC_Client_free(cl);
+      return 2;
+    }
+
+    LC_Card_free(card);
+  }
+
+  LC_Client_free(cl);
+  return 0;
+}
+
+
+
 int main(int argc, char **argv) {
 
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelNotice);
@@ -3111,6 +3191,8 @@ int main(int argc, char **argv) {
     return test34(argc, argv);
   else if (strcasecmp(argv[1], "test35")==0)
     return test35(argc, argv);
+  else if (strcasecmp(argv[1], "stress1")==0)
+    return stressTest1(argc, argv);
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", argv[1]);
     return 1;
