@@ -64,7 +64,7 @@ int ExampleCard_ExtendCard(LC_CARD *card){
 
 /* This function can be used to resolve the heritage established via
  * ExampleCard_ExtendCard(). After this function has been called no other
- * ExampleCard function (except ExampleCard_ExtendCard()) my be called.
+ * ExampleCard function (except ExampleCard_ExtendCard()) may be called.
  * Please note that this function resets the cards' internal Open() and
  * Close() function pointers to the values found upon execution of
  * ExampleCard_ExtendCard(), so after that the function ExampleCard_Close()

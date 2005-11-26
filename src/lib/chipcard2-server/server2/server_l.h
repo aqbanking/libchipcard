@@ -84,6 +84,7 @@ typedef void (*LCS_SERVER_READER_CHG_FN)(LCS_SERVER *cs,
                                          GWEN_TYPE_UINT32 rid,
                                          const char *readerType,
                                          const char *readerName,
+                                         const char *readerInfo,
                                          LC_READER_STATUS newSt,
                                          const char *reason);
 
@@ -181,6 +182,7 @@ void LCS_Server_ReaderChg(LCS_SERVER *cs,
                           GWEN_TYPE_UINT32 rid,
                           const char *readerType,
                           const char *readerName,
+                          const char *readerInfo,
                           LC_READER_STATUS newSt,
                           const char *reason);
 

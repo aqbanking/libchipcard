@@ -36,7 +36,7 @@ void LCCM_Card_extend(LCCO_CARD *cd) {
   assert(cd);
 
   GWEN_NEW_OBJECT(LCCM_CARD, dc);
-  dc->requestList=LCCM_LockRequest_List_new();
+  dc->requestList=LCS_LockRequest_List_new();
   dc->lastStatus=LCCO_Card_GetStatus(cd);
   dc->unusedSince=time(0);
   GWEN_INHERIT_SETDATA(LCCO_CARD, LCCM_CARD, cd, dc,
@@ -62,8 +62,8 @@ void LCCM_Card_FreeData(void *bp, void *p) {
   LCCM_CARD *dc;
 
   dc=(LCCM_CARD*)p;
-  LCCM_LockRequest_free(dc->currentRequest);
-  LCCM_LockRequest_List_free(dc->requestList);
+  LCS_LockRequest_free(dc->currentRequest);
+  LCS_LockRequest_List_free(dc->requestList);
   GWEN_FREE_OBJECT(p);
 }
 
@@ -74,7 +74,7 @@ int LCCM_Card_RequestLock(LCCO_CARD *cd,
                           int duration,
                           int maxLocks) {
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
   int count;
 
   assert(cd);
@@ -95,12 +95,12 @@ int LCCM_Card_RequestLock(LCCO_CARD *cd,
     return -LC_ERROR_INVALID;
   }
 
-  rq=LCCM_LockRequest_new();
-  LCCM_LockRequest_SetRequestId(rq, lccm_card__next_request_id++);
-  LCCM_LockRequest_SetClientId(rq, clid);
-  LCCM_LockRequest_SetDuration(rq, duration);
+  rq=LCS_LockRequest_new();
+  LCS_LockRequest_SetRequestId(rq, lccm_card__next_request_id++);
+  LCS_LockRequest_SetClientId(rq, clid);
+  LCS_LockRequest_SetDuration(rq, duration);
 
-  LCCM_LockRequest_List_Add(rq, dc->requestList);
+  LCS_LockRequest_List_Add(rq, dc->requestList);
 
   dc->unusedSince=0;
 
@@ -109,24 +109,24 @@ int LCCM_Card_RequestLock(LCCO_CARD *cd,
 
 
 
-LCCM_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
+LCS_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
                                                   GWEN_TYPE_UINT32 clid){
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
 
   assert(cd);
   dc=GWEN_INHERIT_GETDATA(LCCO_CARD, LCCM_CARD, cd);
   assert(dc);
 
   rq=dc->currentRequest;
-  if (rq && clid==LCCM_LockRequest_GetClientId(rq))
+  if (rq && clid==LCS_LockRequest_GetClientId(rq))
     return rq;
 
-  rq=LCCM_LockRequest_List_First(dc->requestList);
+  rq=LCS_LockRequest_List_First(dc->requestList);
   while(rq) {
-    if (clid==LCCM_LockRequest_GetRequestId(rq))
+    if (clid==LCS_LockRequest_GetRequestId(rq))
       break;
-    rq=LCCM_LockRequest_List_Next(rq);
+    rq=LCS_LockRequest_List_Next(rq);
   }
 
   return rq;
@@ -137,7 +137,7 @@ LCCM_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
 int LCCM_Card_CountClientRequests(const LCCO_CARD *cd,
                                   GWEN_TYPE_UINT32 clid){
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
   int count=0;
 
   assert(cd);
@@ -145,14 +145,14 @@ int LCCM_Card_CountClientRequests(const LCCO_CARD *cd,
   assert(dc);
 
   rq=dc->currentRequest;
-  if (rq && clid==LCCM_LockRequest_GetClientId(rq))
+  if (rq && clid==LCS_LockRequest_GetClientId(rq))
     count++;
 
-  rq=LCCM_LockRequest_List_First(dc->requestList);
+  rq=LCS_LockRequest_List_First(dc->requestList);
   while(rq) {
-    if (clid==LCCM_LockRequest_GetRequestId(rq))
+    if (clid==LCS_LockRequest_GetRequestId(rq))
       count++;
-    rq=LCCM_LockRequest_List_Next(rq);
+    rq=LCS_LockRequest_List_Next(rq);
   }
 
   return count;
@@ -162,7 +162,7 @@ int LCCM_Card_CountClientRequests(const LCCO_CARD *cd,
 
 int LCCM_Card_CheckRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
 
   assert(cd);
   dc=GWEN_INHERIT_GETDATA(LCCO_CARD, LCCM_CARD, cd);
@@ -173,22 +173,22 @@ int LCCM_Card_CheckRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
     return -LC_ERROR_CARD_REMOVED;
   }
 
-  rq=LCCM_LockRequest_List_First(dc->requestList);
+  rq=LCS_LockRequest_List_First(dc->requestList);
   assert(rq);
 
-  if (LCCM_LockRequest_GetClientId(rq)==clid &&
+  if (LCS_LockRequest_GetClientId(rq)==clid &&
       dc->currentRequest==0) {
     GWEN_TIME *ti;
 
     DBG_NOTICE(0, "Lock request granted");
-    LCCM_LockRequest_List_Del(rq);
+    LCS_LockRequest_List_Del(rq);
     dc->currentRequest=rq;
 
     /* store locking time */
     ti=GWEN_CurrentTime();
-    LCCM_LockRequest_SetLockTime(rq, ti);
-    GWEN_Time_AddSeconds(ti, LCCM_LockRequest_GetDuration(rq));
-    LCCM_LockRequest_SetLockUntil(rq, ti);
+    LCS_LockRequest_SetLockTime(rq, ti);
+    GWEN_Time_AddSeconds(ti, LCS_LockRequest_GetDuration(rq));
+    LCS_LockRequest_SetLockUntil(rq, ti);
     GWEN_Time_free(ti);
 
     return 0;
@@ -201,7 +201,7 @@ int LCCM_Card_CheckRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
 
 int LCCM_Card_RemoveRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
 
   assert(cd);
   dc=GWEN_INHERIT_GETDATA(LCCO_CARD, LCCM_CARD, cd);
@@ -212,9 +212,9 @@ int LCCM_Card_RemoveRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
 
   /* must not be the currently active lock */
   assert(rq!=dc->currentRequest);
-  LCCM_LockRequest_List_Del(rq);
+  LCS_LockRequest_List_Del(rq);
 
-  if (LCCM_LockRequest_List_GetCount(dc->requestList)==0 &&
+  if (LCS_LockRequest_List_GetCount(dc->requestList)==0 &&
       dc->currentRequest==0 &&
       dc->unusedSince==0)
     dc->unusedSince=time(0);
@@ -227,14 +227,14 @@ int LCCM_Card_RemoveRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
 void LCCM_Card_RemoveAllClientRequests(LCCO_CARD *cd,
                                        GWEN_TYPE_UINT32 clid){
   LCCM_CARD *dc;
-  LCCM_LOCKREQUEST *rq;
+  LCS_LOCKREQUEST *rq;
   int prevCount;
 
   assert(cd);
   dc=GWEN_INHERIT_GETDATA(LCCO_CARD, LCCM_CARD, cd);
   assert(dc);
 
-  prevCount=LCCM_LockRequest_List_GetCount(dc->requestList);
+  prevCount=LCS_LockRequest_List_GetCount(dc->requestList);
   if (dc->currentRequest)
     prevCount++;
 
@@ -242,25 +242,25 @@ void LCCM_Card_RemoveAllClientRequests(LCCO_CARD *cd,
     return;
 
   if (dc->currentRequest &&
-      clid==LCCM_LockRequest_GetClientId(dc->currentRequest)) {
-    LCCM_LockRequest_free(dc->currentRequest);
+      clid==LCS_LockRequest_GetClientId(dc->currentRequest)) {
+    LCS_LockRequest_free(dc->currentRequest);
     dc->currentRequest=0;
   }
 
-  rq=LCCM_LockRequest_List_First(dc->requestList);
+  rq=LCS_LockRequest_List_First(dc->requestList);
   while(rq) {
-    LCCM_LOCKREQUEST *next;
+    LCS_LOCKREQUEST *next;
 
-    next=LCCM_LockRequest_List_Next(rq);
-    if (clid==LCCM_LockRequest_GetClientId(rq)) {
-      LCCM_LockRequest_List_Del(rq);
-      LCCM_LockRequest_free(rq);
+    next=LCS_LockRequest_List_Next(rq);
+    if (clid==LCS_LockRequest_GetClientId(rq)) {
+      LCS_LockRequest_List_Del(rq);
+      LCS_LockRequest_free(rq);
     }
 
     rq=next;
   }
 
-  if (LCCM_LockRequest_List_GetCount(dc->requestList)==0 &&
+  if (LCS_LockRequest_List_GetCount(dc->requestList)==0 &&
       dc->currentRequest==0 &&
       dc->unusedSince==0)
     dc->unusedSince=time(0);
@@ -276,11 +276,11 @@ int LCCM_Card_Unlock(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
   assert(dc);
 
   if (dc->currentRequest &&
-      clid==LCCM_LockRequest_GetClientId(dc->currentRequest)) {
+      clid==LCS_LockRequest_GetClientId(dc->currentRequest)) {
     DBG_NOTICE(0, "Unlocking card from client %08x", clid);
-    LCCM_LockRequest_free(dc->currentRequest);
+    LCS_LockRequest_free(dc->currentRequest);
     dc->currentRequest=0;
-    if (LCCM_LockRequest_List_GetCount(dc->requestList)==0 &&
+    if (LCS_LockRequest_List_GetCount(dc->requestList)==0 &&
         dc->unusedSince==0)
       dc->unusedSince=time(0);
     return 0;
@@ -301,7 +301,7 @@ int LCCM_Card_HasLockRequests(const LCCO_CARD *cd) {
 
   if (dc->currentRequest)
     count++;
-  count+=LCCM_LockRequest_List_GetCount(dc->requestList);
+  count+=LCS_LockRequest_List_GetCount(dc->requestList);
 
   if (count)
     return 1;
@@ -318,7 +318,7 @@ int LCCM_Card_CheckAccess(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
   assert(dc);
 
   if (dc->currentRequest &&
-      clid==LCCM_LockRequest_GetClientId(dc->currentRequest)) {
+      clid==LCS_LockRequest_GetClientId(dc->currentRequest)) {
     /* ok, locked by this client */
     return 0;
   }
@@ -415,9 +415,6 @@ void LCCM_Card_SetLastAdTime(LCCO_CARD *cd, time_t t) {
 
   dc->lastAdTime=t;
 }
-
-
-
 
 
 

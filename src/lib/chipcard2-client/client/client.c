@@ -2592,7 +2592,7 @@ LC_CLIENT_RESULT LC_Client_CheckCardCheck(LC_CLIENT *cl,
   code=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, "ERROR");
   text=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, "(none)");
   DBG_DEBUG(LC_LOGDOMAIN, "CardCheck result: %s (%s)", code, text);
-  if (strcasecmp(code, "OK"))
+  if (strcasecmp(code, "OK")==0)
     res=LC_Client_ResultOk;
   else if (strcasecmp(code, "REMOVED")){
     res=LC_Client_ResultCardRemoved;
@@ -2692,7 +2692,7 @@ LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
   code=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, "ERROR");
   text=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, "(none)");
   DBG_DEBUG(LC_LOGDOMAIN, "CardReset result: %s (%s)", code, text);
-  if (strcasecmp(code, "OK"))
+  if (strcasecmp(code, "OK")==0)
     res=LC_Client_ResultOk;
   else
     res=LC_Client_ResultGeneric;
@@ -3074,6 +3074,232 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
   }
 
   LC_Client_DeleteRequest(cl, rqid);
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendLockReader(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 serverId,
+                                          GWEN_TYPE_UINT32 readerId){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  dbReq=GWEN_DB_Group_new("LockReader");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerid", numbuf);
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckLockReader(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 rid,
+                                           GWEN_TYPE_UINT32 *lockId){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+  const char *code;
+  const char *text;
+
+  assert(cl);
+  assert(lockId);
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  code=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, "ERROR");
+  text=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, "(none)");
+  DBG_NOTICE(LC_LOGDOMAIN, "LockReader result: %s (%s)", code, text);
+  if (strcasecmp(code, "OK")==0) {
+    int i;
+
+    if (1!=sscanf(GWEN_DB_GetCharValue(dbRsp, "data/lockid", 0, "0"),
+                  "%x", &i)) {
+      DBG_ERROR(LC_LOGDOMAIN, "Bad server message");
+      res=LC_Client_ResultCmdError;
+    }
+    else {
+      assert(i);
+      *lockId=i;
+      res=LC_Client_ResultOk;
+    }
+  }
+  else
+    res=LC_Client_ResultGeneric;
+  GWEN_DB_Group_free(dbRsp);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_LockReader(LC_CLIENT *cl,
+                                      GWEN_TYPE_UINT32 serverId,
+                                      GWEN_TYPE_UINT32 readerId,
+                                      GWEN_TYPE_UINT32 *lockId){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  rqid=LC_Client_SendLockReader(cl, serverId, readerId);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"LockReader\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"LockReader\"");
+    }
+    return res;
+  }
+  res=LC_Client_CheckLockReader(cl, rqid, lockId);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "Error response for request \"LockReader\"");
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendUnlockReader(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 readerId,
+                                            GWEN_TYPE_UINT32 lockId){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  dbReq=GWEN_DB_Group_new("UnlockReader");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerid", numbuf);
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", lockId);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "lockid", numbuf);
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckUnlockReader(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+  const char *code;
+  const char *text;
+
+  assert(cl);
+  assert(rid);
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  code=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, "ERROR");
+  text=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, "(none)");
+  DBG_DEBUG(LC_LOGDOMAIN, "UnlockReader result: %s (%s)", code, text);
+  if (strcasecmp(code, "OK")==0) {
+    res=LC_Client_ResultOk;
+  }
+  else
+    res=LC_Client_ResultGeneric;
+  GWEN_DB_Group_free(dbRsp);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
+                                        GWEN_TYPE_UINT32 serverId,
+                                        GWEN_TYPE_UINT32 readerId,
+                                        GWEN_TYPE_UINT32 lockId){
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  rqid=LC_Client_SendUnlockReader(cl, serverId, readerId, lockId);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"UnlockReader\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->shortTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"UnlockReader\"");
+    }
+    return res;
+  }
+  res=LC_Client_CheckUnlockReader(cl, rqid);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"UnlockReader\"");
+    return res;
+  }
+
   return LC_Client_ResultOk;
 }
 

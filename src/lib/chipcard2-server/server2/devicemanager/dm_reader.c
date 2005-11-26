@@ -33,10 +33,12 @@ static GWEN_TYPE_UINT32 LCDM_Reader_LastId=0;
 
 
 
-LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d){
+LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d, int slots){
   LCDM_READER *r;
+  int i;
 
   assert(d);
+  assert(slots);
 
   GWEN_NEW_OBJECT(LCDM_READER, r);
   DBG_MEM_INC("LCDM_READER", 0);
@@ -44,6 +46,7 @@ LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d){
   r->refCount=1;
 
   r->driver=d;
+  r->slots=slots;
 
   /* assign unique id */
   if (LCDM_Reader_LastId==0)
@@ -51,6 +54,10 @@ LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d){
   r->readerId=++LCDM_Reader_LastId;
 
   r->idleSince=time(0);
+
+  r->slotList=LCDM_Slot_List_new();
+  for (i=0; i<slots; i++)
+    LCDM_Slot_List_Add(LCDM_Slot_new(), r->slotList);
 
   return r;
 }
@@ -60,6 +67,7 @@ LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d){
 LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
   LCDM_READER *r;
   const char *p;
+  int i;
 
   assert(d);
 
@@ -69,6 +77,7 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
   r->refCount=1;
 
   r->driver=d;
+  r->slotList=LCDM_Slot_List_new();
 
   /* assign unique id */
   if (LCDM_Reader_LastId==0)
@@ -90,6 +99,9 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
     r->shortDescr=strdup(p);
 
   r->slots=GWEN_DB_GetIntValue(db, "slots", 0, 1);
+  if (r->slots<1) {
+    DBG_WARN(0, "Invalid number of slots (%d)", r->slots);
+  }
   r->port=GWEN_DB_GetIntValue(db, "port", 0, 0);
   r->ctn=GWEN_DB_GetIntValue(db, "ctn", 0, 0);
 
@@ -102,6 +114,9 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
 
   r->flags=LC_ReaderFlags_fromDb(db, "flags");
 
+  for (i=0; i<r->slots; i++)
+    LCDM_Slot_List_Add(LCDM_Slot_new(), r->slotList);
+
   r->idleSince=time(0);
 
   return r;
@@ -113,12 +128,13 @@ void LCDM_Reader_free(LCDM_READER *r){
   if (r) {
     assert(r->refCount);
     if (r->refCount==1) {
-      DBG_MEM_DEC("LCDM_READER");
-      GWEN_LIST_FINI(LCDM_READER, r);
+      LCDM_Slot_List_free(r->slotList);
       free(r->readerType);
       free(r->readerName);
       free(r->shortDescr);
       free(r->readerInfo);
+      GWEN_LIST_FINI(LCDM_READER, r);
+      DBG_MEM_DEC("LCDM_READER");
       GWEN_FREE_OBJECT(r);
     }
     else
@@ -131,6 +147,7 @@ void LCDM_Reader_free(LCDM_READER *r){
 void LCDM_Reader_Attach(LCDM_READER *r) {
   assert(r);
   assert(r->refCount);
+  DBG_MEM_INC("LCDM_READER", 1);
   r->refCount++;
 }
 
@@ -586,6 +603,154 @@ void LCDM_Reader_Dump(const LCDM_READER *r, FILE *f, int indent) {
   }
   GWEN_DB_Group_free(dbT);
   fprintf(stderr, "\n");
+}
+
+
+
+LCS_LOCKMANAGER *LCDM_Reader_GetLockManager(const LCDM_READER *r, int slot) {
+  LCDM_SLOT *sl;
+
+  assert(r);
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl && slot--)
+    sl=LCDM_Slot_List_Next(sl);
+  if (sl)
+    return LCDM_Slot_GetLockManager(sl);
+  return 0;
+}
+
+
+
+GWEN_TYPE_UINT32 LCDM_Reader_LockReader(LCDM_READER *r,
+                                        GWEN_TYPE_UINT32 clid,
+                                        int maxLockTime,
+                                        int maxLockCount) {
+  GWEN_TYPE_UINT32 rqid;
+  LCDM_SLOT *sl;
+
+  assert(r);
+  rqid=LCS_LockManager_GetNextRequestId();
+  assert(rqid);
+
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl) {
+    LCS_LOCKMANAGER *lm;
+    int rv;
+
+    lm=LCDM_Slot_GetLockManager(sl);
+    assert(lm);
+    rv=LCS_LockManager_RequestLockWithId(lm, rqid, clid,
+                                         maxLockTime,
+                                         maxLockCount);
+    assert(rv==0);
+    sl=LCDM_Slot_List_Next(sl);
+  }
+
+  return rqid;
+}
+
+
+
+int LCDM_Reader_CheckLockRequest(LCDM_READER *r,
+                                 GWEN_TYPE_UINT32 rqid) {
+  LCDM_SLOT *sl;
+
+  assert(r);
+
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl) {
+    LCS_LOCKMANAGER *lm;
+    int rv;
+
+    lm=LCDM_Slot_GetLockManager(sl);
+    assert(lm);
+    rv=LCS_LockManager_CheckAccess(lm, rqid);
+    if (rv!=0) {
+      DBG_NOTICE(0, "CheckAccess not approved, checking request (%d)", rv);
+      rv=LCS_LockManager_CheckRequest(lm, rqid);
+      if (rv) {
+        DBG_NOTICE(0, "CheckRequest not approved (%d)", rv);
+        return 1;
+      }
+    }
+    sl=LCDM_Slot_List_Next(sl);
+  }
+
+  /* all requests succeeded */
+  return 0;
+}
+
+
+
+int LCDM_Reader_RemoveLockRequest(LCDM_READER *r,
+                                  GWEN_TYPE_UINT32 rqid) {
+  LCDM_SLOT *sl;
+
+  assert(r);
+  assert(rqid);
+
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl) {
+    LCS_LOCKMANAGER *lm;
+
+    lm=LCDM_Slot_GetLockManager(sl);
+    assert(lm);
+    if (LCS_LockManager_RemoveRequest(lm, rqid)<0)
+      LCS_LockManager_Unlock(lm, rqid);
+    sl=LCDM_Slot_List_Next(sl);
+  }
+
+  /* all requests removed */
+  return 0;
+}
+
+
+
+int LCDM_Reader_CheckLockAccess(LCDM_READER *r,
+                                GWEN_TYPE_UINT32 rqid) {
+  LCDM_SLOT *sl;
+
+  assert(r);
+
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl) {
+    LCS_LOCKMANAGER *lm;
+    int rv;
+
+    lm=LCDM_Slot_GetLockManager(sl);
+    assert(lm);
+    rv=LCS_LockManager_CheckAccess(lm, rqid);
+    if (rv) {
+      DBG_NOTICE(0, "CheckRequest not approved (%d)", rv);
+      return rv;
+    }
+    sl=LCDM_Slot_List_Next(sl);
+  }
+
+  /* all requests succeeded */
+  return 0;
+}
+
+
+
+int LCDM_Reader_Unlock(LCDM_READER *r, GWEN_TYPE_UINT32 rqid) {
+  LCDM_SLOT *sl;
+
+  assert(r);
+  assert(rqid);
+
+  sl=LCDM_Slot_List_First(r->slotList);
+  while(sl) {
+    LCS_LOCKMANAGER *lm;
+
+    lm=LCDM_Slot_GetLockManager(sl);
+    assert(lm);
+    LCS_LockManager_Unlock(lm, rqid);
+    sl=LCDM_Slot_List_Next(sl);
+  }
+
+  /* all slot unlocked */
+  return 0;
 }
 
 

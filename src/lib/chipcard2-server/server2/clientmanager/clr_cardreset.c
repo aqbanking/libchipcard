@@ -122,7 +122,7 @@ int LCCL_ClientManager_HandleCardReset(LCCL_CLIENTMANAGER *clm,
   }
 
   /* check whether we have a lock on this card */
-  rv=LCCM_CardManager_CheckAccess(cm, card, clientId);
+  rv=LCCL_ClientManager_CheckClientCardAccess(clm, card, cl);
   if (rv) {
     DBG_ERROR(0, "Card not locked by this client");
     LCS_Server_SendErrorResponse(clm->server, rid,

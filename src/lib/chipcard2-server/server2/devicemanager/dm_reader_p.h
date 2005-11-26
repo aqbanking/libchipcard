@@ -20,6 +20,7 @@
 #include "common/devmonitor.h"
 
 
+
 struct LCDM_READER {
   GWEN_LIST_ELEMENT(LCDM_READER);
 
@@ -59,11 +60,12 @@ struct LCDM_READER {
   GWEN_TYPE_UINT32 usageCount;
 
   GWEN_TYPE_UINT32 refCount;
+
+  LCDM_SLOT_LIST *slotList;
 };
 
 
 GWEN_TYPE_UINT32 LCDM_Reader_GetNextCount(LCDM_READER *r);
-
 
 
 #endif /* CHIPCARD_SERVER_DM_READER_P_H */

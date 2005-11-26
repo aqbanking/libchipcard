@@ -22,6 +22,7 @@ typedef struct LCDM_READER LCDM_READER;
 
 #include <chipcard2/chipcard2.h>
 #include "common/devmonitor.h"
+#include "lockmanager_l.h"
 
 #include <time.h>
 
@@ -31,9 +32,10 @@ GWEN_LIST_FUNCTION_DEFS(LCDM_READER, LCDM_Reader);
 #include <chipcard2/chipcard2.h>
 #include "devicemanager_l.h"
 #include "dm_driver_l.h"
+#include "dm_slot_l.h"
 
 
-LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d);
+LCDM_READER *LCDM_Reader_new(LCDM_DRIVER *d, int slots);
 void LCDM_Reader_free(LCDM_READER *r);
 void LCDM_Reader_Attach(LCDM_READER *r);
 
@@ -106,6 +108,26 @@ void LCDM_Reader_SetCurrentRequestId(LCDM_READER *r, GWEN_TYPE_UINT32 rid);
 
 
 void LCDM_Reader_Dump(const LCDM_READER *r, FILE *f, int indent);
+
+
+LCS_LOCKMANAGER *LCDM_Reader_GetLockManager(const LCDM_READER *r, int slot);
+
+GWEN_TYPE_UINT32 LCDM_Reader_LockReader(LCDM_READER *r,
+                                        GWEN_TYPE_UINT32 clid,
+                                        int maxLockTime,
+                                        int maxLockCount);
+int LCDM_Reader_CheckLockRequest(LCDM_READER *r,
+                                 GWEN_TYPE_UINT32 reqid);
+int LCDM_Reader_RemoveLockRequest(LCDM_READER *r,
+                                  GWEN_TYPE_UINT32 rqid);
+
+int LCDM_Reader_CheckLockAccess(LCDM_READER *r,
+                                GWEN_TYPE_UINT32 rqid);
+
+int LCDM_Reader_Unlock(LCDM_READER *r, GWEN_TYPE_UINT32 rqid);
+
+
+
 
 
 #endif /* CHIPCARD_SERVER_DM_READER_L_H */

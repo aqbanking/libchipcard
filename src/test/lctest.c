@@ -3023,6 +3023,111 @@ int test35(int argc, char **argv) {
 
 
 
+int test36(int argc, char **argv) {
+  LC_CLIENT *cl;
+  GWEN_DB_NODE *db;
+  LC_CLIENT_RESULT res;
+  LCM_MONITOR *mon;
+  LCM_SERVER *ms;
+  GWEN_TYPE_UINT32 serverId=0;
+  GWEN_TYPE_UINT32 readerId=0;
+  GWEN_TYPE_UINT32 lockId=0;
+
+  db=GWEN_DB_Group_new("client");
+  if (GWEN_DB_ReadFile(db,
+                       "chipcardc.conf",
+                       GWEN_DB_FLAGS_DEFAULT |
+                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+    fprintf(stderr, "ERROR: Could not read file\n");
+    return 1;
+  }
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfig(cl, db)) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  GWEN_DB_Group_free(db); db=0;
+
+  res=LC_Client_SetNotify(cl,
+                          LC_NOTIFY_FLAGS_READER_START|
+                          LC_NOTIFY_FLAGS_READER_UP|
+                          LC_NOTIFY_FLAGS_READER_DOWN|
+                          LC_NOTIFY_FLAGS_READER_ERROR);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR setting notify mask.\n");
+    return 2;
+  }
+
+  mon=LC_Client_GetMonitor(cl);
+  assert(mon);
+
+  ms=LCM_Server_List_First(LCM_Monitor_GetServers(mon));
+  while(ms) {
+    LCM_READER *mr;
+
+    fprintf(stdout, "Server: %08x\n", LCM_Server_GetServerId(ms));
+
+    /* show readers */
+    mr=LCM_Reader_List_First(LCM_Server_GetReaders(ms));
+    fprintf(stdout, "  Readers:\n");
+    while(mr) {
+      const char *ds;
+      GWEN_TYPE_UINT32 rflags;
+
+      if (readerId==0) {
+        sscanf(LCM_Reader_GetReaderId(mr), "%x", &readerId);
+        serverId=LCM_Server_GetServerId(ms);
+      }
+      ds=LCM_Reader_GetShortDescr(mr);
+      if (!ds)
+        ds=LCM_Reader_GetReaderType(mr);
+
+      fprintf(stdout,
+              "  - %s (%s, port %d",
+              LCM_Reader_GetReaderName(mr),
+              ds,
+              LCM_Reader_GetReaderPort(mr));
+      rflags=LCM_Reader_GetReaderFlags(mr);
+      if (rflags) {
+        if (rflags & LC_CARD_READERFLAGS_KEYPAD)
+          fprintf(stdout, ", keypad");
+        if (rflags & LC_CARD_READERFLAGS_DISPLAY)
+          fprintf(stdout, ", display");
+      }
+      fprintf(stdout, " [%s])\n", LCM_Reader_GetReaderId(mr));
+      mr=LCM_Reader_List_Next(mr);
+    }
+
+    ms=LCM_Server_List_Next(ms);
+  }
+
+  if (readerId) {
+    fprintf(stderr, "Checking reader \"%08x\" at server \"%08x\"\n",
+            readerId, serverId);
+    res=LC_Client_LockReader(cl, serverId, readerId, &lockId);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR locking reader.\n");
+      return 2;
+    }
+
+    fprintf(stderr, "Sleeping for some seconds...\n");
+    sleep(10);
+    res=LC_Client_UnlockReader(cl, serverId, readerId, lockId);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR unlocking reader.\n");
+      return 2;
+    }
+  }
+
+  LC_Client_free(cl);
+  return 0;
+}
+
+
+
 int stressTest1(int argc, char **argv) {
   LC_CLIENT *cl;
   int loops;
@@ -3100,6 +3205,7 @@ int stressTest1(int argc, char **argv) {
   LC_Client_free(cl);
   return 0;
 }
+
 
 
 
@@ -3191,6 +3297,8 @@ int main(int argc, char **argv) {
     return test34(argc, argv);
   else if (strcasecmp(argv[1], "test35")==0)
     return test35(argc, argv);
+  else if (strcasecmp(argv[1], "test36")==0)
+    return test36(argc, argv);
   else if (strcasecmp(argv[1], "stress1")==0)
     return stressTest1(argc, argv);
   else {

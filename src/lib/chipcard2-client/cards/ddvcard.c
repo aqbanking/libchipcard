@@ -103,6 +103,11 @@ LC_CLIENT_RESULT LC_DDVCard_Open(LC_CARD *card){
   GWEN_Buffer_free(ddv->bin_ef_id_1);
   ddv->bin_ef_id_1=0;
 
+  if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a processor card");
+    return LC_Client_ResultNotSupported;
+  }
+
   res=ddv->openFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");

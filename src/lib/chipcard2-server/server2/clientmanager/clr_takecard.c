@@ -24,6 +24,11 @@
 #include <gwenhywfar/gwentime.h>
 
 
+#define LCCL_REQ_TAKECARD_STEP1 1
+#define LCCL_REQ_TAKECARD_STEP2 2
+
+
+
 int LCCL_ClientManager_HandleTakeCard(LCCL_CLIENTMANAGER *clm,
                                       GWEN_TYPE_UINT32 rid,
                                       const char *name,
@@ -124,6 +129,7 @@ int LCCL_ClientManager_HandleTakeCard(LCCL_CLIENTMANAGER *clm,
   LCCL_Request_SetClientManager(req, clm);
   LCCL_Request_SetClient(req, cl);
   LCCL_Request_SetCard(req, card);
+  LCCL_Request_SetUint32Data(req, LCCL_REQ_TAKECARD_STEP1);
   GWEN_IpcRequest_SetWorkFn(req, LCCL_ClientManager_WorkTakeCard);
   GWEN_IpcRequest_SetStatus(req, GWEN_IpcRequest_StatusPartial);
   GWEN_IpcRequestManager_AddRequest(LCS_Server_GetRequestManager(clm->server),
@@ -144,8 +150,10 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
   LCCL_CLIENT *cl;
   LCCO_CARD *card;
   LCCM_CARDMANAGER *cm;
+  LCDM_DEVICEMANAGER *dm;
   int rv;
   GWEN_TYPE_UINT32 rid;
+  GWEN_TYPE_UINT32 step;
 
   DBG_ERROR(0, "Working on TakeCard request");
 
@@ -164,54 +172,121 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
   cm=LCS_FullServer_GetCardManager(clm->server);
   assert(cm);
 
-  rv=LCCM_CardManager_CheckLockCardRequest(cm, card,
-                                           LCCL_Client_GetClientId(cl));
-  if (rv==1) {
-    // TODO: Check timeout
-    return rv;
-  }
-  else {
-    if (rv==0) {
-      GWEN_DB_NODE *dbRsp;
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
 
-      /* succeeded */
-      GWEN_IpcRequest_List_Del(req);
 
-      /* send response */
-      dbRsp=GWEN_DB_Group_new("TakeCardResponse");
-      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,
-                           "code", "OK");
-      GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,
-                           "text", "The card is yours");
-      if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
-        DBG_ERROR(0, "Could not send response to client");
+  step=LCCL_Request_GetUint32Data(req);
+  if (step==LCCL_REQ_TAKECARD_STEP1) {
+    DBG_INFO(0, "Step 1");
+    rv=LCCM_CardManager_CheckLockCardRequest(cm, card,
+                                             LCCL_Client_GetClientId(cl));
+    if (rv==1) {
+      // TODO: Check timeout
+      return rv;
+    }
+    else {
+      if (rv==0) {
+        LCS_LOCKMANAGER *lm;
+        GWEN_TYPE_UINT32 lrId;
+
+        DBG_INFO(0, "Card lock acquired, now locking slot");
+        LCCL_Request_SetUint32Data(req, LCCL_REQ_TAKECARD_STEP2);
+
+        lm=LCDM_DeviceManager_GetLockManager(dm,
+                                             LCCO_Card_GetReaderId(card),
+                                             LCCO_Card_GetSlotNum(card));
+        assert(dm);
+        lrId=LCS_LockManager_RequestLock(lm, LCCL_Client_GetClientId(cl),
+                                         LCCL_Client_GetMaxClientLockTime(cl),
+                                         LCCL_Client_GetMaxClientLocks(cl));
+        assert(lrId);
+        LCCO_Card_SetLockId(card, lrId);
+      }
+      else {
+        /* error (most likely a timeout) */
+        GWEN_IpcRequest_List_Del(req);
+        LCS_Server_SendErrorResponse(clm->server,
+                                     rid,
+                                     -rv,
+                                     "Could not acquire lock on card");
+        /* remove request from IPC manager */
         if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
           DBG_ERROR(0, "Could not remove request");
           abort();
         }
-        GWEN_IpcRequest_free(req);
-        return -1;
-      }
 
+        /* free request (already removed from RequestManager) */
+        GWEN_IpcRequest_free(req);
+        req=0;
+      }
+    }
+  } /* if step one */
+  else if (step==LCCL_REQ_TAKECARD_STEP2) {
+    LCS_LOCKMANAGER *lm;
+    GWEN_TYPE_UINT32 lrId;
+
+    DBG_INFO(0, "Step 2");
+    lm=LCDM_DeviceManager_GetLockManager(dm,
+                                         LCCO_Card_GetReaderId(card),
+                                         LCCO_Card_GetSlotNum(card));
+    assert(dm);
+    lrId=LCCO_Card_GetLockId(card);
+    assert(lrId);
+
+    rv=LCS_LockManager_CheckRequest(lm, lrId);
+    if (rv==1) {
+      // TODO: Check timeout
+      return 1; /* nothing done */
     }
     else {
-      /* error (most likely a timeout) */
-      GWEN_IpcRequest_List_Del(req);
-      LCS_Server_SendErrorResponse(clm->server,
-                                   rid,
-                                   -rv,
-                                   "Could not acquire lock on card");
+      if (rv==0) {
+        GWEN_DB_NODE *dbRsp;
+  
+        /* succeeded */
+        GWEN_IpcRequest_List_Del(req);
+  
+        /* send response */
+        dbRsp=GWEN_DB_Group_new("TakeCardResponse");
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,
+                             "code", "OK");
+        GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,
+                             "text", "The card is yours");
+        if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
+          DBG_ERROR(0, "Could not send response to client");
+          if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+            DBG_ERROR(0, "Could not remove request");
+            abort();
+          }
+          GWEN_IpcRequest_free(req);
+          LCCM_CardManager_UnlockCard(cm, card, LCCL_Client_GetClientId(cl));
+          return -1;
+        }
+      }
+      else {
+        /* error (most likely a timeout) */
+        LCCM_CardManager_UnlockCard(cm, card, LCCL_Client_GetClientId(cl));
+        GWEN_IpcRequest_List_Del(req);
+        LCS_Server_SendErrorResponse(clm->server,
+                                     rid,
+                                     -rv,
+                                     "Could not acquire lock on slot");
+      }
+  
+      /* remove request from IPC manager */
+      if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+        DBG_ERROR(0, "Could not remove request");
+        abort();
+      }
+  
+      /* free request (already removed from RequestManager) */
+      GWEN_IpcRequest_free(req);
+      req=0;
     }
-
-    /* remove request from IPC manager */
-    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
-      DBG_ERROR(0, "Could not remove request");
-      abort();
-    }
-
-    /* free request (already removed from RequestManager) */
-    GWEN_IpcRequest_free(req);
-    req=0;
+  }
+  else {
+    DBG_ERROR(0, "Invalid step \"%d\" for TakeCard request", step);
+    abort();
   }
 
   return 0;

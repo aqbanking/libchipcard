@@ -11,26 +11,24 @@
  ***************************************************************************/
 
 
-
-#ifndef CHIPCARD_SERVER2_CL_REQUEST_P_H
-#define CHIPCARD_SERVER2_CL_REQUEST_P_H
-
-
-#include "cl_request_l.h"
+#ifndef CHIPCARD_SERVER_DM_SLOT_L_H
+#define CHIPCARD_SERVER_DM_SLOT_L_H
 
 
-struct LCCL_REQUEST {
-  LCCO_CARD *card;
-  LCCL_CLIENTMANAGER *clientManager;
-  LCCL_CLIENT *client;
-  GWEN_TYPE_UINT32 uint32Data1;
-  GWEN_TYPE_UINT32 uint32Data2;
-};
-
-void LCCL_Request_FreeData(void *bp, void *p);
+#include "lockmanager_l.h"
+#include <gwenhywfar/misc.h>
 
 
+typedef struct LCDM_SLOT LCDM_SLOT;
 
-#endif /* CHIPCARD_SERVER2_CL_REQUEST_P_H */
+GWEN_LIST_FUNCTION_DEFS(LCDM_SLOT, LCDM_Slot);
+
+LCDM_SLOT *LCDM_Slot_new();
+void LCDM_Slot_free(LCDM_SLOT *sl);
+
+LCS_LOCKMANAGER *LCDM_Slot_GetLockManager(const LCDM_SLOT *sl);
+
+
+#endif /* CHIPCARD_SERVER_DM_SLOT_L_H */
 
 

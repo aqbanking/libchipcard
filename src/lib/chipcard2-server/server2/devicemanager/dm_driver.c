@@ -374,6 +374,9 @@ void LCDM_Driver_SetStatus(LCDM_DRIVER *d, LC_DRIVER_STATUS st){
   if (d->status!=st) {
     d->status=st;
     d->lastStatusChangeTime=time(0);
+    DBG_VERBOUS(0, "Changing status of driver \"%s\" from %d to %d",
+                d->driverName, d->status, st);
+
   }
 }
 

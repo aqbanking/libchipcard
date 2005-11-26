@@ -116,6 +116,14 @@ int LCD_Driver_HandleStopDriver(LCD_DRIVER *d,
                                 GWEN_TYPE_UINT32 rid,
                                 GWEN_DB_NODE *dbReq);
 
+int LCD_Driver_HandleSuspendCheck(LCD_DRIVER *d,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq);
+
+int LCD_Driver_HandleResumeCheck(LCD_DRIVER *d,
+                                 GWEN_TYPE_UINT32 rid,
+                                 GWEN_DB_NODE *dbReq);
+
 
 #endif /* CHIPCARD_DRIVER_DRIVER_P_H */
 

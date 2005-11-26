@@ -359,6 +359,34 @@ LC_CLIENT_RESULT LC_Client_CheckServiceCommand(LC_CLIENT *cl,
                                                GWEN_TYPE_UINT32 rid,
                                                GWEN_DB_NODE *dbCmdResp);
 
+GWEN_TYPE_UINT32 LC_Client_SendLockReader(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 serverId,
+                                          GWEN_TYPE_UINT32 readerId);
+
+LC_CLIENT_RESULT LC_Client_CheckLockReader(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 rid,
+                                           GWEN_TYPE_UINT32 *lockId);
+
+LC_CLIENT_RESULT LC_Client_LockReader(LC_CLIENT *cl,
+                                      GWEN_TYPE_UINT32 serverId,
+                                      GWEN_TYPE_UINT32 readerId,
+                                      GWEN_TYPE_UINT32 *lockId);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendUnlockReader(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 readerId,
+                                            GWEN_TYPE_UINT32 lockId);
+
+LC_CLIENT_RESULT LC_Client_CheckUnlockReader(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid);
+
+LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
+                                        GWEN_TYPE_UINT32 serverId,
+                                        GWEN_TYPE_UINT32 readerId,
+                                        GWEN_TYPE_UINT32 lockId);
+
+
 
 /*@}*/
 

@@ -62,6 +62,11 @@ void LCD_Reader_SetDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
 void LCD_Reader_AddDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
 void LCD_Reader_SubDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
 
+GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r);
+void LCD_Reader_SetReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_AddReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SubReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+
 LCD_SLOT_LIST *LCD_Reader_GetSlots(const LCD_READER *r);
 LCD_SLOT *LCD_Reader_FindSlot(const LCD_READER *r, unsigned int slotnum);
 

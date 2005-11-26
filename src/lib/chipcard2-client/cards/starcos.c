@@ -125,6 +125,11 @@ LC_CLIENT_RESULT LC_Starcos_Open(LC_CARD *card){
   GWEN_Buffer_free(scos->bin_ef_gd_0);
   scos->bin_ef_gd_0=0;
 
+  if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a processor card");
+    return LC_Client_ResultNotSupported;
+  }
+
   res=scos->openFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");

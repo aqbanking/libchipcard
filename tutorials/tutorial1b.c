@@ -80,28 +80,7 @@ int main(int argc, char **argv) {
    * available cards.
    * Only now the server will be connected, and if we are the only client
    * then the server now starts acquiring card readers.
-   * The two latter arguments can be used to restrict the notifications to
-   * inform us only about cards in special readers:
-   * The second argument tells this function about the flags for an acceptable
-   * reader. The third argument is the mask to define which of the flags
-   * are interesting.
-   * Examples:
-   * 1) We are a homebanking tool, and we will be using a chipcard which is
-   *    protected by a pin. This pin should be entered in secure mode (i.e.
-   *    via the keypad of the card reader).
-   *    Therefore we are only interested in readers which have a keypad.
-   *    In this case the call would look like:
-   *      LC_Client_StartWait(cl,
-   *                          LC_CARD_READERFLAGS_KEYPAD,   [flags]
-   *                          LC_CARD_READERFLAGS_KEYPAD);  [mask]
-   *
-   * 2) For some weird reason we don't like readers with keypads.
-   *    So we only accept readers which have no keypad:
-   *      LC_Client_StartWait(cl,
-   *                          0,                            [flags]
-   *                          LC_CARD_READERFLAGS_KEYPAD);  [mask]
-   * 3) The default case is to accept any card in any reader, so we
-   *    just pass 0 for both parameters.
+   * The two latter arguments are reserved (please specify 0 for each).
    */
   LC_Client_StartWait(cl, 0, 0);
 

@@ -81,6 +81,10 @@ time_t LCCM_Card_GetLastAdTime(const LCCO_CARD *cd);
 void LCCM_Card_SetLastAdTime(LCCO_CARD *cd, time_t t);
 
 
+GWEN_TYPE_UINT32 LCCM_Card_GetReaderLockId(const LCCO_CARD *cd);
+void LCCM_Card_SetReaderLockId(LCCO_CARD *cd, GWEN_TYPE_UINT32 i);
+
+
 
 
 #endif /* CHIPCARD_SERVER2_CM_CARD_L_H */

@@ -37,3 +37,18 @@ more complex card classes can be used.
 This tutorial waits for a German medical card to be inserted, reads the
 information stored on the card and prints it to the standard output channel.
 
+
+
+
+3. tutorial3
+============
+This tutorial demonstrates how to define your own card type. It therefore
+explains the heritage functions of the library Gwenhywfar.
+The implementatin of the new card type "ExampleCard" can be found in the files
+examplecard.{c,h,xml}.
+
+
+
+Martin Preuss, Hamburg/Germany, 2005/11/26
+
+

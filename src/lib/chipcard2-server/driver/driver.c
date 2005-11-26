@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include <time.h>
 
@@ -341,6 +343,11 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
   if (!d->testMode) {
     DBG_NOTICE(0, "Starting driver \"%s\" with lowlevel \"%s\"",
                argv[0], d->libraryFile);
+    if (d->driverDataDir) {
+      if (chdir(d->driverDataDir)) {
+        DBG_WARN(0, "chdir(%s): %s", d->driverDataDir, strerror(errno));
+      }
+    }
 
     d->ipcManager=GWEN_IpcManager_new();
 
@@ -1194,7 +1201,8 @@ int LCD_Driver_CheckStatusChanges(LCD_DRIVER *d) {
 
     rnext=LCD_Reader_List_Next(r);
 
-    if (LCD_Reader_GetStatus(r) & LCD_READER_STATUS_UP) {
+    if (LCD_Reader_GetStatus(r) & LCD_READER_STATUS_UP &&
+        !(LCD_Reader_GetReaderFlags(r) & LC_READER_FLAGS_SUSPENDED_CHECKS)) {
       retval=LCD_Driver_ReaderStatus(d, r);
       if (retval) {
         DBG_ERROR(LCD_Reader_GetLogger(r), "Error getting reader status");
@@ -1258,7 +1266,7 @@ int LCD_Driver_CheckStatusChanges(LCD_DRIVER *d) {
                 DBG_ERROR(0, "Error sending status change notification");
               }
               else {
-                DBG_INFO(0, "Server informed");
+                DBG_INFO(0, "Server informed about new card");
               }
               LCD_Slot_SetLastStatus(sl, newStatus);
             }
@@ -1955,6 +1963,70 @@ int LCD_Driver_HandleStopDriver(LCD_DRIVER *d,
 
 
 
+int LCD_Driver_HandleSuspendCheck(LCD_DRIVER *d,
+                                  GWEN_TYPE_UINT32 rid,
+                                  GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 readerId;
+  LCD_READER *r;
+
+  assert(d);
+  assert(dbReq);
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
+                "%x",
+                &readerId)) {
+    DBG_ERROR(0, "Bad readerId");
+    /* TODO: send error result */
+    return -1;
+  }
+
+  /* check whether we have a reader of that id */
+  r=LCD_Driver_FindReaderById(d, readerId);
+  if (!r) {
+    DBG_ERROR(0, "A reader with id \"%08x\" does not exist", readerId);
+    /* TODO: send error result */
+    return -1;
+  }
+
+  DBG_NOTICE(LCD_Reader_GetLogger(r), "Suspending checks");
+  LCD_Reader_AddReaderFlags(r, LC_READER_FLAGS_SUSPENDED_CHECKS);
+  LCD_Driver_RemoveCommand(d, rid, 0);
+  return 0;
+}
+
+
+
+int LCD_Driver_HandleResumeCheck(LCD_DRIVER *d,
+                                 GWEN_TYPE_UINT32 rid,
+                                 GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 readerId;
+  LCD_READER *r;
+
+  assert(d);
+  assert(dbReq);
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
+                "%x",
+                &readerId)) {
+    DBG_ERROR(0, "Bad readerId");
+    /* TODO: send error result */
+    return -1;
+  }
+
+  /* check whether we have a reader of that id */
+  r=LCD_Driver_FindReaderById(d, readerId);
+  if (!r) {
+    DBG_ERROR(0, "A reader with id \"%08x\" does not exist", readerId);
+    /* TODO: send error result */
+    return -1;
+  }
+
+  DBG_NOTICE(LCD_Reader_GetLogger(r), "Resuming checks");
+  LCD_Reader_SubReaderFlags(r, LC_READER_FLAGS_SUSPENDED_CHECKS);
+  LCD_Driver_RemoveCommand(d, rid, 0);
+  return 0;
+}
+
+
+
 int LCD_Driver_HandleRequest(LCD_DRIVER *d,
                              GWEN_TYPE_UINT32 rid,
                              const char *name,
@@ -1985,6 +2057,13 @@ int LCD_Driver_HandleRequest(LCD_DRIVER *d,
   else if (strcasecmp(name, "StopDriver")==0) {
     rv=LCD_Driver_HandleStopDriver(d, rid, dbReq);
   }
+  else if (strcasecmp(name, "SuspendCheck")==0) {
+    rv=LCD_Driver_HandleSuspendCheck(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "ResumeCheck")==0) {
+    rv=LCD_Driver_HandleResumeCheck(d, rid, dbReq);
+  }
+
   else
     rv=1; /* not handled */
 

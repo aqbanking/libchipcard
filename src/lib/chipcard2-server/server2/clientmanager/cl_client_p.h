@@ -22,6 +22,7 @@
 struct LCCL_CLIENT {
   GWEN_LIST_ELEMENT(LCCL_CLIENT);
   GWEN_IDLIST *openServices;
+  GWEN_IDLIST *usedReaders;
   GWEN_TYPE_UINT32 clientId;
   GWEN_TYPE_UINT32 waitRequestCount;
   GWEN_TYPE_UINT32 lastWaitRequestId;

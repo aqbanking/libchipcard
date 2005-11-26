@@ -110,6 +110,11 @@ LC_CLIENT_RESULT LC_GeldKarte_Open(LC_CARD *card){
   GWEN_Buffer_free(gk->bin_ef_id_1);
   gk->bin_ef_id_1=0;
 
+  if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Not a processor card");
+    return LC_Client_ResultNotSupported;
+  }
+
   res=gk->openFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");

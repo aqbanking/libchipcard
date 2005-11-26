@@ -288,6 +288,7 @@ int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
                                               GWEN_TYPE_UINT32 rid,
                                               const char *readerType,
                                               const char *readerName,
+                                              const char *readerInfo,
                                               LC_READER_STATUS rst,
                                               const char *reason) {
   const char *s;
@@ -337,6 +338,8 @@ int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
                          "readerType", readerType);
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "readerName", readerName);
+    GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "readerInfo", readerInfo);
     GWEN_DB_SetCharValue(dbData, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "info", reason);
 

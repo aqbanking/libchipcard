@@ -264,6 +264,7 @@ void LCS_FullServer_ReaderChg(LCS_SERVER *cs,
                               GWEN_TYPE_UINT32 rid,
                               const char *readerType,
                               const char *readerName,
+                              const char *readerInfo,
                               LC_READER_STATUS newSt,
                               const char *reason) {
   LCS_FULLSERVER *fs;
@@ -274,7 +275,8 @@ void LCS_FullServer_ReaderChg(LCS_SERVER *cs,
 
   /* call previous function */
   if (fs->readerChgFn)
-    fs->readerChgFn(cs, did, rid, readerType, readerName, newSt, reason);
+    fs->readerChgFn(cs, did, rid, readerType, readerName, readerInfo,
+                    newSt, reason);
 
   if (newSt==LC_ReaderStatusDown ||
       newSt==LC_ReaderStatusAborted ||
@@ -285,6 +287,7 @@ void LCS_FullServer_ReaderChg(LCS_SERVER *cs,
   LCCL_ClientManager_ReaderChg(fs->clientManager,
                                did, rid,
                                readerType, readerName,
+                               readerInfo,
                                newSt, reason);
 }
 
@@ -340,37 +343,39 @@ void LCS_FullServer_ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
   if (fs->connectionDownFn)
     fs->connectionDownFn(cs, conn);
 
-  /* check for client connection */
-  if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Client) {
-    GWEN_TYPE_UINT32 clientId;
-
-    /* client is down, tell this to card manager and client manager */
-    clientId=
-      GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
-                                           conn);
-    if (clientId==0) {
-      DBG_WARN(0, "Client for connection not found");
-      return;
+  if (LCS_Connection_IsOfType(conn)) {
+    /* check for client connection */
+    if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Client) {
+      GWEN_TYPE_UINT32 clientId;
+  
+      /* client is down, tell this to card manager and client manager */
+      clientId=
+        GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
+                                             conn);
+      if (clientId==0) {
+        DBG_WARN(0, "Client for connection not found");
+        return;
+      }
+  
+      /* we must notify the service because it is basically just a client, and
+       * maybe it is exactly this client here that pulled down a service, too
+       */
+      LCSV_ServiceManager_ConnectionDown(fs->serviceManager, clientId);
+      LCCL_ClientManager_ClientDown(fs->clientManager, clientId);
     }
-
-    /* we must notify the service because it is basically just a client, and
-     * maybe it is exactly this client here that pulled down a service, too
-     */
-    LCSV_ServiceManager_ConnectionDown(fs->serviceManager, clientId);
-    LCCL_ClientManager_ClientDown(fs->clientManager, clientId);
-  }
-
-  /* check for service connection */
-  else if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Service) {
-    GWEN_TYPE_UINT32 ipcId;
-
-    ipcId=GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
-                                               conn);
-    if (ipcId==0) {
-      DBG_ERROR(0, "IPC id for broken connection not found");
-      return;
+  
+    /* check for service connection */
+    else if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Service) {
+      GWEN_TYPE_UINT32 ipcId;
+  
+      ipcId=GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
+                                                 conn);
+      if (ipcId==0) {
+        DBG_ERROR(0, "IPC id for broken connection not found");
+        return;
+      }
+      //LCSM_ServiceManager_DriverIpcDown(cs->serviceManager, ipcId);
     }
-    //LCSM_ServiceManager_DriverIpcDown(cs->serviceManager, ipcId);
   }
 }
 

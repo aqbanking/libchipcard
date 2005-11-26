@@ -35,6 +35,14 @@ int LCCL_Client_HasService(const LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id);
 int LCCL_Client_AddService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id);
 int LCCL_Client_DelService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id);
 
+int LCCL_Client_AddReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id);
+int LCCL_Client_DelReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id);
+GWEN_TYPE_UINT32 LCCL_Client_GetFirstReader(LCCL_CLIENT *cl);
+GWEN_TYPE_UINT32 LCCL_Client_GetNextReader(LCCL_CLIENT *cl);
+
+
+
+
 GWEN_TYPE_UINT32 LCCL_Client_GetWaitRequestCount(const LCCL_CLIENT *cl);
 void LCCL_Client_AddWaitRequestCount(LCCL_CLIENT *cl);
 void LCCL_Client_SubWaitRequestCount(LCCL_CLIENT *cl);

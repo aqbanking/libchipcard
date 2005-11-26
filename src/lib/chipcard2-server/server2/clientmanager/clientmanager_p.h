@@ -71,6 +71,7 @@ int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
                                               GWEN_TYPE_UINT32 rid,
                                               const char *readerType,
                                               const char *readerName,
+                                              const char *readerInfo,
                                               LC_READER_STATUS rst,
                                               const char *reason);
 
@@ -148,6 +149,19 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
                                           GWEN_TYPE_UINT32 rid,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq);
+
+int LCCL_ClientManager_HandleLockReader(LCCL_CLIENTMANAGER *clm,
+                                        GWEN_TYPE_UINT32 rid,
+                                        const char *name,
+                                        GWEN_DB_NODE *dbReq);
+int LCCL_ClientManager_WorkLockReader(GWEN_IPC_REQUEST *req);
+
+int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
+                                          GWEN_TYPE_UINT32 rid,
+                                          const char *name,
+                                          GWEN_DB_NODE *dbReq);
+
+
 
 void LCCL_ClientManager_CheckClient(LCCL_CLIENTMANAGER *clm,
                                     LCCL_CLIENT *cl);

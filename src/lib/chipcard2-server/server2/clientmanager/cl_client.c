@@ -39,6 +39,7 @@ LCCL_CLIENT *LCCL_Client_new(GWEN_TYPE_UINT32 id){
   GWEN_LIST_INIT(LCCL_CLIENT, cl);
 
   cl->openServices=GWEN_IdList_new();
+  cl->usedReaders=GWEN_IdList_new();
 
   /* set default notify mask and flags */
   cl->notifyMask=~LC_NOTIFY_FLAGS_PRIVILEGED;
@@ -58,6 +59,7 @@ void LCCL_Client_free(LCCL_CLIENT *cl){
     if (--(cl->usage)==0) {
       DBG_MEM_DEC("LCCL_CLIENT");
       GWEN_LIST_FINI(LCCL_CLIENT, cl);
+      GWEN_IdList_free(cl->usedReaders);
       GWEN_IdList_free(cl->openServices);
       free(cl->userName);
       free(cl->appName);
@@ -118,6 +120,34 @@ int LCCL_Client_AddService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
 int LCCL_Client_DelService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
   assert(cl);
   return GWEN_IdList_DelId(cl->openServices, id);
+}
+
+
+
+int LCCL_Client_AddReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+  assert(cl);
+  return GWEN_IdList_AddId(cl->usedReaders, id);
+}
+
+
+
+int LCCL_Client_DelReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+  assert(cl);
+  return GWEN_IdList_DelId(cl->usedReaders, id);
+}
+
+
+
+GWEN_TYPE_UINT32 LCCL_Client_GetFirstReader(LCCL_CLIENT *cl){
+  assert(cl);
+  return GWEN_IdList_GetFirstId(cl->usedReaders);
+}
+
+
+
+GWEN_TYPE_UINT32 LCCL_Client_GetNextReader(LCCL_CLIENT *cl){
+  assert(cl);
+  return GWEN_IdList_GetNextId(cl->usedReaders);
 }
 
 

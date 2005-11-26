@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
 
   /* The data returned is stored in a GWEN_DB which we now present to the
    * user (see the API documentation in Gwenhywfar for a description of
-   * a GWEN_DB, search for GWEN_DB_NODE).
+   * a GWEN_DB, search for @ref GWEN_DB_NODE).
    */
   fprintf(stderr, "INFO: I got this card:\n");
   GWEN_DB_Dump(dbData, stderr, 2);

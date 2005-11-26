@@ -125,6 +125,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
       flags|=LC_READER_FLAGS_REMOTE;
     else if (strcasecmp(p, "auto")==0)
       flags|=LC_READER_FLAGS_AUTO;
+    else if (strcasecmp(p, "suspended_checks")==0)
+      flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -159,6 +161,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
         flags|=LC_READER_FLAGS_REMOTE;
       else if (strcasecmp(p, "auto")==0)
         flags|=LC_READER_FLAGS_AUTO;
+      else if (strcasecmp(p, "suspended_checks")==0)
+        flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
       else {
         DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
       }

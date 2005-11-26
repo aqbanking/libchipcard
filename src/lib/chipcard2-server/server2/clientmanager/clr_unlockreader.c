@@ -24,28 +24,22 @@
 #include <gwenhywfar/gwentime.h>
 
 
-int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
+int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
                                           GWEN_TYPE_UINT32 rid,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
   GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 cardId;
+  GWEN_TYPE_UINT32 readerId;
+  GWEN_TYPE_UINT32 lrId;
   int cmdVer;
-  LCCM_CARDMANAGER *cm;
-  LCCO_CARD *card;
   int rv;
   GWEN_DB_NODE *dbRsp;
   LCDM_DEVICEMANAGER *dm;
-  const char *varName;
-  const char *s;
 
   assert(dbReq);
   clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
   assert(clientId);
-
-  cm=LCS_FullServer_GetCardManager(clm->server);
-  assert(cm);
 
   dm=LCS_Server_GetDeviceManager(clm->server);
   assert(dm);
@@ -70,17 +64,17 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  DBG_NOTICE(0, "Client %08x: GetDriverVar [%s/%s]",
+  DBG_NOTICE(0, "Client %08x: UnlockReader [%s/%s]",
              clientId,
              LCCL_Client_GetApplicationName(cl),
              LCCL_Client_GetUserName(cl));
 
-  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/cardid", 0, "0"),
-                "%x", &cardId)) {
-    DBG_ERROR(0, "Missing card id");
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerid", 0, "0"),
+                "%x", &readerId)) {
+    DBG_ERROR(0, "Missing reader id");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
-                                 "Missing card id");
+                                 "Missing reader id");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
@@ -88,13 +82,12 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  /* get referenced card */
-  card=LCCM_CardManager_FindCard(cm, cardId);
-  if (!card) {
-    DBG_ERROR(0, "Card not found");
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/lockid", 0, "0"),
+                "%x", &lrId)) {
+    DBG_ERROR(0, "Missing lock id");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
-                                 "Card not found");
+                                 "Missing lock id");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
@@ -102,13 +95,25 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  /* check whether we have a lock on this card */
-  rv=LCCL_ClientManager_CheckClientCardAccess(clm, card, cl);
+  if (lrId==0) {
+    DBG_ERROR(0, "Invalid lock id");
+    LCS_Server_SendErrorResponse(clm->server, rid,
+                                 LC_ERROR_INVALID,
+                                 "Invalid lock id");
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  /* check whether we have a lock on this reader */
+  rv=LCDM_DeviceManager_CheckLockReaderAccess(dm, readerId, lrId);
   if (rv) {
-    DBG_ERROR(0, "Card not locked by this client");
+    DBG_ERROR(0, "Reader not locked by this client");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  -rv,
-                                 "Card not locked by this client");
+                                 "Reader not locked by this client");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
@@ -116,12 +121,13 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  varName=GWEN_DB_GetCharValue(dbReq, "data/varName", 0, 0);
-  if (varName==0) {
-    DBG_ERROR(0, "Missing variable name");
+  /* unlock this reader */
+  rv=LCDM_DeviceManager_UnlockReader(dm, readerId, lrId);
+  if (rv) {
+    DBG_ERROR(0, "Could not unlock reader");
     LCS_Server_SendErrorResponse(clm->server, rid,
-                                 LC_ERROR_INVALID,
-                                 "Missing variable name");
+                                 -rv,
+                                 "Could not unlock reader");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();
@@ -129,16 +135,16 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  s=LCDM_DeviceManager_GetDriverVar(dm, card, varName);
-  if (!s)
-    s="";
+  LCDM_DeviceManager_ResumeReaderCheck(dm, readerId);
+  LCDM_DeviceManager_EndUseReader(dm, readerId);
+  LCCL_Client_DelReader(cl, readerId);
 
   /* send response */
-  dbRsp=GWEN_DB_Group_new("GetDriverVarResponse");
+  dbRsp=GWEN_DB_Group_new("UnlockReaderResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "varName", varName);
+                       "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                       "varValue", s);
+                       "text", "Reader unlocked");
   if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
     DBG_ERROR(0, "Could not send response to client");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {

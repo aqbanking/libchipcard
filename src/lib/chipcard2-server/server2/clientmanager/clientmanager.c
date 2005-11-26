@@ -132,6 +132,12 @@ int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
   else if (strcasecmp(name, "GetDriverVar")==0) {
     rv=LCCL_ClientManager_HandleGetDriverVar(clm, rid, name, dbReq);
   }
+  else if (strcasecmp(name, "LockReader")==0) {
+    rv=LCCL_ClientManager_HandleLockReader(clm, rid, name, dbReq);
+  }
+  else if (strcasecmp(name, "UnlockReader")==0) {
+    rv=LCCL_ClientManager_HandleUnlockReader(clm, rid, name, dbReq);
+  }
   /* Insert more handlers here */
   else {
     DBG_INFO(0, "Command \"%s\" not handled by client manager",
@@ -174,6 +180,7 @@ void LCCL_ClientManager_ReaderChg(LCCL_CLIENTMANAGER *clm,
                                   GWEN_TYPE_UINT32 rid,
                                   const char *readerType,
                                   const char *readerName,
+                                  const char *readerInfo,
                                   LC_READER_STATUS newSt,
                                   const char *reason) {
   LCCL_ClientManager_SendReaderNotification(clm,
@@ -187,6 +194,7 @@ void LCCL_ClientManager_ReaderChg(LCCL_CLIENTMANAGER *clm,
                                             did, rid,
                                             readerType,
                                             readerName,
+                                            readerInfo,
                                             newSt,
                                             reason);
 }
@@ -228,6 +236,8 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
   LCCL_CLIENT *cl;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
+  LCDM_DEVICEMANAGER *dm;
+  GWEN_TYPE_UINT32 rid;
 
   cl=LCCL_Client_List_First(clm->clients);
   while(cl) {
@@ -279,7 +289,18 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
 
   LCCM_CardManager_ClientDown(cm, LCCL_Client_GetClientId(cl));
 
-  /* unregister from usage of readers if necessary */
+  /* unregister from usage of every reader the client may have locked */
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
+
+  rid=LCCL_Client_GetFirstReader(cl);
+  while(rid) {
+    LCDM_DeviceManager_ResumeReaderCheck(dm, rid);
+    LCDM_DeviceManager_EndUseReader(dm, rid);
+    rid=LCCL_Client_GetNextReader(cl);
+  }
+
+  /* unregister from general usage of readers if necessary */
   if (LCCL_Client_GetWaitRequestCount(cl)) {
     LCS_Server_EndUseReaders(clm->server, 1);
     LCCL_Client_ResetRequestCount(cl);
@@ -352,6 +373,32 @@ void LCCL_ClientManager_CheckClients(LCCL_CLIENTMANAGER *clm) {
 int LCCL_ClientManager_GetClientCount(const LCCL_CLIENTMANAGER *clm) {
   assert(clm);
   return LCCL_Client_List_GetCount(clm->clients);
+}
+
+
+
+int LCCL_ClientManager_CheckClientCardAccess(LCCL_CLIENTMANAGER *clm,
+                                             LCCO_CARD *card,
+                                             LCCL_CLIENT *cl) {
+  LCDM_DEVICEMANAGER *dm;
+  LCCM_CARDMANAGER *cm;
+  LCS_LOCKMANAGER *lm;
+  int rv;
+
+  assert(clm);
+  cm=LCS_FullServer_GetCardManager(clm->server);
+  assert(cm);
+  rv=LCCM_CardManager_CheckAccess(cm, card, LCCL_Client_GetClientId(cl));
+  if (rv!=0)
+    return rv;
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
+
+  lm=LCDM_DeviceManager_GetLockManager(dm,
+                                       LCCO_Card_GetReaderId(card),
+                                       LCCO_Card_GetSlotNum(card));
+  assert(lm);
+  return LCS_LockManager_CheckAccess(lm, LCCO_Card_GetLockId(card));
 }
 
 

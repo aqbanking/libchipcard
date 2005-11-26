@@ -15,8 +15,8 @@
 
 
 <types>
-  <type id="LCCM_LOCKREQUEST" 
-        prefix="LCCM_LockRequest" 
+  <type id="LCS_LOCKREQUEST" 
+        prefix="LCS_LockRequest" 
         class="LockRequest"
         access="lib"
         filename="lockrequest"

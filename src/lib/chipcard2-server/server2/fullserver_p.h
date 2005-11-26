@@ -59,6 +59,7 @@ void LCS_FullServer_ReaderChg(LCS_SERVER *cs,
                               GWEN_TYPE_UINT32 rid,
                               const char *readerType,
                               const char *readerName,
+                              const char *readerInfo,
                               LC_READER_STATUS newSt,
                               const char *reason);
 

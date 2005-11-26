@@ -16,7 +16,8 @@ libdevmgr_la_SOURCES=\
   devicemanager.c \
   dm_card.c \
   dm_driver.c \
-  dm_reader.c
+  dm_reader.c \
+  dm_slot.c
 
 
 MAINTAINERCLEANFILES=Makefile.in

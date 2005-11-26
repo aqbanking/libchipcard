@@ -134,7 +134,7 @@ GWEN_TYPE_UINT32 LCCL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq) {
   srq=GWEN_INHERIT_GETDATA(GWEN_IPC_REQUEST, LCCL_REQUEST, rq);
   assert(srq);
 
-  return srq->uint32Data;
+  return srq->uint32Data1;
 }
 
 
@@ -146,7 +146,31 @@ void LCCL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i) {
   srq=GWEN_INHERIT_GETDATA(GWEN_IPC_REQUEST, LCCL_REQUEST, rq);
   assert(srq);
 
-  srq->uint32Data=i;
+  srq->uint32Data1=i;
+}
+
+
+
+GWEN_TYPE_UINT32 LCCL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq) {
+  LCCL_REQUEST *srq;
+
+  assert(rq);
+  srq=GWEN_INHERIT_GETDATA(GWEN_IPC_REQUEST, LCCL_REQUEST, rq);
+  assert(srq);
+
+  return srq->uint32Data2;
+}
+
+
+
+void LCCL_Request_SetUint32Data2(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i) {
+  LCCL_REQUEST *srq;
+
+  assert(rq);
+  srq=GWEN_INHERIT_GETDATA(GWEN_IPC_REQUEST, LCCL_REQUEST, rq);
+  assert(srq);
+
+  srq->uint32Data2=i;
 }
 
 

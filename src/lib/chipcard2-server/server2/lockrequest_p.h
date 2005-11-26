@@ -6,8 +6,9 @@
 
 #include "lockrequest_l.h"
 
-struct LCCM_LOCKREQUEST {
-  GWEN_LIST_ELEMENT(LCCM_LOCKREQUEST)
+
+struct LCS_LOCKREQUEST {
+  GWEN_LIST_ELEMENT(LCS_LOCKREQUEST)
   int _usage;
   int _modified;
 

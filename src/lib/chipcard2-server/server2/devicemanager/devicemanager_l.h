@@ -35,6 +35,7 @@ GWEN_INHERIT_FUNCTION_DEFS(LCDM_DEVICEMANAGER)
 
 
 #include "server_l.h"
+#include "lockmanager_l.h"
 #include <chipcard2/chipcard2.h>
 #include "common/card.h"
 #include "common/devmonitor.h"
@@ -49,6 +50,11 @@ int LCDM_DeviceManager_Fini(LCDM_DEVICEMANAGER *dm);
 
 void LCDM_DeviceManager_BeginUseCard(LCDM_DEVICEMANAGER *dm, LCCO_CARD *cd);
 void LCDM_DeviceManager_EndUseCard(LCDM_DEVICEMANAGER *dm, LCCO_CARD *cd);
+
+void LCDM_DeviceManager_BeginUseReader(LCDM_DEVICEMANAGER *dm,
+                                       GWEN_TYPE_UINT32 rid);
+void LCDM_DeviceManager_EndUseReader(LCDM_DEVICEMANAGER *dm,
+                                     GWEN_TYPE_UINT32 rid);
 
 
 /**
@@ -93,6 +99,43 @@ const char *LCDM_DeviceManager_GetDriverVar(LCDM_DEVICEMANAGER *dm,
                                             const char *vname);
 
 void LCDM_DeviceManager_DumpState(const LCDM_DEVICEMANAGER *dm);
+
+
+
+LCS_LOCKMANAGER*
+  LCDM_DeviceManager_GetLockManager(const LCDM_DEVICEMANAGER *dm,
+                                    GWEN_TYPE_UINT32 rid,
+                                    int slot);
+
+void LCDM_DeviceManager_ClientDown(LCDM_DEVICEMANAGER *dm,
+                                   GWEN_TYPE_UINT32 clid);
+
+
+GWEN_TYPE_UINT32 LCDM_DeviceManager_LockReader(LCDM_DEVICEMANAGER *dm,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_TYPE_UINT32 clid,
+                                               int maxLockTime,
+                                               int maxLockCount);
+int LCDM_DeviceManager_CheckLockReaderRequest(LCDM_DEVICEMANAGER *dm,
+                                              GWEN_TYPE_UINT32 rid,
+                                              GWEN_TYPE_UINT32 rqid);
+int LCDM_DeviceManager_RemoveLockReaderRequest(LCDM_DEVICEMANAGER *dm,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_TYPE_UINT32 rqid);
+
+int LCDM_DeviceManager_CheckLockReaderAccess(LCDM_DEVICEMANAGER *dm,
+                                             GWEN_TYPE_UINT32 rid,
+                                             GWEN_TYPE_UINT32 rqid);
+
+int LCDM_DeviceManager_UnlockReader(LCDM_DEVICEMANAGER *dm,
+                                    GWEN_TYPE_UINT32 rid,
+                                    GWEN_TYPE_UINT32 rqid);
+
+int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
+                                          GWEN_TYPE_UINT32 rid);
+
+void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
+                                          GWEN_TYPE_UINT32 rid);
 
 
 #endif /* CHIPCARD_SERVER_DEVICEMANAGER_L_H */

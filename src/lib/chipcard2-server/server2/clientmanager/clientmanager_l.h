@@ -19,6 +19,8 @@ typedef struct LCCL_CLIENTMANAGER  LCCL_CLIENTMANAGER;
 
 #include "cl_client_l.h"
 #include "server_l.h"
+#include "lockrequest_l.h"
+
 
 
 LCCL_CLIENTMANAGER *LCCL_ClientManager_new(LCS_SERVER *server);
@@ -55,6 +57,7 @@ void LCCL_ClientManager_ReaderChg(LCCL_CLIENTMANAGER *clm,
                                   GWEN_TYPE_UINT32 rid,
                                   const char *readerType,
                                   const char *readerName,
+                                  const char *readerInfo,
                                   LC_READER_STATUS newSt,
                                   const char *reason);
 
@@ -73,6 +76,10 @@ void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
                                    const char *reason);
 
 int LCCL_ClientManager_GetClientCount(const LCCL_CLIENTMANAGER *clm);
+
+int LCCL_ClientManager_CheckClientCardAccess(LCCL_CLIENTMANAGER *clm,
+                                             LCCO_CARD *card,
+                                             LCCL_CLIENT *cl);
 
 void LCCL_ClientManager_DumpState(const LCCL_CLIENTMANAGER *clm);
 

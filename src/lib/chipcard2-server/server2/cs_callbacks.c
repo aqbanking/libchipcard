@@ -60,11 +60,12 @@ void LCS_Server_ReaderChg(LCS_SERVER *cs,
                           GWEN_TYPE_UINT32 rid,
                           const char *readerType,
                           const char *readerName,
+                          const char *readerInfo,
                           LC_READER_STATUS newSt,
                           const char *reason) {
   assert(cs);
   if (cs->readerChgFn)
-    cs->readerChgFn(cs, did, rid, readerType, readerName,
+    cs->readerChgFn(cs, did, rid, readerType, readerName, readerInfo,
                     newSt, reason);
 }
 
@@ -107,6 +108,20 @@ void LCS_Server__ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
       return;
     }
     LCDM_DeviceManager_DriverIpcDown(cs->deviceManager, ipcId);
+  }
+  else if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Client) {
+    GWEN_TYPE_UINT32 clientId;
+
+    /* client is down, tell this to card manager and client manager */
+    clientId=
+      GWEN_IpcManager_GetClientForNetLayer(LCS_Server_GetIpcManager(cs),
+                                           conn);
+    if (clientId==0) {
+      DBG_WARN(0, "Client for connection not found");
+      return;
+    }
+
+    LCDM_DeviceManager_ClientDown(cs->deviceManager, clientId);
   }
 
 }

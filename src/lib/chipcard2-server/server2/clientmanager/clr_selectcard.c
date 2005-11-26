@@ -129,6 +129,20 @@ int LCCL_ClientManager_HandleSelectCard(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
+  /* check access */
+  rv=LCCL_ClientManager_CheckClientCardAccess(clm, card, cl);
+  if (rv) {
+    DBG_ERROR(0, "Card not locked by this client");
+    LCS_Server_SendErrorResponse(clm->server, rid,
+                                 -rv,
+                                 "Card not locked by this client");
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
   /* select type of the card */
   rv=LCCMD_CommandManager_SelectCardType(cmdm, card, typeName);
   if (rv) {

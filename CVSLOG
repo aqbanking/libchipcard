@@ -1,1 +1,9 @@
-- create some directories (e.g. log folder etc)
+- introduced lockmanager. This is now used to lock reader slots for used 
+  cards. This is to prepare to allow the direct use of readers by client
+  applications as needed e.g. to access the fingerprint scanner of the 
+  Cyberjack Biometric reader.
+- when a card reader is locked by a client card status checks are temporarily
+  suspended. After the reader is unlocked (either explicitly or implicitly
+  upon shutdown of the client) card status checks are resumed.
+- reader notifications now again contain the readerInfo field
+- implemented client-functions to lock and unlock a card reader

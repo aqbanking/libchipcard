@@ -2,6 +2,9 @@ SUBDIRS=devicemanager cardmanager clientmanager commandmanager servicemanager
 
 INCLUDES=-I.. @all_includes@
 
+typefiles=lockrequest.xml
+EXTRA_DIST=$(typefiles)
+
 DEFS+=\
  -DDEF_DRIVER_EXECDIR=\"@LC_DEVICEDRIVER_PATH@\" \
  -DDEF_DRIVER_INFODIR=\"@libchipcard2s_config_am@/drivers\" \
@@ -20,10 +23,16 @@ noinst_HEADERS=\
   server_l.h \
   server_p.h \
   fullserver_l.h \
-  fullserver_p.h
+  fullserver_p.h \
+  lockrequest_l.h \
+  lockrequest_p.h \
+  lockmanager_l.h \
+  lockmanager_p.h
 
 libchipcard2s_la_SOURCES=\
   connection.c \
+  lockrequest.c \
+  lockmanager.c \
   cs_init.c \
   cs_callbacks.c \
   cs_tools.c \
@@ -36,6 +45,9 @@ libchipcard2s_la_LIBADD=\
   clientmanager/libclientmgr.la \
   commandmanager/libcommandmgr.la \
   servicemanager/libservicemgr.la 
+
+types: $(typefiles)
+	typemaker $(typefiles)
 
 
 MAINTAINERCLEANFILES=Makefile.in

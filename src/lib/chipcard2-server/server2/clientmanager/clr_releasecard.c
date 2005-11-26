@@ -37,6 +37,9 @@ int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
   int rv;
   GWEN_DB_NODE *dbRsp;
   GWEN_TYPE_UINT32 trid;
+  LCDM_DEVICEMANAGER *dm;
+  LCS_LOCKMANAGER *lm;
+  GWEN_TYPE_UINT32 lrId;
 
   assert(dbReq);
   clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);
@@ -44,6 +47,9 @@ int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
 
   cm=LCS_FullServer_GetCardManager(clm->server);
   assert(cm);
+
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
 
   cmdVer=GWEN_DB_GetIntValue(dbReq, "data/cmdver", 0, 0);
 
@@ -98,7 +104,7 @@ int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
   }
 
   /* check whether we have a lock on this card */
-  rv=LCCM_CardManager_CheckAccess(cm, card, clientId);
+  rv=LCCL_ClientManager_CheckClientCardAccess(clm, card, cl);
   if (rv) {
     DBG_ERROR(0, "Card not locked by this client");
     LCS_Server_SendErrorResponse(clm->server, rid,
@@ -123,6 +129,19 @@ int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
   else {
     DBG_WARN(0, "Could not reset card \"%08x\"",
              LCCO_Card_GetCardId(card));
+  }
+
+  /* unlock slot */
+  lm=LCDM_DeviceManager_GetLockManager(dm,
+                                       LCCO_Card_GetReaderId(card),
+                                       LCCO_Card_GetSlotNum(card));
+  assert(dm);
+  lrId=LCCO_Card_GetLockId(card);
+  assert(lrId);
+  rv=LCS_LockManager_Unlock(lm, lrId);
+  LCCO_Card_SetLockId(card, 0);
+  if (rv) {
+    DBG_WARN(0, "Could not unlock slot (%d)", rv);
   }
 
   /* unlock this card */

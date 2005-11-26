@@ -346,6 +346,42 @@ void LCDM_DeviceManager_EndUseReaders(LCDM_DEVICEMANAGER *dm, int count) {
 
 
 
+void LCDM_DeviceManager_BeginUseReader(LCDM_DEVICEMANAGER *dm,
+                                       GWEN_TYPE_UINT32 rid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  LCDM_Reader_IncUsageCount(r, 1);
+}
+
+
+
+void LCDM_DeviceManager_EndUseReader(LCDM_DEVICEMANAGER *dm,
+                                     GWEN_TYPE_UINT32 rid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  LCDM_Reader_DecUsageCount(r, 1);
+}
+
+
+
 void LCDM_DeviceManager_BeginUseCard(LCDM_DEVICEMANAGER *dm, LCCO_CARD *cd) {
   LCDM_READER *r;
 
@@ -353,7 +389,7 @@ void LCDM_DeviceManager_BeginUseCard(LCDM_DEVICEMANAGER *dm, LCCO_CARD *cd) {
   assert(cd);
   r=LCDM_Card_GetReader(cd);
   assert(r);
-  LCDM_Reader_IncUsageCount(r, 1);
+  LCDM_DeviceManager_BeginUseReader(dm, LCDM_Reader_GetReaderId(r));
 }
 
 
@@ -365,7 +401,7 @@ void LCDM_DeviceManager_EndUseCard(LCDM_DEVICEMANAGER *dm, LCCO_CARD *cd) {
   assert(cd);
   r=LCDM_Card_GetReader(cd);
   assert(r);
-  LCDM_Reader_DecUsageCount(r, 1);
+  LCDM_DeviceManager_EndUseReader(dm, LCDM_Reader_GetReaderId(r));
 }
 
 
@@ -399,6 +435,7 @@ void LCDM_DeviceManager_AbandonReader(LCDM_DEVICEMANAGER *dm,
                        LCDM_Reader_GetReaderId(r),
                        LCDM_Reader_GetReaderType(r),
                        LCDM_Reader_GetReaderName(r),
+                       LCDM_Reader_GetReaderInfo(r),
                        newSt, reason);
 }
 
@@ -414,8 +451,10 @@ void LCDM_DeviceManager_AbandonDriver(LCDM_DEVICEMANAGER *dm,
   ipcId=LCDM_Driver_GetIpcId(d);
   if (ipcId!=0) {
     /* remove IPC node */
-    GWEN_IpcManager_RemoveClient(dm->ipcManager, ipcId);
     LCDM_Driver_SetIpcId(d, 0);
+    DBG_ERROR(0, "Removing driver client %0x8", ipcId);
+    GWEN_IpcManager_RemoveClient(dm->ipcManager, ipcId);
+    DBG_ERROR(0, "Removing driver client %0x8: done", ipcId);
   }
 
   if (LCDM_Driver_GetStatus(d)!= newSt) {
@@ -618,6 +657,74 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
   return GWEN_IpcManager_SendRequest(dm->ipcManager,
                                      LCDM_Driver_GetIpcId(d),
                                      dbReq);
+}
+
+
+
+GWEN_TYPE_UINT32 LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
+                                                     const LCDM_READER *r) {
+  GWEN_DB_NODE *dbReq;
+  char numbuf[16];
+  int rv;
+  LCDM_DRIVER *d;
+
+  assert(dm);
+  assert(r);
+  d=LCDM_Reader_GetDriver(r);
+  assert(d);
+  dbReq=GWEN_DB_Group_new("SuspendCheck");
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+	      LCDM_Reader_GetReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+	      LCDM_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+		       "driversReaderId", numbuf);
+
+  return GWEN_IpcManager_SendRequest(dm->ipcManager,
+				     LCDM_Driver_GetIpcId(d),
+				     dbReq);
+}
+
+
+
+GWEN_TYPE_UINT32 LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
+                                                    const LCDM_READER *r) {
+  GWEN_DB_NODE *dbReq;
+  char numbuf[16];
+  int rv;
+  LCDM_DRIVER *d;
+
+  assert(dm);
+  assert(r);
+  d=LCDM_Reader_GetDriver(r);
+  assert(d);
+  dbReq=GWEN_DB_Group_new("ResumeCheck");
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+	      LCDM_Reader_GetReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerId", numbuf);
+
+  rv=snprintf(numbuf, sizeof(numbuf)-1, "%08x",
+	      LCDM_Reader_GetDriversReaderId(r));
+  assert(rv>0 && rv<sizeof(numbuf)-1);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+		       "driversReaderId", numbuf);
+
+  return GWEN_IpcManager_SendRequest(dm->ipcManager,
+				     LCDM_Driver_GetIpcId(d),
+				     dbReq);
 }
 
 
@@ -1013,7 +1120,8 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
         dst=LC_DriverStatusAborted;
         LCDM_DeviceManager_AbandonDriver(dm, d, dst,
                                          "Driver is not running anymore");
-        done++;
+	done++;
+        return 1;
       }
     } /* if process */
     else {
@@ -1272,6 +1380,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                LCDM_Reader_GetReaderId(r),
                                LCDM_Reader_GetReaderType(r),
                                LCDM_Reader_GetReaderName(r),
+                               LCDM_Reader_GetReaderInfo(r),
                                LC_ReaderStatusUp,
                                e?e:"Reader is up");
           GWEN_DB_Group_free(dbRsp);
@@ -1280,6 +1389,25 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
             abort();
           }
           LCDM_Reader_SetCurrentRequestId(r, 0);
+          if (LCDM_Reader_GetFlags(r) & LC_READER_FLAGS_SUSPENDED_CHECKS) {
+            GWEN_TYPE_UINT32 rqid;
+
+            /* checks have been suspended, tell this to the reader */
+            rqid=LCDM_DeviceManager_SendSuspendCheck(dm, r);
+            if (rqid==0) {
+              DBG_INFO(0, "here");
+              LCDM_DeviceManager_AbandonReader(dm, r, LC_ReaderStatusAborted,
+                                               "Could not send ResumeCheck "
+                                               "command");
+              return -1;
+            }
+        
+            /* immediately remove this request, we don't expect an answer */
+            if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rqid, 1)) {
+              DBG_ERROR(0, "Could not remove request");
+              abort();
+            }
+          }
         }
 	didSomething++;
       }
@@ -1337,6 +1465,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                  LCDM_Reader_GetReaderId(r),
                                  LCDM_Reader_GetReaderType(r),
                                  LCDM_Reader_GetReaderName(r),
+                                 LCDM_Reader_GetReaderInfo(r),
                                  rst,
                                  "Stopping idle reader");
             didSomething++;
@@ -1434,6 +1563,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                                LCDM_Reader_GetReaderId(r),
                                LCDM_Reader_GetReaderType(r),
                                LCDM_Reader_GetReaderName(r),
+                               LCDM_Reader_GetReaderInfo(r),
                                LC_ReaderStatusDown,
                                "Reader is down as expected");
 	  GWEN_DB_Group_free(dbRsp);
@@ -1461,6 +1591,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                            LCDM_Reader_GetReaderId(r),
                            LCDM_Reader_GetReaderType(r),
                            LCDM_Reader_GetReaderName(r),
+                           LCDM_Reader_GetReaderInfo(r),
                            LC_ReaderStatusDown,
                            "Reenabling reader");
       didSomething++;
@@ -1477,6 +1608,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
                            LCDM_Reader_GetReaderId(r),
                            LCDM_Reader_GetReaderType(r),
                            LCDM_Reader_GetReaderName(r),
+                           LCDM_Reader_GetReaderInfo(r),
                            LC_ReaderStatusWaitForStart,
                            "Starting reader");
       didSomething++;
@@ -1600,7 +1732,23 @@ int LCDM_DeviceManager_Work(LCDM_DEVICEMANAGER *dm) {
 
 void LCDM_DeviceManager_DriverIpcDown(LCDM_DEVICEMANAGER *dm,
                                       GWEN_TYPE_UINT32 ipcId) {
-  // TODO
+  LCDM_DRIVER *d;
+
+  d=LCDM_Driver_List_First(dm->drivers);
+  while(d) {
+    if (LCDM_Driver_GetIpcId(d)==ipcId)
+      break;
+    d=LCDM_Driver_List_Next(d);
+  } /* while */
+
+  if (d) {
+    DBG_NOTICE(0, "Connection of driver \"%s\" (%08x) just went down",
+               LCDM_Driver_GetDriverName(d),
+               LCDM_Driver_GetDriverId(d));
+    LCDM_Driver_SetIpcId(d, 0);
+    LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusDown,
+				     "Driver connection went down");
+  }
 }
 
 
@@ -2102,6 +2250,7 @@ int LCDM_DeviceManager_ListReaders(LCDM_DEVICEMANAGER *dm) {
                          LCDM_Reader_GetReaderId(r),
                          LCDM_Reader_GetReaderType(r),
                          LCDM_Reader_GetReaderName(r),
+                         LCDM_Reader_GetReaderInfo(r),
                          LCDM_Reader_GetStatus(r),
                          "Reader listing");
     r=LCDM_Reader_List_Next(r);
@@ -2484,6 +2633,7 @@ int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
 			 LCDM_Reader_GetReaderId(r),
 			 LCDM_Reader_GetReaderType(r),
 			 LCDM_Reader_GetReaderName(r),
+                         LCDM_Reader_GetReaderInfo(r),
 			 LC_ReaderStatusDown, "New reader detected");
   }
   else {
@@ -2632,6 +2782,232 @@ void LCDM_DeviceManager_DumpState(const LCDM_DEVICEMANAGER *dm) {
     }
   }
 }
+
+
+
+LCS_LOCKMANAGER*
+LCDM_DeviceManager_GetLockManager(const LCDM_DEVICEMANAGER *dm,
+                                  GWEN_TYPE_UINT32 rid,
+                                  int slot) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  if (r)
+    return LCDM_Reader_GetLockManager(r, slot);
+  else {
+    DBG_WARN(0, "Reader \"%08x\" not found", rid);
+    return 0;
+  }
+
+}
+
+
+
+void LCDM_DeviceManager_ClientDown(LCDM_DEVICEMANAGER *dm,
+                                   GWEN_TYPE_UINT32 clid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    int slots;
+    int i;
+
+    slots=LCDM_Reader_GetSlots(r);
+    for (i=0; i<slots; i++) {
+      LCS_LOCKMANAGER *lm;
+
+      lm=LCDM_Reader_GetLockManager(r, i);
+      assert(lm);
+      LCS_LockManager_RemoveAllClientRequests(lm, clid);
+    }
+    r=LCDM_Reader_List_Next(r);
+  }
+}
+
+
+
+GWEN_TYPE_UINT32 LCDM_DeviceManager_LockReader(LCDM_DEVICEMANAGER *dm,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_TYPE_UINT32 clid,
+                                               int maxLockTime,
+                                               int maxLockCount) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  return LCDM_Reader_LockReader(r, clid, maxLockTime, maxLockCount);
+}
+
+
+
+int LCDM_DeviceManager_CheckLockReaderRequest(LCDM_DEVICEMANAGER *dm,
+                                              GWEN_TYPE_UINT32 rid,
+                                              GWEN_TYPE_UINT32 rqid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  return LCDM_Reader_CheckLockRequest(r, rqid);
+}
+
+
+
+int LCDM_DeviceManager_CheckLockReaderAccess(LCDM_DEVICEMANAGER *dm,
+                                             GWEN_TYPE_UINT32 rid,
+                                             GWEN_TYPE_UINT32 rqid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  return LCDM_Reader_CheckLockAccess(r, rqid);
+}
+
+
+
+int LCDM_DeviceManager_RemoveLockReaderRequest(LCDM_DEVICEMANAGER *dm,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_TYPE_UINT32 rqid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  return LCDM_Reader_RemoveLockRequest(r, rqid);
+}
+
+
+
+int LCDM_DeviceManager_UnlockReader(LCDM_DEVICEMANAGER *dm,
+                                    GWEN_TYPE_UINT32 rid,
+                                    GWEN_TYPE_UINT32 rqid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  return LCDM_Reader_Unlock(r, rqid);
+}
+
+
+
+int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
+                                          GWEN_TYPE_UINT32 rid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  LCDM_Reader_AddFlags(r, LC_READER_FLAGS_SUSPENDED_CHECKS);
+  if (LCDM_Reader_GetStatus(r)==LC_ReaderStatusUp) {
+    GWEN_TYPE_UINT32 rqid;
+
+    rqid=LCDM_DeviceManager_SendSuspendCheck(dm, r);
+    if (rqid==0) {
+      DBG_INFO(0, "here");
+      LCDM_DeviceManager_AbandonReader(dm, r, LC_ReaderStatusAborted,
+                                       "Could not send SuspendCheck "
+                                       "command");
+      return -1;
+    }
+
+    /* immediately remove this request, we don't expect an answer */
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rqid, 1)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+  }
+
+  return 0;
+}
+
+
+
+void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
+                                          GWEN_TYPE_UINT32 rid) {
+  LCDM_READER *r;
+
+  assert(dm);
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==rid)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  }
+
+  assert(r);
+  if (LCDM_Reader_GetStatus(r)==LC_ReaderStatusUp) {
+    GWEN_TYPE_UINT32 rqid;
+
+    rqid=LCDM_DeviceManager_SendResumeCheck(dm, r);
+    if (rqid==0) {
+      DBG_INFO(0, "here");
+      LCDM_DeviceManager_AbandonReader(dm, r, LC_ReaderStatusAborted,
+                                       "Could not send ResumeCheck "
+                                       "command");
+      return;
+    }
+
+    /* immediately remove this request, we don't expect an answer */
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rqid, 1)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+  }
+  LCDM_Reader_SubFlags(r, LC_READER_FLAGS_SUSPENDED_CHECKS);
+}
+
+
+
+
+
+
 
 
 

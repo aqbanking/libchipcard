@@ -12,31 +12,25 @@
 
 
 
-#ifndef CHIPCARD_SERVER2_CM_CARD_P_H
-#define CHIPCARD_SERVER2_CM_CARD_P_H
+#ifndef CHIPCARD_SERVER2_LOCKMANAGER_P_H
+#define CHIPCARD_SERVER2_LOCKMANAGER_P_H
 
-#include "cm_card_l.h"
+
+#include "lockmanager_l.h"
 #include "lockrequest_l.h"
 
 
-typedef struct LCCM_CARD LCCM_CARD;
-struct LCCM_CARD {
+struct LCS_LOCKMANAGER {
   LCS_LOCKREQUEST_LIST *requestList;
   LCS_LOCKREQUEST *currentRequest;
-  LC_CARD_STATUS lastStatus;
-  time_t unusedSince;
-  int readerIsInUse;
-  time_t lastAdTime;
+  char *what;
 };
 
+LCS_LOCKREQUEST*
+LCS_LockManager_FindRequestByRequestId(LCS_LOCKMANAGER *lm,
+                                       GWEN_TYPE_UINT32 rqid);
 
-void LCCM_Card_FreeData(void *bp, void *p);
+int LCS_LockManager_CountClientRequests(const LCS_LOCKMANAGER *lm,
+                                        GWEN_TYPE_UINT32 clid);
 
-LCS_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
-                                                 GWEN_TYPE_UINT32 clid);
-
-int LCCM_Card_CountClientRequests(const LCCO_CARD *cd, GWEN_TYPE_UINT32 clid);
-
-
-#endif /* CHIPCARD_SERVER2_CM_CARD_H */
-
+#endif

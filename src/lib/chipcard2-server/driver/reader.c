@@ -32,10 +32,10 @@ GWEN_INHERIT_FUNCTIONS(LCD_READER);
 
 
 LCD_READER *LCD_Reader_new(GWEN_TYPE_UINT32 readerId,
-                         const char *name,
-                         int port,
-                         unsigned int slots,
-                         GWEN_TYPE_UINT32 flags){
+                           const char *name,
+                           int port,
+                           unsigned int slots,
+                           GWEN_TYPE_UINT32 flags){
   LCD_READER *r;
   unsigned int i;
 
@@ -130,13 +130,6 @@ void LCD_Reader_SetReaderType(LCD_READER *r, const char *s){
 int LCD_Reader_GetPort(const LCD_READER *r){
   assert(r);
   return r->port;
-}
-
-
-
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r){
-  assert(r);
-  return r->readerFlags;
 }
 
 
@@ -239,6 +232,34 @@ void LCD_Reader_AddDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
 void LCD_Reader_SubDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
   assert(r);
   r->driverFlags&=~s;
+}
+
+
+
+GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r){
+  assert(r);
+  return r->readerFlags;
+}
+
+
+
+void LCD_Reader_SetReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+  assert(r);
+  r->readerFlags=s;
+}
+
+
+
+void LCD_Reader_AddReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+  assert(r);
+  r->readerFlags|=s;
+}
+
+
+
+void LCD_Reader_SubReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+  assert(r);
+  r->readerFlags&=~s;
 }
 
 
