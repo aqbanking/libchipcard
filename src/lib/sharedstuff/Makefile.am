@@ -6,7 +6,7 @@ EXTRA_DIST=$(typefiles)
 
 noinst_LTLIBRARIES=libsharedstuff.la
 
-iheaderdir=${includedir}/chipcard2
+iheaderdir=${includedir}/chipcard2/sharedstuff
 iheader_HEADERS=\
   msgengine.h \
   misc.h \
