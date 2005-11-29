@@ -1,4 +1,4 @@
-SUBDIRS=ctapi ifd ifdold pcsc
+SUBDIRS=ctapi ifd ifdold ccid pcsc
 
 MAINTAINERCLEANFILES=Makefile.in
 

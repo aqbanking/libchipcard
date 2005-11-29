@@ -15,6 +15,7 @@ This page describes the properties of LC_PININFO
 extern "C" {
 #endif
 
+
 GWEN_LIST_FUNCTION_DEFS(LC_PININFO, LC_PinInfo)
 LC_PININFO_LIST *LC_PinInfo_List_dup(const LC_PININFO_LIST *stl);
 

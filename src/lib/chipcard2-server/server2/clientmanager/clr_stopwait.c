@@ -71,7 +71,7 @@ int LCCL_ClientManager_HandleStopWait(LCCL_CLIENTMANAGER *clm,
       LCS_Server_EndUseReaders(clm->server, 1);
 
     /* send all cards we already know, create response */
-    dbRsp=GWEN_DB_Group_new("StopWaitResponse");
+    dbRsp=GWEN_DB_Group_new("Client_StopWaitResponse");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "OK");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,

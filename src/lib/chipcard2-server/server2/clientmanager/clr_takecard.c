@@ -247,7 +247,7 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
         GWEN_IpcRequest_List_Del(req);
   
         /* send response */
-        dbRsp=GWEN_DB_Group_new("TakeCardResponse");
+        dbRsp=GWEN_DB_Group_new("Client_TakeCardResponse");
         GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,
                              "code", "OK");
         GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_DEFAULT,

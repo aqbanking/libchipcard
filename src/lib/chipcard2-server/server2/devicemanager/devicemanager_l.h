@@ -137,6 +137,11 @@ int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
 void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
                                           GWEN_TYPE_UINT32 rid);
 
+GWEN_TYPE_UINT32
+  LCDM_DeviceManager_SendReaderCommand(LCDM_DEVICEMANAGER *dm,
+                                       GWEN_TYPE_UINT32 readerId,
+                                       GWEN_DB_NODE *dbCmd);
+
 
 #endif /* CHIPCARD_SERVER_DEVICEMANAGER_L_H */
 

@@ -24,7 +24,6 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/gwentime.h>
 #include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/pininfo.h>
 
 #include <stdlib.h>
 #include <assert.h>

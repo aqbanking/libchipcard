@@ -632,7 +632,7 @@ int LC_Client_StartConnect(LC_CLIENT *cl, LC_SERVER *sv) {
   }
 
   /* tell the server about our status */
-  dbReq=GWEN_DB_Group_new("ClientReady");
+  dbReq=GWEN_DB_Group_new("Client_Ready");
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "Application", cl->programName);
   GWEN_DB_SetCharValue(dbReq,
@@ -1257,7 +1257,7 @@ GWEN_TYPE_UINT32 LC_Client_SendStartWait(LC_CLIENT *cl,
   GWEN_DB_NODE *db;
   GWEN_TYPE_UINT32 rqid;
 
-  db=GWEN_DB_Group_new("StartWait");
+  db=GWEN_DB_Group_new("Client_StartWait");
 
   /* set rflags */
   if (rflags & LC_CARD_READERFLAGS_KEYPAD)
@@ -1486,7 +1486,7 @@ GWEN_TYPE_UINT32 LC_Client_SendStopWait(LC_CLIENT *cl) {
   GWEN_DB_NODE *dbReq;
   GWEN_TYPE_UINT32 rqid;
 
-  dbReq=GWEN_DB_Group_new("StopWait");
+  dbReq=GWEN_DB_Group_new("Client_StopWait");
 
   /* send request */
   rqid=LC_Client_SendRequest(cl, 0, 0, dbReq);
@@ -1505,7 +1505,7 @@ GWEN_TYPE_UINT32 LC_Client_SendTakeCard(LC_CLIENT *cl, LC_CARD *cd) {
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("TakeCard");
+  dbReq=GWEN_DB_Group_new("Client_TakeCard");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1530,7 +1530,7 @@ GWEN_TYPE_UINT32 LC_Client_SendReleaseCard(LC_CLIENT *cl, LC_CARD *cd){
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("ReleaseCard");
+  dbReq=GWEN_DB_Group_new("Client_ReleaseCard");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1560,7 +1560,7 @@ GWEN_TYPE_UINT32 LC_Client_SendCommandCard(LC_CLIENT *cl,
 
   assert(apdu);
   assert(len);
-  dbReq=GWEN_DB_Group_new("CommandCard");
+  dbReq=GWEN_DB_Group_new("Client_CommandCard");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1607,7 +1607,7 @@ GWEN_TYPE_UINT32 LC_Client_SendSelectCardApp(LC_CLIENT *cl,
   }
   LC_Card_SetContext(cd, ctx);
 
-  dbReq=GWEN_DB_Group_new("SelectCard");
+  dbReq=GWEN_DB_Group_new("Client_SelectCard");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -1991,7 +1991,7 @@ GWEN_TYPE_UINT32 LC_Client_SendExecCommand(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "No application selected");
     return 0;
   }
-  dbReq=GWEN_DB_Group_new("ExecCommand");
+  dbReq=GWEN_DB_Group_new("Client_ExecCommand");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2229,7 +2229,7 @@ GWEN_TYPE_UINT32 LC_Client_SendSetNotify(LC_CLIENT *cl,
   GWEN_DB_NODE *db;
   GWEN_TYPE_UINT32 rqid;
 
-  db=GWEN_DB_Group_new("SetNotify");
+  db=GWEN_DB_Group_new("Client_SetNotify");
 
   /* driver flags */
   if (flags & LC_NOTIFY_FLAGS_DRIVER_START)
@@ -2440,7 +2440,7 @@ GWEN_TYPE_UINT32 LC_Client_SendGetDriverVar(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "No application selected");
     return 0;
   }
-  dbReq=GWEN_DB_Group_new("GetDriverVar");
+  dbReq=GWEN_DB_Group_new("Client_GetDriverVar");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2542,7 +2542,7 @@ GWEN_TYPE_UINT32 LC_Client_SendCardCheck(LC_CLIENT *cl,
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("CardCheck");
+  dbReq=GWEN_DB_Group_new("Client_CardCheck");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2642,7 +2642,7 @@ GWEN_TYPE_UINT32 LC_Client_SendCardReset(LC_CLIENT *cl, LC_CARD *cd){
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("CardReset");
+  dbReq=GWEN_DB_Group_new("Client_CardReset");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2749,7 +2749,7 @@ GWEN_TYPE_UINT32 LC_Client_SendOpenService(LC_CLIENT *cl,
   assert(cl);
   assert(serverId);
   assert(svid);
-  dbReq=GWEN_DB_Group_new("OpenService");
+  dbReq=GWEN_DB_Group_new("Client_OpenService");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2860,7 +2860,7 @@ GWEN_TYPE_UINT32 LC_Client_SendCloseService(LC_CLIENT *cl,
   assert(cl);
   assert(serverId);
   assert(svid);
-  dbReq=GWEN_DB_Group_new("CloseService");
+  dbReq=GWEN_DB_Group_new("Client_CloseService");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -2969,7 +2969,7 @@ GWEN_TYPE_UINT32 LC_Client_SendServiceCommand(LC_CLIENT *cl,
   assert(cl);
   assert(serverId);
   assert(svid);
-  dbReq=GWEN_DB_Group_new("ServiceCommand");
+  dbReq=GWEN_DB_Group_new("Client_ServiceCommand");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -3086,7 +3086,7 @@ GWEN_TYPE_UINT32 LC_Client_SendLockReader(LC_CLIENT *cl,
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("LockReader");
+  dbReq=GWEN_DB_Group_new("Client_LockReader");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -3204,7 +3204,7 @@ GWEN_TYPE_UINT32 LC_Client_SendUnlockReader(LC_CLIENT *cl,
   GWEN_TYPE_UINT32 rqid;
   char numbuf[16];
 
-  dbReq=GWEN_DB_Group_new("UnlockReader");
+  dbReq=GWEN_DB_Group_new("Client_UnlockReader");
   snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,

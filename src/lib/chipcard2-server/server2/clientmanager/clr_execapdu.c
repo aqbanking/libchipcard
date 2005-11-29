@@ -161,7 +161,7 @@ int LCCL_ClientManager_HandleExecApdu(LCCL_CLIENTMANAGER *clm,
   }
 
 
-  dbOutReq=GWEN_DB_Group_new("CardCommand");
+  dbOutReq=GWEN_DB_Group_new("Driver_CardCommand");
   GWEN_DB_SetBinValue(dbOutReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "data", p, bs);
   GWEN_DB_SetCharValue(dbOutReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -263,7 +263,7 @@ int LCCL_ClientManager_WorkExecApdu(GWEN_IPC_REQUEST *req) {
     const char *code;
 
     DBG_DEBUG(0, "Sending response to CommandCard");
-    dbClientResponse=GWEN_DB_Group_new("CommandCardResponse");
+    dbClientResponse=GWEN_DB_Group_new("Client_CommandCardResponse");
     code=GWEN_DB_GetCharValue(dbDriverResponse,
 			      "data/code", 0, "ERROR");
     assert(code);

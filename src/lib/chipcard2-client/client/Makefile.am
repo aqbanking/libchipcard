@@ -5,9 +5,6 @@ DEFS=@DEFS@ \
 
 INCLUDES=@all_includes@ -I..
 
-typefiles=pininfo.xml
-
-EXTRA_DIST=$(typefiles)
 
 noinst_LTLIBRARIES=libclient.la
 
@@ -18,31 +15,25 @@ noinst_HEADERS=\
   client_p.h \
   notifications_l.h \
   notifications_p.h \
-  tlv_p.h \
-  pininfo_l.h \
-  pininfo_p.h
+  tlv_p.h
 
 iheaderdir=${includedir}/chipcard2-client/client
 iheader_HEADERS=\
   card.h \
   client.h \
   notifications.h \
-  tlv.h \
-  pininfo.h
+  tlv.h
 
 libclient_la_SOURCES=\
   card.c \
   client.c \
   notifications.c \
-  tlv.c \
-  pininfo.c
+  tlv.c
 
 libclient_la_LIBADD=\
   lowlevel/liblowlevel.la \
   apps/libapps.la
 
-types: $(typefiles)
-	typemaker -d CHIPCARD_API $(typefiles)
 
 MAINTAINERCLEANFILES=Makefile.in
 

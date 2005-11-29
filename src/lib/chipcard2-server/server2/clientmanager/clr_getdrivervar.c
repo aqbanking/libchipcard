@@ -134,7 +134,7 @@ int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
     s="";
 
   /* send response */
-  dbRsp=GWEN_DB_Group_new("GetDriverVarResponse");
+  dbRsp=GWEN_DB_Group_new("Client_GetDriverVarResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "varName", varName);
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,

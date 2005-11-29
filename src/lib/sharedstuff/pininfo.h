@@ -107,6 +107,7 @@ typedef enum {
 LC_PININFO_ENCODING LC_PinInfo_Encoding_fromString(const char *s);
 const char *LC_PinInfo_Encoding_toString(LC_PININFO_ENCODING v);
 
+
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_PININFO, CHIPCARD_API)
 GWEN_LIST2_FUNCTION_LIB_DEFS(LC_PININFO, LC_PinInfo, CHIPCARD_API)
 

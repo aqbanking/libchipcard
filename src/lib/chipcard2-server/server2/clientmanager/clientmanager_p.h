@@ -161,6 +161,14 @@ int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq);
 
+int LCCL_ClientManager_HandleReaderCmd(LCCL_CLIENTMANAGER *clm,
+                                       GWEN_TYPE_UINT32 rid,
+                                       const char *name,
+                                       GWEN_DB_NODE *dbReq);
+int LCCL_ClientManager_WorkClientReaderCmd(GWEN_IPC_REQUEST *req);
+int LCCL_ClientManager_WorkDriverReaderCmd(GWEN_IPC_REQUEST *req);
+
+
 
 
 void LCCL_ClientManager_CheckClient(LCCL_CLIENTMANAGER *clm,

@@ -252,12 +252,14 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
 
   assert(r);
   assert(apdu);
-  assert(apdulen>3);
+  assert(apdulen);
   assert(buffer);
 
   sad=LCD_DRIVERCTAPI_SAD_HOST;
-  if (toReader)
+  if (toReader<0)
     dad=LCD_DRIVERCTAPI_DAD_CT;
+  else if (toReader>0)
+    dad=toReader;
   else {
     if (slot)
       dad=DriverCTAPI_TransformDAD(LCD_Slot_GetSlotNum(slot));
@@ -271,9 +273,14 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
            "Sending command:");
   GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
   DBG_DEBUG(lg,
-            "CTN=%d, SAD=%d, DAD=%d, CLA=%02x, INS=%02x, P1=%02x, P2=%02x",
+            "CTN=%d, SAD=%d, DAD=%d, "
+            "CLA=%02x, INS=%02x, P1=%02x, P2=%02x (%d bytes)",
             ReaderCTAPI_GetCtn(r), sad, dad,
-            apdu[0], apdu[1], apdu[2], apdu[3]);
+            apdu[0],
+            (apdulen>1)?apdu[1]:0,
+            (apdulen>2)?apdu[2]:0,
+            (apdulen>3)?apdu[3]:0,
+            apdulen);
   lr=*bufferlen;
   DBG_NOTICE(lg, "Calling dataFn");
   retval=dct->dataFn(ReaderCTAPI_GetCtn(r),
@@ -289,7 +296,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
               "CTAPI error on \"CT_data\": %d", retval);
     return (unsigned char)retval;
   }
-  if (lr<2 || lr>258) {
+  if (lr>258) {
     DBG_ERROR(lg,
               "Bad response size (%d)",lr);
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
@@ -299,22 +306,24 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
            "Received response:");
   GWEN_Text_LogString((const char*)buffer, lr, lg, GWEN_LoggerLevelInfo);
 
-  if ((unsigned char)buffer[lr-2]!=0x90) {
-    if ((unsigned char)buffer[lr-2]!=0x62) {
-      DBG_INFO(lg,
-               "CTAPI: Error: SW1=%02x, SW2=%02x "
-               "(CLA=%02x, INS=%02x, P1=%02x, P2=%02x)",
-               (unsigned char)buffer[lr-2],
-               (unsigned char)buffer[lr-1],
-               apdu[0], apdu[1], apdu[2], apdu[3]);
-    }
-    else {
-      DBG_NOTICE(lg,
+  if (lr>1) {
+    if ((unsigned char)buffer[lr-2]!=0x90) {
+      if ((unsigned char)buffer[lr-2]!=0x62) {
+        DBG_INFO(lg,
                  "CTAPI: Error: SW1=%02x, SW2=%02x "
                  "(CLA=%02x, INS=%02x, P1=%02x, P2=%02x)",
                  (unsigned char)buffer[lr-2],
                  (unsigned char)buffer[lr-1],
                  apdu[0], apdu[1], apdu[2], apdu[3]);
+      }
+      else {
+        DBG_NOTICE(lg,
+                   "CTAPI: Error: SW1=%02x, SW2=%02x "
+                   "(CLA=%02x, INS=%02x, P1=%02x, P2=%02x)",
+                   (unsigned char)buffer[lr-2],
+                   (unsigned char)buffer[lr-1],
+                   apdu[0], apdu[1], apdu[2], apdu[3]);
+      }
     }
   }
 
@@ -526,8 +535,8 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
-                                        GWEN_BUFFER *buf) {
+GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+                                            GWEN_BUFFER *buf) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x46, 0x00};
   unsigned char responseBuffer[300];
   int lr;
@@ -545,7 +554,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
 
   lr=sizeof(responseBuffer);
   if (LCD_Driver_SendAPDU(d, 1,
-                         r, 0, apdu, sizeof(apdu), responseBuffer, &lr)){
+                          r, 0, apdu, sizeof(apdu), responseBuffer, &lr)){
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Error sending APDU");
     return DRIVER_CTAPI_ERROR_GENERIC;
@@ -575,39 +584,171 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
     p=responseBuffer+2;
 
   /* CTM (CT manufacturer) */
-  if (!isspace(*p)) {
-    GWEN_Buffer_AppendString(buf, "Manufacturer=");
-    for (i=0; i<5; i++) {
-      if (isspace(p[i]))
+  for (i=0; i<5; i++)
+    if (!isspace(p[i]))
+      break;
+  if (i<5) {
+    GWEN_Buffer_AppendString(buf, "Manufacturer=\"");
+    for (; i<5; i++) {
+      if (p[i]<33)
         break;
       GWEN_Buffer_AppendByte(buf, p[i]);
     } /* for */
+    GWEN_Buffer_AppendString(buf, "\"");
   }
+  p+=5;
 
   /* CTT (CT type) */
-  p+=5;
-  if (!isspace(*p)) {
-    GWEN_Buffer_AppendString(buf, ";Terminal=");
-    for (i=0; i<5; i++) {
-      if (isspace(p[i]))
+  for (i=0; i<5; i++)
+    if (!isspace(p[i]))
+      break;
+  if (i<5) {
+    GWEN_Buffer_AppendString(buf, ";Terminal=\"");
+    for (; i<5; i++) {
+      if (p[i]<33)
         break;
       GWEN_Buffer_AppendByte(buf, p[i]);
     } /* for */
+    GWEN_Buffer_AppendString(buf, "\"");
   }
+  p+=5;
 
   /* CTSV (CT software version) */
-  p+=5;
-  if (!isspace(*p)) {
-    GWEN_Buffer_AppendString(buf, ";Version=");
-    for (i=0; i<5; i++) {
-      if (isspace(p[i]))
+  for (i=0; i<5; i++)
+    if (!isspace(p[i]))
+      break;
+  if (i<5) {
+    GWEN_Buffer_AppendString(buf, ";Version=\"");
+    for (; i<5; i++) {
+      if (p[i]<33)
         break;
       GWEN_Buffer_AppendByte(buf, p[i]);
     } /* for */
+    GWEN_Buffer_AppendString(buf, "\"");
+  }
+  p+=5;
+
+  if (lr>18) {
+    for (i=0; i<lr-18; i++)
+      if (!isspace(p[i]))
+        break;
+    if (i<18) {
+      GWEN_Buffer_AppendString(buf, ";info=\"");
+      for (; i<lr-18; i++) {
+        if (p[i]==0)
+          break;
+        GWEN_Buffer_AppendByte(buf, p[i]);
+      }
+      GWEN_Buffer_AppendString(buf, "\"");
+    }
   }
 
   return 0;
 }
+
+
+
+GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
+                                             GWEN_BUFFER *buf) {
+  unsigned char apdu[]={0x20, 0x13, 0x00, 0x81, 0x00};
+  unsigned char responseBuffer[300];
+  int lr;
+  unsigned char *p;
+  int i;
+  DRIVER_CTAPI *dct;
+  int len;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
+  assert(dct);
+
+  DBG_NOTICE(LCD_Reader_GetLogger(r),
+             "Requesting units of reader \"%08x\"",
+             LCD_Reader_GetReaderId(r));
+
+  lr=sizeof(responseBuffer);
+  if (LCD_Driver_SendAPDU(d, 1,
+                         r, 0, apdu, sizeof(apdu), responseBuffer, &lr)){
+    DBG_ERROR(LCD_Reader_GetLogger(r),
+              "Error sending APDU");
+    return DRIVER_CTAPI_ERROR_GENERIC;
+  }
+
+  if (lr<3) {
+    DBG_ERROR(LCD_Reader_GetLogger(r),
+              "Too short response when requesting reader unit list");
+    GWEN_Text_LogString((const char*)responseBuffer, lr,
+                        LCD_Reader_GetLogger(r),
+                        GWEN_LoggerLevelError);
+    return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
+  }
+
+  /* check whether a complete tag is returned */
+  if (responseBuffer[0]!=0x81) {
+    DBG_WARN(LCD_Reader_GetLogger(r),
+             "No/bad tag received when requesting reader units (%02x)",
+             responseBuffer[0]);
+    GWEN_Text_LogString((const char*)responseBuffer, lr,
+                        LCD_Reader_GetLogger(r),
+                        GWEN_LoggerLevelError);
+    p=responseBuffer;
+    len=lr-2;
+  }
+  else {
+    p=responseBuffer+2;
+    len=responseBuffer[1];
+  }
+
+  for (i=0; i<len; i++) {
+    char ubuf[32];
+
+    snprintf(ubuf, sizeof(ubuf), "unit%d=\"", i);
+    if (GWEN_Buffer_GetUsedBytes(buf))
+      GWEN_Buffer_AppendString(buf, ";");
+    GWEN_Buffer_AppendString(buf, ubuf);
+
+    if (p[i]==(unsigned char)0x40)
+      GWEN_Buffer_AppendString(buf, "KEYBOARD");
+    else if (p[i]==(unsigned char)0x50)
+      GWEN_Buffer_AppendString(buf, "DISPLAY");
+    else if (p[i]==(unsigned char)0x70)
+      GWEN_Buffer_AppendString(buf, "FINGERPRINT");
+    else if (p[i]<14){
+      char numbuf[16];
+
+      snprintf(numbuf, sizeof(numbuf), "%d", p[i]);
+      GWEN_Buffer_AppendString(buf, "icc");
+      GWEN_Buffer_AppendString(buf, numbuf);
+    }
+    else {
+      char numbuf[16];
+
+      snprintf(numbuf, sizeof(numbuf), "%d", p[i]);
+      DBG_WARN(LCD_Reader_GetLogger(r),
+               "Got unknown unit %d (%02x)",
+               p[i], p[i]);
+      GWEN_Buffer_AppendString(buf, numbuf);
+    }
+    GWEN_Buffer_AppendString(buf, "\"");
+  }
+
+  return 0;
+}
+
+
+
+GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+                                        GWEN_BUFFER *buf) {
+  GWEN_TYPE_UINT32 res1, res2;
+
+  res1=DriverCTAPI_ReadReaderInfo(d, r, buf);
+  res2=DriverCTAPI_ReadReaderUnits(d, r, buf);
+  if (res1 && res2)
+    return res2;
+
+  return 0;
+}
+
 
 
 

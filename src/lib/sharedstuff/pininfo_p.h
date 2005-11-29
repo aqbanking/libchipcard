@@ -6,6 +6,7 @@
 
 #include "pininfo_l.h"
 
+
 struct LC_PININFO {
   GWEN_INHERIT_ELEMENT(LC_PININFO)
   GWEN_LIST_ELEMENT(LC_PININFO)

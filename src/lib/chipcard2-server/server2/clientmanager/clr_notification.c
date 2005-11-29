@@ -433,6 +433,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
   LCCL_CLIENT *cl;
   GWEN_TYPE_UINT32 clientId;
   GWEN_DB_NODE *dbRsp;
+  GWEN_TYPE_UINT32 oldFlags;
   GWEN_TYPE_UINT32 flags=0;
   LCDM_DEVICEMANAGER *dm;
   int cmdVer;
@@ -553,6 +554,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
     }
   }
 
+  oldFlags=LCCL_Client_GetNotifyFlags(cl);
   LCCL_Client_SetNotifyFlags(cl, flags);
 
   /* let the device manager list all drivers and readers.
@@ -569,8 +571,11 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
   LCDM_DeviceManager_ListReaders(dm);
   clm->listingClient=0;
 
+  if (flags & LC_NOTIFY_FLAGS_SINGLESHOT)
+    LCCL_Client_SetNotifyFlags(cl, oldFlags);
+
   /* create response for client */
-  dbRsp=GWEN_DB_Group_new("SetNotifyResponse");
+  dbRsp=GWEN_DB_Group_new("Client_SetNotifyResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
@@ -578,7 +583,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
 
   /* send response */
   if (GWEN_IpcManager_SendResponse(clm->ipcManager, rid, dbRsp)) {
-    DBG_ERROR(0, "Could not send response to ClientReady");
+    DBG_ERROR(0, "Could not send response to Client_SetNotify");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
       abort();

@@ -30,7 +30,7 @@ typedef struct LC_CARD LC_CARD;
 
 
 #include <chipcard2-client/client/client.h>
-#include <chipcard2-client/client/pininfo.h>
+#include <chipcard2/sharedstuff/pininfo.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/xml.h>

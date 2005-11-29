@@ -159,7 +159,7 @@ int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
   }
 
   /* send response */
-  dbRsp=GWEN_DB_Group_new("ReleaseCardResponse");
+  dbRsp=GWEN_DB_Group_new("Client_ReleaseCardResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,

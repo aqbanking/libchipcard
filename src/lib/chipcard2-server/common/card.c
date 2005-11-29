@@ -143,6 +143,10 @@ LC_CARD_STATUS LCCO_Card_GetStatus(const LCCO_CARD *cd){
 
 void LCCO_Card_SetStatus(LCCO_CARD *cd, LC_CARD_STATUS st){
   assert(cd);
+  if (cd->status!=st) {
+    DBG_INFO(0, "Changes status of card in reader \"%s\" from %d to %d",
+	     cd->readerType, cd->status, st);
+  }
   cd->status=st;
 }
 

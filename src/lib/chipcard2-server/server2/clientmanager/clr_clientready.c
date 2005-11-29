@@ -95,7 +95,7 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
   LCCL_Client_SetApplicationName(cl, p);
 
   /* create response for client */
-  dbRsp=GWEN_DB_Group_new("ClientReadyResponse");
+  dbRsp=GWEN_DB_Group_new("Client_ReadyResponse");
   GWEN_DB_SetCharValue(dbRsp,
 		       GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "GwenVersion", GWENHYWFAR_VERSION_FULL_STRING);

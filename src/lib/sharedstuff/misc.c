@@ -260,6 +260,9 @@ GWEN_TYPE_UINT32 LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
     else if (strcasecmp(p, "ClientCmdRecv")==0)
       flags|=LC_NOTIFY_FLAGS_CLIENT_CMDRECV;
 
+    else if (strcasecmp(p, "SingleShot")==0)
+      flags|=LC_NOTIFY_FLAGS_SINGLESHOT;
+
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -333,6 +336,10 @@ void LC_NotifyFlags_toDb(GWEN_DB_NODE *db,
   if (fl & LC_NOTIFY_FLAGS_CLIENT_CMDRECV)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          name, "ClientCmdRecv");
+
+  if (fl & LC_NOTIFY_FLAGS_SINGLESHOT)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         name, "SingleShot");
 }
 
 

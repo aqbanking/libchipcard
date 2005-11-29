@@ -244,7 +244,7 @@ int LCCL_ClientManager_WorkCardReset(GWEN_IPC_REQUEST *req) {
     const char *code;
 
     DBG_DEBUG(0, "Sending response to CardReset");
-    dbClientResponse=GWEN_DB_Group_new("CardResetResponse");
+    dbClientResponse=GWEN_DB_Group_new("Client_CardResetResponse");
     code=GWEN_DB_GetCharValue(dbDriverResponse,
                               "data/code", 0, "ERROR");
     assert(code);

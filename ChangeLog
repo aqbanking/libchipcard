@@ -1,4 +1,18 @@
 
+2005/11/29: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug (was abandoning *all* readers when any driver went down)
+- moved pininfo to sharedstuff (is used by all parts of Libchipcard2)
+
+
+2005/11/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added flag LC_NOTIFY_FLAGS_SINGLESHOT to command "Client_SetNotify".
+  With this flag given this command only does send the notifications
+  according to the flags and does not change the server-side notification mask
+  permanently
+
+
 2005/11/26: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - introduced lockmanager. This is now used to lock reader slots for used 
@@ -10,6 +24,7 @@
   upon shutdown of the client) card status checks are resumed.
 - reader notifications now again contain the readerInfo field
 - implemented client-functions to lock and unlock a card reader
+- renamed IPC command names internally to make them unique
 
 
 ===========================================================================

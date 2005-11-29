@@ -99,44 +99,47 @@ int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
   assert(clm);
   assert(name);
 
-  if (strcasecmp(name, "ClientReady")==0) {
+  if (strcasecmp(name, "Client_Ready")==0) {
     rv=LCCL_ClientManager_HandleClientReady(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "SetNotify")==0) {
+  else if (strcasecmp(name, "Client_SetNotify")==0) {
     rv=LCCL_ClientManager_HandleSetNotify(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "StartWait")==0) {
+  else if (strcasecmp(name, "Client_StartWait")==0) {
     rv=LCCL_ClientManager_HandleStartWait(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "StopWait")==0) {
+  else if (strcasecmp(name, "Client_StopWait")==0) {
     rv=LCCL_ClientManager_HandleStopWait(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "TakeCard")==0) {
+  else if (strcasecmp(name, "Client_TakeCard")==0) {
     rv=LCCL_ClientManager_HandleTakeCard(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "ReleaseCard")==0) {
+  else if (strcasecmp(name, "Client_ReleaseCard")==0) {
     rv=LCCL_ClientManager_HandleReleaseCard(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "CommandCard")==0) {
+  else if (strcasecmp(name, "Client_CommandCard")==0) {
     rv=LCCL_ClientManager_HandleExecApdu(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "execCommand")==0) {
+  else if (strcasecmp(name, "Client_ExecCommand")==0) {
     rv=LCCL_ClientManager_HandleExecCommand(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "CardReset")==0) {
+  else if (strcasecmp(name, "Client_CardReset")==0) {
     rv=LCCL_ClientManager_HandleCardReset(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "SelectCard")==0) {
+  else if (strcasecmp(name, "Client_SelectCard")==0) {
     rv=LCCL_ClientManager_HandleSelectCard(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "GetDriverVar")==0) {
+  else if (strcasecmp(name, "Client_GetDriverVar")==0) {
     rv=LCCL_ClientManager_HandleGetDriverVar(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "LockReader")==0) {
+  else if (strcasecmp(name, "Client_LockReader")==0) {
     rv=LCCL_ClientManager_HandleLockReader(clm, rid, name, dbReq);
   }
-  else if (strcasecmp(name, "UnlockReader")==0) {
+  else if (strcasecmp(name, "Client_UnlockReader")==0) {
     rv=LCCL_ClientManager_HandleUnlockReader(clm, rid, name, dbReq);
+  }
+  else if (strcasecmp(name, "Client_ReaderCommand")==0) {
+    rv=LCCL_ClientManager_HandleReaderCmd(clm, rid, name, dbReq);
   }
   /* Insert more handlers here */
   else {

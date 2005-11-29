@@ -83,8 +83,10 @@ int LCCL_ClientManager_HandleExecCommand(LCCL_CLIENTMANAGER *clm,
     return -1;
   }
 
-  DBG_NOTICE(0, "Client %08x: ExecCommand [%s/%s]",
+  cmdName=GWEN_DB_GetCharValue(dbReq, "data/command/name", 0, 0);
+  DBG_NOTICE(0, "Client %08x: ExecCommand \"%s\" [%s/%s]",
              clientId,
+             cmdName,
              LCCL_Client_GetApplicationName(cl),
              LCCL_Client_GetUserName(cl));
 
@@ -199,7 +201,7 @@ int LCCL_ClientManager_HandleExecCommand(LCCL_CLIENTMANAGER *clm,
   assert(target);
 
   /* create CardCommand for reader */
-  dbOutReq=GWEN_DB_Group_new("CardCommand");
+  dbOutReq=GWEN_DB_Group_new("Driver_CardCommand");
   GWEN_DB_SetBinValue(dbOutReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "data",
                       GWEN_Buffer_GetStart(apdu),
@@ -340,7 +342,7 @@ int LCCL_ClientManager_WorkExecCommand(GWEN_IPC_REQUEST *req) {
     }
 
     /* create response for client */
-    dbClientResponse=GWEN_DB_Group_new("CommandCardResponse");
+    dbClientResponse=GWEN_DB_Group_new("Client_CommandCardResponse");
     GWEN_DB_SetCharValue(dbClientResponse,
 			 GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "Ok");

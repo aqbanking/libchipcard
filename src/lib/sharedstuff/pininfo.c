@@ -14,6 +14,7 @@
 #include <strings.h>
 
 
+
 GWEN_INHERIT_FUNCTIONS(LC_PININFO)
 GWEN_LIST_FUNCTIONS(LC_PININFO, LC_PinInfo)
 GWEN_LIST2_FUNCTIONS(LC_PININFO, LC_PinInfo)
@@ -159,6 +160,8 @@ void LC_PinInfo_SetName(LC_PININFO *st, const char *d) {
 }
 
 
+
+
 GWEN_TYPE_UINT32 LC_PinInfo_GetId(const LC_PININFO *st) {
   assert(st);
   return st->id;
@@ -170,6 +173,8 @@ void LC_PinInfo_SetId(LC_PININFO *st, GWEN_TYPE_UINT32 d) {
   st->id=d;
   st->_modified=1;
 }
+
+
 
 
 LC_PININFO_ENCODING LC_PinInfo_GetEncoding(const LC_PININFO *st) {
@@ -185,6 +190,8 @@ void LC_PinInfo_SetEncoding(LC_PININFO *st, LC_PININFO_ENCODING d) {
 }
 
 
+
+
 int LC_PinInfo_GetMinLength(const LC_PININFO *st) {
   assert(st);
   return st->minLength;
@@ -196,6 +203,8 @@ void LC_PinInfo_SetMinLength(LC_PININFO *st, int d) {
   st->minLength=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_PinInfo_GetMaxLength(const LC_PININFO *st) {
@@ -211,6 +220,8 @@ void LC_PinInfo_SetMaxLength(LC_PININFO *st, int d) {
 }
 
 
+
+
 int LC_PinInfo_GetAllowChange(const LC_PININFO *st) {
   assert(st);
   return st->allowChange;
@@ -224,6 +235,8 @@ void LC_PinInfo_SetAllowChange(LC_PININFO *st, int d) {
 }
 
 
+
+
 int LC_PinInfo_GetFiller(const LC_PININFO *st) {
   assert(st);
   return st->filler;
@@ -235,6 +248,8 @@ void LC_PinInfo_SetFiller(LC_PININFO *st, int d) {
   st->filler=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_PinInfo_IsModified(const LC_PININFO *st) {

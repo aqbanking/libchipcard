@@ -67,7 +67,7 @@ int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
   LCCL_Client_AddWaitRequestCount(cl);
 
   /* send all cards we already know, create response */
-  dbRsp=GWEN_DB_Group_new("StartWaitResponse");
+  dbRsp=GWEN_DB_Group_new("Client_StartWaitResponse");
   rv=LCCL_ClientManager__SendInitialCards(clm, cl);
   if (rv) {
     DBG_ERROR(0, "Could not send card inserted messages");

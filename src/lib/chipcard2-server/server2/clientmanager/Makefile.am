@@ -26,7 +26,8 @@ libclientmgr_la_SOURCES=\
   clr_selectcard.c \
   clr_getdrivervar.c \
   clr_lockreader.c \
-  clr_unlockreader.c
+  clr_unlockreader.c \
+  clr_readercmd.c
 
 
 MAINTAINERCLEANFILES=Makefile.in

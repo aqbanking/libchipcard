@@ -140,7 +140,7 @@ int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
   LCCL_Client_DelReader(cl, readerId);
 
   /* send response */
-  dbRsp=GWEN_DB_Group_new("UnlockReaderResponse");
+  dbRsp=GWEN_DB_Group_new("Client_UnlockReaderResponse");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "code", "OK");
   GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,

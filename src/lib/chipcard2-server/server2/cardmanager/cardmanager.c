@@ -347,10 +347,11 @@ int LCCM_CardManager_Work(LCCM_CARDMANAGER *cm){
 
     if (currSt!=LC_CardStatusInserted) {
       if (currSt!=lastSt) {
-        DBG_NOTICE(0, "Card %08x/%d/%08x removed",
+        DBG_NOTICE(0, "Card %08x/%d/%08x removed (%d)",
                    LCCO_Card_GetReaderId(card),
                    LCCO_Card_GetSlotNum(card),
-                   LCCO_Card_GetReadersCardId(card));
+                   LCCO_Card_GetReadersCardId(card),
+                   currSt);
       }
 
       if (LCCM_Card_GetReaderIsInUse(card)) {

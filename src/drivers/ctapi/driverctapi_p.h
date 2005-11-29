@@ -80,8 +80,14 @@ GWEN_TYPE_UINT32  DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 GWEN_TYPE_UINT32  DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
 const char *DriverCTAPI_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
+GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+                                            GWEN_BUFFER *buf);
+
+
 GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf);
+GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
+                                             GWEN_BUFFER *buf);
 
 LCD_READER *DriverCTAPI_CreateReader(LCD_DRIVER *d,
                                     GWEN_TYPE_UINT32 readerId,

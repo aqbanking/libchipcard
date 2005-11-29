@@ -61,6 +61,7 @@ typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_READERSTATUS_FN)(LCD_DRIVER *d,
 typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_READERINFO_FN)(LCD_DRIVER *d,
                                                     LCD_READER *r,
                                                     GWEN_BUFFER *buf);
+
 typedef LCD_READER* (*LCD_DRIVER_CREATEREADER_FN)(LCD_DRIVER *d,
                                                 GWEN_TYPE_UINT32 readerId,
                                                 const char *name,
