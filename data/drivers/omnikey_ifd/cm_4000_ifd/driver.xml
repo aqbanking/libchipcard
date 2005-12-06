@@ -35,6 +35,25 @@
           <flag>keypad</flag>
         </flags>
       -->
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>Pcmcia</busorder>
+        <sortkey>BusPos</sortKey>
+        <offset>0</offset>
+      </autoport>
+      
+      <ports>
+        <port value="0">Device0</port>
+        <port value="1">Device1</port>
+        <port value="2">Device2</port>
+        <port value="3">Device3</port>
+        <port value="4">Device4</port>
+        <port value="5">Device5</port>
+        <port value="6">Device6</port>
+        <port value="7">Device7</port>
+      </ports>
+
     </reader>
 
   </readers>

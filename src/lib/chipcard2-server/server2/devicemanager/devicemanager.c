@@ -2478,6 +2478,22 @@ int LCDM_DeviceManager__GetAutoPortByPos(GWEN_DB_NODE *dbReader,
 	    tdev=LC_Device_List_Next(tdev);
 	  }
 	} /* if sorted by vendor and product */
+        else if (strcasecmp(sortKey, "BusPos")==0) {
+	  LC_DEVICE *tdev;
+
+	  tdev=LC_Device_List_First(deviceList);
+	  while(tdev) {
+	    if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev) &&
+		LC_Device_GetBusId(tdev)==LC_Device_GetBusId(dev) &&
+		LC_Device_GetDeviceId(tdev)==LC_Device_GetDeviceId(dev)) {
+	      foundDev=1;
+	      break;
+	    }
+	    if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev))
+	      pos++;
+	    tdev=LC_Device_List_Next(tdev);
+	  }
+	} /* if sorted by position */
 	else {
 	  DBG_ERROR(0, "Unknown sort key \"%s\"", sortKey);
           return -1;
