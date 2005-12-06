@@ -1,4 +1,11 @@
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#ifdef BUILDING_LIBCHIPCARD2_DLL
+# undef BUILDING_LIBCHIPCARD2_DLL
+#endif
 
 #define GWEN_EXTEND_WAITCALLBACK
 #include <gwenhywfar/logger.h>
