@@ -10,7 +10,9 @@ noinst_HEADERS=\
   dm_driver_p.h \
   dm_driver_l.h \
   dm_reader_p.h \
-  dm_reader_l.h
+  dm_reader_l.h \
+  dm_slot_l.h \
+  dm_slot_p.h
 
 libdevmgr_la_SOURCES=\
   devicemanager.c \

@@ -1,2 +1,2 @@
-- fixed a bug (was abandoning *all* readers when any driver went down)
-- moved pininfo to sharedstuff (is used by all parts of Libchipcard2)
+- added support for Omnikey Cardman 4000 (uses proprietary driver from
+  http://www.omnikey.at)

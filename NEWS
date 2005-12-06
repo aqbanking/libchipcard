@@ -1,5 +1,14 @@
+
 ===========================================================================
-MARK: released version 1.9.17beta (2005/11/22)
+                 Libchipcard2 1.9.18beta (2005/12/02)
+===========================================================================
+
+This release fixes some minor bugs. Introduced direct reader usage for clients
+(needed for Reiner SCT Ecom Biometrics).
+
+
+===========================================================================
+                 Libchipcard2 1.9.17beta (2005/11/22)
 ===========================================================================
 
 This release adapts to Gwenhywfar2, creates some needed folders and improves

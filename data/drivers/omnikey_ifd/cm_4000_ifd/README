@@ -1,0 +1,13 @@
+
+Howto install the proprietary driver from http://www.omnikey.at
+===============================================================
+
+1) download the driver
+2) unpack the downloaded file
+3) enter folder created by previous step
+4) "./install --nopcscd"
+
+This should create all necessary files and install the driver to appropriate
+locations where Libchipcard2 should find them.
+
+

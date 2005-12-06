@@ -13,8 +13,8 @@ AC_CONFIG_HEADER([config.h])
 #
 CHIPCARD_VERSION_MAJOR=1
 CHIPCARD_VERSION_MINOR=9
-CHIPCARD_VERSION_PATCHLEVEL=17
-CHIPCARD_VERSION_BUILD=4
+CHIPCARD_VERSION_PATCHLEVEL=18
+CHIPCARD_VERSION_BUILD=1
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -236,7 +236,7 @@ AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(1,99,0,0)
+AC_GWENHYWFAR(1,99,1,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -482,6 +482,8 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/cyberjack2_ctapi/Makefile
                  data/drivers/kobil_ctapi/Makefile
                  data/drivers/omnikey_ifd/Makefile
+                 data/drivers/omnikey_ifd/cm_2020_ifd/Makefile
+                 data/drivers/omnikey_ifd/cm_4000_ifd/Makefile
                  data/drivers/orga_ctapi/Makefile
                  data/drivers/scmx32_ifd/Makefile
                  data/drivers/scm33x_ifd/Makefile
