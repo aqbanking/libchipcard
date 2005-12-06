@@ -4,6 +4,7 @@
 - added support for Omnikey Cardman 4000 (uses proprietary driver from
   http://www.omnikey.at)
 - added autoport sortkey "BusPos"
+- no longer install cyberjack2_ctapi stuff
 
 
 ===========================================================================
