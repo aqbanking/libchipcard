@@ -106,7 +106,11 @@ GWEN_TYPE_UINT32 LC_Device_GetDeviceId(const LC_DEVICE *ud);
 GWEN_TYPE_UINT32 LC_Device_GetVendorId(const LC_DEVICE *ud);
 GWEN_TYPE_UINT32 LC_Device_GetProductId(const LC_DEVICE *ud);
 
+const char *LC_Device_GetDriverType(const LC_DEVICE *ud);
+void LC_Device_SetDriverType(LC_DEVICE *ud, const char *s);
 
+const char *LC_Device_GetReaderType(const LC_DEVICE *ud);
+void LC_Device_SetReaderType(LC_DEVICE *ud, const char *s);
 
 
 #endif /* CHIPCARD_SERVER_DEVMONITOR_H */

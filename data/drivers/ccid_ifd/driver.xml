@@ -175,6 +175,37 @@
       </flags>
       <image>scm_pinpadX32.jpg</image>
     </reader>
+
+    <reader name="ko_kaan_base_usb" busType="UsbRaw"
+            vendor="0x0d46" product="0x3001" >
+      <short>Kaan Advanced (USB)</short>
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>BusPos</sortKey>
+        <offset>1</offset>
+      </autoport>
+
+      <flags>
+      </flags>
+    </reader>
+
+    <reader name="ko_kaan_advanced_usb" busType="UsbRaw"
+            vendor="0x0d46" product="0x3002" >
+      <short>Kaan Advanced (USB)</short>
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>DriverType</sortKey>
+        <offset>0</offset>
+      </autoport>
+
+      <flags>
+        <!-- <flag>keypad</flag> -->
+      </flags>
+    </reader>
     
   </readers>
 

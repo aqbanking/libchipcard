@@ -105,7 +105,7 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Loading library")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Loading library", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -114,12 +114,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHCreateChannel",
+                             "IFDHCreateChannel",
                              (void*)&dct->createChannelFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -128,12 +128,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHCloseChannel",
+                             "IFDHCloseChannel",
                              (void*)&dct->closeChannelFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -142,12 +142,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHPowerICC",
+                             "IFDHPowerICC",
                              (void*)&dct->powerIccFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -156,12 +156,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHTransmitToICC",
+                             "IFDHTransmitToICC",
                              (void*)&dct->transmitFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -170,12 +170,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHControl",
+                             "IFDHControl",
                              (void*)&dct->controlFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -184,12 +184,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHICCPresence",
+                             "IFDHICCPresence",
                              (void*)&dct->presenceFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -198,12 +198,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   err=GWEN_LibLoader_Resolve(dct->libLoader,
-                             "CCIDHGetCapabilities",
+                             "IFDHGetCapabilities",
                              (void*)&dct->getCapsFn);
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -212,7 +212,12 @@ int DriverCCID_Start(LCD_DRIVER *d) {
   }
 
   /* send status report to server */
-  if (LCD_Driver_Connect(d, "OK", "Library loaded")) {
+  if (LCD_Driver_Connect(d, "OK", "Library loaded",
+                         /* this driver knows how to verify/modify the pin */
+                         LC_DRIVER_FLAGS_HAS_VERIFY_FN |
+                         LC_DRIVER_FLAGS_HAS_MODIFY_FN,
+                         LC_DRIVER_FLAGS_HAS_VERIFY_FN |
+                         LC_DRIVER_FLAGS_HAS_MODIFY_FN)) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;
@@ -726,6 +731,40 @@ GWEN_TYPE_UINT32 DriverCCID_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
     return DRIVER_CCID_ERROR_NO_SLOTS_DISCONNECTED;
   }
   return 0;
+}
+
+
+
+GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft) {
+  DRIVER_CCID *dct;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CCID, d);
+  assert(dct);
+
+  /* for now */
+  return DRIVER_CCID_ERROR_NOT_SUPPORTED;
+}
+
+
+
+GWEN_TYPE_UINT32 DriverCCID_PerformModification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft) {
+  DRIVER_CCID *dct;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CCID, d);
+  assert(dct);
+
+  /* for now */
+  return DRIVER_CCID_ERROR_NOT_SUPPORTED;
 }
 
 

@@ -99,6 +99,8 @@ LC_DEVICE *LC_Device_new(LC_DEVICE_BUSTYPE busType,
 void LC_Device_free(LC_DEVICE *ud) {
   if (ud) {
     GWEN_LIST_FINI(LC_DEVICE, ud);
+    free(ud->driverType);
+    free(ud->readerType);
     free(ud->path);
     GWEN_FREE_OBJECT(ud);
     DBG_MEM_DEC("LC_DEVICE");
@@ -169,6 +171,38 @@ void LC_Device_SetPath(LC_DEVICE *ud, const char *s) {
   free(ud->path);
   if (s) ud->path=strdup(s);
   else ud->path=0;
+}
+
+
+
+const char *LC_Device_GetDriverType(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->driverType;
+}
+
+
+
+void LC_Device_SetDriverType(LC_DEVICE *ud, const char *s) {
+  assert(ud);
+  free(ud->driverType);
+  if (s) ud->driverType=strdup(s);
+  else ud->driverType=0;
+}
+
+
+
+const char *LC_Device_GetReaderType(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->readerType;
+}
+
+
+
+void LC_Device_SetReaderType(LC_DEVICE *ud, const char *s) {
+  assert(ud);
+  free(ud->readerType);
+  if (s) ud->readerType=strdup(s);
+  else ud->readerType=0;
 }
 
 

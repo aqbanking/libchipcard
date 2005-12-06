@@ -31,60 +31,6 @@ static GWEN_TYPE_UINT32 LCDM_Driver_LastId=0;
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name) {
-  const char *p;
-  int i;
-  GWEN_TYPE_UINT32 flags=0;
-
-  for (i=0; ; i++) {
-    p=GWEN_DB_GetCharValue(db, name, i, 0);
-    if (!p)
-      break;
-    if (strcasecmp(p, "auto")==0)
-      flags|=LCDM_DRIVER_FLAGS_AUTO;
-    else if (strcasecmp(p, "remote")==0)
-      flags|=LCDM_DRIVER_FLAGS_REMOTE;
-    else if (strcasecmp(p, "has_verify_fn")==0)
-      flags|=LCDM_DRIVER_FLAGS_HAS_VERIFY_FN;
-    else if (strcasecmp(p, "has_modify_fn")==0)
-      flags|=LCDM_DRIVER_FLAGS_HAS_MODIFY_FN;
-    else if (strcasecmp(p, "config")==0)
-      flags|=LCDM_DRIVER_FLAGS_CONFIG;
-    else {
-      DBG_WARN(0, "Unknown driver flag \"%s\"", p);
-    }
-  }
-
-  return flags;
-}
-
-
-
-int LCDM_Driver_Flag_toDb(GWEN_DB_NODE *db, const char *name,
-                        GWEN_TYPE_UINT32 flags) {
-  GWEN_DB_DeleteVar(db, name);
-  if (flags & LCDM_DRIVER_FLAGS_AUTO)
-    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "auto"))
-      return -1;
-  if (flags & LCDM_DRIVER_FLAGS_REMOTE)
-    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "remote"))
-      return -1;
-  if (flags & LCDM_DRIVER_FLAGS_CONFIG)
-    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "config"))
-      return -1;
-  if (flags & LCDM_DRIVER_FLAGS_HAS_VERIFY_FN)
-    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name,
-                             "has_verify_fn"))
-      return -1;
-  if (flags & LCDM_DRIVER_FLAGS_HAS_MODIFY_FN)
-    if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name,
-                             "has_modify_fn"))
-      return -1;
-
-  return 0;
-}
-
-
 
 LCDM_DRIVER *LCDM_Driver_new(){
   LCDM_DRIVER *d;
@@ -155,8 +101,8 @@ LCDM_DRIVER *LCDM_Driver_fromDb(GWEN_DB_NODE *db){
   if (p)
     d->logFile=strdup(p);
 
-  d->driverFlags=(LCDM_Driver_Flag_fromDb(db, "flags") &
-                  ~LCDM_DRIVER_FLAGS_RUNTIME_MASK);
+  d->driverFlags=(LC_DriverFlags_fromDb(db, "flags") &
+                  ~LC_DRIVER_FLAGS_RUNTIME_MASK);
 
 
   d->idleSince=time(0);
@@ -223,8 +169,8 @@ void LCDM_Driver_toDb(const LCDM_DRIVER *d, GWEN_DB_NODE *db){
   }
 
   /* store driver flags */
-  LCDM_Driver_Flag_toDb(db, "flags",
-                      d->driverFlags & ~LCDM_DRIVER_FLAGS_RUNTIME_MASK);
+  LC_DriverFlags_toDb(db, "flags",
+                      d->driverFlags & ~LC_DRIVER_FLAGS_RUNTIME_MASK);
 
 }
 
@@ -625,7 +571,7 @@ void LCDM_Driver_Dump(const LCDM_DRIVER *d, FILE *f, int indent) {
     fprintf(f, " ");
 
   dbT=GWEN_DB_Group_new("flags");
-  LCDM_Driver_Flag_toDb(dbT, "flags", d->driverFlags);
+  LC_DriverFlags_toDb(dbT, "flags", d->driverFlags);
   for (i=0; i<indent; i++)
     fprintf(f, " ");
   fprintf(f, "Driver flags : ");

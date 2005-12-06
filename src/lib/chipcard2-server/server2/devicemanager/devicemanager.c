@@ -217,7 +217,7 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
     if (!LCDM_Driver_GetLogFile(d)) {
       LCDM_DeviceManager_SetDriverLogFile(dm, d);
     }
-    LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_CONFIG);
+    LCDM_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_CONFIG);
 
     DBG_INFO(0, "Adding driver \"%s\"", LCDM_Driver_GetDriverName(d));
     LCDM_Driver_List_Add(d, dm->drivers);
@@ -894,8 +894,8 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
               LCDM_Driver_GetDriverName(d), dst);
 
   dflags=LCDM_Driver_GetDriverFlags(d);
-  if (!(dflags & LCDM_DRIVER_FLAGS_REMOTE) &&
-      (dflags & LCDM_DRIVER_FLAGS_AUTO) &&
+  if (!(dflags & LC_DRIVER_FLAGS_REMOTE) &&
+      (dflags & LC_DRIVER_FLAGS_AUTO) &&
       (LCDM_Driver_GetAssignedReadersCount(d)==0)){
     GWEN_TYPE_UINT32 ipcId;
 
@@ -912,7 +912,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   } /* if local idle driver timed out*/
 
   if (dst==LC_DriverStatusAborted) {
-    if (!(LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE) &&
+    if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) &&
         LCDM_Driver_CheckTimeout(d)) {
       DBG_NOTICE(0, "Reenabling driver \"%s\"",
                  LCDM_Driver_GetDriverName(d));
@@ -1017,7 +1017,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       }
     } /* if process */
     else {
-      if (!(LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE)) {
+      if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
         DBG_ERROR(0, "No process for local driver:");
         LCDM_Driver_Dump(d, stderr, 2);
         abort();
@@ -1094,7 +1094,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
         }
       } /* if process */
       else {
-        if (!(LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE)) {
+        if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
           DBG_ERROR(0, "No process for local driver:");
           LCDM_Driver_Dump(d, stderr, 2);
           abort();
@@ -1129,7 +1129,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       }
     } /* if process */
     else {
-      if (!(LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE)) {
+      if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)) {
         DBG_ERROR(0, "No process for local driver:");
         LCDM_Driver_Dump(d, stderr, 2);
         abort();
@@ -1163,7 +1163,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       t=LCDM_Driver_GetIdleSince(d);
       assert(t);
 
-      if (!(LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE) &&
+      if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) &&
           dm->driverIdleTimeout &&
           (difftime(time(0), t)>dm->driverIdleTimeout)) {
         GWEN_TYPE_UINT32 rid;
@@ -1794,6 +1794,8 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_NODE *dbRsp;
   GWEN_TYPE_UINT32 driverId;
   GWEN_TYPE_UINT32 nodeId;
+  GWEN_TYPE_UINT32 driverFlagsValue;
+  GWEN_TYPE_UINT32 driverFlagsMask;
   LCDM_DRIVER *d;
   const char *code;
   const char *text;
@@ -1909,14 +1911,25 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     assert(d);
     LCDM_Driver_SetIpcId(d, nodeId);
     driverId=LCDM_Driver_GetDriverId(d);
-    LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_REMOTE);
-    LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_AUTO);
+    LCDM_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_REMOTE);
+    LCDM_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_AUTO);
 
     /* add driver to list */
     DBG_NOTICE(0, "Adding remote driver \"%s\"", dtype);
     LCDM_Driver_List_Add(d, dm->drivers);
     driverCreated=1;
   } /* if driver does not exist */
+
+  driverFlagsValue=LC_DriverFlags_fromDb(dbReq, "data/driverFlagsValue");
+  driverFlagsMask=LC_DriverFlags_fromDb(dbReq, "data/driverFlagsMask");
+  if (driverFlagsMask) {
+    GWEN_TYPE_UINT32 x;
+
+    x=((LCDM_Driver_GetDriverFlags(d) ^ driverFlagsValue) &
+       driverFlagsMask) &
+      ~LC_DRIVER_FLAGS_RUNTIME_MASK; /* don't change runtime flags */
+    LCDM_Driver_SetDriverFlags(d, x);
+  }
 
   /* create all readers enumerated by the driver */
   dbReader=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
@@ -1952,7 +1965,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     LCDM_Driver_IncAssignedReadersCount(d);
     DBG_NOTICE(0, "Adding reader \"%s\" (enumerated by the driver)",
                LCDM_Reader_GetReaderName(r));
-    if (LCDM_Driver_GetDriverFlags(d) & LCDM_DRIVER_FLAGS_REMOTE)
+    if (LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE)
       /* if the driver is remote, so is the reader */
       LCDM_Reader_AddFlags(r, LC_READER_FLAGS_REMOTE);
 
@@ -2494,10 +2507,50 @@ int LCDM_DeviceManager__GetAutoPortByPos(GWEN_DB_NODE *dbReader,
 	    tdev=LC_Device_List_Next(tdev);
 	  }
 	} /* if sorted by position */
+        else if (strcasecmp(sortKey, "DriverType")==0) {
+          LC_DEVICE *tdev;
+
+	  tdev=LC_Device_List_First(deviceList);
+          while(tdev) {
+            const char *s1, *s2;
+
+            if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev) &&
+		LC_Device_GetBusId(tdev)==LC_Device_GetBusId(dev) &&
+		LC_Device_GetDeviceId(tdev)==LC_Device_GetDeviceId(dev)) {
+	      foundDev=1;
+	      break;
+            }
+            s1=LC_Device_GetDriverType(dev);
+            s2=LC_Device_GetDriverType(tdev);
+            if (s1 && s2 && strcasecmp(s1, s2)==0)
+              pos++;
+	    tdev=LC_Device_List_Next(tdev);
+	  }
+	} /* if sorted by driverType */
+        else if (strcasecmp(sortKey, "ReaderType")==0) {
+          LC_DEVICE *tdev;
+
+	  tdev=LC_Device_List_First(deviceList);
+          while(tdev) {
+            const char *s1, *s2;
+
+            if (LC_Device_GetBusType(tdev)==LC_Device_GetBusType(dev) &&
+		LC_Device_GetBusId(tdev)==LC_Device_GetBusId(dev) &&
+		LC_Device_GetDeviceId(tdev)==LC_Device_GetDeviceId(dev)) {
+	      foundDev=1;
+	      break;
+            }
+            s1=LC_Device_GetReaderType(dev);
+            s2=LC_Device_GetReaderType(tdev);
+            if (s1 && s2 && strcasecmp(s1, s2)==0)
+              pos++;
+	    tdev=LC_Device_List_Next(tdev);
+	  }
+	} /* if sorted by readerType */
 	else {
 	  DBG_ERROR(0, "Unknown sort key \"%s\"", sortKey);
           return -1;
-	}
+        }
       }
       else {
         DBG_WARN(0, "Unknown bus type \"%s\"", bt);
@@ -2594,7 +2647,7 @@ void LCDM_DeviceManager_SetDriverLogFile(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
-				const LC_DEVICE *ud,
+                                LC_DEVICE *ud,
 				const LC_DEVICE_LIST *deviceList) {
   GWEN_DB_NODE *dbDriver;
   GWEN_DB_NODE *dbReader=0;
@@ -2644,9 +2697,11 @@ int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
     /* found reader and driver */
     dname=GWEN_DB_GetCharValue(dbDriver, "driverName", 0, 0);
     assert(dname);
+    LC_Device_SetDriverType(ud, dname);
 
     rtype=GWEN_DB_GetCharValue(dbReader, "readerType", 0, 0);
     assert(rtype);
+    LC_Device_SetReaderType(ud, rtype);
 
     d=LCDM_Driver_List_First(dm->drivers);
     while(d) {
@@ -2671,7 +2726,7 @@ int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
       if (!LCDM_Driver_GetLogFile(d)) {
         LCDM_DeviceManager_SetDriverLogFile(dm, d);
       }
-      LCDM_Driver_AddDriverFlags(d, LCDM_DRIVER_FLAGS_AUTO);
+      LCDM_Driver_AddDriverFlags(d, LC_DRIVER_FLAGS_AUTO);
       LCDM_Driver_List_Add(d, dm->drivers);
     }
 

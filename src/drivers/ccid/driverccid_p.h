@@ -115,6 +115,18 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
 GWEN_TYPE_UINT32 DriverCCID_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                       GWEN_BUFFER *buf);
 
+GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft);
+
+GWEN_TYPE_UINT32 DriverCCID_PerformModification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft);
+
 const char *DriverCCID_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
 
 

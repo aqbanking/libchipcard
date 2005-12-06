@@ -22,6 +22,8 @@ typedef struct LCD_DRIVER LCD_DRIVER;
 #include <gwenhywfar/types.h>
 
 #include "reader_l.h"
+#include <chipcard2/sharedstuff/pininfo.h>
+
 
 #define LCD_DRIVER_IPC_MAXWORK 256
 
@@ -63,20 +65,34 @@ typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_READERINFO_FN)(LCD_DRIVER *d,
                                                     GWEN_BUFFER *buf);
 
 typedef LCD_READER* (*LCD_DRIVER_CREATEREADER_FN)(LCD_DRIVER *d,
-                                                GWEN_TYPE_UINT32 readerId,
-                                                const char *name,
-                                                int port,
-                                                unsigned int slots,
-                                                GWEN_TYPE_UINT32 flags);
+                                                  GWEN_TYPE_UINT32 readerId,
+                                                  const char *name,
+                                                  int port,
+                                                  unsigned int slots,
+                                                  GWEN_TYPE_UINT32 flags);
 
 typedef const char* (*LCD_DRIVER_GETERRORTEXT_FN)(LCD_DRIVER *d,
-                                                 GWEN_TYPE_UINT32 err);
+                                                  GWEN_TYPE_UINT32 err);
 
 
 typedef int (*LCD_DRIVER_HANDLEREQUEST_FN)(LCD_DRIVER *d,
                                            GWEN_TYPE_UINT32 rid,
                                            const char *name,
                                            GWEN_DB_NODE *dbReq);
+
+typedef GWEN_TYPE_UINT32
+  (*LCD_DRIVER_PERFORMVERIFICATION_FN)(LCD_DRIVER *d,
+                                       LCD_READER *r,
+                                       LCD_SLOT *slot,
+                                       const LC_PININFO *pi,
+                                       int *triesLeft);
+
+typedef GWEN_TYPE_UINT32
+  (*LCD_DRIVER_PERFORMMODIFICATION_FN)(LCD_DRIVER *d,
+                                       LCD_READER *r,
+                                       LCD_SLOT *slot,
+                                       const LC_PININFO *pi,
+                                       int *triesLeft);
 
 
 void LCD_Driver_Usage(const char *prgName);
@@ -128,7 +144,9 @@ void LCD_Driver_AddReader(LCD_DRIVER *d, LCD_READER *r);
 void LCD_Driver_DelReader(LCD_DRIVER *d, LCD_READER *r);
 
 int LCD_Driver_Connect(LCD_DRIVER *d,
-                      const char *code, const char *text);
+                       const char *code, const char *text,
+                       GWEN_TYPE_UINT32 dflagsValue,
+                       GWEN_TYPE_UINT32 dflagsMask);
 void LCD_Driver_Disconnect(LCD_DRIVER *d);
 int LCD_Driver_SendStatusChangeNotification(LCD_DRIVER *d,
                                            LCD_SLOT *sl);
@@ -165,11 +183,23 @@ GWEN_TYPE_UINT32 LCD_Driver_ReaderInfo(LCD_DRIVER *d,
                                       GWEN_BUFFER *buf);
 
 LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
-                                  GWEN_TYPE_UINT32 readerId,
-                                  const char *name,
-                                  int port,
-                                  unsigned int slots,
-                                  GWEN_TYPE_UINT32 flags);
+                                    GWEN_TYPE_UINT32 readerId,
+                                    const char *name,
+                                    int port,
+                                    unsigned int slots,
+                                    GWEN_TYPE_UINT32 flags);
+
+GWEN_TYPE_UINT32 LCD_Driver_PerformVerification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft);
+
+GWEN_TYPE_UINT32 LCD_Driver_PerformModification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft);
 
 
 void LCD_Driver_SetSendApduFn(LCD_DRIVER *d, LCD_DRIVER_SENDAPDU_FN fn);
@@ -189,6 +219,10 @@ void LCD_Driver_SetCreateReaderFn(LCD_DRIVER *d,
                                  LCD_DRIVER_CREATEREADER_FN fn);
 void LCD_Driver_SetGetErrorTextFn(LCD_DRIVER *d,
                                   LCD_DRIVER_GETERRORTEXT_FN fn);
+void LCD_Driver_SetPerformVerificationFn(LCD_DRIVER *d,
+                                         LCD_DRIVER_PERFORMVERIFICATION_FN f);
+void LCD_Driver_SetPerformModificationFn(LCD_DRIVER *d,
+                                         LCD_DRIVER_PERFORMMODIFICATION_FN f);
 void LCD_Driver_SetHandleRequestFn(LCD_DRIVER *d,
                                    LCD_DRIVER_HANDLEREQUEST_FN fn);
 

@@ -24,27 +24,12 @@ typedef struct LCDM_DRIVER LCDM_DRIVER;
 
 #include <time.h>
 
-/** driver is a remote driver, not started by the server */
-#define LCDM_DRIVER_FLAGS_RUNTIME_MASK  0xffff0000
-#define LCDM_DRIVER_FLAGS_AUTO          0x00010000
-#define LCDM_DRIVER_FLAGS_REMOTE        0x00020000
-#define LCDM_DRIVER_FLAGS_CONFIG        0x00040000
-
-#define LCDM_DRIVER_FLAGS_HAS_VERIFY_FN 0x00000001
-#define LCDM_DRIVER_FLAGS_HAS_MODIFY_FN 0x00000002
-
 
 GWEN_LIST_FUNCTION_DEFS(LCDM_DRIVER, LCDM_Driver);
 
 
 #include <chipcard2/chipcard2.h>
 #include "devicemanager_l.h"
-
-
-GWEN_TYPE_UINT32 LCDM_Driver_Flag_fromDb(GWEN_DB_NODE *db, const char *name);
-int LCDM_Driver_Flag_toDb(GWEN_DB_NODE *db,
-                          const char *name,
-                          GWEN_TYPE_UINT32 flags);
 
 
 LCDM_DRIVER *LCDM_Driver_new();

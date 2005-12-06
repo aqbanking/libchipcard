@@ -79,6 +79,23 @@ CHIPCARD_API void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
                                       const char *name,
                                       GWEN_TYPE_UINT32 fl);
 
+/** driver is a remote driver, not started by the server */
+#define LC_DRIVER_FLAGS_RUNTIME_MASK  0xffff0000
+#define LC_DRIVER_FLAGS_AUTO          0x00010000
+#define LC_DRIVER_FLAGS_REMOTE        0x00020000
+#define LC_DRIVER_FLAGS_CONFIG        0x00040000
+
+#define LC_DRIVER_FLAGS_HAS_VERIFY_FN 0x00000001
+#define LC_DRIVER_FLAGS_HAS_MODIFY_FN 0x00000002
+
+CHIPCARD_API
+GWEN_TYPE_UINT32 LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name);
+
+CHIPCARD_API
+int LC_DriverFlags_toDb(GWEN_DB_NODE *db,
+                        const char *name,
+                        GWEN_TYPE_UINT32 flags);
+
 
 /** service provided by a client */
 #define LC_SERVICE_FLAGS_RUNTIME_MASK (\

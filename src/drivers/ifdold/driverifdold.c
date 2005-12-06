@@ -104,7 +104,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Loading library")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Loading library", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -118,7 +118,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -132,7 +132,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -146,7 +146,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -160,7 +160,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -174,7 +174,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -188,7 +188,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -202,7 +202,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols")) {
+    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -211,7 +211,7 @@ int DriverIFDOld_Start(LCD_DRIVER *d) {
   }
 
   /* send status report to server */
-  if (LCD_Driver_Connect(d, "OK", "Library loaded")) {
+  if (LCD_Driver_Connect(d, "OK", "Library loaded", 0, 0)) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;

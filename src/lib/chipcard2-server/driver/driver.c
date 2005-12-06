@@ -657,7 +657,10 @@ int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
 
 
 
-int LCD_Driver_Connect(LCD_DRIVER *d, const char *code, const char *text){
+int LCD_Driver_Connect(LCD_DRIVER *d,
+                       const char *code, const char *text,
+                       GWEN_TYPE_UINT32 dflagsValue,
+                       GWEN_TYPE_UINT32 dflagsMask) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   time_t startt;
@@ -961,11 +964,11 @@ GWEN_TYPE_UINT32 LCD_Driver_ReaderInfo(LCD_DRIVER *d,
 
 
 LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
-                                  GWEN_TYPE_UINT32 readerId,
-                                  const char *name,
-                                  int port,
-                                  unsigned int slots,
-                                  GWEN_TYPE_UINT32 flags){
+                                    GWEN_TYPE_UINT32 readerId,
+                                    const char *name,
+                                    int port,
+                                    unsigned int slots,
+                                    GWEN_TYPE_UINT32 flags){
   LCD_READER *r;
 
   assert(d);
@@ -1062,6 +1065,24 @@ void LCD_Driver_SetGetErrorTextFn(LCD_DRIVER *d,
                                  LCD_DRIVER_GETERRORTEXT_FN fn){
   assert(d);
   d->getErrorTextFn=fn;
+}
+
+
+
+void
+LCD_Driver_SetPerformVerificationFn(LCD_DRIVER *d,
+                                    LCD_DRIVER_PERFORMVERIFICATION_FN fn){
+  assert(d);
+  d->performVerificationFn=fn;
+}
+
+
+
+void
+LCD_Driver_SetPerformModificationFn(LCD_DRIVER *d,
+                                    LCD_DRIVER_PERFORMMODIFICATION_FN fn){
+  assert(d);
+  d->performModificationFn=fn;
 }
 
 
@@ -2031,6 +2052,334 @@ int LCD_Driver_HandleResumeCheck(LCD_DRIVER *d,
 
 
 
+int LCD_Driver_HandleVerify(LCD_DRIVER *d,
+                            GWEN_TYPE_UINT32 rid,
+                            GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 readerId;
+  GWEN_DB_NODE *dbRsp;
+  GWEN_DB_NODE *dbT;
+  LCD_READER *r;
+  char numbuf[16];
+  int slotNum;
+  int cardNum;
+  LCD_SLOT *slot;
+  char retval;
+  int readerError;
+  LC_PININFO *pi;
+  int triesLeft;
+
+  assert(d);
+  assert(dbReq);
+
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
+                "%x",
+                &readerId)) {
+    DBG_ERROR(0, "Bad readerId");
+    /* TODO: send error result */
+    return -1;
+  }
+
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotnum", 0, -1);
+  if (slotNum==-1) {
+    DBG_ERROR(0, "Bad slot number");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Bad slot number");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardnum", 0, -1);
+  if (cardNum==-1) {
+    DBG_ERROR(0, "Bad card number");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Bad card number");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  /* check whether we have a reader of that id */
+  r=LCD_Driver_FindReaderById(d, readerId);
+  if (!r) {
+    DBG_ERROR(0, "A reader with id \"%08x\" does not exists", readerId);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Reader not found");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  /* get the referenced slot */
+  slot=LCD_Reader_FindSlot(r, slotNum);
+  if (!slot) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Slot not found");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  if (LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_DISABLED) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" disabled",
+              LCD_Slot_GetSlotNum(slot));
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Slot diabled");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
+  }
+
+  /* check card number and reader status */
+  if ((LCD_Slot_GetCardNum(slot)!=cardNum) ||
+      !(LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_CARD_CONNECTED)) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Card \"%d\" has been removed", cardNum);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                         "ERROR", "Card has been removed");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
+  }
+
+  /* execute command */
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                       "data/pininfo");
+  if (!dbT) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "No pininfo");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_VerifyResponse",
+                          "ERROR", "No pininfo");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+  pi=LC_PinInfo_fromDb(dbT);
+  assert(pi);
+  triesLeft=0;
+  dbRsp=GWEN_DB_Group_new("Driver_VerifyResponse");
+  retval=LCD_Driver_PerformVerification(d, r, slot,
+                                        pi,
+                                        &triesLeft);
+  LC_PinInfo_free(pi);
+  if (retval!=0) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Error on verify (%08x)", retval);
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "ERROR");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", LCD_Driver_GetErrorText(d, retval));
+    GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "triesLeft", triesLeft);
+    readerError=retval;
+  }
+  else {
+    /* init ok */
+    DBG_DEBUG(LCD_Reader_GetLogger(r), "Pin ok");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "OK");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", "Pin ok.");
+    GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "triesLeft", triesLeft);
+    readerError=0;
+  }
+
+  /* complete response */
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerId", numbuf);
+  GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "slotnum", slotNum);
+  GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cardnum", cardNum);
+  if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
+    DBG_ERROR(0, "Could not send response");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+  LCD_Driver_RemoveCommand(d, rid, 0);
+  DBG_DEBUG(0, "Response send");
+
+  if (readerError) {
+    DBG_NOTICE(LCD_Reader_GetLogger(r),
+               "Reader \"%s\" had an error, shutting down",
+               LCD_Reader_GetName(r));
+    LCD_Driver_SendReaderErrorNotification(d, r,
+                                           LCD_Driver_GetErrorText(d,
+                                                                   readerError));
+    LCD_Reader_List_Del(r);
+    LCD_Reader_free(r);
+  }
+
+  return 0;
+}
+
+
+
+int LCD_Driver_HandleModify(LCD_DRIVER *d,
+                            GWEN_TYPE_UINT32 rid,
+                            GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 readerId;
+  GWEN_DB_NODE *dbRsp;
+  GWEN_DB_NODE *dbT;
+  LCD_READER *r;
+  char numbuf[16];
+  int slotNum;
+  int cardNum;
+  LCD_SLOT *slot;
+  char retval;
+  int readerError;
+  LC_PININFO *pi;
+  int triesLeft;
+
+  assert(d);
+  assert(dbReq);
+
+  if (1!=sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
+                "%x",
+                &readerId)) {
+    DBG_ERROR(0, "Bad readerId");
+    /* TODO: send error result */
+    return -1;
+  }
+
+  slotNum=GWEN_DB_GetIntValue(dbReq, "data/slotnum", 0, -1);
+  if (slotNum==-1) {
+    DBG_ERROR(0, "Bad slot number");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Bad slot number");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  cardNum=GWEN_DB_GetIntValue(dbReq, "data/cardnum", 0, -1);
+  if (cardNum==-1) {
+    DBG_ERROR(0, "Bad card number");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Bad card number");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  /* check whether we have a reader of that id */
+  r=LCD_Driver_FindReaderById(d, readerId);
+  if (!r) {
+    DBG_ERROR(0, "A reader with id \"%08x\" does not exists", readerId);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Reader not found");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  /* get the referenced slot */
+  slot=LCD_Reader_FindSlot(r, slotNum);
+  if (!slot) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" not found", slotNum);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Slot not found");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+
+  if (LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_DISABLED) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Slot \"%d\" disabled",
+              LCD_Slot_GetSlotNum(slot));
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Slot diabled");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
+  }
+
+  /* check card number and reader status */
+  if ((LCD_Slot_GetCardNum(slot)!=cardNum) ||
+      !(LCD_Slot_GetStatus(slot) & LCD_SLOT_STATUS_CARD_CONNECTED)) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Card \"%d\" has been removed", cardNum);
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                         "ERROR", "Card has been removed");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return 0;
+  }
+
+  /* execute command */
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                       "data/pininfo");
+  if (!dbT) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "No pininfo");
+    /* send error result */
+    LCD_Driver_SendResult(d, rid, "Driver_ModifyResponse",
+                          "ERROR", "No pininfo");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+  pi=LC_PinInfo_fromDb(dbT);
+  assert(pi);
+  triesLeft=0;
+  dbRsp=GWEN_DB_Group_new("Driver_ModifyResponse");
+  retval=LCD_Driver_PerformModification(d, r, slot,
+                                        pi,
+                                        &triesLeft);
+  LC_PinInfo_free(pi);
+  if (retval!=0) {
+    DBG_ERROR(LCD_Reader_GetLogger(r), "Error on verify (%08x)", retval);
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "ERROR");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", LCD_Driver_GetErrorText(d, retval));
+    GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "triesLeft", triesLeft);
+    readerError=retval;
+  }
+  else {
+    /* init ok */
+    DBG_DEBUG(LCD_Reader_GetLogger(r), "Pin ok");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", "OK");
+    GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "text", "Pin ok.");
+    GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "triesLeft", triesLeft);
+    readerError=0;
+  }
+
+  /* complete response */
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "readerId", numbuf);
+  GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "slotnum", slotNum);
+  GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "cardnum", cardNum);
+  if (LCD_Driver_SendResponse(d, rid, dbRsp)) {
+    DBG_ERROR(0, "Could not send response");
+    LCD_Driver_RemoveCommand(d, rid, 0);
+    return -1;
+  }
+  LCD_Driver_RemoveCommand(d, rid, 0);
+  DBG_DEBUG(0, "Response send");
+
+  if (readerError) {
+    DBG_NOTICE(LCD_Reader_GetLogger(r),
+               "Reader \"%s\" had an error, shutting down",
+               LCD_Reader_GetName(r));
+    LCD_Driver_SendReaderErrorNotification(d, r,
+                                           LCD_Driver_GetErrorText(d,
+                                                                   readerError));
+    LCD_Reader_List_Del(r);
+    LCD_Reader_free(r);
+  }
+
+  return 0;
+}
+
+
+
 int LCD_Driver_HandleRequest(LCD_DRIVER *d,
                              GWEN_TYPE_UINT32 rid,
                              const char *name,
@@ -2066,6 +2415,12 @@ int LCD_Driver_HandleRequest(LCD_DRIVER *d,
   }
   else if (strcasecmp(name, "Driver_ResumeCheck")==0) {
     rv=LCD_Driver_HandleResumeCheck(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "Driver_Verify")==0) {
+    rv=LCD_Driver_HandleVerify(d, rid, dbReq);
+  }
+  else if (strcasecmp(name, "Driver_Modify")==0) {
+    rv=LCD_Driver_HandleModify(d, rid, dbReq);
   }
 
   else
@@ -2210,6 +2565,30 @@ LCD_Driver_AskAddCert(GWEN_NETLAYER *nl,
   if (d->acceptAllCerts)
     return GWEN_NetLayerSsl_AskAddCertResult_Tmp;
   return GWEN_NetLayerSsl_AskAddCertResult_No;
+}
+
+
+
+GWEN_TYPE_UINT32 LCD_Driver_PerformVerification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft) {
+  assert(d);
+  assert(d->performVerificationFn);
+  return d->performVerificationFn(d, r, slot, pi, triesLeft);
+}
+
+
+
+GWEN_TYPE_UINT32 LCD_Driver_PerformModification(LCD_DRIVER *d,
+                                                LCD_READER *r,
+                                                LCD_SLOT *slot,
+                                                const LC_PININFO *pi,
+                                                int *triesLeft) {
+  assert(d);
+  assert(d->performModificationFn);
+  return d->performModificationFn(d, r, slot, pi, triesLeft);
 }
 
 

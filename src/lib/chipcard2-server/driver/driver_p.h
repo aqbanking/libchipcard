@@ -71,6 +71,9 @@ struct LCD_DRIVER {
   LCD_DRIVER_READERINFO_FN readerInfoFn;
   LCD_DRIVER_CREATEREADER_FN createReaderFn;
 
+  LCD_DRIVER_PERFORMVERIFICATION_FN performVerificationFn;
+  LCD_DRIVER_PERFORMMODIFICATION_FN performModificationFn;
+
   LCD_DRIVER_HANDLEREQUEST_FN handleRequestFn;
 };
 
@@ -123,6 +126,14 @@ int LCD_Driver_HandleSuspendCheck(LCD_DRIVER *d,
 int LCD_Driver_HandleResumeCheck(LCD_DRIVER *d,
                                  GWEN_TYPE_UINT32 rid,
                                  GWEN_DB_NODE *dbReq);
+
+int LCD_Driver_HandleVerify(LCD_DRIVER *d,
+                            GWEN_TYPE_UINT32 rid,
+                            GWEN_DB_NODE *dbReq);
+
+int LCD_Driver_HandleModify(LCD_DRIVER *d,
+                            GWEN_TYPE_UINT32 rid,
+                            GWEN_DB_NODE *dbReq);
 
 
 #endif /* CHIPCARD_DRIVER_DRIVER_P_H */

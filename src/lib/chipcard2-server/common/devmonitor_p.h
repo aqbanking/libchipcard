@@ -28,6 +28,8 @@ struct LC_DEVICE {
   GWEN_TYPE_UINT32 deviceId;
   GWEN_TYPE_UINT32 vendorId;
   GWEN_TYPE_UINT32 productId;
+  char *readerType;
+  char *driverType;
 };
 
 

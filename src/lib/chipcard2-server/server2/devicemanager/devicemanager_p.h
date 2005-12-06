@@ -172,7 +172,7 @@ int LCDM_DeviceManager_GetAutoPort(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
-                                const LC_DEVICE *ud,
+                                LC_DEVICE *ud,
                                 const LC_DEVICE_LIST *deviceList);
 
 int LCDM_DeviceManager_DeviceDown(LCDM_DEVICEMANAGER *dm,
