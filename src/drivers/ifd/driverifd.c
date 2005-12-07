@@ -241,21 +241,6 @@ const char *DriverIFD_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
   case IFD_ICC_NOT_PRESENT:
     s="Card not present";
     break;
-  case DRIVER_IFD_ERROR_BAD_RESPONSE:
-    s="Bad response from IFD driver";
-    break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED:
-    s="Could not connect any slot";
-    break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED:
-    s="Could not disconnect any slot";
-    break;
-  case DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE:
-    s="No slot available";
-    break;
-  case DRIVER_IFD_ERROR_NOT_SUPPORTED:
-    s="Function not supported";
-    break;
   default:
     s="Unknow error code";
   };
@@ -398,7 +383,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
   if (tmplen<2 || tmplen>258) {
     DBG_ERROR(lg,
               "Bad response size (%d)", tmplen);
-    return DRIVER_IFD_ERROR_BAD_RESPONSE;
+    return LC_ERROR_BAD_RESPONSE;
   }
 
   if ((unsigned char)buffer[tmplen-2]!=0x90) {
@@ -619,7 +604,7 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "All slots disabled, returning error");
-    return DRIVER_IFD_ERROR_NO_SLOTS_AVAILABLE;
+    return LC_ERROR_NO_SLOTS_AVAILABLE;
   }
   return 0;
 }
@@ -641,7 +626,7 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
   DBG_WARN(LCD_Reader_GetLogger(r),
            "ReaderInfo() not yet supported for IFD drivers");
 
-  return DRIVER_IFD_ERROR_NOT_SUPPORTED;
+  return LC_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -684,7 +669,7 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_IFD_ERROR_NO_SLOTS_CONNECTED;
+    return LC_ERROR_NO_SLOTS_CONNECTED;
   }
   return 0;
 }
@@ -723,7 +708,7 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_IFD_ERROR_NO_SLOTS_DISCONNECTED;
+    return LC_ERROR_NO_SLOTS_DISCONNECTED;
   }
   return 0;
 }

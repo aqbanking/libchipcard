@@ -1,4 +1,11 @@
 
+2005/12/07: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started implementing PerformVerification for CCID readers (prepared
+  CCID driver, clientmanager and generic driver to allow sending and receiving
+  "verify" commands
+
+
 2005/12/06: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added support for Omnikey Cardman 4000 (uses proprietary driver from

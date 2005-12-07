@@ -141,6 +141,9 @@ int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
   else if (strcasecmp(name, "Client_ReaderCommand")==0) {
     rv=LCCL_ClientManager_HandleReaderCmd(clm, rid, name, dbReq);
   }
+  else if (strcasecmp(name, "Client_Verify")==0) {
+    rv=LCCL_ClientManager_HandleVerify(clm, rid, name, dbReq);
+  }
   /* Insert more handlers here */
   else {
     DBG_INFO(0, "Command \"%s\" not handled by client manager",

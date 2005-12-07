@@ -8,10 +8,13 @@ driver_DATA=ccid.xml
 
 noinst_HEADERS=\
   driverccid_p.h \
-  driverccid.h
+  driverccid.h \
+  readerccid_p.h \
+  readerccid_l.h
 
 ccid_SOURCES=\
   driverccid.c \
+  readerccid.c \
   main.c
 
 ccid_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \

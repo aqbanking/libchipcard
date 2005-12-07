@@ -47,17 +47,27 @@
 
 /** Error codes */
 /*@{*/
-#define LC_ERROR_NONE               0x00000000
-#define LC_ERROR_GENERIC            0x00000001
-#define LC_ERROR_INVALID            0x00000002
-#define LC_ERROR_CARD_REMOVED       0x00000003
-#define LC_ERROR_CARD_NOT_OWNED     0x00000004
-#define LC_ERROR_NOT_SUPPORTED      0x00000005
-#define LC_ERROR_SETUP              0x00000006
-#define LC_ERROR_NO_DATA            0x00000007
-#define LC_ERROR_LOCKED_BY_OTHER    0x00000008
-#define LC_ERROR_NOT_LOCKED         0x00000009
+#define LC_ERROR_NONE                  0x00000000
+#define LC_ERROR_GENERIC               0x00000001
+#define LC_ERROR_INVALID               0x00000002
+#define LC_ERROR_CARD_REMOVED          0x00000003
+#define LC_ERROR_CARD_NOT_OWNED        0x00000004
+#define LC_ERROR_NOT_SUPPORTED         0x00000005
+#define LC_ERROR_SETUP                 0x00000006
+#define LC_ERROR_NO_DATA               0x00000007
+#define LC_ERROR_LOCKED_BY_OTHER       0x00000008
+#define LC_ERROR_NOT_LOCKED            0x00000009
+
+#define LC_ERROR_BAD_RESPONSE          0x0000000a
+#define LC_ERROR_NO_SLOTS_CONNECTED    0x0000000b
+#define LC_ERROR_NO_SLOTS_DISCONNECTED 0x0000000c
+#define LC_ERROR_NO_SLOTS_AVAILABLE    0x0000000d
+#define LC_ERROR_BAD_PIN               0x0000000e
+#define LC_ERROR_USER_ABORTED          0x0000000f
+#define LC_ERROR_CARD_DESTROYED        0x00000010
 /*@}*/
+const char *LC_Error_toString(GWEN_TYPE_UINT32 err);
+
 
 #define LC_LOGDOMAIN "ccclient"
 

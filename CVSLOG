@@ -1,10 +1,3 @@
-- HandleDriverReady() now reads driverFlagsValue and driverFlagsMask from
-  request, thus modifying the driverFlags according to the drivers info
-- moved definition of LCDM_DRIVER_FLAGS to sharedstuff
-- added two arguments to LC_Driver_Connect which allow modifying the driver
-  flags (needed to flag support for driver-specific pin modifications/
-  verification)
-- added handler and virtual functions for pin verification and modification
-  to driver base module
-- temporarily disabled "keypad" flags for "Kobil Advanced" (I'm working on
-  that)
+- started implementing PerformVerification for CCID readers (prepared
+  CCID driver, clientmanager and generic driver to allow sending and receiving
+  "verify" commands

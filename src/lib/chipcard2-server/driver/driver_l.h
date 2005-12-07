@@ -27,6 +27,8 @@ typedef struct LCD_DRIVER LCD_DRIVER;
 
 #define LCD_DRIVER_IPC_MAXWORK 256
 
+#define LCD_DRIVER_ERROR_OFFSET 0x80000000
+
 
 typedef enum {
   LCD_DriverCheckArgsResultOk=0,
@@ -214,9 +216,9 @@ void LCD_Driver_SetResetSlotFn(LCD_DRIVER *d, LCD_DRIVER_RESETSLOT_FN fn);
 void LCD_Driver_SetReaderStatusFn(LCD_DRIVER *d,
                                  LCD_DRIVER_READERSTATUS_FN fn);
 void LCD_Driver_SetReaderInfoFn(LCD_DRIVER *d,
-                               LCD_DRIVER_READERINFO_FN fn);
+                                LCD_DRIVER_READERINFO_FN fn);
 void LCD_Driver_SetCreateReaderFn(LCD_DRIVER *d,
-                                 LCD_DRIVER_CREATEREADER_FN fn);
+                                  LCD_DRIVER_CREATEREADER_FN fn);
 void LCD_Driver_SetGetErrorTextFn(LCD_DRIVER *d,
                                   LCD_DRIVER_GETERRORTEXT_FN fn);
 void LCD_Driver_SetPerformVerificationFn(LCD_DRIVER *d,

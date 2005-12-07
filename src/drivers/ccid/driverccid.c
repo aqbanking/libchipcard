@@ -18,6 +18,7 @@
 
 
 #include "driverccid_p.h"
+#include "readerccid_l.h"
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
@@ -58,6 +59,7 @@ LCD_DRIVER *DriverCCID_new(int argc, char **argv) {
   LCD_Driver_SetResetSlotFn(d, DriverCCID_ResetSlot);
   LCD_Driver_SetReaderStatusFn(d, DriverCCID_ReaderStatus);
   LCD_Driver_SetReaderInfoFn(d, DriverCCID_ReaderInfo);
+  LCD_Driver_SetCreateReaderFn(d, DriverCCID_CreateReader);
   LCD_Driver_SetGetErrorTextFn(d, DriverCCID_GetErrorText);
 
   rv=LCD_Driver_Init(d, argc, argv);
@@ -246,21 +248,6 @@ const char *DriverCCID_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
   case CCID_ICC_NOT_PRESENT:
     s="Card not present";
     break;
-  case DRIVER_CCID_ERROR_BAD_RESPONSE:
-    s="Bad response from CCID driver";
-    break;
-  case DRIVER_CCID_ERROR_NO_SLOTS_CONNECTED:
-    s="Could not connect any slot";
-    break;
-  case DRIVER_CCID_ERROR_NO_SLOTS_DISCONNECTED:
-    s="Could not disconnect any slot";
-    break;
-  case DRIVER_CCID_ERROR_NO_SLOTS_AVAILABLE:
-    s="No slot available";
-    break;
-  case DRIVER_CCID_ERROR_NOT_SUPPORTED:
-    s="Function not supported";
-    break;
   default:
     s="Unknow error code";
   };
@@ -403,7 +390,7 @@ GWEN_TYPE_UINT32 DriverCCID_SendAPDU(LCD_DRIVER *d,
   if (tmplen<2 || tmplen>258) {
     DBG_ERROR(lg,
               "Bad response size (%d)", tmplen);
-    return DRIVER_CCID_ERROR_BAD_RESPONSE;
+    return LC_ERROR_BAD_RESPONSE;
   }
 
   if ((unsigned char)buffer[tmplen-2]!=0x90) {
@@ -624,7 +611,7 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "All slots disabled, returning error");
-    return DRIVER_CCID_ERROR_NO_SLOTS_AVAILABLE;
+    return LC_ERROR_NO_SLOTS_AVAILABLE;
   }
   return 0;
 }
@@ -632,21 +619,68 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
 
 
 GWEN_TYPE_UINT32 DriverCCID_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
-                                      GWEN_BUFFER *buf) {
+                                       GWEN_BUFFER *buf) {
   DRIVER_CCID *dct;
+  const char *lg;
+  long retval;
+  unsigned char buffer[256];
+  GWEN_TYPE_UINT32 bufferlen;
+  int cnt;
+  int i;
+  PCSC_TLV_STRUCTURE *tlv;
 
   assert(d);
   dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CCID, d);
   assert(dct);
 
+  lg=LCD_Reader_GetLogger(r);
+
   DBG_DEBUG(LCD_Reader_GetLogger(r),
-            "Requesting information about reader \"%08x\"",
+            "Requesting feature list of reader \"%08x\"",
             LCD_Reader_GetReaderId(r));
 
-  DBG_WARN(LCD_Reader_GetLogger(r),
-           "ReaderInfo() not yet supported for CCID drivers");
+  bufferlen=sizeof(buffer);
+  retval=dct->controlFn(0, /* lun */
+                        CM_IOCTL_GET_FEATURE_REQUEST,
+                        NULL, 0,
+                        buffer,
+                        bufferlen,
+                        &bufferlen);
+  if (retval==0) {
+    DBG_INFO(lg, "Response:");
+    GWEN_Text_LogString((const char*)buffer, bufferlen, lg,
+                        GWEN_LoggerLevelInfo);
+  }
+  else {
+    DBG_ERROR(lg,
+              "CCID error on \"CCIDTransmit/Control\": %ld", retval);
+    return retval;
+  }
 
-  return DRIVER_CCID_ERROR_NOT_SUPPORTED;
+  if (bufferlen % sizeof(PCSC_TLV_STRUCTURE)) {
+    DBG_ERROR(lg,
+              "Inconsistent size of response (%d)", bufferlen);
+    return LC_ERROR_BAD_RESPONSE;
+  }
+
+  cnt=bufferlen/sizeof(PCSC_TLV_STRUCTURE);
+  tlv=(PCSC_TLV_STRUCTURE*)buffer;
+  for (i=0; i<cnt; i++) {
+    DBG_INFO(lg, "TLV: %d (%08x)", tlv[i].tag, tlv[i].value);
+    if (tlv[i].tag==FEATURE_VERIFY_PIN_DIRECT)
+      ReaderCCID_SetVerifyCode(r, tlv[i].value);
+    if (tlv[i].tag==FEATURE_MODIFY_PIN_DIRECT)
+      ReaderCCID_SetModifyCode(r, tlv[i].value);
+  }
+
+  if (GWEN_Buffer_GetUsedBytes(buf))
+    GWEN_Buffer_AppendByte(buf, ';');
+  GWEN_Buffer_AppendString(buf, "unit0=\"icc1\"");
+  if (ReaderCCID_GetVerifyCode(r)) {
+    GWEN_Buffer_AppendString(buf, ";unit1=\"KEYBOARD\"");
+  }
+
+  return 0;
 }
 
 
@@ -689,7 +723,7 @@ GWEN_TYPE_UINT32 DriverCCID_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_CCID_ERROR_NO_SLOTS_CONNECTED;
+    return LC_ERROR_NO_SLOTS_CONNECTED;
   }
   return 0;
 }
@@ -728,7 +762,7 @@ GWEN_TYPE_UINT32 DriverCCID_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
   if (!oks) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not connect any slot");
-    return DRIVER_CCID_ERROR_NO_SLOTS_DISCONNECTED;
+    return LC_ERROR_NO_SLOTS_DISCONNECTED;
   }
   return 0;
 }
@@ -741,13 +775,165 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
                                                 const LC_PININFO *pi,
                                                 int *triesLeft) {
   DRIVER_CCID *dct;
+  const char *lg;
+  GWEN_TYPE_UINT32 verifyCode;
+  long retval;
+  unsigned char sendBuffer[256];
+  GWEN_TYPE_UINT32 sendBufferLen;
+  unsigned char recvBuffer[256];
+  GWEN_TYPE_UINT32 recvBufferLen;
+  PIN_VERIFY_STRUCTURE *pv;
+  int offset;
+  unsigned char x;
+  unsigned short x16;
+  LC_PININFO_ENCODING pe;
 
   assert(d);
   dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CCID, d);
   assert(dct);
 
-  /* for now */
-  return DRIVER_CCID_ERROR_NOT_SUPPORTED;
+  lg=LCD_Reader_GetLogger(r);
+
+  verifyCode=ReaderCCID_GetVerifyCode(r);
+  if (!verifyCode) {
+    DBG_ERROR(LCD_Reader_GetLogger(r),
+              "Secure Pin verification not supported for reader \"%08x\"",
+              LCD_Reader_GetReaderId(r));
+    return LC_ERROR_NOT_SUPPORTED;
+  }
+
+  memset(sendBuffer, 0, sizeof(sendBuffer));
+  pv=(PIN_VERIFY_STRUCTURE*)sendBuffer;
+
+  pv->bTimerOut = 0x00;
+  pv->bTimerOut2 = 0x00;
+
+  x=0;
+  pe=LC_PinInfo_GetEncoding(pi);
+  if (pe==LC_PinInfo_EncodingAscii) {
+    x|=0x2; /* ASCII */
+  }
+  else if (pe==LC_PinInfo_EncodingBcd) {
+    x|=0x1; /* BCD */
+    x|=0x80; /* pos is in bytes */
+  }
+  else if (pe==LC_PinInfo_EncodingFpin2) {
+    x|=0x1; /* BCD */
+    x|=0x04 << 3;
+  }
+  else {
+    DBG_ERROR(LCD_Reader_GetLogger(r),
+              "Pin encoding \"%s\" not supported",
+              LC_PinInfo_Encoding_toString(pe));
+    return LC_ERROR_NOT_SUPPORTED;
+  }
+  pv->bmFormatString = x;
+
+  x=0;
+  if (pe==LC_PinInfo_EncodingFpin2) {
+    x|=0x40 | 0x08;
+  }
+  pv->bmPINBlockString = x;
+
+  x=0;
+  if (pe==LC_PinInfo_EncodingFpin2) {
+    x|=0x04;
+  }
+  pv->bmPINLengthFormat = x;
+
+  x16=(LC_PinInfo_GetMinLength(pi)<<8)+LC_PinInfo_GetMaxLength(pi);
+  pv->wPINMaxExtraDigit=HOST_TO_CCID_16(x16); /* Min Max */
+
+  pv->bEntryValidationCondition=0x02;	/* validation key pressed */
+  pv->bNumberMessage=0x00;
+  pv->wLangId=HOST_TO_CCID_16(0x0000);
+  pv->bMsgIndex=0x00;
+  pv->bTeoPrologue[0]=0x00;
+  pv->bTeoPrologue[1]=0x00;
+  pv->bTeoPrologue[2]=0x00;
+
+  /* APDU */
+  offset=0;
+  pv->abData[offset++]=0x00;	/* CLA */
+  pv->abData[offset++]=0x20;	/* INS: VERIFY */
+  pv->abData[offset++]=0x00;	/* P1 */
+  pv->abData[offset++]=LC_PinInfo_GetId(pi) & 0xff;	/* P2 */
+  pv->abData[offset++]=0x08;	/* Lc: 8 data bytes */
+  if (pe==LC_PinInfo_EncodingFpin2) {
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+    pv->abData[offset++]=0xff;
+  }
+  else if (pe==LC_PinInfo_EncodingAscii) {
+    pv->abData[offset++]=0x30;
+    pv->abData[offset++]=0x30;
+    pv->abData[offset++]=0x30;
+    pv->abData[offset++]=0x30;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+  }
+  else {
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x00;
+  }
+  pv->ulDataLength=HOST_TO_CCID_32(offset);	/* APDU size */
+
+  /* -1 because PIN_VERIFY_STRUCTURE contains the first byte of abData[] */
+  sendBufferLen=sizeof(PIN_VERIFY_STRUCTURE)+offset-1;
+
+  retval=dct->controlFn(LCD_Slot_GetSlotNum(slot), /* lun */
+                        verifyCode,
+                        sendBuffer, sendBufferLen,
+                        recvBuffer,
+                        sizeof(recvBuffer),
+                        &recvBufferLen);
+  if (retval==0) {
+    DBG_INFO(lg, "Response:");
+    GWEN_Text_LogString((const char*)recvBuffer, recvBufferLen, lg,
+                        GWEN_LoggerLevelInfo);
+    if (recvBufferLen<2) {
+      DBG_ERROR(lg, "Bad response size (%d)", recvBufferLen);
+      return LC_ERROR_BAD_RESPONSE;
+    }
+    switch (recvBuffer[recvBufferLen-2]) {
+    case 0x90:
+      DBG_INFO(LCD_Reader_GetLogger(r), "Pin ok.");
+      return 0;
+    case 0x63:
+      *triesLeft=(recvBuffer[recvBufferLen-1]) & 0x3f;
+      return LCD_DRIVER_ERROR_OFFSET+LC_ERROR_BAD_PIN;
+    case 0x64:
+      return LCD_DRIVER_ERROR_OFFSET+LC_ERROR_USER_ABORTED;
+    case 0x69:
+      if (recvBuffer[recvBufferLen-1]==0x83) {
+        return LCD_DRIVER_ERROR_OFFSET+LC_ERROR_CARD_DESTROYED;
+      }
+      return LCD_DRIVER_ERROR_OFFSET+LC_ERROR_GENERIC;
+    default:
+      DBG_ERROR(lg, "Unknown error code (%02x, %02x)",
+                recvBuffer[recvBufferLen-2],
+                recvBuffer[recvBufferLen-1]);
+      return LCD_DRIVER_ERROR_OFFSET+LC_ERROR_GENERIC;
+    }
+  }
+  else {
+    DBG_ERROR(lg,
+              "CCID error on \"CCIDControl\": %ld", retval);
+    return retval;
+  }
 }
 
 
@@ -764,7 +950,23 @@ GWEN_TYPE_UINT32 DriverCCID_PerformModification(LCD_DRIVER *d,
   assert(dct);
 
   /* for now */
-  return DRIVER_CCID_ERROR_NOT_SUPPORTED;
+  return LC_ERROR_NOT_SUPPORTED;
+}
+
+
+
+LCD_READER *DriverCCID_CreateReader(LCD_DRIVER *d,
+                                    GWEN_TYPE_UINT32 readerId,
+                                    const char *name,
+                                    int port,
+                                    unsigned int slots,
+                                    GWEN_TYPE_UINT32 flags) {
+  LCD_READER *r;
+
+  r=LCD_Reader_new(readerId, name, port, slots, flags);
+  ReaderCCID_Extend(r);
+
+  return r;
 }
 
 

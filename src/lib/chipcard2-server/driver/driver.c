@@ -986,6 +986,8 @@ LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
 
 const char *LCD_Driver_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err){
   assert(d);
+  if (err>=0x80000000)
+    return LC_Error_toString(err & 0x7fffffff);
   assert(d->getErrorTextFn);
   return d->getErrorTextFn(d, err);
 }
