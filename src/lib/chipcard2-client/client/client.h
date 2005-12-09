@@ -20,6 +20,7 @@ extern "C" {
 
 #include <gwenhywfar/inherit.h>
 #include <chipcard2/chipcard2.h>
+#include <chipcard2/sharedstuff/pininfo.h>
 
 
 typedef struct LC_CLIENT LC_CLIENT;
@@ -304,6 +305,19 @@ GWEN_TYPE_UINT32 LC_Client_SendExecCommand(LC_CLIENT *cl,
 LC_CLIENT_RESULT LC_Client_CheckExecCommand(LC_CLIENT *cl,
                                             GWEN_TYPE_UINT32 rid,
                                             GWEN_DB_NODE *dbRsp);
+
+GWEN_TYPE_UINT32 LC_Client_SendPerformVerification(LC_CLIENT *cl,
+                                                   LC_CARD *cd,
+                                                   const LC_PININFO *pi);
+LC_CLIENT_RESULT LC_Client_CheckPerformVerification(LC_CLIENT *cl,
+                                                    GWEN_TYPE_UINT32 rid,
+                                                    int *triesLeft);
+LC_CLIENT_RESULT LC_Client_PerformVerification(LC_CLIENT *cl,
+                                               LC_CARD *cd,
+                                               const LC_PININFO *pi,
+                                               int *triesLeft);
+
+
 
 GWEN_TYPE_UINT32 LC_Client_SendSetNotify(LC_CLIENT *cl,
                                          GWEN_TYPE_UINT32 flags);

@@ -480,7 +480,6 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/ccid_ifd/Makefile
                  data/drivers/cherry_ctapi/Makefile
                  data/drivers/cyberjack_ctapi/Makefile
-                 data/drivers/cyberjack2_ctapi/Makefile
                  data/drivers/kobil_ctapi/Makefile
                  data/drivers/omnikey_ifd/Makefile
                  data/drivers/omnikey_ifd/cm_2020_ifd/Makefile

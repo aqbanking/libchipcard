@@ -218,6 +218,20 @@ void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
 
 
 
+void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
+  assert(cd);
+  cd->readerFlags|=fl;
+}
+
+
+
+void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
+  assert(cd);
+  cd->readerFlags&=~fl;
+}
+
+
+
 LC_CARD_TYPE LCCO_Card_GetCardType(const LCCO_CARD *cd) {
   assert(cd);
   return cd->cardType;
@@ -262,6 +276,7 @@ void LCCO_Card_SetLockId(LCCO_CARD *cd, GWEN_TYPE_UINT32 lid) {
 
 void LCCO_Card_Dump(const LCCO_CARD *cd, FILE *f, int indent) {
   int i;
+  GWEN_STRINGLISTENTRY *se;
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");
@@ -283,6 +298,16 @@ void LCCO_Card_Dump(const LCCO_CARD *cd, FILE *f, int indent) {
   case LC_CardTypeMemory:    fprintf(f, "memory\n"); break;
   default:                   fprintf(f, "unknown (%d)\n", cd->cardType);
   }
+
+  for (i=0; i<indent; i++)
+    fprintf(f, " ");
+  fprintf(f, "Types     :");
+  se=GWEN_StringList_FirstEntry(cd->cardTypes);
+  while(se) {
+    fprintf(f, " %s", GWEN_StringListEntry_Data(se));
+    se=GWEN_StringListEntry_Next(se);
+  }
+  fprintf(f, "\n");
 
   for (i=0; i<indent; i++)
     fprintf(f, " ");

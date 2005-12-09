@@ -18,10 +18,26 @@
 #include "clientmanager_p.h"
 #include "cl_request_l.h"
 #include "fullserver_l.h"
+#include <chipcard2/sharedstuff/pininfo.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/request.h>
 #include <gwenhywfar/gwentime.h>
+
+
+
+static int LCCL_ClientManager__sendVerify(LCCL_CLIENTMANAGER *clm,
+                                          GWEN_TYPE_UINT32 rid,
+                                          LCCL_CLIENT *cl,
+                                          LCCO_CARD *card,
+                                          const LC_PININFO *pi);
+static int LCCL_ClientManager__sendCommand(LCCL_CLIENTMANAGER *clm,
+                                           GWEN_TYPE_UINT32 rid,
+                                           LCCL_CLIENT *cl,
+                                           LCCO_CARD *card,
+                                           const LC_PININFO *pi);
+
+
 
 
 int LCCL_ClientManager_HandleVerify(LCCL_CLIENTMANAGER *clm,
@@ -34,15 +50,10 @@ int LCCL_ClientManager_HandleVerify(LCCL_CLIENTMANAGER *clm,
   int cmdVer;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
-  GWEN_IPC_REQUEST *req;
-  GWEN_IPC_REQUEST *dreq;
-  GWEN_TIME *ti;
   int rv;
-  GWEN_TYPE_UINT32 outRid;
   GWEN_DB_NODE *dbPinInfo;
-  GWEN_DB_NODE *dbT;
-  GWEN_DB_NODE *dbOutReq;
   LCDM_DEVICEMANAGER *dm;
+  LC_PININFO *pi;
 
   dm=LCS_Server_GetDeviceManager(clm->server);
   assert(dm);
@@ -147,19 +158,49 @@ int LCCL_ClientManager_HandleVerify(LCCL_CLIENTMANAGER *clm,
     }
     return -1;
   }
+  pi=LC_PinInfo_fromDb(dbPinInfo);
+  assert(pi);
+
+  if (LCCO_Card_GetReaderFlags(card) & LC_READER_FLAGS_DRIVER_HAS_VERIFY)
+    rv=LCCL_ClientManager__sendVerify(clm, rid, cl, card, pi);
+  else
+    rv=LCCL_ClientManager__sendCommand(clm, rid, cl, card, pi);
+  LC_PinInfo_free(pi);
+  if (rv)
+    return -1;
+  return 0; /* handled */
+}
+
+
+
+int LCCL_ClientManager__sendVerify(LCCL_CLIENTMANAGER *clm,
+                                   GWEN_TYPE_UINT32 rid,
+                                   LCCL_CLIENT *cl,
+                                   LCCO_CARD *card,
+                                   const LC_PININFO *pi) {
+  GWEN_IPC_REQUEST *req;
+  GWEN_IPC_REQUEST *dreq;
+  GWEN_TIME *ti;
+  GWEN_TYPE_UINT32 outRid;
+  GWEN_DB_NODE *dbT;
+  GWEN_DB_NODE *dbOutReq;
+  LCDM_DEVICEMANAGER *dm;
+
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
 
   dbOutReq=GWEN_DB_Group_new("Driver_Verify");
   dbT=GWEN_DB_GetGroup(dbOutReq,
                        GWEN_DB_FLAGS_DEFAULT,
                        "PinInfo");
   assert(dbT);
-  GWEN_DB_AddGroupChildren(dbT, dbPinInfo);
+  LC_PinInfo_toDb(pi, dbT);
 
   outRid=LCDM_DeviceManager_SendCardCommand(dm, card, dbOutReq);
   if (outRid==0) {
     DBG_ERROR(0, "Could not send command to reader");
     LCS_Server_SendErrorResponse(clm->server, rid,
-                                 -rv,
+                                 -1,
                                  "Could not send command to reader");
     if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
       DBG_ERROR(0, "Could not remove request");
@@ -172,8 +213,9 @@ int LCCL_ClientManager_HandleVerify(LCCL_CLIENTMANAGER *clm,
   req=LCCL_Request_new();
   assert(req);
   GWEN_IpcRequest_SetId(req, rid);
-  GWEN_IpcRequest_SetIpcId(req, clientId);
-  GWEN_IpcRequest_SetName(req, name);
+  GWEN_IpcRequest_SetIpcId(req, LCCL_Client_GetClientId(cl));
+  GWEN_IpcRequest_SetName(req, "Client_Verify");
+  LCCL_Request_SetUint32Data2(req, 0);
   ti=GWEN_CurrentTime();
   assert(ti);
   GWEN_Time_AddSeconds(ti, clm->commandTimeout);
@@ -209,10 +251,179 @@ int LCCL_ClientManager_HandleVerify(LCCL_CLIENTMANAGER *clm,
   DBG_NOTICE(0,
              "Enqueued Verify request for card \"%08x\" "
              "and client \"%08x\"",
-             cardId,
-             clientId);
+             LCCO_Card_GetCardId(card),
+             LCCL_Client_GetClientId(cl));
+
+  return 0;
+}
+
+
+
+int LCCL_ClientManager__sendCommand(LCCL_CLIENTMANAGER *clm,
+                                    GWEN_TYPE_UINT32 rid,
+                                    LCCL_CLIENT *cl,
+                                    LCCO_CARD *card,
+                                    const LC_PININFO *pi) {
+  LCCM_CARDMANAGER *cm;
+  GWEN_IPC_REQUEST *req;
+  GWEN_IPC_REQUEST *dreq;
+  GWEN_TIME *ti;
+  int rv;
+  GWEN_TYPE_UINT32 outRid;
+  GWEN_DB_NODE *dbOutReq;
+  const char *target;
+  LCDM_DEVICEMANAGER *dm;
+  LCCMD_COMMANDMANAGER *cmdm;
+  const char *cmdName;
+  GWEN_DB_NODE *dbCmd;
+  GWEN_BUFFER *apdu;
+  GWEN_TYPE_UINT32 cmdReqId=0;
+
+  dm=LCS_Server_GetDeviceManager(clm->server);
+  assert(dm);
+
+  cm=LCS_FullServer_GetCardManager(clm->server);
+  assert(cm);
+
+  cmdm=LCS_FullServer_GetCommandManager(clm->server);
+  assert(cmdm);
+
+  switch(LC_PinInfo_GetEncoding(pi)) {
+  case LC_PinInfo_EncodingBin:
+    cmdName="IsoPerformVerification_Bin";
+    break;
+  case LC_PinInfo_EncodingBcd:
+    cmdName="IsoPerformVerification_Bcd";
+    break;
+  case LC_PinInfo_EncodingAscii:
+    cmdName="IsoPerformVerification_Ascii";
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    cmdName="IsoPerformVerification_Fpin2";
+    break;
+  default:
+    cmdName=0;
+    break;
+  }
+
+  if (!cmdName) {
+    LCS_Server_SendErrorResponse(clm->server, rid, -1,
+                                 "Unsupported pin encoding");
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+  }
+
+  /* now handle command */
+  dbCmd=GWEN_DB_Group_new("command");
+  GWEN_DB_SetIntValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
+
+  /* transform command to APDU */
+  apdu=GWEN_Buffer_new(0, 256, 0, 1);
+  rv=LCCMD_CommandManager_BuildCommand(cmdm,
+                                       card,
+                                       cmdName,
+                                       dbCmd,
+                                       apdu,
+                                       &target,
+                                       &cmdReqId);
+  GWEN_DB_Group_free(dbCmd);
+  if (rv) {
+    const char *s;
+
+    DBG_INFO(0, "here (%d)", rv);
+    if (GWEN_Buffer_GetUsedBytes(apdu))
+      s=GWEN_Buffer_GetStart(apdu);
+    else
+      s="Error building command";
+
+    LCS_Server_SendErrorResponse(clm->server, rid, -rv, s);
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+    GWEN_Buffer_free(apdu);
+    return -1;
+  }
+  assert(cmdReqId);
+  assert(target);
+
+  /* create CardCommand for reader */
+  dbOutReq=GWEN_DB_Group_new("Driver_CardCommand");
+  GWEN_DB_SetBinValue(dbOutReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "data",
+                      GWEN_Buffer_GetStart(apdu),
+                      GWEN_Buffer_GetUsedBytes(apdu));
+  GWEN_Buffer_free(apdu);
+  GWEN_DB_SetCharValue(dbOutReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "target", target);
+
+  /* send CardCommand */
+  outRid=LCDM_DeviceManager_SendCardCommand(dm, card, dbOutReq);
+  if (outRid==0) {
+    DBG_ERROR(0, "Could not send command to reader");
+    LCS_Server_SendErrorResponse(clm->server, rid,
+                                 -rv,
+                                 "Could not send command to reader");
+    if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  /* create request */
+  req=LCCL_Request_new();
+  assert(req);
+  GWEN_IpcRequest_SetId(req, rid);
+  GWEN_IpcRequest_SetIpcId(req, LCCL_Client_GetClientId(cl));
+  GWEN_IpcRequest_SetName(req, "Client_Verify");
+  LCCL_Request_SetUint32Data(req, cmdReqId);
+  LCCL_Request_SetUint32Data2(req, 1);
+  ti=GWEN_CurrentTime();
+  assert(ti);
+  GWEN_Time_AddSeconds(ti, clm->commandTimeout);
+  GWEN_IpcRequest_SetExpires(req, ti);
+  GWEN_Time_free(ti);
+  LCCL_Request_SetClientManager(req, clm);
+  LCCL_Request_SetClient(req, cl);
+  LCCL_Request_SetCard(req, card);
+  GWEN_IpcRequest_SetWorkFn(req, LCCL_ClientManager_WorkVerify);
+  GWEN_IpcRequest_SetStatus(req, GWEN_IpcRequest_StatusPartial);
+
+  /* create subrequest, add it to request */
+  dreq=LCCL_Request_new();
+  GWEN_IpcRequest_SetId(dreq, outRid);
+  GWEN_IpcRequest_SetName(dreq, "Driver_CardCommand");
+  ti=GWEN_CurrentTime();
+  assert(ti);
+  GWEN_Time_AddSeconds(ti, clm->commandTimeout);
+  GWEN_IpcRequest_SetExpires(dreq, ti);
+  GWEN_Time_free(ti);
+  LCCL_Request_SetClientManager(dreq, clm);
+  LCCL_Request_SetClient(dreq, cl);
+  LCCL_Request_SetCard(dreq, card);
+  GWEN_IpcRequest_SetWorkFn(dreq, LCCL_ClientManager_WorkDriverVerify);
+  GWEN_IpcRequest_SetStatus(dreq, GWEN_IpcRequest_StatusSent);
+  GWEN_IpcRequest_List_Add(dreq, GWEN_IpcRequest_GetSubRequests(req));
+
+  /* add incoming request */
+  GWEN_IpcRequestManager_AddRequest(LCS_Server_GetRequestManager(clm->server),
+				    req);
+
+  /* do not remove the request now, since it is enqueued */
+  DBG_NOTICE(0,
+             "Enqueued ExecApdu request for card \"%08x\" "
+             "and client \"%08x\"",
+             LCCO_Card_GetCardId(card),
+             LCCL_Client_GetClientId(cl));
   return 0; /* handled */
 }
+
+
+
 
 
 
@@ -253,28 +464,65 @@ int LCCL_ClientManager_WorkVerify(GWEN_IPC_REQUEST *req) {
     DBG_DEBUG(0, "Sending response to Verify");
     dbClientResponse=GWEN_DB_Group_new("Client_VerifyResponse");
     code=GWEN_DB_GetCharValue(dbDriverResponse,
-			      "data/code", 0, "ERROR");
+                              "data/code", 0, "ERROR");
     assert(code);
     GWEN_DB_SetCharValue(dbClientResponse,
-			 GWEN_DB_FLAGS_OVERWRITE_VARS,
-			 "code", code);
+                         GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "code", code);
     p=GWEN_DB_GetCharValue(dbDriverResponse,
-			   "data/text", 0, 0);
+                           "data/text", 0, 0);
     if (p)
       GWEN_DB_SetCharValue(dbClientResponse,
-			   GWEN_DB_FLAGS_OVERWRITE_VARS,
-			   "text", p);
-    triesLeft=GWEN_DB_GetIntValue(dbDriverResponse,
-                                  "data/triesLeft", 0, 0);
-    GWEN_DB_SetIntValue(dbClientResponse,
-                        GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "triesLeft", triesLeft);
+                           GWEN_DB_FLAGS_OVERWRITE_VARS,
+                           "text", p);
+    if (LCCL_Request_GetUint32Data2(req)==0) {
+      /* response to Driver_Verify */
+      triesLeft=GWEN_DB_GetIntValue(dbDriverResponse,
+                                    "data/triesLeft", 0, 0);
+      GWEN_DB_SetIntValue(dbClientResponse,
+                          GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "triesLeft", triesLeft);
+    }
+    else {
+      const void *bp;
+      unsigned int bs;
+
+      /* response to Driver_CommandCard */
+      bp=GWEN_DB_GetBinValue(dbDriverResponse,
+                             "data/data", 0, 0, 0, &bs);
+      if (bp && bs>1) {
+        const unsigned char *p;
+
+        p=(const unsigned char*)bp;
+        if (p[bs-2]!=0x90) {
+          if (p[bs-2]==0x63) {
+            GWEN_DB_SetIntValue(dbClientResponse,
+                                GWEN_DB_FLAGS_OVERWRITE_VARS,
+                                "triesLeft", (p[bs-1] & 0x3f));
+          }
+          GWEN_DB_SetCharValue(dbClientResponse,
+                               GWEN_DB_FLAGS_OVERWRITE_VARS,
+                               "code", "ERROR");
+          GWEN_DB_SetCharValue(dbClientResponse,
+                               GWEN_DB_FLAGS_OVERWRITE_VARS,
+                               "text", "APDU result: error");
+        }
+      }
+      else {
+        GWEN_DB_SetCharValue(dbClientResponse,
+                             GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "code", "ERROR");
+        GWEN_DB_SetCharValue(dbClientResponse,
+                             GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "text", "Too small APDU response");
+      }
+    }
     GWEN_DB_Group_free(dbDriverResponse);
 
     /* send response */
     if (GWEN_IpcManager_SendResponse(clm->ipcManager,
                                      rid,
-				     dbClientResponse)) {
+                                     dbClientResponse)) {
       DBG_ERROR(0, "Could not send Verify response");
       if (GWEN_IpcManager_RemoveRequest(clm->ipcManager, drid, 1)) {
         DBG_ERROR(0, "Could not remove request");

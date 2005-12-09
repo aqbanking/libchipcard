@@ -214,7 +214,7 @@
 
         <pins>
           <pin name="ch_pin" encoding="fpin2" id="0x81" 
-               minlen="4" maxlen="8" allowChange="0" />
+               minlen="4" maxlen="12" allowChange="0" />
         </pins>
 
         <files>

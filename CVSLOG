@@ -1,3 +1,6 @@
-- started implementing PerformVerification for CCID readers (prepared
-  CCID driver, clientmanager and generic driver to allow sending and receiving
-  "verify" commands
+- pin verification via the keypad of the Kobil Kaan Advanced now works!!
+- reordered calls for NewCard callback in server-code: Now the CommandManager
+  is called before the ClientManager, because the CommandManager determines
+  the types of the card according to its ATR
+- removed driver-specific parts from card description files (I will have
+  to clean those up)

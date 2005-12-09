@@ -127,6 +127,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
       flags|=LC_READER_FLAGS_AUTO;
     else if (strcasecmp(p, "suspended_checks")==0)
       flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
+    else if (strcasecmp(p, "driverHasVerify")==0)
+      flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -163,6 +165,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
         flags|=LC_READER_FLAGS_AUTO;
       else if (strcasecmp(p, "suspended_checks")==0)
         flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
+      else if (strcasecmp(p, "driverHasVerify")==0)
+        flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
       else {
         DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
       }
@@ -196,6 +200,9 @@ void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
   if (fl & LC_READER_FLAGS_AUTO)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          name, "auto");
+  if (fl & LC_READER_FLAGS_DRIVER_HAS_VERIFY)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         name, "driverHasVerify");
 }
 
 

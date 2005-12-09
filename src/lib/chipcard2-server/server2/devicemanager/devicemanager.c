@@ -1776,6 +1776,9 @@ int LCDM_DeviceManager_HandleRequest(LCDM_DEVICEMANAGER *dm,
   else if (strcasecmp(name, "Driver_CardRemoved")==0) {
     rv=LCDM_DeviceManager_HandleCardRemoved(dm, rid, dbReq);
   }
+  else if (strcasecmp(name, "Driver_ReaderError")==0) {
+    rv=LCDM_DeviceManager_HandleReaderError(dm, rid, dbReq);
+  }
   /* Insert more handlers here */
   else {
     DBG_INFO(0, "Command \"%s\" not handled by device manager",
@@ -1925,9 +1928,10 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
   if (driverFlagsMask) {
     GWEN_TYPE_UINT32 x;
 
-    x=((LCDM_Driver_GetDriverFlags(d) ^ driverFlagsValue) &
-       driverFlagsMask) &
-      ~LC_DRIVER_FLAGS_RUNTIME_MASK; /* don't change runtime flags */
+    /* don't change runtime flags */
+    x=(((LCDM_Driver_GetDriverFlags(d) ^ driverFlagsValue) &
+        (driverFlagsMask & ~LC_DRIVER_FLAGS_RUNTIME_MASK))) ^
+      LCDM_Driver_GetDriverFlags(d);
     LCDM_Driver_SetDriverFlags(d, x);
   }
 
@@ -2017,7 +2021,8 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
                               LCS_Connection_Type_Driver,
                               nodeId);
 
-  DBG_NOTICE(0, "Driver \"%08x\" is up (%s)", driverId, text);
+  DBG_NOTICE(0, "Driver \"%08x\" (%s) is up (%s)",
+             driverId, LCDM_Driver_GetDriverName(d), text);
   LCDM_Driver_SetStatus(d, LC_DriverStatusUp);
   LCS_Server_DriverChg(dm->server,
                        LCDM_Driver_GetDriverId(d),
@@ -2138,6 +2143,9 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
   LCCO_Card_SetDriverTypeName(card, LCDM_Driver_GetDriverName(d));
   LCCO_Card_SetReaderTypeName(card, LCDM_Reader_GetReaderType(r));
   LCCO_Card_SetReaderFlags(card, LCDM_Reader_GetFlags(r));
+  if (LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_HAS_VERIFY_FN) {
+    LCCO_Card_AddReaderFlags(card, LC_READER_FLAGS_DRIVER_HAS_VERIFY);
+  }
   if (atr) {
     LCCO_Card_SetAtr(card,
                      GWEN_Buffer_GetStart(atr),
@@ -2219,6 +2227,110 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
   }
 
   LCS_Server_CardRemoved(dm->server, readerId, slotNum, cardNum);
+
+  if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+    DBG_WARN(0, "Could not remove request");
+    abort();
+  }
+
+  return 0;
+}
+
+
+
+int LCDM_DeviceManager_HandleReaderError(LCDM_DEVICEMANAGER *dm,
+                                         GWEN_TYPE_UINT32 rid,
+                                         GWEN_DB_NODE *dbReq){
+  GWEN_TYPE_UINT32 driverId;
+  GWEN_TYPE_UINT32 readerId;
+  GWEN_TYPE_UINT32 nodeId;
+  LCDM_DRIVER *d;
+  LCDM_READER *r;
+  const char *text;
+
+  nodeId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeId", 0, 0);
+  if (!nodeId) {
+    DBG_ERROR(0, "Invalid node id");
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_WARN(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  if (sscanf(GWEN_DB_GetCharValue(dbReq, "data/driverId", 0, "0"),
+             "%x",
+             &driverId)!=1) {
+    DBG_ERROR(0, "Bad driver id in command \"%s\"",
+	      GWEN_DB_GroupName(dbReq));
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_WARN(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  /* find driver */
+  d=LCDM_Driver_List_First(dm->drivers);
+  while(d) {
+    if (LCDM_Driver_GetDriverId(d)==driverId)
+      break;
+    d=LCDM_Driver_List_Next(d);
+  } /* while */
+  if (!d) {
+    DBG_ERROR(0, "Unknown driverId \"%08x\" in command \"%s\"",
+              driverId, GWEN_DB_GroupName(dbReq));
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_WARN(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+  DBG_NOTICE(0, "Driver %s: Reader error", LCDM_Driver_GetDriverName(d));
+
+  /* get reader id */
+  if (sscanf(GWEN_DB_GetCharValue(dbReq, "data/readerId", 0, "0"),
+             "%x",
+             &readerId)!=1) {
+    DBG_ERROR(0, "Bad reader id in command \"%s\"",
+	      GWEN_DB_GroupName(dbReq));
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_WARN(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  /* find reader */
+  r=LCDM_Reader_List_First(dm->readers);
+  while(r) {
+    if (LCDM_Reader_GetReaderId(r)==readerId)
+      break;
+    r=LCDM_Reader_List_Next(r);
+  } /* while */
+  if (!r) {
+    DBG_ERROR(0, "Reader \"%08x\" not found", readerId);
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_WARN(0, "Could not remove request");
+      abort();
+    }
+    return -1;
+  }
+
+  text=GWEN_DB_GetCharValue(dbReq, "data/text", 0, 0);
+  if (!text || !*text)
+    text="Reader error flagged by driver";
+
+  /* notify all instances */
+  LCS_Server_ReaderChg(dm->server,
+                       LCDM_Driver_GetDriverId(d),
+                       LCDM_Reader_GetReaderId(r),
+                       LCDM_Reader_GetReaderType(r),
+                       LCDM_Reader_GetReaderName(r),
+                       LCDM_Reader_GetReaderInfo(r),
+                       LC_ReaderStatusAborted,
+                       text);
+
 
   if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
     DBG_WARN(0, "Could not remove request");

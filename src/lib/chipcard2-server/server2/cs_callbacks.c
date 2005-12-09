@@ -75,11 +75,10 @@ void LCS_Server_NewCard(LCS_SERVER *cs, LCCO_CARD *card) {
   assert(cs);
   assert(card);
 
-  DBG_ERROR(0, "Found this card:");
-  LCCO_Card_Dump(card, stderr, 2);
-
   if (cs->newCardFn)
     cs->newCardFn(cs, card);
+  DBG_ERROR(0, "Found this card:");
+  LCCO_Card_Dump(card, stderr, 2);
 }
 
 

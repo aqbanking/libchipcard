@@ -59,6 +59,8 @@ void LCCO_Card_SetReadersCardId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id);
 
 GWEN_TYPE_UINT32 LCCO_Card_GetReaderFlags(const LCCO_CARD *cd);
 void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
+void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
+void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
 
 LC_CARD_STATUS LCCO_Card_GetStatus(const LCCO_CARD *cd);
 void LCCO_Card_SetStatus(LCCO_CARD *cd, LC_CARD_STATUS st);

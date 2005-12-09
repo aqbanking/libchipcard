@@ -60,6 +60,7 @@ LCD_DRIVER *DriverCCID_new(int argc, char **argv) {
   LCD_Driver_SetReaderStatusFn(d, DriverCCID_ReaderStatus);
   LCD_Driver_SetReaderInfoFn(d, DriverCCID_ReaderInfo);
   LCD_Driver_SetCreateReaderFn(d, DriverCCID_CreateReader);
+  LCD_Driver_SetPerformVerificationFn(d, DriverCCID_PerformVerification);
   LCD_Driver_SetGetErrorTextFn(d, DriverCCID_GetErrorText);
 
   rv=LCD_Driver_Init(d, argc, argv);
@@ -215,11 +216,16 @@ int DriverCCID_Start(LCD_DRIVER *d) {
 
   /* send status report to server */
   if (LCD_Driver_Connect(d, "OK", "Library loaded",
+#if 1
+                         0, 0
+#else
                          /* this driver knows how to verify/modify the pin */
                          LC_DRIVER_FLAGS_HAS_VERIFY_FN |
                          LC_DRIVER_FLAGS_HAS_MODIFY_FN,
                          LC_DRIVER_FLAGS_HAS_VERIFY_FN |
-                         LC_DRIVER_FLAGS_HAS_MODIFY_FN)) {
+                         LC_DRIVER_FLAGS_HAS_MODIFY_FN
+#endif
+                        )) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;
@@ -302,6 +308,7 @@ GWEN_TYPE_UINT32 DriverCCID_SendAPDU(LCD_DRIVER *d,
   GWEN_TYPE_UINT32 tmplen;
   DRIVER_CCID *dct;
   const char *lg;
+  int feature;
   GWEN_TYPE_UINT32 controlCode;
 
   lg=LCD_Reader_GetLogger(r);
@@ -316,21 +323,30 @@ GWEN_TYPE_UINT32 DriverCCID_SendAPDU(LCD_DRIVER *d,
 
   tmplen=*bufferlen;
 
+  feature=apdu[0];
   controlCode=
-      (apdu[0]<<24)+
-      (apdu[1]<<16)+
-      (apdu[2]<<8)+
-      apdu[3];
+      (apdu[1]<<24)+
+      (apdu[2]<<16)+
+      (apdu[3]<<8)+
+    apdu[4];
+  if (feature && controlCode==0)
+    controlCode=ReaderCCID_GetFeatureCode(r, feature);
+
+  if (controlCode==0) {
+    DBG_ERROR(lg, "Bad control code");
+    return LC_ERROR_INVALID;
+  }
 
   if (toReader) {
-    assert(apdulen>7);
+    assert(apdulen>8);
     DBG_INFO(lg,
              "Sending command to reader (ControlCode=%08x):", controlCode);
-    GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+    GWEN_Text_LogString((const char*)apdu+5,
+                        apdulen-5, lg, GWEN_LoggerLevelInfo);
     retval=dct->controlFn(LCD_Slot_GetSlotNum(slot),
                           controlCode,
-                          apdu+4,
-                          apdulen-4,
+                          apdu+5,
+                          apdulen-5,
 			  buffer,
 			  *bufferlen,
 			  &tmplen);
@@ -667,16 +683,13 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
   tlv=(PCSC_TLV_STRUCTURE*)buffer;
   for (i=0; i<cnt; i++) {
     DBG_INFO(lg, "TLV: %d (%08x)", tlv[i].tag, tlv[i].value);
-    if (tlv[i].tag==FEATURE_VERIFY_PIN_DIRECT)
-      ReaderCCID_SetVerifyCode(r, tlv[i].value);
-    if (tlv[i].tag==FEATURE_MODIFY_PIN_DIRECT)
-      ReaderCCID_SetModifyCode(r, tlv[i].value);
+    ReaderCCID_SetFeatureCode(r, tlv[i].tag, tlv[i].value);
   }
 
   if (GWEN_Buffer_GetUsedBytes(buf))
     GWEN_Buffer_AppendByte(buf, ';');
   GWEN_Buffer_AppendString(buf, "unit0=\"icc1\"");
-  if (ReaderCCID_GetVerifyCode(r)) {
+  if (ReaderCCID_GetFeatureCode(r, FEATURE_VERIFY_PIN_DIRECT)) {
     GWEN_Buffer_AppendString(buf, ";unit1=\"KEYBOARD\"");
   }
 
@@ -794,7 +807,7 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
 
   lg=LCD_Reader_GetLogger(r);
 
-  verifyCode=ReaderCCID_GetVerifyCode(r);
+  verifyCode=ReaderCCID_GetFeatureCode(r, FEATURE_VERIFY_PIN_DIRECT);
   if (!verifyCode) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Secure Pin verification not supported for reader \"%08x\"",
@@ -808,18 +821,26 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
   pv->bTimerOut = 0x00;
   pv->bTimerOut2 = 0x00;
 
-  x=0;
   pe=LC_PinInfo_GetEncoding(pi);
+  DBG_NOTICE(LCD_Reader_GetLogger(r),
+             "Pin: id=%02x, minlen=%d, maxlen=%d,  encoding \"%s\"",
+             LC_PinInfo_GetId(pi),
+             LC_PinInfo_GetMinLength(pi),
+             LC_PinInfo_GetMaxLength(pi),
+             LC_PinInfo_Encoding_toString(pe));
+
+  x=0;
   if (pe==LC_PinInfo_EncodingAscii) {
-    x|=0x2; /* ASCII */
+    x|=0x80; /* pos is in bytes, pin starting at 0 */
+    x|=0x02; /* ASCII */
   }
   else if (pe==LC_PinInfo_EncodingBcd) {
-    x|=0x1; /* BCD */
-    x|=0x80; /* pos is in bytes */
+    x|=0x80; /* pos is in bytes, pin starting at 0 */
+    x|=0x01; /* BCD */
   }
   else if (pe==LC_PinInfo_EncodingFpin2) {
-    x|=0x1; /* BCD */
-    x|=0x04 << 3;
+    x|=0x04 << 3; /* bits 6-3: pos in bits, pin starting at bit 4 */
+    x|=0x01; /* BCD */
   }
   else {
     DBG_ERROR(LCD_Reader_GetLogger(r),
@@ -827,19 +848,19 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
               LC_PinInfo_Encoding_toString(pe));
     return LC_ERROR_NOT_SUPPORTED;
   }
-  pv->bmFormatString = x;
+  pv->bmFormatString=x;
 
   x=0;
   if (pe==LC_PinInfo_EncodingFpin2) {
-    x|=0x40 | 0x08;
+    x|=0x40 | 0x08; /* 4 bits of length, 8 bytes of data */
   }
-  pv->bmPINBlockString = x;
+  pv->bmPINBlockString=x;
 
   x=0;
   if (pe==LC_PinInfo_EncodingFpin2) {
-    x|=0x04;
+    x|=0x04; /* pin length position in bits (starting at 4) */
   }
-  pv->bmPINLengthFormat = x;
+  pv->bmPINLengthFormat=x;
 
   x16=(LC_PinInfo_GetMinLength(pi)<<8)+LC_PinInfo_GetMaxLength(pi);
   pv->wPINMaxExtraDigit=HOST_TO_CCID_16(x16); /* Min Max */
@@ -858,9 +879,10 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
   pv->abData[offset++]=0x20;	/* INS: VERIFY */
   pv->abData[offset++]=0x00;	/* P1 */
   pv->abData[offset++]=LC_PinInfo_GetId(pi) & 0xff;	/* P2 */
+
   pv->abData[offset++]=0x08;	/* Lc: 8 data bytes */
   if (pe==LC_PinInfo_EncodingFpin2) {
-    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x28;
     pv->abData[offset++]=0xff;
     pv->abData[offset++]=0xff;
     pv->abData[offset++]=0xff;
@@ -870,14 +892,14 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
     pv->abData[offset++]=0xff;
   }
   else if (pe==LC_PinInfo_EncodingAscii) {
-    pv->abData[offset++]=0x30;
-    pv->abData[offset++]=0x30;
-    pv->abData[offset++]=0x30;
-    pv->abData[offset++]=0x30;
-    pv->abData[offset++]=0x00;
-    pv->abData[offset++]=0x00;
-    pv->abData[offset++]=0x00;
-    pv->abData[offset++]=0x00;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
+    pv->abData[offset++]=0x20;
   }
   else {
     pv->abData[offset++]=0x00;
@@ -893,6 +915,11 @@ GWEN_TYPE_UINT32 DriverCCID_PerformVerification(LCD_DRIVER *d,
 
   /* -1 because PIN_VERIFY_STRUCTURE contains the first byte of abData[] */
   sendBufferLen=sizeof(PIN_VERIFY_STRUCTURE)+offset-1;
+  recvBufferLen=0;
+  DBG_INFO(lg, "Sending command to card (bufferlen=%d):",
+           sizeof(recvBuffer));
+  GWEN_Text_LogString((const char*)sendBuffer,
+                      sendBufferLen, lg, GWEN_LoggerLevelInfo);
 
   retval=dct->controlFn(LCD_Slot_GetSlotNum(slot), /* lun */
                         verifyCode,
@@ -981,15 +1008,15 @@ void log_msg(const int priority, const char *fmt, ...) {
 
   switch(priority) {
   case 1: /* PCSC_LOG_INFO */
-    DBG_INFO(0, "%s", msgBuf);
+    DBG_INFO(0, "PCSC: %s", msgBuf);
     break;
   case 2: /* PCSC_LOG_ERROR */
   case 3: /* PCSC_LOG_CRITICAL */
-    DBG_ERROR(0, "%s", msgBuf);
+    DBG_ERROR(0, "PCSC: %s", msgBuf);
     break;
   case 0: /* PCSC_LOG_DEBUG */
   default:
-    DBG_DEBUG(0, "%s", msgBuf);
+    DBG_DEBUG(0, "PCSC: %s", msgBuf);
     break;
   } /* switch */
 }

@@ -527,7 +527,10 @@ const char *LCD_Driver_GetDriverId(const LCD_DRIVER *d){
 
 
 GWEN_TYPE_UINT32 LCD_Driver_SendCommand(LCD_DRIVER *d,
-                                       GWEN_DB_NODE *dbCommand) {
+                                        GWEN_DB_NODE *dbCommand) {
+  GWEN_DB_SetCharValue(dbCommand, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "driverId", LCD_Driver_GetDriverId(d));
+
   return GWEN_IpcManager_SendRequest(d->ipcManager,
                                      d->ipcId, dbCommand);
 }
@@ -685,6 +688,8 @@ int LCD_Driver_Connect(LCD_DRIVER *d,
     GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "driverType", d->dtype);
   } /* if remote mode */
+  LC_DriverFlags_toDb(dbReq, "driverFlagsValue", dflagsValue);
+  LC_DriverFlags_toDb(dbReq, "driverFlagsMask", dflagsMask);
 
   /* send information about every reader we already now.
    * Normally we don't know any reader by now, since the server informs us
@@ -1167,8 +1172,8 @@ int LCD_Driver_SendStatusChangeNotification(LCD_DRIVER *d,
 
 
 int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
-                                          LCD_READER *r,
-                                          const char *text) {
+                                           LCD_READER *r,
+                                           const char *text) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
@@ -2167,14 +2172,21 @@ int LCD_Driver_HandleVerify(LCD_DRIVER *d,
     DBG_ERROR(LCD_Reader_GetLogger(r), "Error on verify (%08x)", retval);
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "ERROR");
+    if (retval | 0x80000000) {
+      GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                          "num",
+                          retval & 0x7fffffff);
+      readerError=0;
+    }
+    else
+      readerError=retval;
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", LCD_Driver_GetErrorText(d, retval));
     GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                         "triesLeft", triesLeft);
-    readerError=retval;
   }
   else {
-    /* init ok */
+    /* verify ok */
     DBG_DEBUG(LCD_Reader_GetLogger(r), "Pin ok");
     GWEN_DB_SetCharValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "code", "OK");

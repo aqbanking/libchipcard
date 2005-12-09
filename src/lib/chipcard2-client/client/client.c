@@ -1437,27 +1437,7 @@ int LC_Client_HandleCardAvailable(LC_CLIENT *cl, GWEN_DB_NODE *dbReq){
   else
     atr=0;
 
-  rflags=0;
-  for (i=0;; i++) {
-    const char *s;
-
-    s=GWEN_DB_GetCharValue(dbReq, "data/readerflags", i, 0);
-    if (!s)
-      break;
-    if (strcasecmp(s, "KEYPAD")==0)
-      rflags|=LC_CARD_READERFLAGS_KEYPAD;
-    else if (strcasecmp(s, "DISPLAY")==0)
-      rflags|=LC_CARD_READERFLAGS_DISPLAY;
-    else if (strcasecmp(s, "NOINFO")==0)
-      rflags|=LC_CARD_READERFLAGS_NOINFO;
-    else if (strcasecmp(s, "REMOTE")==0)
-      rflags|=LC_CARD_READERFLAGS_REMOTE;
-    else if (strcasecmp(s, "AUTO")==0)
-      rflags|=LC_CARD_READERFLAGS_AUTO;
-    else {
-      DBG_WARN(LC_LOGDOMAIN, "Unknown reader flag \"%s\"", s);
-    }
-  } /* for */
+  rflags=LC_ReaderFlags_fromDb(dbReq, "data/readerflags");
 
   card=LC_Card_new(cl,
                    cardId,
@@ -3297,6 +3277,117 @@ LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
   res=LC_Client_CheckUnlockReader(cl, rqid);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"UnlockReader\"");
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendPerformVerification(LC_CLIENT *cl,
+                                                   LC_CARD *cd,
+                                                   const LC_PININFO *pi) {
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbT;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  dbReq=GWEN_DB_Group_new("Client_Verify");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", LC_Card_GetCardId(cd));
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "cardid", numbuf);
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_DEFAULT, "pinInfo");
+  assert(dbT);
+  LC_PinInfo_toDb(pi, dbT);
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, cd, LC_Card_GetServerId(cd), dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckPerformVerification(LC_CLIENT *cl,
+                                                    GWEN_TYPE_UINT32 rid,
+                                                    int *triesLeft){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+  const char *code;
+  const char *text;
+
+  assert(cl);
+  assert(rid);
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+
+  code=GWEN_DB_GetCharValue(dbRsp, "data/code", 0, "ERROR");
+  text=GWEN_DB_GetCharValue(dbRsp, "data/text", 0, "(none)");
+  *triesLeft=GWEN_DB_GetIntValue(dbRsp, "data/triesLeft", 0,
+                                 *triesLeft);
+  DBG_DEBUG(LC_LOGDOMAIN, "Verify result: %s (%s)", code, text);
+  if (strcasecmp(code, "OK")==0) {
+    res=LC_Client_ResultOk;
+  }
+  else
+    res=LC_Client_ResultGeneric;
+  GWEN_DB_Group_free(dbRsp);
+  return res;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_PerformVerification(LC_CLIENT *cl,
+                                               LC_CARD *cd,
+                                               const LC_PININFO *pi,
+                                               int *triesLeft) {
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  rqid=LC_Client_SendPerformVerification(cl, cd, pi);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"PerformVerification\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->longTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"PerformVerification\"");
+    }
+    return res;
+  }
+  res=LC_Client_CheckPerformVerification(cl, rqid, triesLeft);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"PerformVerification\"");
     return res;
   }
 

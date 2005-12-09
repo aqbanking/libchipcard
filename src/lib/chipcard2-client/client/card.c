@@ -242,6 +242,7 @@ void LC_Card_ResetCardId(LC_CARD *cd){
 void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
   int k;
   GWEN_STRINGLISTENTRY *se;
+  GWEN_DB_NODE *dbT;
 
   for (k=0; k<insert; k++)
     fprintf(f, " ");
@@ -277,18 +278,23 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
   fprintf(f, "Server id   : %08x\n", cd->serverId);
   for (k=0; k<insert; k++)
     fprintf(f, " ");
-  fprintf(f, "Reader flags:");
-  if (cd->readerFlags & LC_CARD_READERFLAGS_KEYPAD)
-    fprintf(f, " keypad");
-  if (cd->readerFlags & LC_CARD_READERFLAGS_DISPLAY)
-    fprintf(f, " display");
-  if (cd->readerFlags & LC_CARD_READERFLAGS_NOINFO)
-    fprintf(f, " noinfo");
-  if (cd->readerFlags & LC_CARD_READERFLAGS_REMOTE)
-    fprintf(f, " remote");
-  if (cd->readerFlags & LC_CARD_READERFLAGS_AUTO)
-    fprintf(f, " auto");
+  fprintf(f, "Reader flags: ");
+
+  dbT=GWEN_DB_Group_new("flags");
+  LC_ReaderFlags_toDb(dbT, "flags", cd->readerFlags);
+  for (k=0; k<32; k++) {
+    const char *s;
+
+    s=GWEN_DB_GetCharValue(dbT, "flags", k, 0);
+    if (!s)
+      break;
+    if (k)
+      fprintf(f, ", ");
+    fprintf(f, "%s", s);
+  }
   fprintf(f, "\n");
+  GWEN_DB_Group_free(dbT);
+
   if (cd->atr) {
     for (k=0; k<insert; k++)
       fprintf(f, " ");
@@ -1790,57 +1796,7 @@ LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
                                                  const LC_PININFO *pi,
                                                  int *triesLeft) {
-  GWEN_DB_NODE *dbReq=0;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  if (triesLeft)
-    *triesLeft=-1;
-
-  switch(LC_PinInfo_GetEncoding(pi)) {
-  case LC_PinInfo_EncodingBin:
-    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bin");
-    break;
-  case LC_PinInfo_EncodingBcd:
-    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bcd");
-    break;
-  case LC_PinInfo_EncodingAscii:
-    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Ascii");
-    break;
-  case LC_PinInfo_EncodingFpin2:
-    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Fpin2");
-    break;
-  default:
-    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
-              LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
-    return LC_Client_ResultInvalid;
-  }
-
-  dbResp=GWEN_DB_Group_new("response");
-  LC_PinInfo_toDb(pi, dbReq);
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "pid", LC_PinInfo_GetId(pi));
-
-  res=LC_Card_ExecCommand(card, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  if (res!=LC_Client_ResultOk) {
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbResp);
-    if (res==LC_Client_ResultCmdError && triesLeft) {
-      if (LC_Card_GetLastSW1(card)==0x63) {
-        int c;
-
-        c=LC_Card_GetLastSW2(card);
-        if (c>=0xc0)
-          *triesLeft=(c & 0xf);
-      }
-    }
-    return res;
-  }
-
-  GWEN_DB_Group_free(dbResp);
-  GWEN_DB_Group_free(dbReq);
-  return res;
+  return LC_Client_PerformVerification(card->client, card, pi, triesLeft);
 }
 
 

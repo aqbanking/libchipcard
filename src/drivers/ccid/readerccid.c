@@ -42,53 +42,31 @@ void ReaderCCID_FreeData(void *bp, void *p) {
 
 
 
-GWEN_TYPE_UINT32 ReaderCCID_GetVerifyCode(const LCD_READER *r) {
+GWEN_TYPE_UINT32 ReaderCCID_GetFeatureCode(const LCD_READER *r, int f) {
   READER_CCID *rc;
 
   assert(r);
   rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CCID, r);
   assert(r);
 
-  return rc->verifyCode;
+  if (f>=READER_CCID_MAX_FEATURES)
+    return 0;
+
+  return rc->featureCode[f];
 }
 
 
 
-void ReaderCCID_SetVerifyCode(LCD_READER *r, GWEN_TYPE_UINT32 c) {
+void ReaderCCID_SetFeatureCode(LCD_READER *r, int f, GWEN_TYPE_UINT32 c) {
   READER_CCID *rc;
 
   assert(r);
   rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CCID, r);
   assert(r);
 
-  rc->verifyCode=c;
+  if (f<READER_CCID_MAX_FEATURES)
+    rc->featureCode[f]=c;
 }
-
-
-
-GWEN_TYPE_UINT32 ReaderCCID_GetModifyCode(const LCD_READER *r) {
-  READER_CCID *rc;
-
-  assert(r);
-  rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CCID, r);
-  assert(r);
-
-  return rc->modifyCode;
-}
-
-
-
-void ReaderCCID_SetModifyCode(LCD_READER *r, GWEN_TYPE_UINT32 c) {
-  READER_CCID *rc;
-
-  assert(r);
-  rc=GWEN_INHERIT_GETDATA(LCD_READER, READER_CCID, r);
-  assert(r);
-
-  rc->modifyCode=c;
-}
-
-
 
 
 

@@ -203,7 +203,7 @@
       </autoport>
 
       <flags>
-        <!-- <flag>keypad</flag> -->
+        <flag>keypad</flag>
       </flags>
     </reader>
     

@@ -306,8 +306,8 @@ void LCS_FullServer_NewCard(LCS_SERVER *cs, LCCO_CARD *card) {
     fs->newCardFn(cs, card);
 
   LCCM_CardManager_NewCard(fs->cardManager, card);
-  LCCL_ClientManager_NewCard(fs->clientManager, card);
   LCCMD_CommandManager_NewCard(fs->commandManager, card);
+  LCCL_ClientManager_NewCard(fs->clientManager, card);
 }
 
 

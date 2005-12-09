@@ -17,12 +17,14 @@
 #include "readerccid_l.h"
 
 
+#define READER_CCID_MAX_FEATURES 32
+
 typedef struct READER_CCID READER_CCID;
 struct READER_CCID {
-  GWEN_TYPE_UINT32 verifyCode;
-  GWEN_TYPE_UINT32 modifyCode;
+  GWEN_TYPE_UINT32 featureCode[READER_CCID_MAX_FEATURES];
 };
 void ReaderCCID_FreeData(void *bp, void *p);
+
 
 
 #endif

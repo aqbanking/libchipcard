@@ -150,6 +150,7 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
   
     s=GWEN_StringListEntry_Data(se);
     assert(s);
+    DBG_ERROR(0, "Adding card type %s", s);
     GWEN_DB_SetCharValue(gr, GWEN_DB_FLAGS_DEFAULT,
                          "cardtypes", s);
     se=GWEN_StringListEntry_Next(se);
@@ -177,6 +178,9 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
     GWEN_DB_SetBinValue(gr, GWEN_DB_FLAGS_OVERWRITE_VARS,
                         "atr", atr, atrLen);
   } /* if ATR */
+
+  DBG_ERROR(0, "Sending:");
+  GWEN_DB_Dump(gr, stderr, 2);
 
   rid=GWEN_IpcManager_SendRequest(clm->ipcManager,
                                   LCCL_Client_GetClientId(cl),

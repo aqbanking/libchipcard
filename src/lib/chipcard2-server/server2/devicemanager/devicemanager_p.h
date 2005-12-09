@@ -154,6 +154,10 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
                                          GWEN_TYPE_UINT32 rid,
                                          GWEN_DB_NODE *dbReq);
 
+int LCDM_DeviceManager_HandleReaderError(LCDM_DEVICEMANAGER *dm,
+                                         GWEN_TYPE_UINT32 rid,
+                                         GWEN_DB_NODE *dbReq);
+
 
 int LCDM_DeviceManager__GetAutoPortByDeviceId(GWEN_DB_NODE *dbReader,
                                               const LC_DEVICE *dev);

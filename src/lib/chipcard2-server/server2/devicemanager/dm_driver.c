@@ -486,7 +486,6 @@ void LCDM_Driver_SubDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl){
 
 
 void LCDM_Driver_SetTimeout(LCDM_DRIVER *d, int secs) {
-  DBG_ERROR(0, "Setting driver timeout to %d", secs);
   if (secs==0)
     d->timeout=0;
   else {

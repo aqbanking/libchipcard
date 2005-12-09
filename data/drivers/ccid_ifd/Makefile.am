@@ -1,5 +1,6 @@
 
 EXTRA_DIST=\
+  card.xml \
   driver.xml \
   ddv0.xml \
   ddv1.xml \
@@ -10,6 +11,7 @@ EXTRA_DIST=\
 
 carddatadir=@libchipcard2s_config_am@/drivers/ccid_ifd/cards
 carddata_DATA=\
+  card.xml \
   ddv0.xml \
   ddv1.xml \
   kvk.xml \
