@@ -38,7 +38,7 @@ GWEN_TYPE_UINT32 LCCL_ClientManager_SendResetCard(LCCL_CLIENTMANAGER *clm,
 
   DBG_NOTICE(0, "Resetting card \"%08x\"", LCCO_Card_GetCardId(card));
 
-  dbOutReq=GWEN_DB_Group_new("ResetCard");
+  dbOutReq=GWEN_DB_Group_new("Driver_ResetCard");
   outRid=LCDM_DeviceManager_SendCardCommand(dm, card, dbOutReq);
 
   return outRid;

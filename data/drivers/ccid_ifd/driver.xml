@@ -171,7 +171,7 @@
             vendor="0x04e6" product="0xe003" >
       <short>SCM Chipdrive Pinpad X32</short>
       <flags>
-        <flag>keypad</flag>
+        <!-- Temporarily disabled <flag>keypad</flag> -->
       </flags>
       <image>scm_pinpadX32.jpg</image>
     </reader>

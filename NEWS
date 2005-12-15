@@ -1,5 +1,14 @@
 
 ===========================================================================
+                 Libchipcard2 1.9.19beta (2005/12/15)
+===========================================================================
+
+This release adds support for Kobil Kaan Advanced (including the keypad) and
+adds generic support for CCID drivers again (already works with Kobil Kaan
+Advanced). It also improves the autoPort configuration of readers.
+
+
+===========================================================================
                  Libchipcard2 1.9.18beta (2005/12/02)
 ===========================================================================
 

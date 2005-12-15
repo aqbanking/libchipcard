@@ -201,13 +201,10 @@
               82 00 00
               08 04 02
               00 00 00 00 00 00 00
-              0d 00 00 00
+              04 00 00 00
               00 20 00 
             </ELEM>
             <ELEM name="pid" type="byte" />
-	    			<ELEM type="bytes" storedAs="bytes" >
-              08 20 20 20 20 20 20 20 20
-            </ELEM>
           </APDU>
 				</send>
 				<results>
@@ -278,10 +275,13 @@
               89 47 04
               08 04 
               02 00 00 00 00 00 00 00
-              04 00 00 00
+              0d 00 00 00
               00 20 00
             </ELEM>
             <ELEM name="pid" type="byte" />
+	    			<ELEM type="bytes" storedAs="bytes" >
+              08 28 ff ff ff ff ff ff ff
+            </ELEM>
           </APDU>
 				</send>
 				<results>
