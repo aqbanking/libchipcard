@@ -57,7 +57,7 @@ void ReaderCTAPI_freeData(void *bp, void *p){
 
   rc=(READER_CTAPI*)p;
 
-  free(rc);
+  GWEN_FREE_OBJECT(rc);
 }
 
 

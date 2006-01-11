@@ -1,9 +1,1 @@
-- pin verification via the keypad of the Kobil Kaan Advanced now works!!
-- reordered calls for NewCard callback in server-code: Now the CommandManager
-  is called before the ClientManager, because the CommandManager determines
-  the types of the card according to its ATR
-- removed driver-specific parts from card description files (I will have
-  to clean those up)
-- disabled keypad of SCM SPR 532, currently it can't be used since the 
-  firmware of the reader and the free CCID driver don't work successfully
-  together right now
+- adapted to next release of Cyberjack driver

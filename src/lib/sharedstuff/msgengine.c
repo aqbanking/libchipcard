@@ -65,7 +65,7 @@ void LC_MsgEngine_FreeData(void *bp, void *p){
 
   /* free all objects inside LC_MsgEngine */
 
-  free(le);
+  GWEN_FREE_OBJECT(le);
 }
 
 
