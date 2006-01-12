@@ -19,19 +19,4 @@ A: If the tool cjgeldkarte (which comes with the driver) shows an error on
    Just plug the reader into another USB port. For me that fixed this problem.
 
 Q: What driver should I use for my device ?
-A: If you have an old device (old Cyberjack or ecom) then you should most
-   definately use the old driver, 1.x. The new driver sometimes gets confused
-   if there are other devices present which also use the USB serial converter
-   interface (e.g. Palm, modems etc).
-   For newer devices you MUST use the new driver (2.x), since the old one
-   doesn't support those devices.
-   
-   If you have both - an old and a new Cyberjack device - you should rename
-   one of the drivers, e.g. driver 1.x:
-     libctapi_cyberjack.so -> libctapi_cyberjack1.so
-   You should also move these drivers to Libchipcard2's own lowlevel driver
-   folder, $PREFIX/lib/chipcard2-server/lowlevel. This makes sure that
-   Libchipcard2 always uses the correct driver.
-   However, since version 2.0.6 the driver contains a nice workaround which is
-   used by Libchipcard2, so you may use this version with both old and new
-   Cyberjacks.
+A: You should use driver 2.0.9 or later.

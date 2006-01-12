@@ -29,11 +29,16 @@
 
   <readers>
     <reader name="cherry_1501" com="serial" >
-      <short>Towitoko Chipdrive Micro (Serial)</short>
+      <short>Cherry Keyboard 1501</short>
+
+      <autoport>
+        <mode>fixed</mode>
+      </autoport>
       <ports>
-        <port value="1">Mode1</port>
-        <port value="2">Mode2</port>
+        <port value="1">serial</port>
+        <port value="1">serial-fixed</port>
       </ports>
+
       <flags>
       </flags>
       <image>cherry-1501.jpg</image>

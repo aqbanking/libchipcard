@@ -145,7 +145,7 @@ The option "-f" makes the daemon stay in the foreground. In this case you can
 stop it using CTRL-C.
 
 
-Please note that the server doesn't start if the there is no line in the
+Please note that the server doesn't start if there is no line in the
 configuration file saying "enabled=1".
 
 
@@ -311,7 +311,7 @@ The new structure of the configuration file is this:
     # topmost level of the configuration file in previous versions.
     
     Driver {
-      # Driver section, the content itself isunchanged
+      # Driver section, the content itself is unchanged
       
       Reader {
         # The driver section contains a single change, which doesn't pose much
@@ -352,7 +352,7 @@ The new structure of the configuration file is this:
   -------------------------------------------------------------------X8
 
 
-Martin Preuss, Hamburg/Germany, 2005/10/22
+Martin Preuss, Hamburg/Germany, 2006/01/12
 
 
 
