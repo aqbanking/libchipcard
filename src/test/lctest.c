@@ -3208,6 +3208,153 @@ int stressTest1(int argc, char **argv) {
 
 
 
+int test37(int argc, char **argv) {
+  LC_CLIENT *cl;
+  LC_CARD *card;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *mbuf;
+  GWEN_BUFFER *mbuf2;
+  int i;
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfigFile(cl, "chipcardc.conf")) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  fprintf(stderr, "INFO: Sending StartWait\n");
+  res=LC_Client_StartWait(cl, 0, 0);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "INFO: Waiting for card\n");
+  card=LC_Client_WaitForNextCard(cl, 30000);
+  if (!card) {
+    fprintf(stderr, "ERROR: No card found.\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: We got this card:\n");
+  LC_Card_Dump(card, stderr, 2);
+
+  if (LC_DDVCard_ExtendCard(card)) {
+    fprintf(stderr, "Could not extend card as DDV card\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: Opening card\n");
+  res=LC_Card_Open(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Stopping wait\n");
+  res=LC_Client_StopWait(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Verifying PIN...\n");
+  res=LC_DDVCard_SecureVerifyPin(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  mbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  mbuf2=GWEN_Buffer_new(0, 256, 0, 1);
+
+  fprintf(stderr, "Running Record Read Test...\n");
+  for (i=0; i<100; i++) {
+    fprintf(stderr, "S");
+    res=LC_ProcessorCard_SelectEF(card, "EF_BNK");
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      return 2;
+    }
+
+    fprintf(stderr, "R");
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+                              1, mbuf);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      return 2;
+    }
+    GWEN_Buffer_Reset(mbuf);
+  }
+  fprintf(stderr, "Record Read Test: Passed\n");
+
+
+  fprintf(stderr, "Running Crypt Test...\n");
+  for (i=0; i<100; i++) {
+    GWEN_Buffer_Reset(mbuf);
+    fprintf(stderr, "G");
+    res=LC_DDVCard_GetChallenge(card, mbuf);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      return 2;
+    }
+    fprintf(stderr, "C");
+    res=LC_DDVCard_CryptBlock(card, mbuf, mbuf2);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      return 2;
+    }
+
+    GWEN_Buffer_Reset(mbuf);
+    GWEN_Buffer_Reset(mbuf2);
+  }
+  fprintf(stderr, "\nCrypt Test: Passed\n");
+
+  fprintf(stderr, "Running Sign Test...\n");
+  for (i=0; i<100; i++) {
+    int j;
+
+    GWEN_Buffer_Reset(mbuf);
+    for (j=0; j<4; j++) {
+      fprintf(stderr, "%d", j);
+      res=LC_DDVCard_GetChallenge(card, mbuf);
+      if (res!=LC_Client_ResultOk) {
+        fprintf(stderr, "ERROR: Wait timed out.\n");
+        return 2;
+      }
+    }
+    fprintf(stderr, "S");
+    GWEN_Buffer_Crop(mbuf, 0, 20);
+    res=LC_DDVCard_SignHash(card, mbuf, mbuf2);
+    if (res!=LC_Client_ResultOk) {
+      fprintf(stderr, "ERROR: Wait timed out.\n");
+      return 2;
+    }
+
+    GWEN_Buffer_Reset(mbuf);
+    GWEN_Buffer_Reset(mbuf2);
+  }
+  fprintf(stderr, "\nSign Test: Passed\n");
+
+  fprintf(stderr, "INFO: Closing card\n");
+  res=LC_Card_Close(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  LC_Client_free(cl);
+  return 0;
+}
+
+
+
 
 int main(int argc, char **argv) {
 
@@ -3299,6 +3446,8 @@ int main(int argc, char **argv) {
     return test35(argc, argv);
   else if (strcasecmp(argv[1], "test36")==0)
     return test36(argc, argv);
+  else if (strcasecmp(argv[1], "test37")==0)
+    return test37(argc, argv);
   else if (strcasecmp(argv[1], "stress1")==0)
     return stressTest1(argc, argv);
   else {

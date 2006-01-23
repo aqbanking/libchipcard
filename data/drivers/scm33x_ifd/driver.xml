@@ -8,7 +8,8 @@
 
   <lib>
     <names>
-      <name>libscr33x.so.4.1.1</name>
+      <name>libscr33x.so.4.*</name>
+      <name>libscr33x.so.*</name>
     </names>
     
     <locations>

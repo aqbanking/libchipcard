@@ -245,6 +245,12 @@ CHIPCARD_API
 const char *LC_Card_GetLastResult(const LC_CARD *card);
 CHIPCARD_API
 const char *LC_Card_GetLastText(const LC_CARD *card);
+
+CHIPCARD_API
+void LC_Card_CreateResultString(const LC_CARD *card,
+                                const char *lastCommand,
+                                LC_CLIENT_RESULT res,
+                                GWEN_BUFFER *buf);
 /*@}*/
 
 

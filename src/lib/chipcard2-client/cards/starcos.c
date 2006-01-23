@@ -389,6 +389,8 @@ unsigned int LC_Starcos__GetKeyLogInfo(LC_CARD *card) {
   if (scos->keyLogInfo)
     return scos->keyLogInfo;
 
+  DBG_INFO(LC_LOGDOMAIN, "Reading keylog info");
+
   res=LC_ProcessorCard_SelectEF(card, "EF_KEY_LOG");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
@@ -420,6 +422,8 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card) {
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
   assert(scos);
+
+  DBG_INFO(LC_LOGDOMAIN, "Writing keylog info");
 
   if (!scos->keyLogInfo)
     return LC_Client_ResultOk;
@@ -696,11 +700,13 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
   assert(scos);
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
+  DBG_INFO(LC_LOGDOMAIN, "Reading keylog info");
   kli=LC_Starcos__GetKeyLogInfo(card);
   if (kid==0x8e) {
     if (kli & 0x08) {
       kli&=~0x08;
       scos->keyLogInfo=kli;
+      DBG_INFO(LC_LOGDOMAIN, "Saving keylog info");
       res=LC_Starcos__SaveKeyLogInfo(card);
       if (res!=LC_Client_ResultOk) {
         DBG_INFO(LC_LOGDOMAIN, "here");
@@ -727,6 +733,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
   }
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
+  DBG_INFO(LC_LOGDOMAIN, "Generating key pair");
   dbReq=GWEN_DB_Group_new("GenerateKeyPair");
   dbResp=GWEN_DB_Group_new("response");
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,

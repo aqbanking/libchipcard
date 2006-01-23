@@ -2181,6 +2181,82 @@ LC_CLIENT_RESULT LC_Card_GetInitialPin(LC_CARD *card,
 
 
 
+void LC_Card_CreateResultString(const LC_CARD *card,
+                                const char *lastCommand,
+                                LC_CLIENT_RESULT res,
+                                GWEN_BUFFER *buf) {
+  const char *s;
+
+  switch(res) {
+  case LC_Client_ResultOk:
+    s="Ok.";
+    break;
+  case LC_Client_ResultWait:
+    s="Timeout.";
+    break;
+  case LC_Client_ResultIpcError:
+    s="IPC error.";
+    break;
+  case LC_Client_ResultCmdError:
+    s="Command error.";
+    break;
+  case LC_Client_ResultDataError:
+    s="Data error.";
+    break;
+  case LC_Client_ResultAborted:
+    s="Aborted.";
+    break;
+  case LC_Client_ResultInvalid:
+    s="Invalid argument to command.";
+    break;
+  case LC_Client_ResultInternal:
+    s="Internal error.";
+    break;
+  case LC_Client_ResultGeneric:
+    s="Generic error.";
+    break;
+  default:
+    s="Unknown error.";
+    break;
+  }
+
+  GWEN_Buffer_AppendString(buf, "Result of \"");
+  GWEN_Buffer_AppendString(buf, lastCommand);
+  GWEN_Buffer_AppendString(buf, "\": ");
+  GWEN_Buffer_AppendString(buf, s);
+
+  if (res==LC_Client_ResultCmdError && card) {
+    int sw1;
+    int sw2;
+    char numbuf[32];
+
+    sw1=LC_Card_GetLastSW1(card);
+    sw2=LC_Card_GetLastSW2(card);
+    GWEN_Buffer_AppendString(buf, " (");
+    if (sw1!=-1 && sw2!=-1) {
+      GWEN_Buffer_AppendString(buf, " SW1=");
+      snprintf(numbuf, sizeof(numbuf), "%02x", sw1);
+      GWEN_Buffer_AppendString(buf, numbuf);
+      GWEN_Buffer_AppendString(buf, " SW2=");
+      snprintf(numbuf, sizeof(numbuf), "%02x", sw2);
+      GWEN_Buffer_AppendString(buf, numbuf);
+    }
+    s=LC_Card_GetLastResult(card);
+    if (s) {
+      GWEN_Buffer_AppendString(buf, " result=");
+      GWEN_Buffer_AppendString(buf, s);
+    }
+    s=LC_Card_GetLastText(card);
+    if (s) {
+      GWEN_Buffer_AppendString(buf, " text=");
+      GWEN_Buffer_AppendString(buf, s);
+    }
+    GWEN_Buffer_AppendString(buf, " )");
+  }
+}
+
+
+
 
 
 

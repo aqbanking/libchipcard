@@ -4,6 +4,9 @@
 - crypttoken plugins:
   - now use the new function GWEN_CryptManager_SetPinStatus() to mark bad pins
   - fixed some bugs, mainly in STARCOS crypttokens
+- relaxed driver name for SCM33x readers (was looking for 4.1.1. only, now it
+  uses every version, since the CTAPI didn't change since spec 1.1)
+- starcos crypt token now is more verbous about errors
 
 
 2006/01/11: Martin Preuss<martin@libchipcard.de>

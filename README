@@ -274,6 +274,14 @@ This allows parallel installation of the non-PCSC version of the driver and
 the PCSC version. Libchipcard2 always searches for the CCID driver in its
 own lowlevel/ifd folder.
 
+Please note that recent versions of this driver need libpcsclite installed
+at build-time, but not at runtime. So please do this:
+- install libcpsclite (and devel-packages, if any)
+- build the driver as described above
+- deinstall libpcsclite (because it might want to start the PC/SC daemon which
+  unfortunately tries to completely take over control over all card readers it
+  can lay its hands on)
+
 
 
 12. Changes in Server Configuration File in 1.9.16alpha

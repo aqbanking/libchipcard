@@ -1371,8 +1371,14 @@ int LC_CryptTokenSTARCOS_GenerateKey(GWEN_CRYPTTOKEN *ct,
 
   res=LC_Starcos_GenerateKeyPair(lct->card, srcKid, bits);
   if (res) {
-    DBG_ERROR(LC_LOGDOMAIN, "Could not generate key %x (%x)",
-              dstKid, srcKid);
+    GWEN_BUFFER *errbuf;
+
+    errbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    LC_Card_CreateResultString(lct->card, "GenerateKey", res, errbuf);
+    DBG_ERROR(LC_LOGDOMAIN, "Could not generate key %x <- %x: %s)",
+              dstKid, srcKid,
+              GWEN_Buffer_GetStart(errbuf));
+    GWEN_Buffer_free(errbuf);
   }
   else {
     GWEN_KEYSPEC *ks;
@@ -1387,6 +1393,21 @@ int LC_CryptTokenSTARCOS_GenerateKey(GWEN_CRYPTTOKEN *ct,
     GWEN_KeySpec_SetVersion(ks, 1);
     GWEN_KeySpec_SetStatus(ks, LC_STARCOS_KEY_STATUS_ACTIVE);
     res=LC_Starcos_ActivateKeyPair(lct->card, srcKid, dstKid, ks);
+    if (res) {
+      GWEN_BUFFER *errbuf;
+  
+      errbuf=GWEN_Buffer_new(0, 256, 0, 1);
+      LC_Card_CreateResultString(lct->card, "GenerateKey", res, errbuf);
+      DBG_ERROR(LC_LOGDOMAIN, "Could not generate key %x <- %x: %s)",
+                dstKid, srcKid,
+                GWEN_Buffer_GetStart(errbuf));
+      GWEN_Buffer_free(errbuf);
+      if (res==LC_Client_ResultCmdError &&
+          LC_Card_GetLastSW1(lct->card)==0x69 &&
+          LC_Card_GetLastSW2(lct->card)==0x85) {
+        DBG_ERROR(LC_LOGDOMAIN, "Maybe there already are keys on the card?");
+      }
+    }
     GWEN_KeySpec_free(ks);
   }
   rv=LC_CryptToken_ResultToError(res);
