@@ -1,4 +1,11 @@
 
+2006/01/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- crypttoken plugins:
+  - now use the new function GWEN_CryptManager_SetPinStatus() to mark bad pins
+  - fixed some bugs, mainly in STARCOS crypttokens
+
+
 2006/01/11: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - adapted to next release of Cyberjack driver

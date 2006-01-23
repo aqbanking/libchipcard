@@ -1,1 +1,3 @@
-- adapted to next release of Cyberjack driver
+- crypttoken plugins:
+  - now use the new function GWEN_CryptManager_SetPinStatus() to mark bad pins
+  - fixed some bugs, mainly in STARCOS crypttokens

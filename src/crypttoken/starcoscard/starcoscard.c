@@ -43,8 +43,8 @@ GWEN_PLUGIN *crypttoken_starcoscard_factory(GWEN_PLUGIN_MANAGER *pm,
 
 
 GWEN_PLUGIN *LC_CryptTokenSTARCOS_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
-					 const char *modName,
-					 const char *fileName) {
+                                             const char *modName,
+                                             const char *fileName) {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_STARCOS *cpl;
 
@@ -399,6 +399,7 @@ int LC_CryptTokenSTARCOS__Open(GWEN_CRYPTTOKEN *ct, int manage) {
 
   lct->haveChPin=0;
   lct->haveEgPin=0;
+  lct->needClose=0;
 
   /* get card */
   rv=LC_CryptTokenSTARCOS__GetCard(ct, manage);
@@ -1405,6 +1406,13 @@ int LC_CryptTokenSTARCOS__VerifyPin(GWEN_CRYPTTOKEN *ct,
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPTTOKEN, LC_CT_STARCOS, ct);
   assert(lct);
 
+  if (lct->needClose) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "Encountered a bad pin since open(), will no longer accept "
+              "pins until crypt token has been closed and reopened");
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
   if (pt==GWEN_CryptToken_PinType_Access) {
     if (lct->haveChPin)
       return 0;
@@ -1423,6 +1431,7 @@ int LC_CryptTokenSTARCOS__VerifyPin(GWEN_CRYPTTOKEN *ct,
   rv=LC_CryptToken_VerifyPin(lct->pluginManager, ct, hcard, pt);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
+    lct->needClose=1;
     return rv;
   }
 

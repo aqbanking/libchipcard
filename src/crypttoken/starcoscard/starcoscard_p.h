@@ -42,6 +42,7 @@ struct LC_CT_STARCOS {
   LC_CARD *card;
   int haveChPin;
   int haveEgPin;
+  int needClose;
 };
 
 GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,

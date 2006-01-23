@@ -190,8 +190,7 @@ int LC_CryptToken__ChangePin(GWEN_PLUGIN_MANAGER *pluginManager,
     }
   }
 
-  if (0 && /* DEBUG */
-      !initial && (pt!=GWEN_CryptToken_PinType_Manage) &&
+  if (!initial && (pt!=GWEN_CryptToken_PinType_Manage) &&
       (LC_Card_GetReaderFlags(hcard) & LC_CARD_READERFLAGS_KEYPAD)) {
     int mres;
     int triesLeft=-1;
@@ -460,12 +459,18 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     }
 
     if ((currentErrors!=maxErrors) &&
-        (GWEN_CryptToken_GetFlags(ct) & GWEN_CRYPTTOKEN_FLAGS_FORCE_PIN_ENTRY)){
+        !(GWEN_CryptToken_GetModes(ct) &
+          GWEN_CRYPTTOKEN_MODES_FORCE_PIN_ENTRY)
+       ){
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad pin entered at least once before, aborting");
       LC_PinInfo_free(pi);
       return GWEN_ERROR_ABORTED;
     }
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN, "Unable to read pin status for pin %02x",
+              LC_PinInfo_GetId(pi));
   }
 
   if ((pt!=GWEN_CryptToken_PinType_Manage) &&
@@ -520,6 +525,19 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
         return GWEN_ERROR_USER_ABORTED;
       }
       else {
+        if (triesLeft>=0) {
+          switch (triesLeft) {
+          case 0: /* no error left */
+            return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
+          case 1: /* one left */
+            return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
+          case 2: /* two left */
+            return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
+          default:   /* unknown count */
+            return GWEN_ERROR_CT_BAD_PIN;
+          } // switch
+        }
+
         return GWEN_ERROR_CT_IO_ERROR;
       }
     } /* if not ok */
@@ -536,6 +554,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     int mres;
     int pinMaxLen;
     unsigned int pinLength;
+    unsigned int origPinLength;
     GWEN_TYPE_UINT32 pflags=0;
     GWEN_CRYPTTOKEN_PINENCODING pe;
     int triesLeft=-1;
@@ -568,6 +587,7 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
       LC_PinInfo_free(pi);
       return mres;
     }
+    origPinLength=pinLength;
 
     if (pinLength<pinMaxLen && LC_PinInfo_GetFiller(pi)) {
       int i;
@@ -595,7 +615,16 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
       LC_PinInfo_free(pi);
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
-        /* TODO: Set Pin status */
+        /* set pin status */
+        GWEN_CryptManager_SetPinStatus(pluginManager,
+                                       ct,
+                                       pt,
+                                       pe,
+                                       pflags,
+                                       pinBuffer,
+                                       origPinLength,
+                                       0);
+
         switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
           return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
@@ -609,7 +638,15 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
       }
       else if (LC_Card_GetLastSW1(hcard)==0x69 &&
                LC_Card_GetLastSW2(hcard)==0x83) {
-        /* TODO: Set Pin status */
+        /* set pin status */
+        GWEN_CryptManager_SetPinStatus(pluginManager,
+                                       ct,
+                                       pt,
+                                       pe,
+                                       pflags,
+                                       pinBuffer,
+                                       origPinLength,
+                                       0);
         DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
         return GWEN_ERROR_CT_IO_ERROR;
       }
@@ -618,13 +655,42 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
         return GWEN_ERROR_USER_ABORTED;
       }
       else {
+        if (triesLeft>=0) {
+          /* set pin status */
+          GWEN_CryptManager_SetPinStatus(pluginManager,
+                                         ct,
+                                         pt,
+                                         pe,
+                                         pflags,
+                                         pinBuffer,
+                                         origPinLength,
+                                         0);
+          switch (triesLeft) {
+          case 0: /* no error left */
+            return GWEN_ERROR_CT_BAD_PIN_0_LEFT;
+          case 1: /* one left */
+            return GWEN_ERROR_CT_BAD_PIN_1_LEFT;
+          case 2: /* two left */
+            return GWEN_ERROR_CT_BAD_PIN_2_LEFT;
+          default:   /* unknown count */
+            return GWEN_ERROR_CT_BAD_PIN;
+          } // switch
+        }
         DBG_ERROR(LC_LOGDOMAIN, "Unknown error");
         return GWEN_ERROR_CT_IO_ERROR;
       }
     } // if not ok
     else {
       DBG_INFO(LC_LOGDOMAIN, "PIN ok");
-      /* TODO: Set Pin Status */
+      /* set pin status */
+      GWEN_CryptManager_SetPinStatus(pluginManager,
+                                     ct,
+                                     pt,
+                                     pe,
+                                     pflags,
+                                     pinBuffer,
+                                     origPinLength,
+                                     1);
     }
   } // if no keyPad
   LC_PinInfo_free(pi);
