@@ -13,6 +13,7 @@
               10. Using Libchipcard2 With MacOS
               11. Using the OpenSource Generic CCID Driver
               12. Changes in Server Configuration File in 1.9.16alpha
+              13. Projects Using Libchipcard2
               -------------------------------------------------------
 
 
@@ -20,10 +21,25 @@
 1. Introduction
 ===============
 
-This is the server and the client part of Libchipcard2.
+Libchipcard2 is a library for generic access to chipcard readers. It contains
+a complete ressource manager and uses the hardware drivers provided by
+manufacturers of card readers. The number of readers to be used in parallel
+is unbound.
 
-Since 2005/01/02 Libchipcard2 contains both the packages chipcard2-server and
-chipcard2-client.
+Libchipcard2 has some advantages over existing card reader ressource managers:
+ - autodetection of readers at multiple buses
+ - readers are only allocated upon request by a client (while no client needs
+   access to a given reader this reader is not accessed by Libchipcard2)
+ - it provides a fake CTAPI which can be used by any CTAPI-aware program
+   to use Libchipcard2 via CTAPI
+
+Libchipcard2 autodetects and automatically configures readers at the following
+buses:
+ - raw USB
+ - USB serial
+ - PCI
+ - PCMCIA
+
 
 
 
@@ -360,7 +376,24 @@ The new structure of the configuration file is this:
   -------------------------------------------------------------------X8
 
 
-Martin Preuss, Hamburg/Germany, 2006/01/12
+
+13. Projects Using Libchipcard2
+===============================
+
+The following is a list of projects which use Libchipcard2. This list
+is rather incomplete, please contact the author of you want your project
+listed here as well.
+
+ - AqBanking
+ - QBankManager (via AqBanking)
+ - Gnucash (via AqBanking)
+ - KMyMoney (via AqBanking)
+ - Grisbi (via AqBanking)
+ - Gnumed
+
+
+
+Martin Preuss, Hamburg/Germany, 2006/02/14
 
 
 

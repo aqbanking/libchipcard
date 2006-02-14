@@ -469,8 +469,9 @@ int LC_CryptToken__EnterPin(GWEN_PLUGIN_MANAGER *pluginManager,
     }
   }
   else {
-    DBG_ERROR(LC_LOGDOMAIN, "Unable to read pin status for pin %02x",
-              LC_PinInfo_GetId(pi));
+    DBG_INFO(LC_LOGDOMAIN,
+	     "Unable to read pin status for pin %02x (not supported)",
+	     LC_PinInfo_GetId(pi));
   }
 
   if ((pt!=GWEN_CryptToken_PinType_Manage) &&

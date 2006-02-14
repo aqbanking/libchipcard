@@ -1,4 +1,21 @@
 
+===========================================================================
+MARK: released Libchipcard2 2.0.0 (2006/02/14)
+===========================================================================
+
+
+2006/02/14: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- removed some debug messages
+- tool geldkarte2 now prints a list of known commands upon "--help"
+- prepared release of Libchipcard2 2.0.0
+
+
+===========================================================================
+MARK: released Libchipcard2 1.9.20beta (2006/01/26)
+===========================================================================
+
+
 2006/01/23: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - crypttoken plugins:

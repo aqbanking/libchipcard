@@ -2155,8 +2155,8 @@ LC_CLIENT_RESULT LC_Card_GetPinStatus(LC_CARD *card,
     return card->getPinStatusFn(card, pid, maxErrors, currentErrors);
   }
   else {
-    DBG_ERROR(LC_LOGDOMAIN,
-              "no getInitialPin function set");
+    DBG_INFO(LC_LOGDOMAIN,
+             "no getInitialPin function set");
     return LC_Client_ResultNotSupported;
   }
 }

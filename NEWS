@@ -1,5 +1,22 @@
 
 ===========================================================================
+                 Libchipcard2 2.0.0 (2006/02/14)
+===========================================================================
+
+The latest beta versions seem to be stable, so the current version as been
+cleaned up regarding debug messages and released as stable version 2.0.0.
+
+
+===========================================================================
+                 Libchipcard2 1.9.20beta (2006/01/26)
+===========================================================================
+
+This release makes woring with chipcard crypttoken safer (it now uses
+functions to report a bad pins to the applications). Libchipcard2 now works
+with SCM 33X readers again.
+
+
+===========================================================================
                  Libchipcard2 1.9.19beta (2005/12/15)
 ===========================================================================
 

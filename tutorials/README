@@ -44,11 +44,11 @@ information stored on the card and prints it to the standard output channel.
 ============
 This tutorial demonstrates how to define your own card type. It therefore
 explains the heritage functions of the library Gwenhywfar.
-The implementatin of the new card type "ExampleCard" can be found in the files
-examplecard.{c,h,xml}.
+The implementation of the new card type "ExampleCard" can be found in the 
+files examplecard.{c,h,xml}.
 
 
 
-Martin Preuss, Hamburg/Germany, 2005/11/26
+Martin Preuss, Hamburg/Germany, 2006/02/14
 
 

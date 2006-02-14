@@ -435,6 +435,20 @@ int main(int argc, char **argv) {
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
     }
+    fprintf(stderr,
+            I18N("General usage: %s COMMAND [OPTIONS]\n"
+                 "Allowed Commands:\n"
+                 " This tool accepts the following commands:\n"
+                 "  loaded\n"
+                 "    show the amount of money stored on the card\n"
+                 "  maxload\n"
+                 "    show the maximum amount to be stored on the card\n"
+                 "  maxxfer\n"
+                 "    show the maximum amount which can be transferred "
+                 "in one session.\n"
+                 "\n"
+                 "Allowed Options:\n"),
+            argv[0]);
     fprintf(stderr, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
