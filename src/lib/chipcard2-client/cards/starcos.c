@@ -189,7 +189,7 @@ LC_CLIENT_RESULT LC_Starcos__Reopen(LC_CARD *card,
 
   DBG_INFO(LC_LOGDOMAIN, "Reading data...");
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
-  res=LC_Card_ReadBinary(card, 0, 12, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, 0, 12, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -398,7 +398,7 @@ unsigned int LC_Starcos__GetKeyLogInfo(LC_CARD *card) {
   }
 
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
-  res=LC_Card_ReadBinary(card, 0, 1, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, 0, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading info byte of EF_KEYLOG");
     GWEN_Buffer_free(mbuf);
@@ -437,7 +437,9 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card) {
   mbuf=GWEN_Buffer_new(0, 8, 0, 1);
   GWEN_Buffer_AppendByte(mbuf, (unsigned char)(scos->keyLogInfo));
   GWEN_Buffer_Rewind(mbuf);
-  res=LC_Card_WriteBinary(card, 0, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, 0,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   GWEN_Buffer_free(mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading info byte of EF_KEYLOG");
@@ -495,7 +497,7 @@ LC_STARCOS_KEYDESCR *LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid) {
   }
 
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
-  res=LC_Card_ReadBinary(card, offset, 8, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, offset, 8, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading descriptor");
     GWEN_Buffer_free(mbuf);
@@ -572,7 +574,9 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyDescr(LC_CARD *card,
   GWEN_DB_Group_free(dbDescr);
 
   GWEN_Buffer_Rewind(mbuf);
-  res=LC_Card_WriteBinary(card, offset, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, offset,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error writing descriptor");
     GWEN_Buffer_free(mbuf);
@@ -896,7 +900,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid) {
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
 
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
-  res=LC_Card_ReadBinary(card, 0, 1, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, 0, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading keycount from EF_IPF[%d]", 0);
     GWEN_Buffer_free(mbuf);
@@ -910,7 +914,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid) {
   for (i=0; i<keyCount; i++) {
     GWEN_Buffer_Reset(mbuf);
     LC_Card_SetLastResult(card, 0, 0, 0, 0);
-    res=LC_Card_ReadBinary(card, pos, 1, mbuf);
+    res=LC_Card_IsoReadBinary(card, 0, pos, 1, mbuf);
     if (res!=LC_Client_ResultOk) {
       DBG_INFO(LC_LOGDOMAIN, "Error reading kid from EF_IPF[%d]", pos);
       GWEN_Buffer_free(mbuf);
@@ -971,7 +975,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   mbuf=GWEN_Buffer_new(0, 128, 0, 1);
 
   /* read AlgoByte */
-  res=LC_Card_ReadBinary(card, pos+6, 1, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, pos+6, 1, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -1020,7 +1024,9 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   /* write modulus to card */
   GWEN_Buffer_Rewind(mbuf);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_WriteBinary(card, pos+20, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, pos+20,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbKey);
@@ -1033,7 +1039,9 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   GWEN_Buffer_AppendByte(mbuf, modLen);
   GWEN_Buffer_Rewind(mbuf);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_WriteBinary(card, pos+14, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, pos+14,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbKey);
@@ -1046,7 +1054,9 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   GWEN_Buffer_AppendByte(mbuf, 0x60-modLen);
   GWEN_Buffer_Rewind(mbuf);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_WriteBinary(card, pos+18, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, pos+18,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbKey);
@@ -1070,7 +1080,9 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   /* write exponent to card */
   GWEN_Buffer_Rewind(mbuf);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_WriteBinary(card, pos+20+modLen, mbuf);
+  res=LC_Card_IsoUpdateBinary(card, 0, pos+20+modLen,
+                              GWEN_Buffer_GetStart(mbuf),
+                              GWEN_Buffer_GetUsedBytes(mbuf));
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbKey);
@@ -1129,7 +1141,7 @@ GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid) {
   /* read key to buffer */
   mbuf=GWEN_Buffer_new(0, 128, 0, 1);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ReadBinary(card, pos, 121, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, pos, 121, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);

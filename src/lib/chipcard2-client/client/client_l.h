@@ -23,4 +23,115 @@ int LC_Client_SelectApp(LC_CLIENT *cl,
                         const char *appName);
 
 
+GWEN_TYPE_UINT32 LC_Client_SendStopWait(LC_CLIENT *cl);
+LC_CLIENT_RESULT
+  LC_Client_CheckStopWait(LC_CLIENT *cl,
+                          GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCommandCard(LC_CLIENT *cl,
+                                           LC_CARD *cd,
+                                           const char *apdu,
+                                           unsigned int len,
+                                           LC_CLIENT_CMDTARGET t);
+LC_CLIENT_RESULT LC_Client_CheckCommandCard(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid,
+                                            GWEN_BUFFER *data);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendPerformVerification(LC_CLIENT *cl,
+                                                   LC_CARD *cd,
+                                                   const LC_PININFO *pi);
+LC_CLIENT_RESULT LC_Client_CheckPerformVerification(LC_CLIENT *cl,
+                                                    GWEN_TYPE_UINT32 rid,
+                                                    int *triesLeft);
+LC_CLIENT_RESULT LC_Client_PerformVerification(LC_CLIENT *cl,
+                                               LC_CARD *cd,
+                                               const LC_PININFO *pi,
+                                               int *triesLeft);
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendSetNotify(LC_CLIENT *cl,
+                                         GWEN_TYPE_UINT32 flags);
+LC_CLIENT_RESULT LC_Client_CheckSetNotify(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
+
+
+
+GWEN_TYPE_UINT32 LC_Client_SendGetDriverVar(LC_CLIENT *cl,
+                                            LC_CARD *cd,
+                                            const char *vname);
+
+LC_CLIENT_RESULT LC_Client_CheckGetDriverVar(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid,
+                                             GWEN_BUFFER *vbuf);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCardCheck(LC_CLIENT *cl,
+                                         LC_CARD *cd);
+
+LC_CLIENT_RESULT LC_Client_CheckCardCheck(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
+
+GWEN_TYPE_UINT32 LC_Client_SendCardReset(LC_CLIENT *cl, LC_CARD *cd);
+LC_CLIENT_RESULT LC_Client_CheckCardReset(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendOpenService(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 serverId,
+                                           GWEN_TYPE_UINT32 svid,
+                                           GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckOpenService(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendCloseService(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 svid,
+                                            GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckCloseService(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid);
+
+
+GWEN_TYPE_UINT32 LC_Client_SendServiceCommand(LC_CLIENT *cl,
+                                              GWEN_TYPE_UINT32 serverId,
+                                              GWEN_TYPE_UINT32 svid,
+                                              GWEN_DB_NODE *dbData);
+
+LC_CLIENT_RESULT LC_Client_CheckServiceCommand(LC_CLIENT *cl,
+                                               GWEN_TYPE_UINT32 rid,
+                                               GWEN_DB_NODE *dbCmdResp);
+
+GWEN_TYPE_UINT32 LC_Client_SendLockReader(LC_CLIENT *cl,
+                                          GWEN_TYPE_UINT32 serverId,
+                                          GWEN_TYPE_UINT32 readerId);
+
+LC_CLIENT_RESULT LC_Client_CheckLockReader(LC_CLIENT *cl,
+                                           GWEN_TYPE_UINT32 rid,
+                                           GWEN_TYPE_UINT32 *lockId);
+
+GWEN_TYPE_UINT32 LC_Client_SendUnlockReader(LC_CLIENT *cl,
+                                            GWEN_TYPE_UINT32 serverId,
+                                            GWEN_TYPE_UINT32 readerId,
+                                            GWEN_TYPE_UINT32 lockId);
+
+LC_CLIENT_RESULT LC_Client_CheckUnlockReader(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 rid);
+
+LC_CLIENT_RESULT LC_Client_GetDriverVar(LC_CLIENT *cl,
+                                        LC_CARD *card,
+                                        const char *vname,
+                                        GWEN_BUFFER *vbuf);
+
+LC_CLIENT_RESULT LC_Client_CardCheck(LC_CLIENT *cl,
+                                     LC_CARD *card);
+
+LC_CLIENT_RESULT LC_Client_CardReset(LC_CLIENT *cl,
+                                     LC_CARD *card);
+
+
 #endif /* CHIPCARD_CLIENT_CLIENT_L_H */

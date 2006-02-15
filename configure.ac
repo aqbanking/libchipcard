@@ -364,7 +364,7 @@ if test "$enable_fulldoc" = "yes"; then
 	DOXYGEN_INPUT="src/lib"
         DOXYGEN_DEFINE=""
 else
-	DOXYGEN_INPUT="chipcard2-client chipcard2-server"
+	DOXYGEN_INPUT="chipcard2 chipcard2-client"
 	DOXYGEN_DEFINE="DOXYGEN_HIDE"
 fi
 AC_SUBST(DOXYGEN_INPUT)
@@ -470,6 +470,7 @@ fi
 AC_CONFIG_FILES([Makefile
                  chipcard2-client-config.in
                  chipcard2-server-config.in
+                 Doxyfile
                  libchipcard2.spec
                  bin/Makefile
                  bin/prepare.sh.in

@@ -38,10 +38,6 @@
 #include <gwenhywfar/xml.h>
 
 
-/* APIDOC stuff for Doxygen */
-/** @defgroup MOD_TUTORIALS Tutorials */
-
-
 #define LC_DEFAULT_PORT 7392 /* FIXME: make this adjustable by configure */
 #define LC_DEFAULT_UDS_SOCK "/var/run/chipcard2d.sock"
 

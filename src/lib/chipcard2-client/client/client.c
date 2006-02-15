@@ -40,6 +40,8 @@
 # define DIRSEP "/"
 #endif
 
+#define I18N(msg) msg
+
 
 GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
 
@@ -548,7 +550,10 @@ LC_CLIENT_RESULT LC_Client_Work_Wait(LC_CLIENT *cl, int timeout) {
       distance=750;
   }
 
-  GWEN_WaitCallback_Enter(LC_CLIENT_CBID_IO_WAITRSP);
+  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
+                                  I18N("Libchipcard2 is working..."),
+                                  0, 0);
+  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
   for (;;) {
     int didSomething;
 
@@ -1143,7 +1148,10 @@ GWEN_DB_NODE *LC_Client_WaitForNextResponse(LC_CLIENT *cl,
       distance=750;
   }
 
-  GWEN_WaitCallback_Enter(LC_CLIENT_CBID_IO_WAITRSP);
+  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
+                                  I18N("Waiting for server response..."),
+                                  0, 0);
+  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
   for (;;) {
     GWEN_DB_NODE *dbRsp;
 
@@ -1348,7 +1356,10 @@ LC_CARD *LC_Client_WaitForNextCard(LC_CLIENT *cl, int timeout) {
       distance=750;
   }
 
-  GWEN_WaitCallback_Enter(LC_CLIENT_CBID_IO_WAITCARD);
+  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS,
+                                  I18N("Waiting for card to be inserted"),
+                                  0, 0);
+  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
   for (;;) {
     DBG_VERBOUS(LC_LOGDOMAIN, "Working");
     if (LC_Client_Work(cl, 0)==-1) {
@@ -1686,7 +1697,10 @@ LC_Client_CheckResponse_Wait(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid,
       distance=750;
   }
 
-  GWEN_WaitCallback_Enter(LC_CLIENT_CBID_IO_WAITRSP);
+  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
+                                  I18N("Waiting for server response..."),
+                                  0, 0);
+  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
   for (;;) {
     GWEN_NETLAYER_RESULT nres;
     LC_CLIENT_RESULT cres;

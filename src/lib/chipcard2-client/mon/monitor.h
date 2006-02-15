@@ -14,7 +14,10 @@
 #ifndef LC_MON_MONITOR_H
 #define LC_MON_MONITOR_H
 
-
+/** @addtogroup chipcardc_mon
+ * @short Monitoring server activities
+ */
+/*@{*/
 
 typedef struct LCM_MONITOR LCM_MONITOR;
 
@@ -53,6 +56,8 @@ LCM_READER *LCM_Monitor_FindReader(const LCM_MONITOR *mm,
                                    GWEN_TYPE_UINT32 serverId,
                                    const char *readerId);
 
+
+/*@}*/ /* defgroup */
 
 #endif
 

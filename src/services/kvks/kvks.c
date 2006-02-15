@@ -21,7 +21,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard2-client/client/client.h>
+#include <chipcard2-client/client/client_sv.h>
 #include <chipcard2-client/client/tlv.h>
 
 #include <unistd.h>

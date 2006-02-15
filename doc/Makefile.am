@@ -2,6 +2,7 @@ EXTRA_DIST=\
   CERTIFICATES \
   CONFIG \
   IPCCOMMANDS \
+  apidoc.h \
   chipcardd2.conf.example \
   chipcardd2.conf.minimal \
   chipcardc2.conf.example \

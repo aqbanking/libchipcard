@@ -22,7 +22,7 @@ extern "C" {
 #include <chipcard2/chipcard2.h>
 
 /**
- * @file msgengine_l.h
+ * @file sharedstuff/msgengine.h
  *
  * This message engine implements a few new types:
  * <ul>

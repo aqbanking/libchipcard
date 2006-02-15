@@ -107,7 +107,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
 
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   DBG_DEBUG(LC_LOGDOMAIN, "Reading card data header");
-  res=LC_Card_ReadBinary(card, 0x1e, 5, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, 0x1e, 5, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
@@ -184,7 +184,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
 
   /* now read the rest */
   DBG_DEBUG(LC_LOGDOMAIN, "Reading rest of card data");
-  res=LC_Card_ReadBinary(card, size+0x1e, j, mbuf);
+  res=LC_Card_IsoReadBinary(card, 0, size+0x1e, j, mbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);

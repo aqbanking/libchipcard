@@ -10,17 +10,6 @@
  *          Please see toplevel file COPYING for license details           *
  ***************************************************************************/
 
-/** @file tutorial2.c
- * @brief Extended Usage of Libchipcard2
- */
-
-
-/** @defgroup MOD_TUTORIAL2 Tutorial 2 (Extended Usage of Libchipcard2)
- * @ingroup MOD_TUTORIALS
- * @brief Extended usage of Libchipcard2
- *
- */
-/*@{*/
 
 
 #ifdef HAVE_CONFIG_H
@@ -231,5 +220,4 @@ int main(int argc, char **argv) {
 }
 
 
-/*@}*/
 

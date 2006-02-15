@@ -10,18 +10,6 @@
  *          Please see toplevel file COPYING for license details           *
  ***************************************************************************/
 
-/** @file tutorial3.c
- * @brief Extending Basic Cards in Libchipcard2
- */
-
-
-/** @defgroup MOD_TUTORIAL3 Tutorial 3 (Extending Basic Cards in Libchipcard2)
- * @ingroup MOD_TUTORIALS
- * @brief Extending Basic Cards in Libchipcard2
- *
- */
-/*@{*/
-
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -218,6 +206,4 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-
-/*@}*/
 

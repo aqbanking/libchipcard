@@ -21,6 +21,8 @@ iheaderdir=${includedir}/chipcard2-client/client
 iheader_HEADERS=\
   card.h \
   client.h \
+  client_cd.h \
+  client_sv.h \
   notifications.h \
   tlv.h
 

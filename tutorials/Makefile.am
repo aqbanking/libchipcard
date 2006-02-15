@@ -1,6 +1,6 @@
 INCLUDES=@all_includes@
 
-EXTRA_DIST=README examplecard.xml
+EXTRA_DIST=README examplecard.xml tutorials.h
 
 if IS_WINDOWS
   CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)

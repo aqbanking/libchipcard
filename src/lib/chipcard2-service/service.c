@@ -26,6 +26,7 @@
 #include <gwenhywfar/net2.h>
 
 #include <chipcard2/chipcard2.h>
+#include <chipcard2-client/client/client_sv.h>
 
 #include <stdlib.h>
 #include <assert.h>

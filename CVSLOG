@@ -1,2 +1,3 @@
-- fixed a problem with Debian's libtool: This tool does not allow lazy
-  library linking
+- cleaned up client API (remove many functions which should not be called
+  by applications)
+- improved API documentation of the client parts

@@ -14,6 +14,11 @@
 #ifndef LC_MON_DRIVER_H
 #define LC_MON_DRIVER_H
 
+/** @defgroup chipcardc_mon_driver Driver Information
+ * @ingroup chipcardc_mon
+ * @short Driver Information
+ */
+/*@{*/
 
 typedef struct LCM_DRIVER LCM_DRIVER;
 
@@ -66,6 +71,7 @@ GWEN_BUFFER *LCM_Driver_GetLogBuffer(const LCM_DRIVER *md);
 CHIPCARD_API
 time_t LCM_Driver_GetLastChangeTime(const LCM_DRIVER *md);
 
+/*@}*/ /* defgroup */
 
 
 #endif

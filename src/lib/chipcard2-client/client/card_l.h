@@ -16,6 +16,8 @@
 
 
 #include <chipcard2-client/client/card.h>
+#include <chipcard2-client/client/client_cd.h>
+#include <chipcard2-client/client/client_sv.h>
 #include "apps/cardcontext_l.h"
 
 

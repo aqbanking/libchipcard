@@ -16,7 +16,6 @@
 
 #include <chipcard2-client/client/card.h>
 
-
 CHIPCARD_API
 int LC_KVKCard_ExtendCard(LC_CARD *card);
 CHIPCARD_API

@@ -17,11 +17,13 @@
 
 
 #include "memorycard_p.h"
+#include <chipcard2/chipcard2.h>
+#include <chipcard2-client/client/client_cd.h>
+
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
-#include <chipcard2/chipcard2.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_MEMORYCARD)

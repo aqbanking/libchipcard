@@ -21,6 +21,7 @@
 #include <time.h>
 #include <assert.h>
 #include <chipcard2-client/mon/monitor.h>
+#include <chipcard2-client/client/client_cd.h>
 #include <gwenhywfar/debug.h>
 
 
