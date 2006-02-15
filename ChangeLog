@@ -1,4 +1,10 @@
 
+2006/02/15: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a problem with Debian's libtool: This tool does not allow lazy
+  library linking
+
+
 ===========================================================================
 MARK: released Libchipcard2 2.0.0 (2006/02/14)
 ===========================================================================

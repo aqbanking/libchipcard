@@ -1,1 +1,2 @@
-- starcos crypt token now is more verbous about errors
+- fixed a problem with Debian's libtool: This tool does not allow lazy
+  library linking

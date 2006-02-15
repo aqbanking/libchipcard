@@ -12,7 +12,8 @@ endif
 
 noinst_HEADERS=ctapi.h ctapi_p.h
 libchipcard2_ctapi_la_SOURCES=ctapi.c
-libchipcard2_ctapi_la_LIBADD=-L../lib/chipcard2-client $(CLIENT_LIB)
+libchipcard2_ctapi_la_LIBADD=\
+ -L../lib/chipcard2-client $(CLIENT_LIB) $(gwenhywfar_libs)
 
 
 # dll stuff
