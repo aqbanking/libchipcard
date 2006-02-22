@@ -434,7 +434,7 @@ void familySignalHandler(int s, int child) {
       ChipcardDaemonStop=1;
     }
     else {
-      DBG_NOTICE(0, "Nanny got an interrupt signal, will terminate child");
+      DBG_NOTICE(0, "Watcher got an interrupt signal, will terminate child");
       ChipcardNannyStop=1;
     }
     break;
@@ -445,7 +445,7 @@ void familySignalHandler(int s, int child) {
       ChipcardDaemonStop=1;
     }
     else {
-      DBG_NOTICE(0, "Nanny got a termination signal, will terminate child.");
+      DBG_NOTICE(0, "Watcher got a termination signal, will terminate child.");
       ChipcardNannyStop=1;
     }
     break;
@@ -456,7 +456,7 @@ void familySignalHandler(int s, int child) {
       DBG_NOTICE(0, "Daemon got an info signal");
     }
     else {
-      DBG_NOTICE(0, "Nanny got an info signal");
+      DBG_NOTICE(0, "Watcher got an info signal");
     }
     break;
 #endif
@@ -464,7 +464,7 @@ void familySignalHandler(int s, int child) {
 #ifdef SIGCHLD
   case SIGCHLD:
     if (!child) {
-      DBG_NOTICE(0, "Nanny got a child signal");
+      DBG_NOTICE(0, "Watcher got a child signal");
     }
     break;
 #endif
@@ -786,13 +786,13 @@ int server(ARGUMENTS *args) {
 
       /* store process id of the child */
       childPID=rv;
-      DBG_NOTICE(0, "Nanny now supervising daemon %d", childPID);
+      DBG_NOTICE(0, "Watcher now supervising daemon %d", childPID);
       while(1) {
 	int status;
 
 	if (ChipcardNannySuspend) {
 	  if (ChipcardNannyStop) {
-	    DBG_NOTICE(0, "Nanny exiting, no daemon.");
+	    DBG_NOTICE(0, "Watcher exiting, no daemon.");
             remove(pidfile);
             return 0;
           }
