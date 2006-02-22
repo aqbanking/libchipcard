@@ -12,3 +12,4 @@ libtool
 *-config
 stamp-h1
 config.h.in
+Doxyfile
