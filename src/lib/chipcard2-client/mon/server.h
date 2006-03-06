@@ -15,6 +15,12 @@
 #define LC_MON_SERVER_H
 
 
+/** @defgroup chipcardc_mon_server Server Information
+ * @ingroup chipcardc_mon
+ * @short Server Information
+ */
+/*@{*/
+
 
 typedef struct LCM_SERVER LCM_SERVER;
 
@@ -73,6 +79,8 @@ LCM_READER_LIST *LCM_Server_GetReaders(const LCM_SERVER *ms);
  */
 CHIPCARD_API
 LCM_SERVICE_LIST *LCM_Server_GetServices(const LCM_SERVER *ms);
+
+/*@}*/ /* defgroup */
 
 #endif
 

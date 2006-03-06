@@ -1,4 +1,4 @@
-<!-- contains all readers again since cyberjack driver 2.0.9 -->
+<!-- contains all readers again since cyberjack driver 2.0.10 -->
 
 <driver name="cyberjack_ctapi" type="ctapi">
   <short>Driver for the Reiner-SCT Cyberjack</short>
@@ -28,7 +28,7 @@
 
     <!-- Old Cyberjack or Cyberjack E-com -->
     <reader name="cyberjack" 
-            bustype="UsbTty"
+            bustype="UsbRaw"
             vendor="0x0c4b" product="0x0100" >
       <short>Cyberjack pinpad or ecom</short>
 
@@ -37,15 +37,21 @@
       </flags>
 
       <autoport>
-        <mode>deviceId</mode>
-        <offset>32769</offset>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
       </autoport>
 
       <ports>
-        <port value="0x8001">USB0</port>
-        <port value="0x8002">USB1</port>
-        <port value="0x8003">USB2</port>
-        <port value="0x8004">USB3</port>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
       </ports>
 
       <image>cyberjack_pinpad.jpg</image>

@@ -1,4 +1,15 @@
 
+2006/03/06: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- now ships with driver.xml for new cyberjack driver (2.0.10)
+- removed some debug messages
+
+
+===========================================================================
+MARK: released Libchipcard2 2.1.0 (2006/02/27)
+===========================================================================
+
+
 2006/02/15: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a problem with Debian's libtool: This tool does not allow lazy

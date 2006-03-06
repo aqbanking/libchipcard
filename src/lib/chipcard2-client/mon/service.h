@@ -14,6 +14,11 @@
 #ifndef LC_MON_SERVICE_H
 #define LC_MON_SERVICE_H
 
+/** @defgroup chipcardc_mon_service Service Information
+ * @ingroup chipcardc_mon
+ * @short Service Information
+ */
+/*@{*/
 
 
 typedef struct LCM_SERVICE LCM_SERVICE;
@@ -61,6 +66,8 @@ const char *LCM_Service_GetStatus(const LCM_SERVICE *ms);
 CHIPCARD_API
 void LCM_Service_SetStatus(LCM_SERVICE *ms, const char *s);
 
+
+/*@}*/ /* defgroup */
 
 #endif
 

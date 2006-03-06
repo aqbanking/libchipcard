@@ -92,14 +92,14 @@ int main(int argc, char **argv) {
    * been inserted. To work with the card we need to grab it. This is all
    * done internally by this call. If this call succeeds we are the only
    * client to access the card. All other clients are blocked out until we
-   * release the card via @ref LC_Card_Close() or @ref LC_Client_free().
+   * release the card via LC_Card_Close() or LC_Client_free().
    */
   LC_Card_Open(card);
 
   /* NOW we own the card and are free to do whatever we like with it ;-)
    * Well, we could call the following function without grabbing the card
    * since it only prints information from the notification received via
-   * @ref LC_Client_WaitForNextCard().
+   * LC_Client_WaitForNextCard().
    * However, this is a tutorial, so we go all the way ;-)
    */
   LC_Card_Dump(card, stderr, 0);

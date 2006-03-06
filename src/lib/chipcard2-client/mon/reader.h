@@ -14,6 +14,11 @@
 #ifndef LC_MON_READER_H
 #define LC_MON_READER_H
 
+/** @defgroup chipcardc_mon_reader Reader Information
+ * @ingroup chipcardc_mon
+ * @short Reader Information
+ */
+/*@{*/
 
 
 typedef struct LCM_READER LCM_READER;
@@ -91,6 +96,7 @@ GWEN_BUFFER *LCM_Reader_GetLogBuffer(const LCM_READER *mr);
 CHIPCARD_API
 time_t LCM_Reader_GetLastChangeTime(const LCM_READER *mr);
 
+/*@}*/ /* defgroup */
 
 
 #endif

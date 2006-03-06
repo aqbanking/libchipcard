@@ -1,3 +1,2 @@
-- cleaned up client API (remove many functions which should not be called
-  by applications)
-- improved API documentation of the client parts
+- now ships with driver.xml for new cyberjack driver (2.0.10)
+- removed some debug messages

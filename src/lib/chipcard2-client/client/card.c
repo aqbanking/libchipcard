@@ -1391,7 +1391,7 @@ LC_CLIENT_RESULT LC_Card__IsoUpdateBinary(LC_CARD *card,
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
 
-  DBG_ERROR(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
+  DBG_DEBUG(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
 
   if (flags & LC_CARD_ISO_FLAGS_EFID_MASK) {
     if (offset>255) {
@@ -1441,7 +1441,7 @@ LC_CLIENT_RESULT LC_Card__IsoWriteBinary(LC_CARD *card,
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
 
-  DBG_ERROR(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
+  DBG_DEBUG(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
 
   if (flags & LC_CARD_ISO_FLAGS_EFID_MASK) {
     if (offset>255) {
@@ -1490,7 +1490,7 @@ LC_CLIENT_RESULT LC_Card__IsoEraseBinary(LC_CARD *card,
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
 
-  DBG_ERROR(LC_LOGDOMAIN, "Erasing binary %04x:%04x", offset, size);
+  DBG_DEBUG(LC_LOGDOMAIN, "Erasing binary %04x:%04x", offset, size);
 
   if (flags & LC_CARD_ISO_FLAGS_EFID_MASK) {
     if (offset>255) {
