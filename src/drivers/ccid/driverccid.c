@@ -682,7 +682,7 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
   cnt=bufferlen/sizeof(PCSC_TLV_STRUCTURE);
   tlv=(PCSC_TLV_STRUCTURE*)buffer;
   for (i=0; i<cnt; i++) {
-    DBG_INFO(lg, "TLV: %d (%08x)", tlv[i].tag, tlv[i].value);
+    DBG_NOTICE(lg, "TLV: %d (%08x)", tlv[i].tag, tlv[i].value);
     ReaderCCID_SetFeatureCode(r, tlv[i].tag, tlv[i].value);
   }
 

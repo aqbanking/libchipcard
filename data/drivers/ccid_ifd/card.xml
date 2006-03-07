@@ -3,7 +3,8 @@
 
     <commands>
 
-      <!-- Secure PIN verification using the reader's keypad: FPIN2 -->
+      <!-- Secure PIN verification using the reader's keypad: ASCII -->
+      <!-- Command for Kobil Kaan Advanced -->
       <command name="IsoPerformVerification_Ascii" target="reader" 
                driver="ccid_ifd" reader="ko_kaan_advanced_usb" >
         <send>
@@ -12,6 +13,8 @@
               0: use the control code from the following element
               6: FEATURE_VERIFY_PIN_DIRECT
               7: FEATURE_MODIFY_PIN_DIRECT
+              8: FEATURE_MCT_READERDIRECT
+              9: FEATURE_MCT_UNIVERSAL
             -->
             <ELEM type="byte" >6</ELEM>
             <!-- use the following values: 
@@ -81,6 +84,8 @@
 				</results>
       </command>
 
+      <!-- Secure PIN verification using the reader's keypad: FPIN2 -->
+      <!-- Command for Kobil Kaan Advanced -->
       <command name="IsoPerformVerification_FPin2" target="reader" 
                driver="ccid_ifd" reader="ko_kaan_advanced_usb" >
         <send>
@@ -160,7 +165,8 @@
 
 
 
-      <!-- Secure PIN verification using the reader's keypad: FPIN2 -->
+      <!-- Secure PIN verification using the reader's keypad: ASCII -->
+      <!-- Command for SCM X32 -->
       <command name="IsoPerformVerification_Ascii" target="reader" 
                driver="ccid_ifd" reader="ccid_scm_x32" >
         <send>
@@ -235,6 +241,8 @@
 				</results>
       </command>
 
+      <!-- Secure PIN verification using the reader's keypad: FPIN2 -->
+      <!-- Command for SCM X32 -->
       <command name="IsoPerformVerification_FPin2" target="reader" 
                driver="ccid_ifd" reader="ccid_scm_x32" >
         <send>
@@ -313,7 +321,7 @@
       </command>
 
 
-
+      <!-- TODO: Command for all other CCID readers -->
       <command name="IsoPerformModification_Ascii" 
                target="reader" driver="ccid_ifd" >
         <send>
