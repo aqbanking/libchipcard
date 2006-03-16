@@ -110,7 +110,11 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
                         struct sysfs_device) {
       /* for each device: look for ttyUSB in children*/
       port = -1;
+#ifdef HAVE_SYSFS2
+      temp_device=sysfs_open_device_path(curdev->path);
+#else
       temp_device = sysfs_open_device_tree(curdev->path);
+#endif
       if (temp_device) {
         if (temp_device->children) {
           dlist_for_each_data(temp_device->children, child,

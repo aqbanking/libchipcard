@@ -1,2 +1,1 @@
-- now ships with driver.xml for new cyberjack driver (2.0.10)
-- removed some debug messages
+- now works with Libsysfs 2.x
