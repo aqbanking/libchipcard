@@ -2,7 +2,7 @@
 DEFS=@DEFS@ \
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
-INCLUDES=@all_includes@ -I..
+INCLUDES=@all_includes@ -I.. -I$(srcdir)/.. 
 
 noinst_LTLIBRARIES=libctcard.la
 

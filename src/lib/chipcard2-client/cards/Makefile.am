@@ -1,7 +1,7 @@
 DEFS=@DEFS@ \
   -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
-INCLUDES=@all_includes@ -I../ -I../client
+INCLUDES=@all_includes@ -I../ -I../client -I$(srcdir)/../ -I$(srcdir)/../client
 
 typefiles=starcos.xml geldkarte.xml
 

@@ -19,6 +19,7 @@ M4dir = $(datadir)/aclocal
 M4_DATA = chipcard2-server.m4 chipcard2-client.m4
 ACLOCAL_AMFLAGS = -I m4
 
+CLEANFILES = $(bin_SCRIPTS)
 
 chipcard2-server-config: chipcard2-server-config.in
 	echo "#! /bin/sh" >chipcard2-server-config.tmp && \
@@ -89,5 +90,5 @@ install-data-local:
 	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_LOGDIR@"
 	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_NEWCERTDIR@"
 	$(mkinstalldirs) "$(DESTDIR)/@LC_LOWLEVELDRIVER_PATH@"
-	
+
 

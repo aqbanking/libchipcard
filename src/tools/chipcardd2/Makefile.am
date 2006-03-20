@@ -1,7 +1,10 @@
 
 INCLUDES=\
-  -I../../lib/chipcard2-server/server2\
-  -I../../lib/chipcard2-server/ @all_includes@
+  -I$(srcdir)/../../lib/chipcard2-server/server2 \
+  -I$(srcdir)/../../lib/chipcard2-server/ \
+  -I../../lib/chipcard2-server/server2 \
+  -I../../lib/chipcard2-server/ \
+  @all_includes@
 
 DEFS=@DEFS@ \
   -DLC_DEVICEDRIVER_PATH=\"@LC_DEVICEDRIVER_PATH@\" \

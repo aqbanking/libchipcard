@@ -1,3 +1,7 @@
+2006-03-20  Christian Stimming <stimming@tuhh.de>
+
+	* Makefile.am: Improve Makefiles: Add $srcdir to includes and add
+	CLEANFILES. "make distcheck" will now run successfully.
 
 2006/03/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------

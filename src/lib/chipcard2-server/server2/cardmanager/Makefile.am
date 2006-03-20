@@ -1,4 +1,7 @@
-INCLUDES=-I.. -I../.. @all_includes@
+INCLUDES= \
+  -I.. -I../.. \
+  -I$(srcdir)/.. -I$(srcdir)/../.. \
+  @all_includes@
 
 noinst_LTLIBRARIES=libcardmgr.la
 

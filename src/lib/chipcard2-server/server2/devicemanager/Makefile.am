@@ -1,4 +1,7 @@
-INCLUDES=-I.. -I../.. -I../../common @all_includes@
+INCLUDES= \
+  -I.. -I../.. -I../../common \
+  -I$(srcdir)/.. -I$(srcdir)/../.. -I$(srcdir)/../../common \
+  @all_includes@
 
 noinst_LTLIBRARIES=libdevmgr.la
 

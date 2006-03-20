@@ -1,4 +1,7 @@
-INCLUDES=-I../../lib/chipcard2-server/driver @all_includes@
+INCLUDES=\
+  -I$(top_srcdir)/src/lib/chipcard2-server/driver \
+  -I$(top_builddir)/src/lib/chipcard2-server/driver \
+  @all_includes@
 
 EXTRA_DIST=ccid.xml.in
 

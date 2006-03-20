@@ -1,6 +1,6 @@
 SUBDIRS=devicemanager cardmanager clientmanager commandmanager servicemanager
 
-INCLUDES=-I.. @all_includes@
+INCLUDES=-I.. -I$(srcdir)/.. @all_includes@
 
 typefiles=lockrequest.xml
 EXTRA_DIST=$(typefiles)

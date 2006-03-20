@@ -1,4 +1,7 @@
-INCLUDES=-I.. -I../.. -I$(top_srcdir)/src/lib/sharedstuff @all_includes@
+INCLUDES= \
+  -I.. -I../.. \
+  -I$(srcdir)/.. -I$(srcdir)/../.. \
+  -I$(top_srcdir)/src/lib/sharedstuff @all_includes@
 
 typefiles=cmdrequest.xml
 EXTRA_DIST=$(typefiles)
