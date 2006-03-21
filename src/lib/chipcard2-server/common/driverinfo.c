@@ -117,8 +117,9 @@ void LC_DriverInfo_SampleDirs(const char *dataDir, GWEN_STRINGLIST *sl) {
 
   d=GWEN_Directory_new();
   GWEN_Buffer_AppendString(buf, dataDir);
-  //GWEN_Buffer_AppendByte(buf, '/');
-  //GWEN_Buffer_AppendString(buf, "drivers");
+  /*GWEN_Buffer_AppendByte(buf, '/');
+  GWEN_Buffer_AppendString(buf, "drivers");*/
+
   dpos=GWEN_Buffer_GetPos(buf);
   if (!GWEN_Directory_Open(d, GWEN_Buffer_GetStart(buf))) {
     char buffer[256];

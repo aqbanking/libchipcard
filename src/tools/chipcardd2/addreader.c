@@ -41,6 +41,7 @@ int addReader(ARGUMENTS *args) {
   GWEN_DB_NODE *dbNewReader;
   GWEN_DB_NODE *dbDeviceManager;
   GWEN_DB_NODE *dbTmp;
+  GWEN_BUFFER *dbuf;
   int rport;
   FILE *f;
   const char *s;
@@ -80,7 +81,11 @@ int addReader(ARGUMENTS *args) {
 
   /* read drivers */
   dbKnownDrivers=GWEN_DB_Group_new("drivers");
-  if (LC_DriverInfo_ReadDrivers(args->dataDir, dbKnownDrivers, 0)){
+  dbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  GWEN_Buffer_AppendString(dbuf, args->dataDir);
+  GWEN_Buffer_AppendString(dbuf, "/drivers");
+  if (LC_DriverInfo_ReadDrivers(GWEN_Buffer_GetStart(dbuf),
+                                dbKnownDrivers, 0)){
     fprintf(stderr,
             I18N("Could not read the driver list\n"
                  "(tried \"%s\")\n"
@@ -90,6 +95,7 @@ int addReader(ARGUMENTS *args) {
     GWEN_DB_Group_free(dbConfig);
     return RETURNVALUE_SETUP;
   }
+  GWEN_Buffer_free(dbuf);
 
   /* GWEN_DB_Dump(dbKnownDrivers, stderr, 2); */
 

@@ -1,1 +1,1 @@
-- now works with Libsysfs 2.x
+- fixed a bug in monitor code: Was not initializing list code

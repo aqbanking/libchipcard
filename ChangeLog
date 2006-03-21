@@ -1,7 +1,19 @@
+
+2006/03/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in monitor code: Was not initializing list code
+
+
+===========================================================================
+MARK: released Libchipcard2 2.1.2 (2006/03/20)
+===========================================================================
+
+
 2006-03-20  Christian Stimming <stimming@tuhh.de>
 
 	* Makefile.am: Improve Makefiles: Add $srcdir to includes and add
 	CLEANFILES. "make distcheck" will now run successfully.
+
 
 2006/03/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------

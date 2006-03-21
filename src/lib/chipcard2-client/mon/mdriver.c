@@ -39,6 +39,7 @@ LCM_DRIVER *LCM_Driver_new(GWEN_TYPE_UINT32 serverId){
   LCM_DRIVER *md;
 
   GWEN_NEW_OBJECT(LCM_DRIVER, md);
+  GWEN_LIST_INIT(LCM_DRIVER, md);
   md->logBuffer=GWEN_Buffer_new(0, 512, 0, 1);
   md->serverId=serverId;
   return md;
@@ -48,6 +49,7 @@ LCM_DRIVER *LCM_Driver_new(GWEN_TYPE_UINT32 serverId){
 
 void LCM_Driver_free(LCM_DRIVER *md){
   if (md) {
+    GWEN_LIST_FINI(LCM_DRIVER, md);
     GWEN_Buffer_free(md->logBuffer);
     free(md->driverId);
     free(md->driverType);

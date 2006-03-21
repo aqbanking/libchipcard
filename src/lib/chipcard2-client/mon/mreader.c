@@ -37,6 +37,7 @@ LCM_READER *LCM_Reader_new(GWEN_TYPE_UINT32 serverId){
   LCM_READER *mr;
 
   GWEN_NEW_OBJECT(LCM_READER, mr);
+  GWEN_LIST_INIT(LCM_READER, mr);
   mr->serverId=serverId;
   mr->logBuffer=GWEN_Buffer_new(0, 512, 0, 1);
 
@@ -46,6 +47,7 @@ LCM_READER *LCM_Reader_new(GWEN_TYPE_UINT32 serverId){
 
 void LCM_Reader_free(LCM_READER *mr){
   if (mr) {
+    GWEN_LIST_FINI(LCM_READER, mr);
     free(mr->status);
     free(mr->readerId);
     free(mr->driverId);
