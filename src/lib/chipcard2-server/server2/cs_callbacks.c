@@ -77,8 +77,8 @@ void LCS_Server_NewCard(LCS_SERVER *cs, LCCO_CARD *card) {
 
   if (cs->newCardFn)
     cs->newCardFn(cs, card);
-  DBG_ERROR(0, "Found this card:");
-  LCCO_Card_Dump(card, stderr, 2);
+  /*DBG_ERROR(0, "Found this card:");
+  LCCO_Card_Dump(card, stderr, 2);*/
 }
 
 

@@ -420,9 +420,9 @@ void LCDM_DeviceManager_AbandonReader(LCDM_DEVICEMANAGER *dm,
   if (oldSt!=LC_ReaderStatusDown &&
       oldSt!=LC_ReaderStatusDisabled &&
       oldSt!=LC_ReaderStatusAborted) {
-    DBG_ERROR(0, "Decrementing active reader count %s (%08x)",
-              LCDM_Reader_GetReaderName(r),
-              LCDM_Reader_GetReaderId(r));
+    DBG_INFO(0, "Decrementing active reader count %s (%08x)",
+             LCDM_Reader_GetReaderName(r),
+             LCDM_Reader_GetReaderId(r));
     LCDM_Driver_DecActiveReadersCount(d, 1);
   }
 
@@ -1577,7 +1577,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCDM_READER *r) {
           }
 	  LCDM_Reader_SetCurrentRequestId(r, 0);
           LCDM_Reader_SetTimeout(r, 0);
-          DBG_ERROR(0, "Decrementing active reader count");
+          DBG_INFO(0, "Decrementing active reader count");
           LCDM_Driver_DecActiveReadersCount(d, 1);
         }
 	didSomething++;
