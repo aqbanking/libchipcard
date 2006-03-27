@@ -14,8 +14,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=2
 CHIPCARD_VERSION_MINOR=1
 CHIPCARD_VERSION_PATCHLEVEL=3
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
 
@@ -254,7 +254,7 @@ case "$OS_TYPE" in
         LC_LOWLEVELDRIVER_PATH="\${libdir}/chipcard2-server/lowlevel"
         LC_SERVICE_PATH="\${libdir}/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
-        LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
+        LC_DEFAULT_PIDDIR="\${localstatedir}/run"
         LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
         LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
         LC_DEFAULT_LIBDIR="\${libdir}/chipcard2"
@@ -278,7 +278,7 @@ case "$OS_TYPE" in
         LC_LOWLEVELDRIVER_PATH="\${libdir}/chipcard2-server/lowlevel"
         LC_SERVICE_PATH="\${libdir}/chipcard2-server/services"
         LC_DEFAULT_DHFILE="chipcardd-dh.pem"
-        LC_DEFAULT_PIDDIR="\${localstatedir}/run/chipcard2"
+        LC_DEFAULT_PIDDIR="\${localstatedir}/run"
         LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
         LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
         LC_DEFAULT_LIBDIR="\${libdir}/chipcard2"

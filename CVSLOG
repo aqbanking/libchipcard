@@ -1,1 +1,2 @@
-- fixed a bug in monitor code: Was not initializing list code
+- changed LC_DEFAULT_PIDDIR to now use "${localstatedir}/run" instead of
+  "${localstatedir}/run/chipcard2"

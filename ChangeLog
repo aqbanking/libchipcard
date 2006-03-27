@@ -1,4 +1,10 @@
 
+2006/03/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changed LC_DEFAULT_PIDDIR to now use "${localstatedir}/run" instead of
+  "${localstatedir}/run/chipcard2"
+
+
 ===========================================================================
 MARK: released Libchipcard2 2.1.3 (2006/03/26)
 ===========================================================================
