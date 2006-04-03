@@ -1,4 +1,9 @@
 
+2006/04/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- initial import into SVN
+
+
 2006/03/28: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - changed LC_DEFAULT_PIDDIR to now use "${localstatedir}/run" instead of
