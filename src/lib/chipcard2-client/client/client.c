@@ -3310,13 +3310,14 @@ GWEN_TYPE_UINT32 LC_Client_SendReaderCommand(LC_CLIENT *cl,
 
   assert(cl);
   assert(serverId);
-  assert(svid);
+  assert(readerId);
+  assert(lockId);
   dbReq=GWEN_DB_Group_new("Client_ReaderCommand");
-  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", readerId);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		       "readerId", numbuf);
-  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", lockId);
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "lockId", numbuf);
@@ -3396,8 +3397,9 @@ LC_CLIENT_RESULT LC_Client_ReaderCommand(LC_CLIENT *cl,
 
   assert(cl);
   assert(serverId);
-  assert(svid);
-  rqid=LC_Client_SendReaderCommand(cl, serverId, readerId, dbData);
+  assert(readerId);
+  assert(lockId);
+  rqid=LC_Client_SendReaderCommand(cl, serverId, readerId, lockId, dbData);
   if (rqid==0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"ReaderCommand\"");
     return LC_Client_ResultIpcError;

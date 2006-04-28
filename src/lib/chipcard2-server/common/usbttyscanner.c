@@ -89,7 +89,9 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
 #else
   struct sysfs_bus *bus = NULL;
   struct sysfs_device *curdev = NULL;
+#ifndef HAVE_SYSFS2
   struct sysfs_device *temp_device = NULL;
+#endif
   struct sysfs_device *parent = NULL;
   struct sysfs_device *child = NULL;
   struct sysfs_attribute *cur = NULL;
