@@ -95,6 +95,7 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
+  struct dlist *children = NULL;
   int port=0, vendorId=0, productId=0;
   LC_DEVICE *currentDevice;
 
@@ -111,10 +112,16 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
       /* for each device: look for ttyUSB in children*/
       port = -1;
 #ifdef HAVE_SYSFS2
-      temp_device=sysfs_open_device_path(curdev->path);
+      children = sysfs_open_directory_list(curdev->path);
+      if (children) {
+        dlist_for_each_data(children, child,
+                            struct sysfs_device) {
+          if (strncmp(child->name, "ttyUSB", 6) == 0)
+            port = atoi(&child->name[6]);
+        }
+      }
 #else
       temp_device = sysfs_open_device_tree(curdev->path);
-#endif
       if (temp_device) {
         if (temp_device->children) {
           dlist_for_each_data(temp_device->children, child,
@@ -123,8 +130,9 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
               port = atoi(&child->name[6]);
           }
         }
-        sysfs_close_device_tree(temp_device);
       }
+      sysfs_close_device_tree(temp_device);
+#endif
       /* found something, well maybe */
       if (port != -1) {
 	parent = sysfs_get_device_parent(curdev);

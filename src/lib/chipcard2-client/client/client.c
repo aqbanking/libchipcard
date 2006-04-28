@@ -3299,6 +3299,150 @@ LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
 
 
 
+GWEN_TYPE_UINT32 LC_Client_SendReaderCommand(LC_CLIENT *cl,
+                                             GWEN_TYPE_UINT32 serverId,
+					     GWEN_TYPE_UINT32 readerId,
+                                             GWEN_TYPE_UINT32 lockId,
+                                             GWEN_DB_NODE *dbData){
+  GWEN_DB_NODE *dbReq;
+  GWEN_TYPE_UINT32 rqid;
+  char numbuf[16];
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  dbReq=GWEN_DB_Group_new("Client_ReaderCommand");
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+		       "readerId", numbuf);
+  snprintf(numbuf, sizeof(numbuf)-1, "%08x", svid);
+  numbuf[sizeof(numbuf)-1]=0;
+  GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                       "lockId", numbuf);
+
+  if (dbData) {
+    GWEN_DB_NODE *dbCommandCommand;
+
+    dbCommandCommand=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                                   "command");
+    GWEN_DB_AddGroupChildren(dbCommandCommand, dbData);
+  }
+
+  /* send request */
+  rqid=LC_Client_SendRequest(cl, 0, serverId, dbReq);
+  if (rqid==0) {
+    DBG_INFO(LC_LOGDOMAIN, "Error sending request");
+    return 0;
+  }
+
+  return rqid;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_CheckReaderCommand(LC_CLIENT *cl,
+					      GWEN_TYPE_UINT32 rid,
+					      GWEN_DB_NODE *dbCmdResp){
+  LC_CLIENT_RESULT res;
+  GWEN_DB_NODE *dbRsp;
+  int err;
+
+  res=LC_Client_CheckResponse(cl, rid);
+  if (res!=LC_Client_ResultOk)
+    return res;
+
+  dbRsp=LC_Client_GetNextResponse(cl, rid);
+  assert(dbRsp);
+
+  err=LC_Client_CheckForError(dbRsp);
+  if (err) {
+    if (err>(int)GWEN_IPC_ERROR_CODES) {
+      DBG_ERROR(LC_LOGDOMAIN, "IPC error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultIpcError;
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Command error %08x", err);
+      GWEN_DB_Group_free(dbRsp);
+      return LC_Client_ResultCmdError;
+    }
+  }
+  else {
+    if (dbCmdResp) {
+      GWEN_DB_NODE *dbAnswer;
+
+      dbAnswer=GWEN_DB_GetGroup(dbRsp, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
+                                "data/command");
+      if (dbAnswer)
+        GWEN_DB_AddGroupChildren(dbCmdResp, dbAnswer);
+    }
+  }
+
+  GWEN_DB_Group_free(dbRsp);
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_ReaderCommand(LC_CLIENT *cl,
+					 GWEN_TYPE_UINT32 serverId,
+					 GWEN_TYPE_UINT32 readerId,
+					 GWEN_TYPE_UINT32 lockId,
+					 GWEN_DB_NODE *dbData,
+					 GWEN_DB_NODE *dbCmdResp) {
+  GWEN_TYPE_UINT32 rqid;
+  LC_CLIENT_RESULT res;
+
+  assert(cl);
+  assert(serverId);
+  assert(svid);
+  rqid=LC_Client_SendReaderCommand(cl, serverId, readerId, dbData);
+  if (rqid==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"ReaderCommand\"");
+    return LC_Client_ResultIpcError;
+  }
+  res=LC_Client_CheckResponse_Wait(cl, rqid, cl->longTimeout);
+  if (res!=LC_Client_ResultOk) {
+    if (res==LC_Client_ResultAborted) {
+      DBG_ERROR(LC_LOGDOMAIN, "User aborted");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No response for request \"ReaderCommand\"");
+      LC_Client_DeleteRequest(cl, rqid);
+    }
+    return res;
+  }
+  res=LC_Client_CheckReaderCommand(cl, rqid, dbCmdResp);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error response for request \"ReaderCommand\"");
+    LC_Client_DeleteRequest(cl, rqid);
+    return res;
+  }
+
+  LC_Client_DeleteRequest(cl, rqid);
+  return LC_Client_ResultOk;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 GWEN_TYPE_UINT32 LC_Client_SendPerformVerification(LC_CLIENT *cl,
                                                    LC_CARD *cd,
                                                    const LC_PININFO *pi) {

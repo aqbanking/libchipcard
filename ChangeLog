@@ -1,4 +1,14 @@
 
+2006/04/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- applied a patch provided by Thomas Viehmann (fixes libsysfs 2.x support)
+
+
+2006/04/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added function LC_Client_ReaderCommand()
+
+
 2006/04/03: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - initial import into SVN

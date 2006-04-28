@@ -10,6 +10,7 @@
     <names>
       <name>libccid.so</name>
       <name>libccid.so.*</name>
+      <name>libccid.so.1.*</name>
       <name>libccid.so.0.9.?</name>
     </names>
     

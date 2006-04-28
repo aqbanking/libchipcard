@@ -334,6 +334,7 @@ LC_CLIENT_RESULT LC_Client_ServiceCommand(LC_CLIENT *cl,
  *
  */
 /*@{*/
+
 LC_CLIENT_RESULT LC_Client_LockReader(LC_CLIENT *cl,
                                       GWEN_TYPE_UINT32 serverId,
                                       GWEN_TYPE_UINT32 readerId,
@@ -343,6 +344,15 @@ LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
                                         GWEN_TYPE_UINT32 serverId,
                                         GWEN_TYPE_UINT32 readerId,
                                         GWEN_TYPE_UINT32 lockId);
+
+LC_CLIENT_RESULT LC_Client_ReaderCommand(LC_CLIENT *cl,
+					 GWEN_TYPE_UINT32 serverId,
+					 GWEN_TYPE_UINT32 readerId,
+					 GWEN_TYPE_UINT32 lockId,
+					 GWEN_DB_NODE *dbData,
+					 GWEN_DB_NODE *dbCmdResp);
+
+
 /*@}*/
 
 
