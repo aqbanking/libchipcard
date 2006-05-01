@@ -918,10 +918,21 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
       GWEN_DB_Group_free(dbCurr);
     }
     else {
-      const char *p1, *p2;
+      const char *p1;
 
-      p1=GWEN_DB_GetCharValue(dbCurr, "country", 0, "");
-      p2=GWEN_DB_GetCharValue(dbCurr, "bankCode", 0, "");
+      p1=GWEN_DB_GetCharValue(dbCurr, "bankCode", 0, "");
+      if (p1) {
+	char *p2;
+        char *p3;
+
+	p2=strdup(p1);
+	while ( (p3=strchr(p2, '=')) ) {
+          *p3='2';
+	}
+	GWEN_DB_SetCharValue(dbCurr, GWEN_DB_FLAGS_OVERWRITE_VARS,
+			     "bankCode", p2);
+        free(p2);
+      }
       GWEN_DB_AddGroup(dbData, dbCurr);
       ctxCount++;
     }

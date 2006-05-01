@@ -1,4 +1,11 @@
 
+2006/05/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a problem with CryptTokenDDV: When a bank code contains a "=" then
+  this character is replaced by a "2" (thereby undoing the escape mechanism
+  apparently used when a BSD bank code contains 0x20)
+
+
 2006/04/28: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - applied a patch provided by Thomas Viehmann (fixes libsysfs 2.x support)
