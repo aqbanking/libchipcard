@@ -1,4 +1,9 @@
 
+===========================================================================
+MARK: released Libchipcard2 2.1.4 (2006/05/03)
+===========================================================================
+
+
 2006/05/01: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a problem with CryptTokenDDV: When a bank code contains a "=" then
