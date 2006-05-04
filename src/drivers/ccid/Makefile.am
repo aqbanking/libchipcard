@@ -22,7 +22,7 @@ ccid_SOURCES=\
 
 ccid_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
-ccid_LDFLAGS=@STRIPALL@
+ccid_LDFLAGS=@STRIPALL@ -export-dynamic
 
 MAINTAINERCLEANFILES=Makefile.in
 
