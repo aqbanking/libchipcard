@@ -1,4 +1,9 @@
 
+2006/05/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- ccid driver: added PC/SC functions as proposed by Ludovic Rousseau
+
+
 ===========================================================================
 MARK: released Libchipcard2 2.1.4 (2006/05/03)
 ===========================================================================

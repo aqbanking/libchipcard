@@ -1023,6 +1023,58 @@ void log_msg(const int priority, const char *fmt, ...) {
 
 
 
+void debug_msg(const int priority, const char *fmt, ...) {
+  char msgBuf[1024];
+  va_list argptr;
+
+  va_start(argptr, fmt);
+  vsnprintf(msgBuf, sizeof(msgBuf), fmt, argptr);
+  va_end(argptr);
+
+  switch(priority) {
+  case 1: /* PCSC_LOG_INFO */
+    DBG_INFO(0, "PCSC: %s", msgBuf);
+    break;
+  case 2: /* PCSC_LOG_ERROR */
+  case 3: /* PCSC_LOG_CRITICAL */
+    DBG_ERROR(0, "PCSC: %s", msgBuf);
+    break;
+  case 0: /* PCSC_LOG_DEBUG */
+  default:
+    DBG_DEBUG(0, "PCSC: %s", msgBuf);
+    break;
+  } /* switch */
+}
+
+
+
+void log_xxd(const int priority, const char *msg,
+             const unsigned char *buffer,
+	     const int size) {
+  GWEN_LOGGER_LEVEL lv;
+
+  switch(priority) {
+  case 1: /* PCSC_LOG_INFO */
+    lv=GWEN_LoggerLevel_Info;
+    DBG_INFO(0, "PCSC: %s", msg);
+    break;
+  case 2: /* PCSC_LOG_ERROR */
+  case 3: /* PCSC_LOG_CRITICAL */
+    lv=GWEN_LoggerLevel_Error;
+    DBG_ERROR(0, "PCSC: %s", msg);
+    break;
+  case 0: /* PCSC_LOG_DEBUG */
+  default:
+    lv=GWEN_LoggerLevel_Debug;
+    DBG_DEBUG(0, "PCSC: %s", msg);
+    break;
+  } /* switch */
+
+  GWEN_Text_LogString((const char*) buffer, size, 0, lv);
+}
+
+
+
 char *pcsc_stringify_error(long x) {
   static char errbuf[256];
 
