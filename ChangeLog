@@ -1,4 +1,9 @@
 
+2006/05/05: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in fake_ctapi (spotted and proposed a fix by Thomas Viehmann)
+
+
 2006/05/04: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - ccid driver: added PC/SC functions as proposed by Ludovic Rousseau

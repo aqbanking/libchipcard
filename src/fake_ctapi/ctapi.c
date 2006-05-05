@@ -663,7 +663,7 @@ char CT__getStatusICC(CTAPI_CONTEXT *ctx,
     *lenr=2;
     return CT_API_RV_OK;
   }
-  else if (res==LC_Client_ResultOk) {
+  else if (res!=LC_Client_ResultOk) {
     return CT_API_RV_ERR_CT;
   }
 
