@@ -97,8 +97,19 @@ get it with @ref LC_GeldKarte_BLog_GetKeyId
 </p>
 
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct LC_GELDKARTE_BLOG LC_GELDKARTE_BLOG;
+
+#ifdef __cplusplus
+} /* __cplusplus */
+#endif
+
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/list2.h>
+/* headers */
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
 #include <chipcard2/chipcard2.h>
@@ -107,32 +118,31 @@ get it with @ref LC_GeldKarte_BLog_GetKeyId
 extern "C" {
 #endif
 
-typedef struct LC_GELDKARTE_BLOG LC_GELDKARTE_BLOG;
 
 GWEN_LIST2_FUNCTION_LIB_DEFS(LC_GELDKARTE_BLOG, LC_GeldKarte_BLog, CHIPCARD_API)
 
 /** Destroys all objects stored in the given LIST2 and the list itself
 */
 CHIPCARD_API void LC_GeldKarte_BLog_List2_freeAll(LC_GELDKARTE_BLOG_LIST2 *stl);
-/** Creates a deep copy of the given LIST2.
-*/
-CHIPCARD_API LC_GELDKARTE_BLOG_LIST2 *LC_GeldKarte_BLog_List2_dup(const LC_GELDKARTE_BLOG_LIST2 *stl);
 
 /** Creates a new object.
 */
 CHIPCARD_API LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_new();
+/** Creates an object from the data in the given GWEN_DB_NODE
+*/
+CHIPCARD_API LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_fromDb(GWEN_DB_NODE *db);
+/** Creates and returns a deep copy of thegiven object.
+*/
+CHIPCARD_API LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_dup(const LC_GELDKARTE_BLOG*st);
 /** Destroys the given object.
 */
 CHIPCARD_API void LC_GeldKarte_BLog_free(LC_GELDKARTE_BLOG *st);
 /** Increments the usage counter of the given object, so an additional free() is needed to destroy the object.
 */
 CHIPCARD_API void LC_GeldKarte_BLog_Attach(LC_GELDKARTE_BLOG *st);
-/** Creates and returns a deep copy of thegiven object.
+/** Reads data from a GWEN_DB.
 */
-CHIPCARD_API LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_dup(const LC_GELDKARTE_BLOG*st);
-/** Creates an object from the data in the given GWEN_DB_NODE
-*/
-CHIPCARD_API LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_fromDb(GWEN_DB_NODE *db);
+CHIPCARD_API int LC_GeldKarte_BLog_ReadDb(LC_GELDKARTE_BLOG *st, GWEN_DB_NODE *db);
 /** Stores an object in the given GWEN_DB_NODE
 */
 CHIPCARD_API int LC_GeldKarte_BLog_toDb(const LC_GELDKARTE_BLOG*st, GWEN_DB_NODE *db);

@@ -6,6 +6,7 @@
 
 #include "geldkarte_values_l.h"
 
+
 struct LC_GELDKARTE_VALUES {
   int _usage;
   int _modified;

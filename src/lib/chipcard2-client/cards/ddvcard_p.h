@@ -25,6 +25,7 @@ struct LC_DDVCARD {
   int ddvType;
   GWEN_BUFFER *bin_ef_id_1;
   GWEN_DB_NODE *db_ef_id_1;
+
   LC_CARD_OPEN_FN openFn;
   LC_CARD_CLOSE_FN closeFn;
 };

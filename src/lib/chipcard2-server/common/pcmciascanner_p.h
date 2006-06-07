@@ -14,33 +14,13 @@
 #ifndef CHIPCARD_SERVER_PCMCIAMONITOR_P_H
 #define CHIPCARD_SERVER_PCMCIAMONITOR_P_H
 
-#define LC_PCMCIA_PROC_FILE "/proc/devices"
-#define LC_PCMCIA_MAX_SOCKETS 4
-
-#define LC_PCMCIA_TUP_VENDORID 0x20
-
 
 #include "pcmciascanner_l.h"
+
+
+static int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl);
 
 static int LC_PcmciaScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl);
 
 
-typedef struct LC_PCMCIA_SCANNER LC_PCMCIA_SCANNER;
-struct LC_PCMCIA_SCANNER {
-  int devMajor;
-};
-
-
-static void LC_PcmciaScanner_FreeData(void *bp, void *p);
-static int LC_PcmciaScanner_GetDevMajor();
-
-#ifdef USE_PCMCIA
-static int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk);
-
-static int LC_PcmciaScanner_GetTuple(int fd, unsigned char code,
-                                     ds_ioctl_arg_t *arg);
-#endif /* USE_PCMCIA */
-
-
-#endif /* CHIPCARD_SERVER_PCMCIAMONITOR_P_H */
-
+#endif /* CHIPCARD_SERVER_USBTTYMONITOR_P_H */

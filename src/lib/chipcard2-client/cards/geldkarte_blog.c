@@ -11,9 +11,16 @@
 #include <gwenhywfar/debug.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <strings.h>
+
+#include <gwenhywfar/types.h>
+#include <gwenhywfar/gwentime.h>
+#include <chipcard2/chipcard2.h>
 
 
 GWEN_LIST2_FUNCTIONS(LC_GELDKARTE_BLOG, LC_GeldKarte_BLog)
+
+
 
 
 LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_new() {
@@ -90,11 +97,9 @@ int LC_GeldKarte_BLog_toDb(const LC_GELDKARTE_BLOG *st, GWEN_DB_NODE *db) {
 }
 
 
-LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_fromDb(GWEN_DB_NODE *db) {
-LC_GELDKARTE_BLOG *st;
-
+int LC_GeldKarte_BLog_ReadDb(LC_GELDKARTE_BLOG *st, GWEN_DB_NODE *db) {
+  assert(st);
   assert(db);
-  st=LC_GeldKarte_BLog_new();
   LC_GeldKarte_BLog_SetStatus(st, GWEN_DB_GetIntValue(db, "status", 0, 0));
   LC_GeldKarte_BLog_SetBSeq(st, GWEN_DB_GetIntValue(db, "bSeq", 0, 0));
   LC_GeldKarte_BLog_SetLSeq(st, GWEN_DB_GetIntValue(db, "lSeq", 0, 0));
@@ -103,16 +108,32 @@ LC_GELDKARTE_BLOG *st;
   LC_GeldKarte_BLog_SetHSeq(st, GWEN_DB_GetIntValue(db, "hSeq", 0, 0));
   LC_GeldKarte_BLog_SetSSeq(st, GWEN_DB_GetIntValue(db, "sSeq", 0, 0));
   LC_GeldKarte_BLog_SetLoaded(st, GWEN_DB_GetIntValue(db, "loaded", 0, 0));
-  if (1) {
+  if (1) { /* for local vars */
     GWEN_DB_NODE *dbT;
 
     dbT=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "time");
-    if (dbT)  LC_GeldKarte_BLog_SetTime(st, GWEN_Time_fromDb(dbT));
+    if (dbT) {
+  if (st->time)
+    GWEN_Time_free(st->time);
+  st->time=GWEN_Time_fromDb(dbT);
+}
   }
   LC_GeldKarte_BLog_SetKeyId(st, GWEN_DB_GetIntValue(db, "keyId", 0, 0));
+  return 0;
+}
+
+
+LC_GELDKARTE_BLOG *LC_GeldKarte_BLog_fromDb(GWEN_DB_NODE *db) {
+  LC_GELDKARTE_BLOG *st;
+
+  assert(db);
+  st=LC_GeldKarte_BLog_new();
+  LC_GeldKarte_BLog_ReadDb(st, db);
   st->_modified=0;
   return st;
 }
+
+
 
 
 int LC_GeldKarte_BLog_GetStatus(const LC_GELDKARTE_BLOG *st) {
@@ -128,6 +149,8 @@ void LC_GeldKarte_BLog_SetStatus(LC_GELDKARTE_BLOG *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_BLog_GetBSeq(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->bSeq;
@@ -139,6 +162,8 @@ void LC_GeldKarte_BLog_SetBSeq(LC_GELDKARTE_BLOG *st, int d) {
   st->bSeq=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_GeldKarte_BLog_GetLSeq(const LC_GELDKARTE_BLOG *st) {
@@ -154,6 +179,8 @@ void LC_GeldKarte_BLog_SetLSeq(LC_GELDKARTE_BLOG *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_BLog_GetValue(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->value;
@@ -167,6 +194,8 @@ void LC_GeldKarte_BLog_SetValue(LC_GELDKARTE_BLOG *st, int d) {
 }
 
 
+
+
 const char *LC_GeldKarte_BLog_GetMerchantId(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->merchantId;
@@ -177,12 +206,14 @@ void LC_GeldKarte_BLog_SetMerchantId(LC_GELDKARTE_BLOG *st, const char *d) {
   assert(st);
   if (st->merchantId)
     free(st->merchantId);
-  if (d)
+  if (d && *d)
     st->merchantId=strdup(d);
   else
     st->merchantId=0;
   st->_modified=1;
 }
+
+
 
 
 int LC_GeldKarte_BLog_GetHSeq(const LC_GELDKARTE_BLOG *st) {
@@ -198,6 +229,8 @@ void LC_GeldKarte_BLog_SetHSeq(LC_GELDKARTE_BLOG *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_BLog_GetSSeq(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->sSeq;
@@ -211,6 +244,8 @@ void LC_GeldKarte_BLog_SetSSeq(LC_GELDKARTE_BLOG *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_BLog_GetLoaded(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->loaded;
@@ -222,6 +257,8 @@ void LC_GeldKarte_BLog_SetLoaded(LC_GELDKARTE_BLOG *st, int d) {
   st->loaded=d;
   st->_modified=1;
 }
+
+
 
 
 const GWEN_TIME *LC_GeldKarte_BLog_GetTime(const LC_GELDKARTE_BLOG *st) {
@@ -242,6 +279,8 @@ void LC_GeldKarte_BLog_SetTime(LC_GELDKARTE_BLOG *st, const GWEN_TIME *d) {
 }
 
 
+
+
 int LC_GeldKarte_BLog_GetKeyId(const LC_GELDKARTE_BLOG *st) {
   assert(st);
   return st->keyId;
@@ -253,6 +292,8 @@ void LC_GeldKarte_BLog_SetKeyId(LC_GELDKARTE_BLOG *st, int d) {
   st->keyId=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_GeldKarte_BLog_IsModified(const LC_GELDKARTE_BLOG *st) {
@@ -283,7 +324,6 @@ void LC_GeldKarte_BLog_List2_freeAll(LC_GELDKARTE_BLOG_LIST2 *stl) {
     LC_GeldKarte_BLog_List2_free(stl); 
   }
 }
-
 
 
 

@@ -9,7 +9,8 @@ EXTRA_DIST=\
   processorcard.xml \
   starcos.xml \
   starcos-hvb.xml \
-  starcos-vr.xml
+  starcos-vr.xml \
+  ecard.xml
 
 
 appdatadir=@libchipcard2c_config_am@/apps
@@ -23,7 +24,8 @@ appdata_DATA=\
   processorcard.xml \
   starcos.xml \
   starcos-hvb.xml \
-  starcos-vr.xml
+  starcos-vr.xml \
+  ecard.xml
 
 MAINTAINERCLEANFILES=Makefile.in
 

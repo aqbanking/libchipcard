@@ -530,7 +530,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     pos+=j;
 
     if (pos>size) {
-      DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
+      DBG_ERROR(LC_LOGDOMAIN, "Too few bytes (%d>%d)", pos, size);
       return -1;
     }
     DBG_DEBUG(LC_LOGDOMAIN, "Tag data length is %d (total %d)", j, pos);

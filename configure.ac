@@ -14,7 +14,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=2
 CHIPCARD_VERSION_MINOR=1
 CHIPCARD_VERSION_PATCHLEVEL=4
-CHIPCARD_VERSION_BUILD=2
+CHIPCARD_VERSION_BUILD=4
 CHIPCARD_VERSION_TAG="cvs"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL${CHIPCARD_VERSION_TAG}"
@@ -412,28 +412,6 @@ if test "$XGETTEXT" != "missing"; then
 fi
 AC_SUBST(I18N_CATALOG)
 
-
-
-###-------------------------------------------------------------------------
-#
-# Search for kernel sources/includes
-#
-
-AC_MSG_CHECKING([for kernel sources (needed for PCMCIA support)])
-AC_ARG_WITH(kernel-sources,
-  [  --with-kernel-sources      path to the Linux kernel sources],
-  [kernel_sources="$withval"],
-  [kernel_sources="/usr/src/linux-`uname -r` /usr/src/linux"]
-)
-AQ_SEARCH_FOR_PATH([include/pcmcia/cistpl.h], [${kernel_sources}])
-if test "x$found_dir" = "x"; then
-  AC_MSG_WARN([Kernel sources not found, PCMCIA disabled])
-else
-  LC_KERNEL_INCLUDES="-I${found_dir}/include"
-  AC_SUBST(LC_KERNEL_INCLUDES)
-  AC_DEFINE(USE_PCMCIA, 1, [whether PCMCIA support is enabled])
-  AC_MSG_RESULT(${found_dir})
-fi
 
 
 ###-------------------------------------------------------------------------

@@ -207,6 +207,67 @@
         <flag>keypad</flag>
       </flags>
     </reader>
+<!--    
+    <reader name="cyberjack" 
+            bustype="UsbRaw"
+            vendor="0x0c4b" product="0x0100" >
+      <short>Cyberjack pinpad or ecom</short>
+
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
+
+      <image>cyberjack_pinpad.jpg</image>
+    </reader>
+
+    <reader name="cyberjack2" 
+            ctn="1" bustype="UsbRaw"
+            vendor="0x0c4b" product="0x0300">
+      <short>Cyberjack pinpad</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+      
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
+
+      <image>cyberjack_pinpad.jpg</image>
+
+    </reader>
+-->    
     
   </readers>
 

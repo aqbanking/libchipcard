@@ -52,7 +52,18 @@ get it with @ref LC_Starcos_KeyDescr_GetKeyVer
 </p>
 
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct LC_STARCOS_KEYDESCR LC_STARCOS_KEYDESCR;
+
+#ifdef __cplusplus
+} /* __cplusplus */
+#endif
+
 #include <gwenhywfar/db.h>
+/* headers */
 #include <chipcard2-client/cards/starcos.h>
 #include <chipcard2/chipcard2.h>
 
@@ -60,23 +71,25 @@ get it with @ref LC_Starcos_KeyDescr_GetKeyVer
 extern "C" {
 #endif
 
-typedef struct LC_STARCOS_KEYDESCR LC_STARCOS_KEYDESCR;
 
 /** Creates a new object.
 */
 CHIPCARD_API LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_new();
+/** Creates an object from the data in the given GWEN_DB_NODE
+*/
+CHIPCARD_API LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_fromDb(GWEN_DB_NODE *db);
+/** Creates and returns a deep copy of thegiven object.
+*/
+CHIPCARD_API LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_dup(const LC_STARCOS_KEYDESCR*st);
 /** Destroys the given object.
 */
 CHIPCARD_API void LC_Starcos_KeyDescr_free(LC_STARCOS_KEYDESCR *st);
 /** Increments the usage counter of the given object, so an additional free() is needed to destroy the object.
 */
 CHIPCARD_API void LC_Starcos_KeyDescr_Attach(LC_STARCOS_KEYDESCR *st);
-/** Creates and returns a deep copy of thegiven object.
+/** Reads data from a GWEN_DB.
 */
-CHIPCARD_API LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_dup(const LC_STARCOS_KEYDESCR*st);
-/** Creates an object from the data in the given GWEN_DB_NODE
-*/
-CHIPCARD_API LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_fromDb(GWEN_DB_NODE *db);
+CHIPCARD_API int LC_Starcos_KeyDescr_ReadDb(LC_STARCOS_KEYDESCR *st, GWEN_DB_NODE *db);
 /** Stores an object in the given GWEN_DB_NODE
 */
 CHIPCARD_API int LC_Starcos_KeyDescr_toDb(const LC_STARCOS_KEYDESCR*st, GWEN_DB_NODE *db);

@@ -22,6 +22,7 @@ noinst_HEADERS=\
   starcos_p.h \
   starcos_keydescr_l.h \
   starcos_keydescr_p.h
+  
 
 iheaderdir=${includedir}/chipcard2-client/cards
 iheader_HEADERS=\

@@ -34,8 +34,19 @@ get it with @ref LC_GeldKarte_Values_GetMaxXfer
 </p>
 
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct LC_GELDKARTE_VALUES LC_GELDKARTE_VALUES;
+
+#ifdef __cplusplus
+} /* __cplusplus */
+#endif
+
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/list2.h>
+/* headers */
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
 #include <chipcard2/chipcard2.h>
@@ -44,32 +55,31 @@ get it with @ref LC_GeldKarte_Values_GetMaxXfer
 extern "C" {
 #endif
 
-typedef struct LC_GELDKARTE_VALUES LC_GELDKARTE_VALUES;
 
 GWEN_LIST2_FUNCTION_LIB_DEFS(LC_GELDKARTE_VALUES, LC_GeldKarte_Values, CHIPCARD_API)
 
 /** Destroys all objects stored in the given LIST2 and the list itself
 */
 CHIPCARD_API void LC_GeldKarte_Values_List2_freeAll(LC_GELDKARTE_VALUES_LIST2 *stl);
-/** Creates a deep copy of the given LIST2.
-*/
-CHIPCARD_API LC_GELDKARTE_VALUES_LIST2 *LC_GeldKarte_Values_List2_dup(const LC_GELDKARTE_VALUES_LIST2 *stl);
 
 /** Creates a new object.
 */
 CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_new();
+/** Creates an object from the data in the given GWEN_DB_NODE
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db);
+/** Creates and returns a deep copy of thegiven object.
+*/
+CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_dup(const LC_GELDKARTE_VALUES*st);
 /** Destroys the given object.
 */
 CHIPCARD_API void LC_GeldKarte_Values_free(LC_GELDKARTE_VALUES *st);
 /** Increments the usage counter of the given object, so an additional free() is needed to destroy the object.
 */
 CHIPCARD_API void LC_GeldKarte_Values_Attach(LC_GELDKARTE_VALUES *st);
-/** Creates and returns a deep copy of thegiven object.
+/** Reads data from a GWEN_DB.
 */
-CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_dup(const LC_GELDKARTE_VALUES*st);
-/** Creates an object from the data in the given GWEN_DB_NODE
-*/
-CHIPCARD_API LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db);
+CHIPCARD_API int LC_GeldKarte_Values_ReadDb(LC_GELDKARTE_VALUES *st, GWEN_DB_NODE *db);
 /** Stores an object in the given GWEN_DB_NODE
 */
 CHIPCARD_API int LC_GeldKarte_Values_toDb(const LC_GELDKARTE_VALUES*st, GWEN_DB_NODE *db);

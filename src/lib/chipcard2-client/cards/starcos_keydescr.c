@@ -11,10 +11,16 @@
 #include <gwenhywfar/debug.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <strings.h>
+
+#include <chipcard2-client/cards/starcos.h>
+#include <chipcard2/chipcard2.h>
 
 
 GWEN_LIST_FUNCTIONS(LC_STARCOS_KEYDESCR, LC_Starcos_KeyDescr)
 GWEN_LIST2_FUNCTIONS(LC_STARCOS_KEYDESCR, LC_Starcos_KeyDescr)
+
+
 
 
 LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_new() {
@@ -70,19 +76,29 @@ int LC_Starcos_KeyDescr_toDb(const LC_STARCOS_KEYDESCR *st, GWEN_DB_NODE *db) {
 }
 
 
-LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_fromDb(GWEN_DB_NODE *db) {
-LC_STARCOS_KEYDESCR *st;
-
+int LC_Starcos_KeyDescr_ReadDb(LC_STARCOS_KEYDESCR *st, GWEN_DB_NODE *db) {
+  assert(st);
   assert(db);
-  st=LC_Starcos_KeyDescr_new();
   LC_Starcos_KeyDescr_SetKeyId(st, GWEN_DB_GetIntValue(db, "keyId", 0, 0));
   LC_Starcos_KeyDescr_SetStatus(st, GWEN_DB_GetIntValue(db, "status", 0, 0));
   LC_Starcos_KeyDescr_SetKeyType(st, GWEN_DB_GetIntValue(db, "keyType", 0, 0));
   LC_Starcos_KeyDescr_SetKeyNum(st, GWEN_DB_GetIntValue(db, "keyNum", 0, 0));
   LC_Starcos_KeyDescr_SetKeyVer(st, GWEN_DB_GetIntValue(db, "keyVer", 0, 0));
+  return 0;
+}
+
+
+LC_STARCOS_KEYDESCR *LC_Starcos_KeyDescr_fromDb(GWEN_DB_NODE *db) {
+  LC_STARCOS_KEYDESCR *st;
+
+  assert(db);
+  st=LC_Starcos_KeyDescr_new();
+  LC_Starcos_KeyDescr_ReadDb(st, db);
   st->_modified=0;
   return st;
 }
+
+
 
 
 int LC_Starcos_KeyDescr_GetKeyId(const LC_STARCOS_KEYDESCR *st) {
@@ -98,6 +114,8 @@ void LC_Starcos_KeyDescr_SetKeyId(LC_STARCOS_KEYDESCR *st, int d) {
 }
 
 
+
+
 int LC_Starcos_KeyDescr_GetStatus(const LC_STARCOS_KEYDESCR *st) {
   assert(st);
   return st->status;
@@ -109,6 +127,8 @@ void LC_Starcos_KeyDescr_SetStatus(LC_STARCOS_KEYDESCR *st, int d) {
   st->status=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_Starcos_KeyDescr_GetKeyType(const LC_STARCOS_KEYDESCR *st) {
@@ -124,6 +144,8 @@ void LC_Starcos_KeyDescr_SetKeyType(LC_STARCOS_KEYDESCR *st, int d) {
 }
 
 
+
+
 int LC_Starcos_KeyDescr_GetKeyNum(const LC_STARCOS_KEYDESCR *st) {
   assert(st);
   return st->keyNum;
@@ -137,6 +159,8 @@ void LC_Starcos_KeyDescr_SetKeyNum(LC_STARCOS_KEYDESCR *st, int d) {
 }
 
 
+
+
 int LC_Starcos_KeyDescr_GetKeyVer(const LC_STARCOS_KEYDESCR *st) {
   assert(st);
   return st->keyVer;
@@ -148,6 +172,8 @@ void LC_Starcos_KeyDescr_SetKeyVer(LC_STARCOS_KEYDESCR *st, int d) {
   st->keyVer=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_Starcos_KeyDescr_IsModified(const LC_STARCOS_KEYDESCR *st) {
@@ -180,8 +206,6 @@ void LC_Starcos_KeyDescr_List2_freeAll(LC_STARCOS_KEYDESCR_LIST2 *stl) {
 }
 
 
-
-
 LC_STARCOS_KEYDESCR_LIST *LC_Starcos_KeyDescr_List_dup(const LC_STARCOS_KEYDESCR_LIST *stl) {
   if (stl) {
     LC_STARCOS_KEYDESCR_LIST *nl;
@@ -202,6 +226,7 @@ LC_STARCOS_KEYDESCR_LIST *LC_Starcos_KeyDescr_List_dup(const LC_STARCOS_KEYDESCR
   else
     return 0;
 }
+
 
 
 

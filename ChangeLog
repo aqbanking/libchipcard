@@ -1,4 +1,15 @@
 
+2006/05/18: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changed pcmcia scanner code to use libsysfs. No longer require kernel
+  sources. Thanks to Thomas Viehmann and Joachim Breitner.
+
+
+2006/05/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- started implementing Austrian Ecard (info only, no crypto stuff)
+
+
 2006/05/05: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in fake_ctapi (spotted and proposed a fix by Thomas Viehmann)

@@ -6,6 +6,7 @@
 
 #include "geldkarte_llog_l.h"
 
+
 struct LC_GELDKARTE_LLOG {
   int _usage;
   int _modified;

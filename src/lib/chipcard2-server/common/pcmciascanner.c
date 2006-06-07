@@ -10,15 +10,17 @@
  *          Please see toplevel file COPYING for license details           *
  ***************************************************************************/
 
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
+
+#include "pcmciascanner_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/buffer.h>
+#include <gwenhywfar/stringlist.h>
 
 
 #include <stdlib.h>
@@ -26,189 +28,105 @@
 #include <string.h>
 #include <errno.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-
-#ifdef USE_PCMCIA
-# include <pcmcia/version.h>
-# include <pcmcia/cs_types.h>
-struct pcmcia_socket;
-# include <pcmcia/cs.h>
-# include <pcmcia/cistpl.h>
-# include <pcmcia/ds.h>
+#ifdef USE_LIBSYSFS
+# include <sysfs/libsysfs.h>
 #endif
-
-#include "pcmciascanner_p.h"
-
-
-GWEN_INHERIT(LC_DEVSCANNER, LC_PCMCIA_SCANNER)
-
 
 
 LC_DEVSCANNER *LC_PcmciaScanner_new() {
   LC_DEVSCANNER *sc;
-  LC_PCMCIA_SCANNER *scp;
+#ifdef USE_LIBSYSFS
+  char sysfspath[256];
+#endif
 
   sc=LC_DevScanner_new();
-  GWEN_NEW_OBJECT(LC_PCMCIA_SCANNER, scp);
-  GWEN_INHERIT_SETDATA(LC_DEVSCANNER, LC_PCMCIA_SCANNER, sc, scp,
-                       LC_PcmciaScanner_FreeData);
   LC_DevScanner_SetReadDevsFn(sc, LC_PcmciaScanner_ReadDevs);
-  scp->devMajor=LC_PcmciaScanner_GetDevMajor();
-  if (scp->devMajor==-1) {
-    DBG_DEBUG(0,
-	      "Major device number for PCMCIA device not found. "
-	      "Maybe kernel module not loaded?");
+
+#ifdef USE_LIBSYSFS
+  if (! sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
+    DBG_NOTICE(0, "Will use sysfs to scan for ttyUSB devices")
   }
+#endif
+
   return sc;
 }
 
 
 
-void LC_PcmciaScanner_FreeData(void *bp, void *p) {
-  LC_PCMCIA_SCANNER *scp;
+/* this function has been submitted by Thomas Viehmann. Thanks ;-) */
+int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl) {
+#ifndef USE_LIBSYSFS
+  DBG_INFO(0, "LibSysFS not supsknumed");
+  return -1;
+#else
+  struct sysfs_bus *bus = NULL;
+  struct sysfs_device *curdev = NULL;
+#ifndef HAVE_SYSFS2
+  struct sysfs_device *temp_device = NULL;
+#endif
+  struct sysfs_attribute *cur = NULL;
+  struct dlist *devlist = NULL;
+  struct dlist *attributes = NULL;
+  int sknum=0, vendorId=0, productId=0;
+  LC_DEVICE *currentDevice;
 
-  scp=(LC_PCMCIA_SCANNER*)p;
-
-  GWEN_FREE_OBJECT(scp);
-}
-
-
-
-int LC_PcmciaScanner_GetDevMajor() {
-  FILE *f;
-  int devMajor;
-  char lineBuf[32], name[32];
-
-  f=fopen(LC_PCMCIA_PROC_FILE, "r");
-  if (!f) {
-    DBG_ERROR(0, "fopen(%s): %s", LC_PCMCIA_PROC_FILE,
-              strerror(errno));
+  bus = sysfs_open_bus("pcmcia");
+  if (bus == NULL) {
+    DBG_ERROR(0,"Error accessing sysfs");
     return -1;
   }
 
-  while(fgets(lineBuf, sizeof(lineBuf)-1, f) != NULL) {
-    lineBuf[sizeof(lineBuf)-1]=0;
-    if (2==sscanf(lineBuf, "%d %s", &devMajor, name)){
-      if (strcmp(name, "pcmcia")==0){
-        fclose(f);
-        return devMajor;
-      }
-    }
+  devlist = sysfs_get_bus_devices(bus);
+  if (devlist != NULL) {
+    dlist_for_each_data(devlist, curdev, 
+                        struct sysfs_device) {
+	  sknum = strtol(curdev->bus_id, NULL, 16);
+          attributes = sysfs_get_device_attributes(curdev);
+          dlist_for_each_data(attributes, cur, 
+                              struct sysfs_attribute) {
+            if (strcmp(cur->name,"manf_id")==0) {
+              if (cur->value != NULL) {
+                vendorId = strtol(cur->value, NULL, 16);
+              }
+              else {
+		DBG_ERROR(0,"manf_id empty");
+	      }
+	    }
+            if (strcmp(cur->name,"card_id")==0) {
+              if (cur->value != NULL) {
+                productId = strtol(cur->value, NULL, 16);
+              }
+	      else {
+		DBG_ERROR(0, "card_id empty");
+	      }
+            }
+          }
+          currentDevice=LC_Device_new(LC_Device_BusType_Pcmcia,
+                                      0,
+                                      sknum,
+                                      vendorId, productId);
+          DBG_DEBUG(0, "Adding device %d (%04x/%04x)",
+                    sknum,
+                    vendorId,
+                    productId);
+          LC_Device_SetDevicePos(currentDevice, sknum);
+          LC_Device_List_Add(currentDevice, dl);
+    }	  
   }
-  fclose(f);
-  return -1;
+  sysfs_close_bus(bus);
+  return 0;
+#endif
 }
-
-
-#ifdef USE_PCMCIA
-
-int LC_PcmciaScanner_OpenSocket(LC_DEVSCANNER *sc, int sk){
-  LC_PCMCIA_SCANNER *scp;
-  static char *paths[]={"/var/lib/pcmcia", "/var/run", "/tmp", 0};
-  int fd;
-  char **p;
-  char fpath[32];
-  dev_t d;
-
-  assert(sc);
-  scp=GWEN_INHERIT_GETDATA(LC_DEVSCANNER, LC_PCMCIA_SCANNER, sc);
-  assert(scp);
-
-  d=makedev(scp->devMajor, sk);
-
-  for (p = paths; *p; p++) {
-    snprintf(fpath, sizeof(fpath), "%s/cc-%d", *p, (int)getpid());
-    if (mknod(fpath, (S_IFCHR|S_IREAD|S_IWRITE), d)==0) {
-      fd=open(fpath, O_RDONLY);
-      unlink(fpath);
-      if (fd>=0)
-        return fd;
-      if (errno==ENODEV) {
-        DBG_INFO(0, "PCMCIA socket %d not available", sk);
-        break;
-      }
-    }
-  }
-  return -1;
-}
-
-
-
-int LC_PcmciaScanner_GetTuple(int fd, unsigned char code,
-                              ds_ioctl_arg_t *arg) {
-  arg->tuple.DesiredTuple=code;
-  arg->tuple.Attributes=TUPLE_RETURN_COMMON;
-  arg->tuple.TupleOffset=0;
-  if ((ioctl(fd, DS_GET_FIRST_TUPLE, arg)==0) &&
-      (ioctl(fd, DS_GET_TUPLE_DATA, arg)==0) &&
-      (ioctl(fd, DS_PARSE_TUPLE, arg)==0))
-    return 0;
-  else
-    return -1;
-}
-
-#endif /* USE_PCMCIA */
 
 
 int LC_PcmciaScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
-#ifndef USE_PCMCIA
-  return 1; /* no changes */
-#else
-  LC_PCMCIA_SCANNER *scp;
-  int sknum;
-
-  assert(sc);
-  scp=GWEN_INHERIT_GETDATA(LC_DEVSCANNER, LC_PCMCIA_SCANNER, sc);
-  assert(scp);
-
-  if (scp->devMajor==-1) {
+  if ( LC_PcmciaScanner_ScanSysFS_Pcmcia(dl) ) {
+    DBG_DEBUG(0, "here");
     return -1;
   }
 
-  for (sknum=0; sknum<LC_PCMCIA_MAX_SOCKETS; sknum++) {
-    int fd;
-
-    fd=LC_PcmciaScanner_OpenSocket(sc, sknum);
-    if (fd<0)
-      break;
-    else {
-      ds_ioctl_arg_t arg;
-
-      if (LC_PcmciaScanner_GetTuple(fd, CISTPL_MANFID, &arg)==0) {
-        GWEN_TYPE_UINT32 vendorId;
-        GWEN_TYPE_UINT32 productId;
-        LC_DEVICE *dev;
-
-        vendorId=arg.tuple_parse.parse.manfid.manf;
-        productId=arg.tuple_parse.parse.manfid.card;
-        dev=LC_Device_new(LC_Device_BusType_Pcmcia,
-                          0, sknum, vendorId, productId);
-        LC_Device_SetDevicePos(dev, sknum);
-        LC_Device_List_Add(dev, dl);
-      }
-      else {
-        DBG_DEBUG(0,
-                  "Could not get info for PCMCIA "
-                  "device at socket %d (%s)",
-                  sknum,
-                  strerror(errno));
-      }
-      close(fd);
-    }
-  } /* for */
-#endif
-
   return 0;
 }
-
-
-
 
 
 

@@ -11,9 +11,16 @@
 #include <gwenhywfar/debug.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <strings.h>
+
+#include <gwenhywfar/types.h>
+#include <gwenhywfar/gwentime.h>
+#include <chipcard2/chipcard2.h>
 
 
 GWEN_LIST2_FUNCTIONS(LC_GELDKARTE_VALUES, LC_GeldKarte_Values)
+
+
 
 
 LC_GELDKARTE_VALUES *LC_GeldKarte_Values_new() {
@@ -61,17 +68,27 @@ int LC_GeldKarte_Values_toDb(const LC_GELDKARTE_VALUES *st, GWEN_DB_NODE *db) {
 }
 
 
-LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db) {
-LC_GELDKARTE_VALUES *st;
-
+int LC_GeldKarte_Values_ReadDb(LC_GELDKARTE_VALUES *st, GWEN_DB_NODE *db) {
+  assert(st);
   assert(db);
-  st=LC_GeldKarte_Values_new();
   LC_GeldKarte_Values_SetLoaded(st, GWEN_DB_GetIntValue(db, "loaded", 0, 0));
   LC_GeldKarte_Values_SetMaxLoad(st, GWEN_DB_GetIntValue(db, "maxLoad", 0, 0));
   LC_GeldKarte_Values_SetMaxXfer(st, GWEN_DB_GetIntValue(db, "maxXfer", 0, 0));
+  return 0;
+}
+
+
+LC_GELDKARTE_VALUES *LC_GeldKarte_Values_fromDb(GWEN_DB_NODE *db) {
+  LC_GELDKARTE_VALUES *st;
+
+  assert(db);
+  st=LC_GeldKarte_Values_new();
+  LC_GeldKarte_Values_ReadDb(st, db);
   st->_modified=0;
   return st;
 }
+
+
 
 
 int LC_GeldKarte_Values_GetLoaded(const LC_GELDKARTE_VALUES *st) {
@@ -87,6 +104,8 @@ void LC_GeldKarte_Values_SetLoaded(LC_GELDKARTE_VALUES *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_Values_GetMaxLoad(const LC_GELDKARTE_VALUES *st) {
   assert(st);
   return st->maxLoad;
@@ -100,6 +119,8 @@ void LC_GeldKarte_Values_SetMaxLoad(LC_GELDKARTE_VALUES *st, int d) {
 }
 
 
+
+
 int LC_GeldKarte_Values_GetMaxXfer(const LC_GELDKARTE_VALUES *st) {
   assert(st);
   return st->maxXfer;
@@ -111,6 +132,8 @@ void LC_GeldKarte_Values_SetMaxXfer(LC_GELDKARTE_VALUES *st, int d) {
   st->maxXfer=d;
   st->_modified=1;
 }
+
+
 
 
 int LC_GeldKarte_Values_IsModified(const LC_GELDKARTE_VALUES *st) {
@@ -141,7 +164,6 @@ void LC_GeldKarte_Values_List2_freeAll(LC_GELDKARTE_VALUES_LIST2 *stl) {
     LC_GeldKarte_Values_List2_free(stl); 
   }
 }
-
 
 
 
