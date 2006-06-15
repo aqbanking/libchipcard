@@ -1,4 +1,9 @@
 
+2006/06/15: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- minor changes in secure pin input
+
+
 2006/05/18: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - changed pcmcia scanner code to use libsysfs. No longer require kernel
@@ -18,6 +23,7 @@
 2006/05/04: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - ccid driver: added PC/SC functions as proposed by Ludovic Rousseau
+  Libchipcard2 now works with the standard libccid provided by Debian :-)
 
 
 ===========================================================================

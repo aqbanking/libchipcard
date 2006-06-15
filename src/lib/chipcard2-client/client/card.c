@@ -1700,14 +1700,35 @@ LC_CLIENT_RESULT LC_Card__IsoVerifyPin(LC_CARD *card,
                                        int *triesLeft) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
+  GWEN_DB_NODE *dbT;
   LC_CLIENT_RESULT res;
 
   if (triesLeft)
     *triesLeft=-1;
 
-  dbReq=GWEN_DB_Group_new("IsoVerifyPin");
+  switch(LC_PinInfo_GetEncoding(pi)) {
+  case LC_PinInfo_EncodingBin:
+    dbReq=GWEN_DB_Group_new("IsoVerifyPin_Bin");
+    break;
+  case LC_PinInfo_EncodingBcd:
+    dbReq=GWEN_DB_Group_new("IsoVerifyPin_Bcd");
+    break;
+  case LC_PinInfo_EncodingAscii:
+    dbReq=GWEN_DB_Group_new("IsoVerifyPin_Ascii");
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    dbReq=GWEN_DB_Group_new("IsoVerifyPin_Fpin2");
+    break;
+  default:
+    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
+              LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
+    return LC_Client_ResultInvalid;
+  }
+
   dbResp=GWEN_DB_Group_new("response");
-  LC_PinInfo_toDb(pi, dbReq);
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "pinInfo");
+  assert(dbT);
+  LC_PinInfo_toDb(pi, dbT);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "pid", LC_PinInfo_GetId(pi));
 
@@ -1749,14 +1770,35 @@ LC_CLIENT_RESULT LC_Card__IsoModifyPin(LC_CARD *card,
                                        int *triesLeft) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
+  GWEN_DB_NODE *dbT;
   LC_CLIENT_RESULT res;
 
   if (triesLeft)
     *triesLeft=-1;
 
-  dbReq=GWEN_DB_Group_new("IsoModifyPin");
+  switch(LC_PinInfo_GetEncoding(pi)) {
+  case LC_PinInfo_EncodingBin:
+    dbReq=GWEN_DB_Group_new("IsoModifyPin_Bin");
+    break;
+  case LC_PinInfo_EncodingBcd:
+    dbReq=GWEN_DB_Group_new("IsoModifyPin_Bcd");
+    break;
+  case LC_PinInfo_EncodingAscii:
+    dbReq=GWEN_DB_Group_new("IsoModifyPin_Ascii");
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    dbReq=GWEN_DB_Group_new("IsoModifyPin_Fpin2");
+    break;
+  default:
+    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
+              LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
+    return LC_Client_ResultInvalid;
+  }
+
   dbResp=GWEN_DB_Group_new("response");
-  LC_PinInfo_toDb(pi, dbReq);
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "pinInfo");
+  assert(dbT);
+  LC_PinInfo_toDb(pi, dbT);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "pid", LC_PinInfo_GetId(pi));
 
@@ -1796,7 +1838,60 @@ LC_CLIENT_RESULT LC_Card__IsoPerformVerification(LC_CARD *card,
                                                  GWEN_TYPE_UINT32 flags,
                                                  const LC_PININFO *pi,
                                                  int *triesLeft) {
-  return LC_Client_PerformVerification(card->client, card, pi, triesLeft);
+  GWEN_DB_NODE *dbReq=0;
+  GWEN_DB_NODE *dbResp;
+  GWEN_DB_NODE *dbT;
+  LC_CLIENT_RESULT res;
+
+  if (triesLeft)
+    *triesLeft=-1;
+
+  switch(LC_PinInfo_GetEncoding(pi)) {
+  case LC_PinInfo_EncodingBin:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bin");
+    break;
+  case LC_PinInfo_EncodingBcd:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Bcd");
+    break;
+  case LC_PinInfo_EncodingAscii:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Ascii");
+    break;
+  case LC_PinInfo_EncodingFpin2:
+    dbReq=GWEN_DB_Group_new("IsoPerformVerification_Fpin2");
+    break;
+  default:
+    DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
+	      LC_PinInfo_Encoding_toString(LC_PinInfo_GetEncoding(pi)));
+    return LC_Client_ResultInvalid;
+  }
+
+  dbResp=GWEN_DB_Group_new("response");
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "pinInfo");
+  assert(dbT);
+  LC_PinInfo_toDb(pi, dbT);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "pid", LC_PinInfo_GetId(pi));
+
+  res=LC_Card_ExecCommand(card, dbReq, dbResp,
+                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    if (res==LC_Client_ResultCmdError && triesLeft) {
+      if (LC_Card_GetLastSW1(card)==0x63) {
+        int c;
+
+        c=LC_Card_GetLastSW2(card);
+        if (c>=0xc0)
+          *triesLeft=(c & 0xf);
+      }
+    }
+    return res;
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
 }
 
 
@@ -1807,6 +1902,7 @@ LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
                                                  int *triesLeft) {
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
+  GWEN_DB_NODE *dbT;
   LC_CLIENT_RESULT res;
 
   if (triesLeft)
@@ -1832,7 +1928,9 @@ LC_CLIENT_RESULT LC_Card__IsoPerformModification(LC_CARD *card,
   }
 
   dbResp=GWEN_DB_Group_new("response");
-  LC_PinInfo_toDb(pi, dbReq);
+  dbT=GWEN_DB_GetGroup(dbReq, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "pinInfo");
+  assert(dbT);
+  LC_PinInfo_toDb(pi, dbT);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "pid", LC_PinInfo_GetId(pi));
 

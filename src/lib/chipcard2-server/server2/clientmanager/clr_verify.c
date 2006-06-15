@@ -26,6 +26,9 @@
 
 
 
+/* TODO: Soon to be removed */
+
+
 static int LCCL_ClientManager__sendVerify(LCCL_CLIENTMANAGER *clm,
                                           GWEN_TYPE_UINT32 rid,
                                           LCCL_CLIENT *cl,

@@ -2,22 +2,252 @@
   <card name="card" >
 
     <commands>
+
+      <command name="IsoReadBinary" >
+        <send>
+          <APDU>
+            <ELEM type="word">0x00b0</ELEM>
+            <ELEM name="offset" type="word" />
+          </APDU>
+        </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
+      </command>
+
+      <command name="IsoWriteBinary" >
+        <send>
+          <APDU>
+            <!-- FIXME: this is UpdateBinary, need to fix that! -->
+            <ELEM type="word">0x00d0</ELEM>
+            <ELEM name="offset" type="word" />
+          </APDU>
+          <DATA>
+            <ELEM name="data" type="bytes" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
+      </command>
+
+      <command name="IsoUpdateBinary" >
+        <send>
+          <APDU>
+            <ELEM type="word">0x00d0</ELEM>
+            <ELEM name="offset" type="word" />
+          </APDU>
+          <DATA>
+            <ELEM name="data" type="bytes" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
+      </command>
+
+<!--
+      
+      <command name="IsoEraseBinary" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+      
+
+      <command name="IsoReadRecord" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoWriteRecord" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoAppendRecord" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoUpdateRecord" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+
+      <command name="IsoManageSE" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoEncipher" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoDecipher" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoSign" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoVerifyPin" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoModifyPin_Bin" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoModifyPin_Bcd" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoModifyPin_Ascii" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+      <command name="IsoModifyPin_Fpin2" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x11223344</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x1122</ELEM>
+          </DATA>
+        </send>
+      </command>
+
+    -->
+
+
+
+
+
+
+
+
+
+
+
+
       <!-- Select Master File -->
       <command name="SelectMF" >
-      	<send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="dword">0x00a40000</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM type="word">0x3f00</ELEM>
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x00a40000</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM type="word">0x3f00</ELEM>
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+        </results>
+        <responses>
+          <response type="success">
+            <ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
               <tlv id="0x6f">
                 <ELEM name="fci" type="tlv" tlvtype="simple"
                       maxnum="0">
@@ -58,60 +288,61 @@
                 </ELEM>
               </tlv>
             </ELEM>
-	  			</response>
-				</responses>
-    	</command>
+          </response>
+          
+        </responses>
+      </command>
 
       <!-- Read Binary -->
       <command name="ReadBinary" >
-      	<send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="word">0x00b0</ELEM>
+        <send>
+          <APDU lr="0" >
+            <ELEM type="word">0x00b0</ELEM>
             <ELEM name="offset" type="word" />
-	  			</APDU>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-       </results>
-    	</command>
+          </APDU>
+        </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
+      </command>
 
       <!-- Write Binary -->
       <command name="WriteBinary" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00d0</ELEM>
+        <send>
+          <APDU>
+            <ELEM type="word">0x00d0</ELEM>
             <ELEM name="offset" type="word" />
-	  			</APDU>
+          </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />
           </DATA>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-       </results>
-    	</command>
+        </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
+      </command>
 
       <!-- Update Binary -->
       <command name="UpdateBinary" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00d6</ELEM>
+        <send>
+                <APDU>
+                <ELEM type="word">0x00d6</ELEM>
             <ELEM name="offset" type="word" />
-	  			</APDU>
+                </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />
           </DATA>
-				</send>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -120,19 +351,19 @@
            No EF selected (internal error)
          </result>
        </results>
-    	</command>
+        </command>
 
       <!-- Erase Binary -->
       <command name="EraseBinary" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x000e</ELEM>
+        <send>
+                <APDU>
+                <ELEM type="word">0x000e</ELEM>
             <ELEM name="offset" type="word" />
-	  			</APDU>
+                </APDU>
           <DATA>
             <ELEM name="len" type="word" minnum="0" />
           </DATA>
-				</send>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -141,18 +372,18 @@
            No EF selected (internal error)
          </result>
        </results>
-    	</command>
+        </command>
 
 
       <!-- Read Record -->
       <command name="ReadRecord" >
-      	<send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="word">0x00b2</ELEM>
+        <send>
+                <APDU lr="0" >
+                <ELEM type="word">0x00b2</ELEM>
             <ELEM name="recNum" type="byte" />
             <ELEM type="byte">0x04</ELEM>
-	  			</APDU>
-				</send>
+                </APDU>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -164,20 +395,20 @@
            Record not found
          </result>
        </results>
-    	</command>
+        </command>
 
       <!-- Write Record -->
       <command name="WriteRecord" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00dc</ELEM>
+        <send>
+                <APDU>
+                <ELEM type="word">0x00dc</ELEM>
             <ELEM name="recNum" type="byte" />
             <ELEM name="p2" type="byte" />
-	  			</APDU>
+                </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />
           </DATA>
-				</send>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -189,20 +420,20 @@
            Record not found
          </result>
        </results>
-    	</command>
+        </command>
 
       <!-- Update Record -->
       <command name="UpdateRecord" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00dc</ELEM>
+        <send>
+                <APDU>
+                <ELEM type="word">0x00dc</ELEM>
             <ELEM name="recNum" type="byte" />
             <ELEM name="p2" type="byte" />
-	  			</APDU>
+                </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />
           </DATA>
-				</send>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -214,20 +445,20 @@
            Record not found
          </result>
        </results>
-    	</command>
+        </command>
 
       <!-- Append Record -->
       <command name="AppendRecord" >
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00e2</ELEM>
+        <send>
+                <APDU>
+                <ELEM type="word">0x00e2</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="p2" type="byte" />
-	  			</APDU>
+                </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />
           </DATA>
-				</send>
+                </send>
        <results>
          <result sw1="0x61" type="success" >
            Command executed, correct size in SW2
@@ -239,69 +470,72 @@
            Record not found
          </result>
        </results>
-    	</command>
+        </command>
 
       <!-- Verify -->
       <command name="IsoVerifyPin" >
         <send>
-	  			<APDU >
-  	    		<ELEM type="word">0x0020</ELEM>
+                <APDU >
+                <ELEM type="word">0x0020</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="pid" type="byte" />
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="pin" type="bytes" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x63" sw2="0xc0" type="error" >
+                </APDU>
+                <DATA>
+                    <ELEM name="pin" type="bytes" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x63" sw2="0xc0" type="error" >
             Bad PIN (only one try left !)
           </result>
-      		<result sw1="0x63" type="error" >Bad PIN</result>
-      		<result sw1="0x63" sw2="0xc1" type="error" >
+            <result sw1="0x63" type="error" >Bad PIN</result>
+            <result sw1="0x63" sw2="0xc1" type="error" >
             Bad PIN (only two tries left !)
           </result>
-      		<result sw1="0x63" sw2="0xc2" type="error" >
+            <result sw1="0x63" sw2="0xc2" type="error" >
             Bad PIN (only three tries left !)
           </result>
-      		<result sw1="0x69" sw2="0x83" type="error" >
+            <result sw1="0x69" sw2="0x83" type="error" >
             Card seems to be destroyed, this might have the following reasons:
              1) you entered a bad PIN too often
              2) the card is of a new and yet unknown type
           </result>
-				</results>
+                </results>
       </command>
+
+
+
 
       <!-- Modify -->
       <command name="IsoModifyPin" >
         <send>
-	  			<APDU >
-  	    		<ELEM type="word">0x0024</ELEM>
+                <APDU >
+                <ELEM type="word">0x0024</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="pid" type="byte" />
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="oldpin" type="bytes" />
-	    			<ELEM name="newpin" type="bytes" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x63" sw2="0xc0" type="error" >
+                </APDU>
+                <DATA>
+                    <ELEM name="oldpin" type="bytes" />
+                    <ELEM name="newpin" type="bytes" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x63" sw2="0xc0" type="error" >
             Bad PIN (only one try left !)
           </result>
-      		<result sw1="0x63" type="error" >Bad PIN</result>
-      		<result sw1="0x63" sw2="0xc1" type="error" >
+            <result sw1="0x63" type="error" >Bad PIN</result>
+            <result sw1="0x63" sw2="0xc1" type="error" >
             Bad PIN (only two tries left !)
           </result>
-      		<result sw1="0x63" sw2="0xc2" type="error" >
+            <result sw1="0x63" sw2="0xc2" type="error" >
             Bad PIN (only three tries left !)
           </result>
-      		<result sw1="0x69" sw2="0x83" type="error" >
+            <result sw1="0x69" sw2="0x83" type="error" >
             Card seems to be destroyed, this might have the following reasons:
              1) you entered a bad PIN too often
              2) the card is of a new and yet unknown type
           </result>
-				</results>
+                </results>
       </command>
 
       <!-- Manage SE -->
@@ -311,7 +545,7 @@
           the algorith to be used for padding/hashing.
         </DESCR>
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="word">0x0022</ELEM>
             <ELEM type="byte">0x41</ELEM>
             <ELEM name="template" type="byte">
@@ -322,14 +556,14 @@
                   0xb8: cipher
               </DESCR>
             </ELEM>
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <ELEM name="data" type="bytes" />
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
 
-				<results>
-      		<result sw1="0x69" sw2="0x85" type="error" >
+                <results>
+            <result sw1="0x69" sw2="0x85" type="error" >
             Condition of use not satisfied (key algorithm).
           </result>
           <result sw1="0x6a" sw2="0x80" type="error" >
@@ -344,7 +578,7 @@
           <result sw1="0x6f" sw2="0x0a" type="error" >
             Key format list does not match key length.
           </result>
-				</results>
+                </results>
       </command>
 
 
@@ -354,17 +588,17 @@
           This command enciphers the given data.
         </DESCR>
         <send>
-	  			<APDU lr="0" >
+                <APDU lr="0" >
             <ELEM type="dword">0x002a8680</ELEM>
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <ELEM name="data" type="bytes" />
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
 
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="data" type="bytes" />
+                <responses>
+                <response type="success">
+                    <ELEM name="data" type="bytes" />
           </response>
         </responses>
       </command>
@@ -375,18 +609,18 @@
           This command deciphers the given data.
         </DESCR>
         <send>
-	  			<APDU lr="0" >
+                <APDU lr="0" >
             <ELEM type="dword">0x002a8086</ELEM>
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="data" type="bytes" />
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
 
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="data" type="bytes" />
+                <responses>
+                <response type="success">
+                    <ELEM name="data" type="bytes" />
           </response>
         </responses>
       </command>

@@ -39,19 +39,6 @@ LC_CLIENT_RESULT LC_Client_CheckCommandCard(LC_CLIENT *cl,
                                             GWEN_BUFFER *data);
 
 
-GWEN_TYPE_UINT32 LC_Client_SendPerformVerification(LC_CLIENT *cl,
-                                                   LC_CARD *cd,
-                                                   const LC_PININFO *pi);
-LC_CLIENT_RESULT LC_Client_CheckPerformVerification(LC_CLIENT *cl,
-                                                    GWEN_TYPE_UINT32 rid,
-                                                    int *triesLeft);
-LC_CLIENT_RESULT LC_Client_PerformVerification(LC_CLIENT *cl,
-                                               LC_CARD *cd,
-                                               const LC_PININFO *pi,
-                                               int *triesLeft);
-
-
-
 GWEN_TYPE_UINT32 LC_Client_SendSetNotify(LC_CLIENT *cl,
                                          GWEN_TYPE_UINT32 flags);
 LC_CLIENT_RESULT LC_Client_CheckSetNotify(LC_CLIENT *cl,
