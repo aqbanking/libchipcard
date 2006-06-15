@@ -148,7 +148,7 @@ int LCCL_ClientManager_HandleExecCommand(LCCL_CLIENTMANAGER *clm,
   dbCmd=GWEN_DB_GetGroup(dbReq, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
                          "data/command");
   if (!dbCmd) {
-    DBG_ERROR(0, "Command group");
+    DBG_ERROR(0, "No command group");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "Command group missing");
@@ -263,11 +263,11 @@ int LCCL_ClientManager_HandleExecCommand(LCCL_CLIENTMANAGER *clm,
 				    req);
 
   /* do not remove the request now, since it is enqueued */
-  DBG_NOTICE(0,
-             "Enqueued ExecApdu request for card \"%08x\" "
-             "and client \"%08x\"",
-             cardId,
-             clientId);
+  DBG_INFO(0,
+           "Enqueued ExecApdu request for card \"%08x\" "
+           "and client \"%08x\"",
+           cardId,
+           clientId);
   return 0; /* handled */
 }
 
@@ -283,7 +283,7 @@ int LCCL_ClientManager_WorkExecCommand(GWEN_IPC_REQUEST *req) {
   GWEN_DB_NODE *dbDriverResponse;
   LCCMD_COMMANDMANAGER *cmdm;
 
-  DBG_ERROR(0, "Working on ExecCommand request");
+  DBG_DEBUG(0, "Working on ExecCommand request");
 
   rid=GWEN_IpcRequest_GetId(req);
   assert(rid);

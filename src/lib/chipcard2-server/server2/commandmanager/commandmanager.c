@@ -87,13 +87,15 @@ int LCCMD_CommandManager_Init(LCCMD_COMMANDMANAGER *mgr, GWEN_DB_NODE *db) {
     return rv;
   }
 
-  // DEBUG
-  GWEN_XMLNode_WriteFile(mgr->xmlCards, "/tmp/cards.xml",
-                         GWEN_XML_FLAGS_DEFAULT | GWEN_XML_FLAGS_SIMPLE);
+  if (GWEN_Logger_GetLevel(0)>GWEN_LoggerLevel_Debug) {
+    GWEN_XMLNode_WriteFile(mgr->xmlCards, "/tmp/cards.xml",
+			   GWEN_XML_FLAGS_DEFAULT | GWEN_XML_FLAGS_SIMPLE);
+  }
 
   dbT=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
                        "CommandManager");
   if (dbT) {
+    /* nothing special for the command manager for now */
   }
 
   return 0;
@@ -424,7 +426,7 @@ int LCCMD_CommandManager__AddCardTypesByAtr(LCCMD_COMMANDMANAGER *mgr,
   int done;
 
   assert(mgr);
-  DBG_ERROR(0, "Adding card types...");
+  DBG_DEBUG(0, "Adding card types...");
 
   /* get ATR, convert it to hex */
   atr=LCCO_Card_GetAtr(card, &atrLen);
@@ -544,8 +546,8 @@ GWEN_XMLNODE *LCCMD_CommandManager___FindCommand(GWEN_XMLNODE *node,
   GWEN_XMLNODE *cmds;
   GWEN_XMLNODE *n;
 
-  DBG_NOTICE(0, "Searching in \"%s\"",
-             GWEN_XMLNode_GetProperty(node, "name", "(noname)"));
+  DBG_DEBUG(0, "Searching in \"%s\"",
+            GWEN_XMLNode_GetProperty(node, "name", "(noname)"));
 
   cmds=GWEN_XMLNode_FindNode(node,
                              GWEN_XMLNodeTypeTag,

@@ -269,34 +269,24 @@ The configuration files are then expected in /sw/chipcard2-server.
 11. Using the OpenSource Generic CCID Driver
 ============================================
 
-Libchipcard2 1.9.12beta and later has improved support for this GPL licensed
-driver. However, since Libchipcard2 uses this driver directly (i.e. without
-using PC/SC) you will have to compile the driver yourself.
-I suggest using version ccid-0.9.3 or better. To *compile* the driver you need
-libpcsclite (but don't install the pcscd if you want to work with 
-Libchipcard2). After compiling the driver you can safely uninstall
-libpcsclite and still use the driver with libchipcard2.
+Libchipcard2 2.1.5 and later has improved support for this GPL licensed
+driver. It can now use this driver as installed by your package manager
+(tested with Debian's binary packages).
 
-------------------------------------------------------------- X8
-./configure (all in one line)
-  --disable-pcsclite 
-  --enable-usbdropdir=/usr/lib/chipcard2-server/lowlevel/ifd
-  --enable-ccidtwindir=/usr/lib/chipcard2-server/lowlevel/ifd
-make
-make install
-------------------------------------------------------------- X8
-
-This allows parallel installation of the non-PCSC version of the driver and
-the PCSC version. Libchipcard2 always searches for the CCID driver in its
-own lowlevel/ifd folder.
-
-Please note that recent versions of this driver need libpcsclite installed
-at build-time, but not at runtime. So please do this:
+However, if you need to compile the driver yourself some precautions have to
+be taken:
+Recent versions of this driver need libpcsclite installed at build-time, 
+but not at runtime. So please do this:
 - install libcpsclite (and devel-packages, if any)
-- build the driver as described above
+- compile the driver
 - deinstall libpcsclite (because it might want to start the PC/SC daemon which
   unfortunately tries to completely take over control over all card readers it
   can lay its hands on)
+
+It is safe to leave the package libpcsclite on Debian installed, but the
+package containing the PC/SC daemon (pcscd) MUST NOT be installed, because
+that daemon grabs all readers it can find so other daemons (like the quite
+cooperative daemon of Libchipcard2) are unable to use them.
 
 
 
@@ -393,7 +383,7 @@ listed here as well.
 
 
 
-Martin Preuss, Hamburg/Germany, 2006/02/14
+Martin Preuss, Hamburg/Germany, 2006/06/15
 
 
 

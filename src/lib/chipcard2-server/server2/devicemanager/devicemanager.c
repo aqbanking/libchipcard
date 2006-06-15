@@ -2856,8 +2856,9 @@ int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
     GWEN_Buffer_AppendByte(nbuf, '-');
     GWEN_Buffer_AppendString(nbuf, rtype);
     LCDM_Reader_SetReaderName(r, GWEN_Buffer_GetStart(nbuf));
-    DBG_NOTICE(0, "AUTOCONFIG: Created new reader \"%s\" (%04x/%04x)",
-	       GWEN_Buffer_GetStart(nbuf),
+    DBG_NOTICE(0, "AUTOCONFIG: Created new reader \"%s\" (%s/%04x/%04x)",
+               GWEN_Buffer_GetStart(nbuf),
+               LC_Device_BusType_toString(LC_Device_GetBusType(ud)),
 	       LC_Device_GetVendorId(ud),
 	       LC_Device_GetProductId(ud));
     GWEN_Buffer_free(nbuf);

@@ -29,11 +29,6 @@ typedef struct LCM_MONITOR LCM_MONITOR;
 
 
 CHIPCARD_API
-LCM_MONITOR *LCM_Monitor_new();
-CHIPCARD_API
-void LCM_Monitor_free(LCM_MONITOR *mm);
-
-CHIPCARD_API
 LCM_SERVER_LIST *LCM_Monitor_GetServers(const LCM_MONITOR *mm);
 
 

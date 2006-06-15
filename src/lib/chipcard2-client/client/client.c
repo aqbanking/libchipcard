@@ -871,21 +871,43 @@ int LC_Client_ReadConfigFile(LC_CLIENT *cl, const char *fname){
   found=0;
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   if (!fname) {
+    /* try config file in given data folder */
     GWEN_Buffer_Reset(buf);
     GWEN_Buffer_AppendString(buf, cl->dataDir);
     GWEN_Buffer_AppendString(buf, DIRSEP "chipcardc2.conf");
     f=fopen(GWEN_Buffer_GetStart(buf), "r");
     if (f) {
       fclose(f);
+      DBG_NOTICE(LC_LOGDOMAIN,
+                 "Using configuration file [%s]", GWEN_Buffer_GetStart(buf));
       found=1;
     }
 
     if (!found) {
+      /* then try configuration file in system data folder */
       GWEN_Buffer_Reset(buf);
       GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, buf, 1);
       GWEN_Buffer_AppendString(buf, DIRSEP "chipcardc2.conf");
       f=fopen(GWEN_Buffer_GetStart(buf), "r");
       if (f) {
+        fclose(f);
+        DBG_NOTICE(LC_LOGDOMAIN,
+                   "Using configuration file [%s]",
+                   GWEN_Buffer_GetStart(buf));
+        found=1;
+      }
+    }
+
+    if (!found) {
+      /* then try example configuration file in system data folder */
+      GWEN_Buffer_Reset(buf);
+      GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, buf, 1);
+      GWEN_Buffer_AppendString(buf, DIRSEP "chipcardc2.conf.minimal");
+      f=fopen(GWEN_Buffer_GetStart(buf), "r");
+      if (f) {
+        DBG_WARN(LC_LOGDOMAIN,
+                 "No config file found, using minimal example file [%s]",
+                 GWEN_Buffer_GetStart(buf));
         fclose(f);
         found=1;
       }

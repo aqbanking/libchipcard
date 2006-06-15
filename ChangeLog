@@ -2,6 +2,13 @@
 2006/06/15: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - minor changes in secure pin input
+- client and server now use the minimal example configuration files in case no
+  other configuration files are given or found.
+  This makes Libchipcard2 work out-of-the-box with known USB/PCMCIA readers
+  (as suggested by Marcel Mulch from MoneyPenny)
+- decreased verbosity of the server
+- removed LCM_Monitor_new() and LCM_Monitor_free() from the API
+- updated README regarding the free CCID driver
 
 
 2006/05/18: Martin Preuss<martin@libchipcard.de>

@@ -34,6 +34,7 @@
 #include "fullserver_l.h"
 
 #include <gwenhywfar/inetsocket.h>
+#include <gwenhywfar/directory.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,6 +62,12 @@
 
 #ifdef OS_WIN32
 # include <process.h> /* for getpid */
+#endif
+
+#ifdef OS_WIN32
+# define DIRSEP "\\"
+#else
+# define DIRSEP "/"
 #endif
 
 
@@ -119,7 +126,7 @@ ARGUMENTS *Arguments_new() {
   ar->daemonMode=1;
 #endif
   ar->dataDir=LC_DEFAULT_DATADIR;
-  ar->configFile=LC_DEFAULT_DATADIR "/chipcardd2.conf";
+  ar->configFile=0;
   ar->pidFile=LC_DEFAULT_PIDDIR "/chipcardd2.pid";
   ar->logFile=LC_DEFAULT_LOGDIR "/chipcardd2.log";
   ar->logLevel=GWEN_LoggerLevelNotice;
@@ -718,6 +725,8 @@ int server(ARGUMENTS *args) {
   int enabled;
   int loopCount;
   GWEN_DB_NODE *db;
+  GWEN_BUFFER *fbuf;
+  int found;
 
   pidfile=args->pidFile;
 
@@ -960,15 +969,81 @@ int server(ARGUMENTS *args) {
   }
 #endif
 
+
+  found=0;
+  fbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  if (args->configFile) {
+    FILE *f;
+
+    /* try given file first */
+    GWEN_Buffer_AppendString(fbuf, args->configFile);
+    f=fopen(GWEN_Buffer_GetStart(fbuf), "r");
+    if (f) {
+      fclose(f);
+      DBG_NOTICE(0,
+                 "Using configuration file [%s]",
+                 GWEN_Buffer_GetStart(fbuf));
+      found=1;
+    }
+    else {
+      DBG_ERROR(0, "Configuration file [%s] not found",
+                GWEN_Buffer_GetStart(fbuf));
+      GWEN_Buffer_free(fbuf);
+      return RETURNVALUE_SETUP;
+    }
+  }
+
+  if (!found) {
+    FILE *f;
+
+    /* try system configuration file */
+    GWEN_Buffer_Reset(fbuf);
+    GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, fbuf, 1);
+    GWEN_Buffer_AppendString(fbuf, DIRSEP "chipcardd2.conf");
+    f=fopen(GWEN_Buffer_GetStart(fbuf), "r");
+    if (f) {
+      fclose(f);
+      DBG_NOTICE(0,
+                 "Using configuration file [%s]",
+                 GWEN_Buffer_GetStart(fbuf));
+      found=1;
+    }
+  }
+
+  if (!found) {
+    FILE *f;
+
+    /* try minimal example configuration file */
+    GWEN_Buffer_Reset(fbuf);
+    GWEN_Directory_OsifyPath(LC_DEFAULT_DATADIR, fbuf, 1);
+    GWEN_Buffer_AppendString(fbuf, DIRSEP "chipcardd2.conf.minimal");
+    f=fopen(GWEN_Buffer_GetStart(fbuf), "r");
+    if (f) {
+      fclose(f);
+      DBG_WARN(0,
+               "No config file found, using minimal example file [%s]",
+               GWEN_Buffer_GetStart(fbuf));
+      found=1;
+    }
+  }
+
+  if (!found) {
+    DBG_ERROR(0, "No configuration file found");
+    GWEN_Buffer_free(fbuf);
+    return -1;
+  }
+
   db=GWEN_DB_Group_new("config");
   if (GWEN_DB_ReadFile(db,
-                       args->configFile,
+                       GWEN_Buffer_GetStart(fbuf),
                        GWEN_DB_FLAGS_DEFAULT |
                        GWEN_PATH_FLAGS_CREATE_GROUP)) {
     fprintf(stderr,I18N("Could not read configuration file, aborting.\n"));
     GWEN_DB_Group_free(db);
+    GWEN_Buffer_free(fbuf);
     return RETURNVALUE_SETUP;
   }
+  GWEN_Buffer_free(fbuf);
 
   enabled=GWEN_DB_GetIntValue(db, "enabled", 0, 0);
   if (!enabled) {

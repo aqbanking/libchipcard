@@ -20,6 +20,9 @@
 #include <chipcard2-client/client/client.h>
 
 
+LCM_MONITOR *LCM_Monitor_new();
+void LCM_Monitor_free(LCM_MONITOR *mm);
+
 int LCM_Monitor_HandleNotification(LCM_MONITOR *mm,
                                    const LC_NOTIFICATION *n);
 

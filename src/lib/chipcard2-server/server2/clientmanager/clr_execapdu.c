@@ -136,7 +136,7 @@ int LCCL_ClientManager_HandleExecApdu(LCCL_CLIENTMANAGER *clm,
 
   p=GWEN_DB_GetBinValue(dbReq, "data/data", 0, 0, 0, &bs);
   if (!p || !bs) {
-    DBG_ERROR(0, "No data give");
+    DBG_ERROR(0, "No data given");
     LCS_Server_SendErrorResponse(clm->server, rid,
                                  LC_ERROR_INVALID,
                                  "No data given");
@@ -236,7 +236,7 @@ int LCCL_ClientManager_WorkExecApdu(GWEN_IPC_REQUEST *req) {
   GWEN_IPC_REQUEST *dreq;
   GWEN_DB_NODE *dbDriverResponse;
 
-  DBG_ERROR(0, "Working on ExecApdu request");
+  DBG_DEBUG(0, "Working on ExecApdu request");
 
   rid=GWEN_IpcRequest_GetId(req);
   assert(rid);
@@ -323,7 +323,7 @@ int LCCL_ClientManager_WorkExecApdu(GWEN_IPC_REQUEST *req) {
 
 
 int LCCL_ClientManager_WorkCardCommand(GWEN_IPC_REQUEST *req) {
-  DBG_ERROR(0, "Working on CardCommand request");
+  DBG_DEBUG(0, "Working on CardCommand request");
   return 1; /* nothing done */
 }
 

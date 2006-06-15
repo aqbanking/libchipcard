@@ -278,7 +278,7 @@ int LCS_LockManager_CheckAccess(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid) {
   assert(lm);
 
   if (lm->currentRequest) {
-    DBG_ERROR(0, "%s currently locked by \"%08x\" (wanted: %08x)",
+    DBG_DEBUG(0, "%s currently locked by \"%08x\" (wanted: %08x)",
               lm->what,
               LCS_LockRequest_GetRequestId(lm->currentRequest),
               rqid);
