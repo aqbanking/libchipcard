@@ -24,8 +24,7 @@ appdata_DATA=\
   processorcard.xml \
   starcos.xml \
   starcos-hvb.xml \
-  starcos-vr.xml \
-  ecard.xml
+  starcos-vr.xml
 
 MAINTAINERCLEANFILES=Makefile.in
 
