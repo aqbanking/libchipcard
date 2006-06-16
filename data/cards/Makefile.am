@@ -19,8 +19,7 @@ carddata_DATA=\
   kvk.xml \
   memorycard.xml \
   processorcard.xml \
-  starcos.xml \
-  ecard.xml
+  starcos.xml
 
 MAINTAINERCLEANFILES=Makefile.in
 
