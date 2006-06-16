@@ -1,5 +1,15 @@
 
 ===========================================================================
+                 Libchipcard2 2.1.5 (2006/06/15)
+===========================================================================
+
+This version no longer requires the kernel sources to provide support for
+PCMCIA autoconfiguration. It also no longer needs a specially compiled
+version of libccid to work with that driver, the normal binary packages
+suffice.
+
+
+===========================================================================
                  Libchipcard2 2.1.4 (2006/05/03)
 ===========================================================================
 

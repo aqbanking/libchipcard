@@ -18,6 +18,10 @@
 #include <gwenhywfar/keyspec.h>
 #include <gwenhywfar/crypt.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #define LC_STARCOS_KEY_STATUS_ACTIVE            0x10
 #define LC_STARCOS_KEY_STATUS_INACTIVE_CERT     0x0a
@@ -147,6 +151,10 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf);
 
 
 /*@}*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CHIPCARD_CARD_STARCOS_H */
 

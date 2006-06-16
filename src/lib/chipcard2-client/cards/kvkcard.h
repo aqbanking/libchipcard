@@ -16,6 +16,11 @@
 
 #include <chipcard2-client/client/card.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /** @defgroup chipcardc_cards_kvk German Health Insurance Cards (KVK)
  * @ingroup chipcardc_cards
  *
@@ -77,6 +82,10 @@ GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card);
 /*@}*/
 
 /*@}*/ /* defgroup */
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* CHIPCARD_CARD_KVKCARD_P_H */

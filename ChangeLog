@@ -1,4 +1,24 @@
 
+2006/06/16: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added missing defines for C++
+
+
+===========================================================================
+MARK: released Libchipcard2 2.1.6 (2006/06/16)
+===========================================================================
+
+
+2006/06/16: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed some bugs which prevented Libchipcard2 from compiling on some systems
+
+
+===========================================================================
+MARK: released Libchipcard2 2.1.5 (2006/06/16)
+===========================================================================
+
+
 2006/06/15: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - minor changes in secure pin input

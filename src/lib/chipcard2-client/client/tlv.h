@@ -18,6 +18,9 @@
 #include <gwenhywfar/misc.h>
 #include <chipcard2/chipcard2.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct LC_TLV LC_TLV;
 
@@ -49,6 +52,9 @@ CHIPCARD_API
 unsigned int LC_TLV_GetTagSize(const LC_TLV *tlv);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* CHIPCARD_CLIENT_TLV_H */

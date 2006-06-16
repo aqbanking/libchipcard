@@ -8,7 +8,6 @@
 #include <chipcard2-client/cards/kvkcard.h>
 #include <chipcard2-client/cards/starcos.h>
 #include <chipcard2-client/cards/geldkarte.h>
-#include <chipcard2-client/cards/ecard.h>
 #include <chipcard2-client/fs/fs.h>
 #include <chipcard2-client/fs/fsfile.h>
 #include <gwenhywfar/logger.h>

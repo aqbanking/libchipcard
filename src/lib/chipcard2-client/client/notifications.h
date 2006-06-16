@@ -19,6 +19,10 @@
 #include <gwenhywfar/list2.h>
 #include <chipcard2/chipcard2.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef struct LC_NOTIFICATION LC_NOTIFICATION;
 
@@ -40,6 +44,9 @@ CHIPCARD_API
 GWEN_DB_NODE *LC_Notification_GetData(const LC_NOTIFICATION *n);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* CHIPCARD_CLIENT_NOTIFICATIONS_H */
