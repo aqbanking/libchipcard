@@ -1,6 +1,122 @@
 
 <apps>
+
   <app name="geldkarte">
+  
+    <formats>
+
+      <format name="blog_25">
+        <ELEM name="status" type="byte" >
+          <DESCR>
+            7 6 5 4 3 2 1 0 Meaning
+            x x x           Command: bits 3-1 of APDU INS
+            0 0 0            LADEN
+            0 0 1            ENTLADEN
+            0 1 0            ABBUCHEN
+            0 1 1            RUECKBUCHEN
+            1 x x            RFU
+                  x x x     Command variant (bits 7-5 of APDU P1)
+                        x   Secure messaging
+                        0    without secure messaging
+                        1    with secure messaging
+                          x written file at command end
+                          0  first file written
+                          1  last file written
+            Init value is 0x71.
+          </DESCR>
+        </ELEM>
+        <ELEM name="bseq" type="word" />
+        <ELEM name="lseq" type="word" />
+        <ELEM name="value" type="bcd" size="3" />
+        <ELEM name="merchantId" type="bytes" size="10" />
+        <ELEM name="hseq" type="dword" />
+        <ELEM name="sseq" type="dword" />
+        <ELEM name="loaded" type="bcd" size="3" />
+        <ELEM name="date" type="bcd" size="4">
+          <DESCR>JJJJMMTT</DESCR>
+        </ELEM>
+        <ELEM name="time" type="bcd" size="3">
+          <DESCR>HHMMSS</DESCR>
+        </ELEM>
+        <ELEM name="KID" type="byte" minnum="0" />
+      </format>
+      
+      <format name="blog_24">
+        <ELEM name="status" type="byte" >
+          <DESCR>
+            7 6 5 4 3 2 1 0 Meaning
+            x x x           Command: bits 3-1 of APDU INS
+            0 0 0            LADEN
+            0 0 1            ENTLADEN
+            0 1 0            ABBUCHEN
+            0 1 1            RUECKBUCHEN
+            1 x x            RFU
+                  x x x     Command variant (bits 7-5 of APDU P1)
+                        x   Secure messaging
+                        0    without secure messaging
+                        1    with secure messaging
+                          x written file at command end
+                          0  first file written
+                          1  last file written
+            Init value is 0x71.
+          </DESCR>
+        </ELEM>
+        <ELEM name="bseq" type="word" />
+        <ELEM name="lseq" type="word" />
+        <ELEM name="value" type="bcd" size="3" />
+        <ELEM name="merchantId" type="bytes" size="10" />
+        <ELEM name="hseq" type="dword" />
+        <ELEM name="sseq" type="dword" />
+        <ELEM name="loaded" type="bcd" size="3" />
+        <ELEM name="date" type="bcd" size="3">
+          <DESCR>JJMMTT</DESCR>
+        </ELEM>
+        <ELEM name="time" type="bcd" size="3">
+          <DESCR>HHMMSS</DESCR>
+        </ELEM>
+        <ELEM name="KID" type="byte" minnum="0" />
+      </format>
+      
+      
+      <format name="llog_33">
+        <ELEM name="status" type="byte" >
+          <DESCR>
+            7 6 5 4 3 2 1 0 Meaning
+            x x x           Command: bits 3-1 of APDU INS
+            0 0 0            LADEN
+            0 0 1            ENTLADEN
+            0 1 0            ABBUCHEN
+            0 1 1            RUECKBUCHEN
+            1 x x            RFU
+                  x x x     Command variant (bits 7-5 of APDU P1)
+                        x   Secure messaging
+                        0    without secure messaging
+                        1    with secure messaging
+                          x written file at command end
+                          0  first file written
+                          1  last file written
+            Init value is 0x13.
+          </DESCR>
+        </ELEM>
+        <ELEM name="lseq" type="word" />
+        <ELEM name="retryCount" type="byte" />
+        <ELEM name="value" type="bcd" size="3" />
+        <ELEM name="loaded" type="bcd" size="3" />
+        <ELEM name="centerId" type="bcd" size="3" />
+        <ELEM name="terminalId" type="bcd" size="8" />
+        <ELEM name="traceId" type="bcd" size="3" />
+        <ELEM name="date" type="bcd" size="4">
+          <DESCR>JJJJMMTT</DESCR>
+        </ELEM>
+        <ELEM name="time" type="bcd" size="3">
+          <DESCR>HHMMSS</DESCR>
+        </ELEM>
+        <ELEM name="bseq" type="word" />
+      </format>
+      
+    </formats>
+  
+  
     <files>
       <ef name="EF_ID" sid="0x0003"
           type="record" mode="linear" 
@@ -158,7 +274,7 @@
             <ELEM name="sseq" type="dword" />
             <ELEM name="loaded" type="bcd" size="3" />
             <ELEM name="date" type="bcd" size="4">
-              <DESCR>JJJJ MM TT</DESCR>
+              <DESCR>JJJJMMTT</DESCR>
             </ELEM>
             <ELEM name="time" type="bcd" size="3">
               <DESCR>HHMMSS</DESCR>

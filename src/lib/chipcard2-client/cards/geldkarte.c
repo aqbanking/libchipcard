@@ -468,6 +468,9 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
   ctxCount=0;
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   for (i=1; i<16; i++) {
+    unsigned int len;
+    const char *formatName;
+
     DBG_INFO(LC_LOGDOMAIN, "Reading BLOG record %d", i);
     GWEN_Buffer_Reset(buf);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
@@ -476,8 +479,20 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
       break;
     dbCurr=GWEN_DB_Group_new("blog");
     GWEN_Buffer_Rewind(buf);
-    if (LC_Card_ParseRecord(card, idx?idx:i, buf, dbCurr)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx?idx:i);
+
+    len=GWEN_Buffer_GetUsedBytes(buf);
+    if (len==24)
+      formatName="blog_24";
+    else if (len==25)
+      formatName="blog_25";
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "Invalid size of BLOG (%d)", len);
+      GWEN_Buffer_free(buf);
+      return LC_Client_ResultDataError;
+    }
+
+    if (LC_Card_ParseData(card, formatName, buf, dbCurr)) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", i);
       GWEN_DB_Group_free(dbCurr);
     }
     else {
@@ -578,16 +593,19 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
     d=GWEN_DB_GetCharValue(dbCurr, "date", 0, 0);
     t=GWEN_DB_GetCharValue(dbCurr, "time", 0, 0);
     if (d && t) {
-      if (strcmp(d, "00000000")!=0) {
+      if (strcmp(d, "00000000")!=0 &&
+          strcmp(d, "000000")!=0) {
 	if (strcmp(t, "000000")==0) {
 	  GWEN_BUFFER *dbuf;
 	  GWEN_TIME *ti;
 
 	  dbuf=GWEN_Buffer_new(0, 9, 0, 1);
-	  GWEN_Buffer_AppendString(dbuf, d);
-	  ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf),
-				  "YYYYMMDD");
-	  if (ti) {
+          GWEN_Buffer_AppendString(dbuf, d);
+          if (strlen(d)<6)
+            ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf), "YYMMDD");
+          else
+            ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf), "YYYYMMDD");
+          if (ti) {
 	    LC_GeldKarte_BLog_SetTime(blog, ti);
 	    GWEN_Time_free(ti);
 	  }
@@ -602,8 +620,12 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
 	  dbuf=GWEN_Buffer_new(0, 15, 0, 1);
 	  GWEN_Buffer_AppendString(dbuf, d);
 	  GWEN_Buffer_AppendString(dbuf, t);
-	  ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf),
-				  "YYYYMMDDhhmmss");
+          if (strlen(d)<6)
+            ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf),
+                                    "YYMMDDhhmmss");
+          else
+            ti=GWEN_Time_fromString(GWEN_Buffer_GetStart(dbuf),
+                                    "YYYYMMDDhhmmss");
 	  if (ti) {
 	    LC_GeldKarte_BLog_SetTime(blog, ti);
 	    GWEN_Time_free(ti);

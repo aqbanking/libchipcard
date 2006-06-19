@@ -1,4 +1,11 @@
 
+2006/06/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed geldkarte.c: Obviously some newer cards only store 24 bytes in 
+  a EF_BLOG record, in which case the date is only stored as YYMMDD instead
+  of YYYYMMDD (as defined by the GeldKarte specs I have).
+
+
 2006/06/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added missing defines for C++
