@@ -983,6 +983,106 @@ int test28(int argc, char **argv) {
 
 
 int test29(int argc, char **argv) {
+  LC_CLIENT *cl;
+  GWEN_DB_NODE *db;
+  LC_CARD *card;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *mbuf;
+  GWEN_DB_NODE *dbBlog;
+
+  db=GWEN_DB_Group_new("client");
+  if (GWEN_DB_ReadFile(db,
+                       "chipcardc.conf",
+                       GWEN_DB_FLAGS_DEFAULT |
+                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+    fprintf(stderr, "ERROR: Could not read file\n");
+    return 1;
+  }
+
+  cl=LC_Client_new("lctest", "0.1", 0);
+  if (LC_Client_ReadConfig(cl, db)) {
+    fprintf(stderr, "Error reading configuration.\n");
+    LC_Client_free(cl);
+    return 1;
+  }
+
+  GWEN_DB_Group_free(db); db=0;
+
+  fprintf(stderr, "INFO: Sending StartWait\n");
+  res=LC_Client_StartWait(cl, 0, 0);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "INFO: Waiting for card\n");
+  card=LC_Client_WaitForNextCard(cl, 30000);
+  if (!card) {
+    fprintf(stderr, "ERROR: No card found.\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: We got this card:\n");
+  LC_Card_Dump(card, stderr, 2);
+
+  if (LC_GeldKarte_ExtendCard(card)) {
+    fprintf(stderr, "Could not extend card as Geldkarte\n");
+    return 2;
+  }
+
+  fprintf(stderr, "INFO: Opening card\n");
+  res=LC_Card_Open(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  fprintf(stderr, "Stopping wait\n");
+  res=LC_Client_StopWait(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  res=LC_ProcessorCard_SelectEF(card, "EF_BLOG");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  fprintf(stderr, "Reading record...\n");
+  mbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+			    1, mbuf);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+  GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf),
+		       GWEN_Buffer_GetUsedBytes(mbuf), stderr, 2);
+  dbBlog=GWEN_DB_Group_new("db");
+  GWEN_Buffer_Rewind(mbuf);
+  if (LC_Card_ParseRecord(card, 1, mbuf, dbBlog)) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", 1);
+    GWEN_DB_Group_free(dbBlog);
+    return 2;
+  }
+  GWEN_DB_Dump(dbBlog, stderr, 2);
+
+
+  fprintf(stderr, "INFO: Closing card\n");
+  res=LC_Card_Close(card);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Wait timed out.\n");
+    return 2;
+  }
+  fprintf(stderr, "Response was %d\n", res);
+
+  LC_Client_free(cl);
   return 0;
 }
 
