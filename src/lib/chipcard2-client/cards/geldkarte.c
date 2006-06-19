@@ -481,9 +481,9 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
     GWEN_Buffer_Rewind(buf);
 
     len=GWEN_Buffer_GetUsedBytes(buf);
-    if (len==24)
+    if (len==0x24)
       formatName="blog_24";
-    else if (len==25)
+    else if (len==0x25)
       formatName="blog_25";
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Invalid size of BLOG (%d)", len);
