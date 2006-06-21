@@ -78,7 +78,7 @@
       </format>
       
       
-      <format name="llog_33">
+      <format name="llog_21">
         <ELEM name="status" type="byte" >
           <DESCR>
             7 6 5 4 3 2 1 0 Meaning

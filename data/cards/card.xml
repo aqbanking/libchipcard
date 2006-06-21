@@ -23,7 +23,6 @@
       <command name="IsoWriteBinary" >
         <send>
           <APDU>
-            <!-- FIXME: this is UpdateBinary, need to fix that! -->
             <ELEM type="word">0x00d0</ELEM>
             <ELEM name="offset" type="word" />
           </APDU>
@@ -44,7 +43,7 @@
       <command name="IsoUpdateBinary" >
         <send>
           <APDU>
-            <ELEM type="word">0x00d0</ELEM>
+            <ELEM type="word">0x00d6</ELEM>
             <ELEM name="offset" type="word" />
           </APDU>
           <DATA>
@@ -61,20 +60,126 @@
         </results>
       </command>
 
-<!--
-      
+
       <command name="IsoEraseBinary" >
         <send>
-          <APDU lr="0" >
-            <ELEM type="dword">0x11223344</ELEM>
+          <APDU>
+            <ELEM type="word">0x000e</ELEM>
+            <ELEM name="offset" type="word" />
           </APDU>
           <DATA>
-            <ELEM type="word">0x1122</ELEM>
+            <ELEM name="data" type="bytes" />
           </DATA>
         </send>
+        <results>
+          <result sw1="0x61" type="success" >
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x69" sw2="0x86" type="error" >
+            No EF selected (internal error)
+          </result>
+        </results>
       </command>
-      
 
+
+      <command name="IsoVerifyPin_Fpin2" >
+        <send>
+          <APDU >
+            <ELEM type="word">0x0020</ELEM>
+            <ELEM type="byte">0x00</ELEM>
+            <ELEM name="pid" type="byte" />
+          </APDU>
+          <DATA>
+            <ELEM name="pin" type="bytes" size="8"/>
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x63" sw2="0xc0" type="error" >
+            Bad PIN (only one try left !)
+          </result>
+          <result sw1="0x63" type="error" >Bad PIN</result>
+          <result sw1="0x63" sw2="0xc1" type="error" >
+            Bad PIN (only two tries left !)
+          </result>
+          <result sw1="0x63" sw2="0xc2" type="error" >
+            Bad PIN (only three tries left !)
+          </result>
+          <result sw1="0x69" sw2="0x83" type="error" >
+            Card seems to be destroyed, this might have the following reasons:
+             1) you entered a bad PIN too often
+             2) the card is of a new and yet unknown type
+          </result>
+        </results>
+      </command>
+
+
+      <command name="IsoVerifyPin_Ascii" >
+        <send>
+          <APDU >
+            <ELEM type="word">0x0020</ELEM>
+            <ELEM type="byte">0x00</ELEM>
+            <ELEM name="pid" type="byte" />
+          </APDU>
+          <DATA>
+            <ELEM name="pin" type="bytes" 
+                  minsize="4" maxsize="12" 
+                  filler="32" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x63" sw2="0xc0" type="error" >
+            Bad PIN (only one try left !)
+          </result>
+          <result sw1="0x63" type="error" >Bad PIN</result>
+          <result sw1="0x63" sw2="0xc1" type="error" >
+            Bad PIN (only two tries left !)
+          </result>
+          <result sw1="0x63" sw2="0xc2" type="error" >
+            Bad PIN (only three tries left !)
+          </result>
+          <result sw1="0x69" sw2="0x83" type="error" >
+            Card seems to be destroyed, this might have the following reasons:
+             1) you entered a bad PIN too often
+             2) the card is of a new and yet unknown type
+          </result>
+        </results>
+      </command>
+
+
+      <command name="IsoVerifyPin_Bcd" >
+        <send>
+          <APDU >
+            <ELEM type="word">0x0020</ELEM>
+            <ELEM type="byte">0x00</ELEM>
+            <ELEM name="pid" type="byte" />
+          </APDU>
+          <DATA>
+            <ELEM name="pin" type="bytes" 
+                  minsize="4" maxsize="8" filler="0" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x63" sw2="0xc0" type="error" >
+            Bad PIN (only one try left !)
+          </result>
+          <result sw1="0x63" type="error" >Bad PIN</result>
+          <result sw1="0x63" sw2="0xc1" type="error" >
+            Bad PIN (only two tries left !)
+          </result>
+          <result sw1="0x63" sw2="0xc2" type="error" >
+            Bad PIN (only three tries left !)
+          </result>
+          <result sw1="0x69" sw2="0x83" type="error" >
+            Card seems to be destroyed, this might have the following reasons:
+             1) you entered a bad PIN too often
+             2) the card is of a new and yet unknown type
+          </result>
+        </results>
+      </command>
+
+
+      
+<!--
       <command name="IsoReadRecord" >
         <send>
           <APDU lr="0" >

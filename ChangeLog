@@ -1,4 +1,9 @@
 
+2006/06/21: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in code for command IsoVerifyPin
+
+
 2006/06/19: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed geldkarte.c: Obviously some newer cards only store 24 bytes in 

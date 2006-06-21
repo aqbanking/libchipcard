@@ -78,85 +78,85 @@
   
     <commands>
 
-    	<!-- Select DF by 16-bit-id -->
+        <!-- Select DF by 16-bit-id -->
       <command name="SelectDFS" >
         <send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="dword">0x00a4000c</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="word" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-    	</command>
+                <APDU lr="0" >
+                <ELEM type="dword">0x00a4000c</ELEM>
+                </APDU>
+                <DATA>
+                    <ELEM name="fileId" type="word" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+                </results>
+        </command>
 
-    	<!-- Select DF by application-id -->
+        <!-- Select DF by application-id -->
       <command name="SelectDFL" >
         <send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="dword">0x00a4040c</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="bytes" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-    	</command>
+                <APDU lr="0" >
+                <ELEM type="dword">0x00a4040c</ELEM>
+                </APDU>
+                <DATA>
+                    <ELEM name="fileId" type="bytes" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+                </results>
+        </command>
 
       <!-- Select EF by id -->
       <command name="SelectEFS" >
         <send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="dword">0x00a4020c</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="word" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-    	</command>
+                <APDU lr="0" >
+                <ELEM type="dword">0x00a4020c</ELEM>
+                </APDU>
+                <DATA>
+                    <ELEM name="fileId" type="word" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+                </results>
+        </command>
 
       <!-- Select Master File -->
       <command name="SelectMF" >
-      	<send>
-	  			<APDU lr="0" >
-  	    		<ELEM type="dword">0x00a4000c</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM type="word">0x3f00</ELEM>
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-    	</command>
+        <send>
+                <APDU lr="0" >
+                <ELEM type="dword">0x00a4000c</ELEM>
+                </APDU>
+                <DATA>
+                    <ELEM type="word">0x3f00</ELEM>
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+                </results>
+        </command>
 
       <!-- Get PIN Status-->
       <command name="PinStatus" >
         <send>
-	  			<APDU lr="0" >
+                <APDU lr="0" >
             <ELEM type="word">0x80f2</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="pid" type="byte" />
-	  			</APDU>
-				</send>
+                </APDU>
+                </send>
         <results>
-      		<result sw1="0x69" sw2="0x83" type="error" >
+            <result sw1="0x69" sw2="0x83" type="error" >
             Card seems to be destroyed, this might have the following reasons:
              1) you entered a bad PIN too often
              2) the card is of a new and yet unknown type
           </result>
         </results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="status" type="byte" size="1" >
+                <responses>
+                <response type="success">
+                    <ELEM name="status" type="byte" size="1" >
               <DESCR>
                 Left nibble : maxmimum number of errors
                 Right nibble: current number of errors
@@ -169,108 +169,108 @@
       <!-- Verify PIN -->
       <command name="VerifyPin" >
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="word">0x0020</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="pid" type="byte" />
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="pin" type="bytes" size="8" filler="32" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x63" sw2="0xc0" type="error" >
+                </APDU>
+                <DATA>
+                    <ELEM name="pin" type="bytes" size="8" filler="32" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x63" sw2="0xc0" type="error" >
             Bad PIN (only one try left !)
           </result>
-      		<result sw1="0x63" type="error" >Bad PIN</result>
-      		<result sw1="0x63" sw2="0xc1" type="error" >
+            <result sw1="0x63" type="error" >Bad PIN</result>
+            <result sw1="0x63" sw2="0xc1" type="error" >
             Bad PIN (only two tries left !)
           </result>
-      		<result sw1="0x63" sw2="0xc2" type="error" >
+            <result sw1="0x63" sw2="0xc2" type="error" >
             Bad PIN (only three tries left !)
           </result>
-      		<result sw1="0x69" sw2="0x83" type="error" >
+            <result sw1="0x69" sw2="0x83" type="error" >
             Card seems to be destroyed, this might have the following reasons:
              1) you entered a bad PIN too often
              2) the card is of a new and yet unknown type
           </result>
-      		<result sw1="0x69" sw2="0x85" type="error" >
+            <result sw1="0x69" sw2="0x85" type="error" >
             PIN is still initial PIN, please change it first.
           </result>
-      		<result sw1="0x6a" sw2="0x88" type="error" >
+            <result sw1="0x6a" sw2="0x88" type="error" >
             Unknown PIN id.
           </result>
-				</results>
+                </results>
       </command>
 
 
       <!-- Modify PIN -->
       <command name="ModifyPin" >
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="word">0x0024</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="pid" type="byte" />
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="oldpin" type="bytes" size="8" filler="32" />
-	    			<ELEM name="newpin" type="bytes" size="8" filler="32" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x63" sw2="0xc0" type="error" >
+                </APDU>
+                <DATA>
+                    <ELEM name="oldpin" type="bytes" size="8" filler="32" />
+                    <ELEM name="newpin" type="bytes" size="8" filler="32" />
+                </DATA>
+                </send>
+                <results>
+            <result sw1="0x63" sw2="0xc0" type="error" >
             Bad PIN (only one try left !)
           </result>
-      		<result sw1="0x63" type="error" >Bad PIN</result>
-      		<result sw1="0x63" sw2="0xc1" type="error" >
+            <result sw1="0x63" type="error" >Bad PIN</result>
+            <result sw1="0x63" sw2="0xc1" type="error" >
             Bad PIN (only two tries left !)
           </result>
-      		<result sw1="0x63" sw2="0xc2" type="error" >
+            <result sw1="0x63" sw2="0xc2" type="error" >
             Bad PIN (only three tries left !)
           </result>
-      		<result sw1="0x69" sw2="0x83" type="error" >
+            <result sw1="0x69" sw2="0x83" type="error" >
             Card seems to be destroyed, this might have the following reasons:
              1) you entered a bad PIN too often
              2) the card is of a new and yet unknown type
           </result>
-      		<result sw1="0x69" sw2="0x85" type="error" >
+            <result sw1="0x69" sw2="0x85" type="error" >
             PIN is still initial PIN, please change it first.
           </result>
-      		<result sw1="0x6a" sw2="0x88" type="error" >
+            <result sw1="0x6a" sw2="0x88" type="error" >
             Unknown PIN id.
           </result>
-				</results>
+                </results>
       </command>
 
 
       <!-- Generate Keypair -->
       <command name="GenerateKeyPair" >
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="word">0x0046</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="kid" type="byte" />
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="bits" type="word" />
-	  			</DATA>
-				</send>
+                </APDU>
+                <DATA>
+                    <ELEM name="bits" type="word" />
+                </DATA>
+                </send>
 
-				<results>
-      		<result sw1="0x69" sw2="0x82" type="error" >
+                <results>
+            <result sw1="0x69" sw2="0x82" type="error" >
             Security status not satisfied (please verify E/G PIN before).
           </result>
-      		<result sw1="0x69" sw2="0x85" type="error" >
+            <result sw1="0x69" sw2="0x85" type="error" >
             Condition of use not satisfied.
           </result>
           <result sw1="0x6a" sw2="0x80" type="error" >
             Key length must be divisible by 8.
           </result>
-				</results>
+                </results>
 
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="modulus" type="bytes" />
+                <responses>
+                <response type="success">
+                    <ELEM name="modulus" type="bytes" />
           </response>
         </responses>
       </command>
@@ -295,27 +295,27 @@
           execution.
         </DESCR>
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="word">0xf047</ELEM>
             <ELEM name="srcKid" type="byte" />
             <ELEM name="destKid" type="byte" />
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <FORMAT type="KeyLogDescr" name="descriptor" />
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
 
-				<results>
-      		<result sw1="0x69" sw2="0x82" type="error" >
+                <results>
+            <result sw1="0x69" sw2="0x82" type="error" >
             Security status not satisfied (please verify E/G PIN before).
           </result>
-      		<result sw1="0x69" sw2="0x85" type="error" >
+            <result sw1="0x69" sw2="0x85" type="error" >
             Condition of use not satisfied.
           </result>
           <result sw1="0x6a" sw2="0x80" type="error" >
             Bad descriptor data.
           </result>
-				</results>
+                </results>
       </command>
 
 
@@ -326,13 +326,13 @@
           hash value is 20 for RIPEMD-160 (and maybe 16 for the others?).
         </DESCR>
         <send>
-	  			<APDU >
+                <APDU >
             <ELEM type="dword">0x002a9081</ELEM>
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <ELEM name="data" type="bytes" minsize="16" maxsize="20"/>
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
       </command>
 
 
@@ -342,14 +342,14 @@
           This command signs the hash value sent to the card via PutHash.
         </DESCR>
         <send>
-	  			<APDU lr="0" >
+                <APDU lr="0" >
             <ELEM type="dword">0x002a9e9a</ELEM>
-	  			</APDU>
-				</send>
+                </APDU>
+                </send>
 
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="signature" type="bytes" />
+                <responses>
+                <response type="success">
+                    <ELEM name="signature" type="bytes" />
           </response>
         </responses>
       </command>
@@ -362,13 +362,13 @@
           signature of the hash sent to the card via PutHash.
         </DESCR>
         <send>
-	  			<APDU>
+                <APDU>
             <ELEM type="dword">0x002a00a8</ELEM>
-	  			</APDU>
-	  			<DATA>
+                </APDU>
+                <DATA>
             <ELEM name="signature" type="bytes" />
-	  			</DATA>
-				</send>
+                </DATA>
+                </send>
       </command>
 
 
@@ -378,13 +378,13 @@
           This command returns a random value.
         </DESCR>
         <send>
-	  			<APDU>
+                <APDU>
             <ELEM type="dword">0x00840000</ELEM>
-	  			</APDU>
-				</send>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="random" type="bytes" />
+                </APDU>
+                </send>
+                <responses>
+                <response type="success">
+                    <ELEM name="random" type="bytes" />
           </response>
         </responses>
       </command>
