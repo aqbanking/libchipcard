@@ -1,4 +1,11 @@
 
+2006/07/10: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- stronger recommendation for LibSysFS (still optional but strongly 
+  recommended): We now use it primarily to detect ttyUSB devices and fallback 
+  to proc files
+
+
 2006/06/21: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in code for command IsoVerifyPin

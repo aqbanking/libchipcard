@@ -186,6 +186,13 @@ if test "$have_libsysfs" == "yes" ; then
     all_includes="$all_includes $libsysfs_includes"
     all_libraries="$all_libraries $libsysfs_libs"
     AC_DEFINE(USE_LIBSYSFS, 1, [whether libsysfs is to be used])
+else
+    AC_MSG_WARN([
+*** LibSysFS not found, autoconfiguration of PCMCIA and UsbTTY devices will 
+*** not be available.
+*** If you are using those devices under Linux you really should consider 
+*** installing libSysFS.
+*** You can get it from http://linux-diag.sourceforge.net/Sysfsutils.html.])
 fi
 
 

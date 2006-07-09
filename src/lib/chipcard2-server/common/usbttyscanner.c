@@ -39,14 +39,24 @@ static int lc_usbttyscanner_sysfs=0;
 
 LC_DEVSCANNER *LC_UsbTtyScanner_new() {
   LC_DEVSCANNER *sc;
-  FILE *f;
 #ifdef USE_LIBSYSFS
   char sysfspath[256];
+#else
+  FILE *f=0;
 #endif
 
   sc=LC_DevScanner_new();
   LC_DevScanner_SetReadDevsFn(sc, LC_UsbTtyScanner_ReadDevs);
 
+#ifdef USE_LIBSYSFS
+  if (!sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
+    lc_usbttyscanner_sysfs=1;
+    DBG_NOTICE(0, "Will use sysfs to scan for ttyUSB devices");
+  }
+  else {
+    DBG_ERROR(0, "sysfs error: Unable to scan for ttyUSB devices");
+  }
+#else
   f=fopen(LC_USBTTY_PROC_TTY_DRIVER_USBSERIAL_FILE, "r");
   if (f) {
     fclose(f);
@@ -62,19 +72,13 @@ LC_DEVSCANNER *LC_UsbTtyScanner_new() {
       DBG_NOTICE(0,
                  "USB: Using proc file for kernel >=2.6 for ttyUSB support");
     }
-#ifdef USE_LIBSYSFS
-    else {
-      if (! sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
-        lc_usbttyscanner_sysfs = 1;
-        DBG_NOTICE(0, "Will use sysfs to scan for ttyUSB devices")
-      }
-    }
+  }
+  if (!f) {
+    DBG_ERROR(0, "Unable to open USB-serial file \"%s\": %s",
+	      lc_usbttyscanner_filename,
+	      strerror(errno));
+  }
 #endif
-  }
-  if (!f && !lc_usbttyscanner_sysfs) {
-    DBG_ERROR(0, "Unable to open USB-serial file: %s",
-              strerror(errno));
-  }
 
   return sc;
 }
