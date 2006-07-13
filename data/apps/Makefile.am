@@ -9,8 +9,7 @@ EXTRA_DIST=\
   processorcard.xml \
   starcos.xml \
   starcos-hvb.xml \
-  starcos-vr.xml \
-  ecard.xml
+  starcos-vr.xml
 
 
 appdatadir=@libchipcard2c_config_am@/apps

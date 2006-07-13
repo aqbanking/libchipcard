@@ -7,8 +7,7 @@ EXTRA_DIST=\
   kvk.xml \
   memorycard.xml \
   processorcard.xml \
-  starcos.xml \
-  ecard.xml
+  starcos.xml
 
 carddatadir=@libchipcard2s_config_am@/cards
 carddata_DATA=\

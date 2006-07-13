@@ -1,5 +1,22 @@
 
 ===========================================================================
+                 Libchipcard2 2.1.7 (2006/06/15)
+===========================================================================
+
+This version allows readers without a keyboard to verify the pin of a
+chipcard again. It also fixes a problem with newer GeldKarte cards and now
+uses LibSysFS primarily to detect /dev/ttyUSB devices.
+
+
+===========================================================================
+                 Libchipcard2 2.1.6 (2006/06/16)
+===========================================================================
+
+This version fixes a bug in the build system of 2.1.5 which prevented some
+users from compiling Libchipcard2.
+
+
+===========================================================================
                  Libchipcard2 2.1.5 (2006/06/15)
 ===========================================================================
 
