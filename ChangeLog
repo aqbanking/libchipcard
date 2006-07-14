@@ -1,4 +1,10 @@
 
+2006/07/14: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- RPM: Make the OpenSC plugin a separate RPM package
+- reader driver for OpenSC now compiles with OpenSC 0.11.x as well
+
+
 ===========================================================================
 MARK: released Libchipcard2 2.1.7 (2006/07/13)
 ===========================================================================

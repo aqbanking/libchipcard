@@ -141,14 +141,14 @@ void chipcard2__showError(LC_CARD *card,
 
 
 
-static int chipcard2_transmit(struct sc_reader *reader,
-			      struct sc_slot_info *slot,
-			      const u8 *sendbuf,
-			      size_t sendsize,
-			      u8 *recvbuf,
-			      size_t *recvsize,
-			      int control){
-  chipcard2_reader_data *priv = GET_PRIV_DATA(reader);
+static int chipcard2_transmit_internal(struct sc_reader *reader,
+				       struct sc_slot_info *slot,
+				       const u8 *sendbuf,
+				       size_t sendsize,
+				       u8 *recvbuf,
+				       size_t *recvsize,
+				       int control){
+  chipcard2_reader_data *priv=GET_PRIV_DATA(reader);
   int result;
 
   DBG_DEBUG(OPENSC_LOGDOMAIN, "chipcard2_transmit(%p)", reader);
@@ -241,6 +241,126 @@ static int chipcard2_transmit(struct sc_reader *reader,
 
 
 
+#ifdef LCC_OPENSC11
+static int chipcard2_transmit(struct sc_reader *reader,
+			      struct sc_slot_info *slot,
+			      sc_apdu_t *apdu) {
+  u8 *sbuf = NULL;
+  u8 *rbuf = NULL;
+  size_t ssize;
+  size_t rsize;
+  size_t rbuflen=0;
+  int r;
+
+  rsize=rbuflen=apdu->resplen+2;
+  rbuf=malloc(rbuflen);
+  assert(rbuf);
+  if (rbuf!=NULL) {
+    GWEN_BUFFER *abuf;
+
+    abuf=GWEN_Buffer_new(0, 256, 0, 1);
+    GWEN_Buffer_AppendByte(abuf, apdu->cla);
+    GWEN_Buffer_AppendByte(abuf, apdu->ins);
+    GWEN_Buffer_AppendByte(abuf, apdu->p1);
+    GWEN_Buffer_AppendByte(abuf, apdu->p2);
+    switch(apdu->cse) {
+    case SC_APDU_CASE_1:
+      break;
+    case SC_APDU_CASE_2_SHORT:
+      GWEN_Buffer_AppendByte(abuf, apdu->le);
+      break;
+    case SC_APDU_CASE_2_EXT:
+      GWEN_Buffer_AppendByte(abuf, 0x00);
+      GWEN_Buffer_AppendByte(abuf, (apdu->le)>>8);
+      GWEN_Buffer_AppendByte(abuf, (apdu->le) & 0xff);
+      break;
+    case SC_APDU_CASE_3_SHORT:
+      GWEN_Buffer_AppendByte(abuf, apdu->lc);
+      GWEN_Buffer_AppendBytes(abuf, (const char*)apdu->data, apdu->lc);
+      break;
+    case SC_APDU_CASE_3_EXT:
+      GWEN_Buffer_AppendByte(abuf, 0x00);
+      GWEN_Buffer_AppendByte(abuf, (apdu->lc)>>8);
+      GWEN_Buffer_AppendByte(abuf, (apdu->lc) & 0xff);
+      GWEN_Buffer_AppendBytes(abuf, (const char*)apdu->data, apdu->lc);
+      break;
+    case SC_APDU_CASE_4_SHORT:
+      GWEN_Buffer_AppendByte(abuf, apdu->lc);
+      GWEN_Buffer_AppendBytes(abuf, (const char*)apdu->data, apdu->lc);
+      GWEN_Buffer_AppendByte(abuf, apdu->le);
+      break;
+    case SC_APDU_CASE_4_EXT:
+      GWEN_Buffer_AppendByte(abuf, 0x00);
+      GWEN_Buffer_AppendByte(abuf, (apdu->lc)>>8);
+      GWEN_Buffer_AppendByte(abuf, (apdu->lc) & 0xff);
+      GWEN_Buffer_AppendBytes(abuf, (const char*)apdu->data, apdu->lc);
+      GWEN_Buffer_AppendByte(abuf, (apdu->le)>>8);
+      GWEN_Buffer_AppendByte(abuf, (apdu->le) & 0xff);
+      break;
+    }
+
+    rbuf=(u8*)GWEN_Buffer_GetStart(abuf);
+    ssize=GWEN_Buffer_GetUsedBytes(abuf);
+    r=chipcard2_transmit_internal(reader, slot,
+				  sbuf, ssize,
+				  rbuf, &rsize,
+				  apdu->control);
+    if (r==SC_SUCCESS) {
+      /* set response */
+      if (rsize>=2) {
+	apdu->sw1=(unsigned int)rbuf[rsize-2];
+	apdu->sw2=(unsigned int)rbuf[rsize-1];
+	rsize-=2;
+	/* set output length and copy the returned data if necessary */
+	if (rsize<=apdu->resplen)
+	  apdu->resplen=rsize;
+
+	if (apdu->resplen!=0)
+	  memcpy(apdu->resp, rbuf, apdu->resplen);
+	GWEN_Buffer_free(abuf);
+	return SC_SUCCESS;
+      }
+      else {
+	DBG_ERROR(OPENSC_LOGDOMAIN, "invalid response: SW1 SW2 missing");
+	r=SC_ERROR_INTERNAL;
+      }
+    }
+    GWEN_Buffer_free(abuf);
+  }
+  else
+    r=SC_ERROR_MEMORY_FAILURE;
+
+  if (sbuf!=NULL) {
+    sc_mem_clear(sbuf, ssize);
+    free(sbuf);
+  }
+  if (rbuf!=NULL) {
+    sc_mem_clear(rbuf, rbuflen);
+    free(rbuf);
+  }
+
+  return r;
+}
+
+#else
+
+static int chipcard2_transmit(struct sc_reader *reader,
+			      struct sc_slot_info *slot,
+			      const u8 *sendbuf,
+			      size_t sendsize,
+			      u8 *recvbuf,
+			      size_t *recvsize,
+			      int control) {
+  return chipcard2_transmit_internal(reader, slot,
+				     sendbuf, sendsize,
+				     recvbuf, recvsize,
+				     control);
+}
+
+#endif
+
+
+
 static int chipcard2_detect_card_presence(struct sc_reader *reader,
 					  struct sc_slot_info *slot){
   chipcard2_reader_data *priv = GET_PRIV_DATA(reader);
@@ -308,7 +428,8 @@ static int chipcard2_getcard(struct sc_reader *reader,
     const GWEN_STRINGLIST *sl;
 
     /* try to get the next card */
-    priv->card=LC_Client_WaitForNextCard(priv->gpriv->client, OPENSC_CHIPCARD2_WAITCARD_TIMEOUT);
+    priv->card=LC_Client_WaitForNextCard(priv->gpriv->client,
+                                         OPENSC_CHIPCARD2_WAITCARD_TIMEOUT);
     DBG_DEBUG(OPENSC_LOGDOMAIN, "Got card %p", priv->card);
     if (!priv->card) {
       DBG_ERROR(OPENSC_LOGDOMAIN, "No card");
@@ -412,8 +533,11 @@ static int chipcard2_connect(struct sc_reader *reader,
 
 
 static int chipcard2_disconnect(struct sc_reader *reader,
-				struct sc_slot_info *slot,
-				int action){
+				struct sc_slot_info *slot
+#if !defined(LCC_OPENSC11)
+				, int action
+#endif
+			       ){
   chipcard2_reader_data *priv = GET_PRIV_DATA(reader);
 
   DBG_DEBUG(OPENSC_LOGDOMAIN, "chipcard2_disconnect(%p)", reader);
@@ -601,7 +725,7 @@ static int chipcard2_finish(struct sc_context *ctx, void *prv_data){
 struct sc_reader_driver * sc_get_chipcard2_driver(void){
   chipcard2_ops.init = chipcard2_init;
   chipcard2_ops.finish = chipcard2_finish;
-  chipcard2_ops.transmit = chipcard2_transmit;
+  chipcard2_ops.transmit=chipcard2_transmit;
   chipcard2_ops.detect_card_presence = chipcard2_detect_card_presence;
   chipcard2_ops.lock = chipcard2_lock;
   chipcard2_ops.unlock = chipcard2_unlock;

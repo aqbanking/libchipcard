@@ -68,13 +68,27 @@ void chipcard2_free_global_data(struct chipcard2_global_private_data *gpriv);
 void chipcard2__showError(LC_CARD *card,
 			  LC_CLIENT_RESULT res,
 			  const char *failedCommand) ;
+static int chipcard2_transmit_internal(struct sc_reader *reader,
+                                       struct sc_slot_info *slot,
+                                       const u8 *sendbuf,
+                                       size_t sendsize,
+                                       u8 *recvbuf,
+                                       size_t *recvsize,
+                                       int control);
+#ifdef LCC_OPENSC11
 static int chipcard2_transmit(struct sc_reader *reader,
-			      struct sc_slot_info *slot,
-			      const u8 *sendbuf,
-			      size_t sendsize,
-			      u8 *recvbuf,
-			      size_t *recvsize,
-			      int control);
+                              struct sc_slot_info *slot,
+                              sc_apdu_t *apdu);
+#else
+static int chipcard2_transmit(struct sc_reader *reader,
+                              struct sc_slot_info *slot,
+                              const u8 *sendbuf,
+                              size_t sendsize,
+                              u8 *recvbuf,
+                              size_t *recvsize,
+                              int control);
+#endif
+
 static int chipcard2_detect_card_presence(struct sc_reader *reader,
 					  struct sc_slot_info *slot);
 static int chipcard2_getcard(struct sc_reader *reader,
@@ -82,8 +96,11 @@ static int chipcard2_getcard(struct sc_reader *reader,
 static int chipcard2_connect(struct sc_reader *reader,
 			     struct sc_slot_info *slot);
 static int chipcard2_disconnect(struct sc_reader *reader,
-				struct sc_slot_info *slot,
-				int action);
+                                struct sc_slot_info *slot
+#if !defined(LCC_OPENSC11)
+                                , int action
+#endif
+                               );
 static int chipcard2_lock(struct sc_reader *reader,
 			  struct sc_slot_info *slot);
 static int chipcard2_unlock(struct sc_reader *reader,

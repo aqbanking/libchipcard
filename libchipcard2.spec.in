@@ -36,13 +36,13 @@ Release: %{release}
 Source: http://download.sourceforge.net/libchipcard/%{name}-%{version}.tar.gz
 Requires: gwenhywfar
 Group: Libraries/System
-Copyright: GPL
+License: GPL
 Packager: Martin Preuss <martin@libchipcard.de>
 URL: http://www.libchipcard.de
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/ldconfig
 Prefix: %{_prefix}
-BuildRequires: gwenhywfar-devel >= 1.15.0
+BuildRequires: gwenhywfar-devel >= 2.0.0
 # Note: If you really don't want to use opensc, you can comment out
 # the following line, but please don't publish the resulting rpm
 # packages.
@@ -65,6 +65,11 @@ Group: Development/Libraries
 This package contains chipcard2-server-config and header files for writing 
 drivers, services or even your own chipcard daemon for LibChipCard.
 
+%package opensc
+Summary: Reader driver for OpenSC
+Group: Development/Libraries
+%description devel
+This package allows OpenSC to use Libchipcard2 for access to smart cards.
 
 %prep
 %setup -q
@@ -90,8 +95,16 @@ LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir} make DESTDIR=$RPM_BUILD_ROOT \
 %files
 %defattr(-,root,root,0755)
 %doc README COPYING ChangeLog
-%{_libdir}/*.so
-%{_libdir}/*.so.*
+%{_libdir}/libchipcard2c.so
+%{_libdir}/libchipcard2c.so.*
+%{_libdir}/libchipcard2d.so
+%{_libdir}/libchipcard2d.so.*
+%{_libdir}/libchipcard2i.so
+%{_libdir}/libchipcard2i.so.*
+%{_libdir}/libchipcard2sv.so
+%{_libdir}/libchipcard2sv.so.*
+%{_libdir}/libchipcard2_ctapi.so
+%{_libdir}/libchipcard2_ctapi.so.*
 %{_libdir}/chipcard2-server
 %{_libdir}/gwenhywfar/plugins
 %{_sysconfdir}/chipcard2-client
@@ -115,6 +128,10 @@ LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir} make DESTDIR=$RPM_BUILD_ROOT \
 %{_datadir}/aclocal/chipcard2-server.m4
 %{_datadir}/aclocal/chipcard2-client.m4
 
+%files opensc
+%defattr(-,root,root,0755)
+%{_libdir}/reader-libchipcard2.so
+%{_libdir}/reader-libchipcard2.so.*
 
 %changelog
 
