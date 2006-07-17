@@ -1,4 +1,10 @@
 
+2006/07/17: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in driver code: Was relying on server address even in
+  testmode
+
+
 2006/07/14: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - RPM: Make the OpenSC plugin a separate RPM package

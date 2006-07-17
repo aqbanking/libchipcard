@@ -241,6 +241,10 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
       return LCD_DriverCheckArgsResultError;
     }
   }
+  else {
+    if (d->rname==0)
+      d->rname=strdup("testReader");
+  }
 
   if (!d->libraryFile) {
     DBG_ERROR(0, "Name of driver library file missing");
@@ -306,41 +310,41 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
 
 int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
   LCD_DRIVER_CHECKARGS_RESULT res;
-  GWEN_NETLAYER *nl;
-  GWEN_NETLAYER *nlBase;
-  GWEN_SOCKET *sk;
-  GWEN_INETADDRESS *addr;
-  GWEN_TYPE_UINT32 sid;
-  GWEN_URL *url;
 
   res=LCD_Driver_CheckArgs(d, argc, argv);
   if (res!=LCD_DriverCheckArgsResultOk) {
     return -1;
   }
 
-  url=GWEN_Url_fromString(d->serverAddr);
-  if (!url) {
-    DBG_ERROR(GWEN_LOGDOMAIN, "Bad URL: %s", d->serverAddr);
-    return -1;
-  }
-
-  if (GWEN_Directory_GetPath(d->logFile,
-                             GWEN_PATH_FLAGS_VARIABLE)) {
-    DBG_ERROR(0, "Could not create log file for driver ");
-    GWEN_Logger_Open(0, "driver",
-                     0,
-                     GWEN_LoggerTypeConsole,
-                     GWEN_LoggerFacilityUser);
-  }
-  else {
-    GWEN_Logger_Open(0, "driver",
-                     d->logFile,
-                     d->logType,
-                     GWEN_LoggerFacilityUser);
-  }
-  GWEN_Logger_SetLevel(0, d->logLevel);
-
   if (!d->testMode) {
+    GWEN_NETLAYER *nl;
+    GWEN_NETLAYER *nlBase;
+    GWEN_SOCKET *sk;
+    GWEN_INETADDRESS *addr;
+    GWEN_TYPE_UINT32 sid;
+    GWEN_URL *url;
+
+    url=GWEN_Url_fromString(d->serverAddr);
+    if (!url) {
+      DBG_ERROR(GWEN_LOGDOMAIN, "Bad URL: %s", d->serverAddr);
+      return -1;
+    }
+  
+    if (GWEN_Directory_GetPath(d->logFile,
+                               GWEN_PATH_FLAGS_VARIABLE)) {
+      DBG_ERROR(0, "Could not create log file for driver ");
+      GWEN_Logger_Open(0, "driver",
+                       0,
+                       GWEN_LoggerTypeConsole,
+                       GWEN_LoggerFacilityUser);
+    }
+    else {
+      GWEN_Logger_Open(0, "driver",
+                       d->logFile,
+                       d->logType,
+                       GWEN_LoggerFacilityUser);
+    }
+    GWEN_Logger_SetLevel(0, d->logLevel);
     DBG_NOTICE(0, "Starting driver \"%s\" with lowlevel \"%s\"",
                argv[0], d->libraryFile);
     if (d->driverDataDir) {
@@ -424,6 +428,7 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
     d->ipcId=sid;
     DBG_INFO(0, "IPC stuff initialized");
   }
+
   return 0;
 }
 
