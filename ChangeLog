@@ -1,4 +1,11 @@
 
+2006/07/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in 
+  src/lib/chipcard2-server/server2/devicemanager/devicemanager.c (was not
+  activating PCMCIA scanner)
+
+
 2006/07/17: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in driver code: Was relying on server address even in

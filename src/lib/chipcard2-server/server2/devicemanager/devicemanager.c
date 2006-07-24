@@ -256,14 +256,12 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
       LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
       scanners++;
     }
-#ifdef USE_PCMCIA
     if (dm->disablePcmciaScan==0) {
       DBG_INFO(0, "Adding PCMCIA bus scanner");
       scanner=LC_PcmciaScanner_new();
       LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
       scanners++;
     }
-#endif
     if (dm->disableUsbRawScan==0) {
       DBG_INFO(0, "Adding USB bus scanner");
       scanner=LC_UsbRawScanner_new();
