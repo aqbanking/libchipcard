@@ -68,7 +68,7 @@ drivers, services or even your own chipcard daemon for LibChipCard.
 %package opensc
 Summary: Reader driver for OpenSC
 Group: Development/Libraries
-%description devel
+%description opensc
 This package allows OpenSC to use Libchipcard2 for access to smart cards.
 
 %prep
