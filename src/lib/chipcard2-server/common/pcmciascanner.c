@@ -72,8 +72,8 @@ int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl) {
 
   bus = sysfs_open_bus("pcmcia");
   if (bus == NULL) {
-    DBG_ERROR(0,"Error accessing sysfs");
-    return -1;
+    DBG_DEBUG(0,"No PCMCIA bus");
+    return 0;
   }
 
   devlist = sysfs_get_bus_devices(bus);

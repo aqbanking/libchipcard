@@ -1,4 +1,10 @@
 
+2006/08/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- pcmciascanner.c: changed error message to debug message for missing PCMCIA
+  bus (e.g. on Desktop PC there is no PCMCIA bus in most cases)
+
+
 ===========================================================================
 MARK: released Libchipcard2 2.1.8 (2006/08/25)
 ===========================================================================
