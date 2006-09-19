@@ -965,20 +965,8 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
         DBG_WARN(0, "Driver terminated normally");
         LCDM_Driver_SetProcess(d, 0);
         dst=LC_DriverStatusDown;
-        LCDM_Driver_SetStatus(d, dst);
-        LCS_Server_DriverChg(dm->server,
-                             LCDM_Driver_GetDriverId(d),
-                             LCDM_Driver_GetDriverType(d),
-                             LCDM_Driver_GetDriverName(d),
-                             LCDM_Driver_GetLibraryFile(d),
-                             dst,
-                             "Driver terminated normally");
-        if (LCDM_Driver_GetIpcId(d)) {
-          /* remove IPC node */
-          GWEN_IpcManager_RemoveClient(dm->ipcManager,
-                                       LCDM_Driver_GetIpcId(d));
-          LCDM_Driver_SetIpcId(d, 0);
-        }
+        LCDM_DeviceManager_AbandonDriver(dm, d, dst,
+                                         "Driver terminated normally");
         done++;
       }
       else if (pst==GWEN_ProcessStateAborted) {
@@ -1748,8 +1736,8 @@ void LCDM_DeviceManager_DriverIpcDown(LCDM_DEVICEMANAGER *dm,
                LCDM_Driver_GetDriverName(d),
                LCDM_Driver_GetDriverId(d));
     LCDM_Driver_SetIpcId(d, 0);
-    LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusDown,
-				     "Driver connection went down");
+    /*LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusDown,
+				     "Driver connection went down");*/
   }
 }
 

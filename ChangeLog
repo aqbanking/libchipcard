@@ -3,6 +3,8 @@
 ------------------------------------------------
 - fixed a bug in device manager which crashed the chipcardd2 when a driver
   returns a startup error
+- fixed a problem where the chipcard server leaves zombie processes (reported
+  by Marcel Naziri)
 
 
 2006/09/02: Martin Preuss<martin@libchipcard.de>
