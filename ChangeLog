@@ -1,4 +1,17 @@
 
+2006/09/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in device manager which crashed the chipcardd2 when a driver
+  returns a startup error
+
+
+2006/09/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed debug output of PCMCIA scanner
+- LC_Client_Walk now returns an error if not a single server could be
+  connected
+
+
 2006/08/30: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - pcmciascanner.c: changed error message to debug message for missing PCMCIA

@@ -1998,6 +1998,13 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
     DBG_ERROR(0, "Error in driver \"%08x\": %s",
               driverId, text);
+
+    /* remove request before removing the IPC client */
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
+
     ebuf=GWEN_Buffer_new(0, 256, 0, 1);
     GWEN_Buffer_AppendString(ebuf, "Driver error (");
     GWEN_Buffer_AppendString(ebuf, text);
@@ -2006,10 +2013,6 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
                                      LC_DriverStatusAborted,
                                      GWEN_Buffer_GetStart(ebuf));
     GWEN_Buffer_free(ebuf);
-    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
-      DBG_ERROR(0, "Could not remove request");
-      abort();
-    }
     return -1;
   }
 
