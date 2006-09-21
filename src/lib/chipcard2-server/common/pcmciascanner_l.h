@@ -17,7 +17,7 @@
 #include "devmonitor.h"
 
 
-LC_DEVSCANNER *LC_PcmciaScanner();
+LC_DEVSCANNER *LC_PcmciaScanner_new();
 
 
 
