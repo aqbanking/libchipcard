@@ -101,7 +101,9 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
+#ifdef HAVE_SYSFS2
   struct dlist *children = NULL;
+#endif
   int port=0, vendorId=0, productId=0;
   LC_DEVICE *currentDevice;
 
