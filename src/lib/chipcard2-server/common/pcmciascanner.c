@@ -61,9 +61,6 @@ int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl) {
 #else
   struct sysfs_bus *bus = NULL;
   struct sysfs_device *curdev = NULL;
-#ifndef HAVE_SYSFS2
-  struct sysfs_device *temp_device = NULL;
-#endif
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
