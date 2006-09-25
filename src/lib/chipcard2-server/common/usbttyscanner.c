@@ -128,6 +128,7 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
             port = atoi(&child->name[6]);
         }
       }
+      sysfs_close_list(children);
 #else
       temp_device = sysfs_open_device_tree(curdev->path);
       if (temp_device) {

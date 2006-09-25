@@ -1,4 +1,9 @@
 
+2006/09/25: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a serious memory leak in usbttyscanner.c
+
+
 2006/09/19: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in device manager which crashed the chipcardd2 when a driver

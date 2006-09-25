@@ -94,6 +94,10 @@ LCDM_READER *LCDM_Reader_fromDb(LCDM_DRIVER *d, GWEN_DB_NODE *db){
   if (p)
     r->readerName=strdup(p);
 
+  p=GWEN_DB_GetCharValue(db, "driverName", 0, 0);
+  if (p)
+    r->driverName=strdup(p);
+
   p=GWEN_DB_GetCharValue(db, "shortName", 0, 0);
   if (p)
     r->shortDescr=strdup(p);
