@@ -13,7 +13,7 @@ AC_CONFIG_HEADER([config.h])
 #
 CHIPCARD_VERSION_MAJOR=2
 CHIPCARD_VERSION_MINOR=1
-CHIPCARD_VERSION_PATCHLEVEL=8
+CHIPCARD_VERSION_PATCHLEVEL=9
 CHIPCARD_VERSION_BUILD=0
 CHIPCARD_VERSION_TAG="stable"
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
@@ -24,7 +24,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=2
 LIBCHIPCARD_SO_AGE=2
-LIBCHIPCARD_SO_REVISION=8
+LIBCHIPCARD_SO_REVISION=9
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -119,7 +119,6 @@ AC_ENABLE_SHARED(yes)
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
-AC_C_BIGENDIAN
 AC_CHECK_PROG(SED,sed,sed)
 
 
@@ -160,6 +159,20 @@ AC_CHECK_FUNCS(random)
 AC_CHECK_FUNCS(wait)
 AC_CHECK_FUNCS(chmod)
 AC_CHECK_FUNCS(symlink)
+
+
+# ---------------------------------------------------------------------------
+# check for endianness
+#
+
+AC_C_BIGENDIAN([aq_endian="big"], [aq_endian="little"])
+if test "x$aq_endian" == "xlittle"; then
+ AC_DEFINE(LC_ENDIAN_LITTLE, 1, [if system is little endian])
+elif test "x$aq_endian" == "xbig"; then
+ AC_DEFINE(LC_ENDIAN_BIG, 1, [if system is big endian])
+else
+  AC_MSG_ERROR([Unknown endian type $aq_endian])
+fi
 
 
 # ---------------------------------------------------------------------------

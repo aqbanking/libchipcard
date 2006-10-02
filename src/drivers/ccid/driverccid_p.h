@@ -214,6 +214,7 @@ void log_msg(const int priority, const char *fmt, ...);
 char *pcsc_stringify_error(long x);
 /*@}*/
 
+void DriverCCID__checkMsg(int priority, const char *msg);
 
 #endif /* CHIPCARD_DRIVER_CCID_P_H */
 

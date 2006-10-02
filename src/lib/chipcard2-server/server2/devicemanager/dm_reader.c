@@ -133,6 +133,7 @@ void LCDM_Reader_free(LCDM_READER *r){
     assert(r->refCount);
     if (r->refCount==1) {
       LCDM_Slot_List_free(r->slotList);
+      free(r->driverName);
       free(r->readerType);
       free(r->readerName);
       free(r->shortDescr);
@@ -187,6 +188,9 @@ void LCDM_Reader_toDb(const LCDM_READER *r, GWEN_DB_NODE *db){
   if (r->readerName)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "readerName", r->readerName);
+  if (r->driverName)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                         "driverName", r->driverName);
 
   if (r->shortDescr)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,

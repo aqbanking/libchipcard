@@ -1,5 +1,14 @@
 
 ===========================================================================
+                 Libchipcard2 2.1.9 (2006/09/25)
+===========================================================================
+
+This maintenance release fixes two serious bugs, removes an annoying log
+message on no-PCMCIA systems and works with the latest generic CCID driver
+which has some important internal changes.
+
+
+===========================================================================
                  Libchipcard2 2.1.8 (2006/08/25)
 ===========================================================================
 

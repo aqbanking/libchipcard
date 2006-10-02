@@ -1,4 +1,15 @@
 
+===========================================================================
+MARK: released Libchipcard2 2.1.9 (2006/09/25)
+===========================================================================
+
+---------------------------------------------------------------------------
+Development of generation 2 of Libchipcard (Libchipcard2) has now been
+stopped, there will only be bugfix/maintenance releases.
+Development now concentrates on Libchipcard3.
+---------------------------------------------------------------------------
+
+
 2006/09/25: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a serious memory leak in usbttyscanner.c

@@ -27,6 +27,7 @@ struct LCDM_READER {
   /* variables from config file */
   char *readerType;
   char *readerName;
+  char *driverName;
   char *shortDescr;
   unsigned int slots;
   unsigned int ctn;
