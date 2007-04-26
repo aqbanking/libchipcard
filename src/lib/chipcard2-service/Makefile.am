@@ -22,6 +22,7 @@ libchipcard2sv_la_LIBADD= \
   ../chipcard2-client/libchipcard2c.la \
   @gwenhywfar_libs@
 libchipcard2sv_la_LDFLAGS= \
+  -no-undefined -Wl,--export-all-symbols \
   @STRIPALL@ -version-info \
    @LIBCHIPCARD_SO_CURRENT@:@LIBCHIPCARD_SO_REVISION@:@LIBCHIPCARD_SO_AGE@
 
@@ -46,9 +47,9 @@ DLLEXP_DEF = $(LIBRARY_NAME).def
 DLLSRC_LIB = $(lib_LTLIBRARIES:.la=.a)
 DLLSRC_LIBLA = $(lib_LTLIBRARIES)
 
-all-local: dll
+#all-local: dll
 
-install-exec-local: dll-install
+#install-exec-local: dll-install
 
 DLLTOOL=dlltool
 DLLWRAP=dllwrap

@@ -2,11 +2,7 @@ INCLUDES=@all_includes@
 
 EXTRA_DIST=README examplecard.xml tutorials.h
 
-if IS_WINDOWS
-  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)
-else
-  CLIENT_LIB=-lchipcard2c
-endif
+CLIENT_LIB=-lchipcard2c
 
 noinst_PROGRAMS=\
  tutorial1a tutorial1b tutorial1c \

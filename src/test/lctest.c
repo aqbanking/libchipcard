@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "config.h"
 #ifdef OS_WIN32
 # define sleep(x) GWEN_Socket_Select(0, 0, 0, (x)*1000)
 #endif

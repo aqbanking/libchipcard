@@ -3,13 +3,8 @@ INCLUDES=@all_includes@
 servicedir=@LC_SERVICE_PATH@
 service_PROGRAMS=cardfs
 
-if IS_WINDOWS
-  SERVICE_LIB=-lchipcard2sv32_$(LIBCHIPCARD_SO_EFFECTIVE)
-  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)
-else
-  SERVICE_LIB=-lchipcard2sv
-  CLIENT_LIB=-lchipcard2c
-endif
+SERVICE_LIB=-lchipcard2sv
+CLIENT_LIB=-lchipcard2c
 
 noinst_HEADERS=\
   cardfs_p.h

@@ -1,3 +1,6 @@
+2007-04-26  Christian Stimming  <cs@cs-ws>
+
+	* configure.ac: Make libchipcard compile on windows again.
 
 ===========================================================================
 MARK: released Libchipcard2 2.1.9 (2006/09/25)

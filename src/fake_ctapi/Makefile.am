@@ -4,16 +4,14 @@ EXTRA_DIST=ressource.rc.in
 
 lib_LTLIBRARIES=libchipcard2_ctapi.la
 
-if IS_WINDOWS
-  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)
-else
-  CLIENT_LIB=-lchipcard2c
-endif
+CLIENT_LIB=-lchipcard2c
 
 noinst_HEADERS=ctapi.h ctapi_p.h
 libchipcard2_ctapi_la_SOURCES=ctapi.c
 libchipcard2_ctapi_la_LIBADD=\
  -L../lib/chipcard2-client $(CLIENT_LIB) $(gwenhywfar_libs)
+libchipcard2_ctapi_la_LDFLAGS=\
+  -no-undefined -Wl,--export-all-symbols
 
 
 # dll stuff
@@ -35,9 +33,9 @@ DLLEXP_DEF = $(LIBRARY_NAME).def
 DLLSRC_LIB = $(lib_LTLIBRARIES:.la=.a)
 DLLSRC_LIBLA = $(lib_LTLIBRARIES)
 
-all-local: dll
+#all-local: dll
 
-install-exec-local: dll-install
+#install-exec-local: dll-install
 
 DLLTOOL=dlltool
 DLLWRAP=dllwrap

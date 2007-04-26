@@ -118,6 +118,8 @@ AC_ENABLE_SHARED(yes)
 #AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_RC
 AC_PROG_LIBTOOL
 AC_CHECK_PROG(SED,sed,sed)
 
@@ -313,6 +315,7 @@ case "$OS_TYPE" in
         LC_DEFAULT_LOGDIR="\${localstatedir}/log/chipcard2"
         LC_DEFAULT_NEWCERTDIR="\${localstatedir}/lib/chipcard2/newcerts"
         LC_DEFAULT_LIBDIR="\${libdir}/chipcard2"
+	CFLAGS="${CFLAGS} -mms-bitfields"
     	;;
 esac
 

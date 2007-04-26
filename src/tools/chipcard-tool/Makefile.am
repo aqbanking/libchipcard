@@ -6,11 +6,7 @@ DEFS=@DEFS@ -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 noinst_HEADERS=global.h
 
-if IS_WINDOWS
-  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)
-else
-  CLIENT_LIB=-lchipcard2c
-endif
+CLIENT_LIB=-lchipcard2c
 
 chipcard_tool_SOURCES=\
   main.c \
