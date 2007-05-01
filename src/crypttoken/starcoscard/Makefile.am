@@ -1,5 +1,3 @@
-DEFS=@DEFS@ \
-  -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
 
 INCLUDES=@all_includes@ -I../../ -I../../client -I../../cards
 
@@ -14,11 +12,14 @@ noinst_HEADERS=\
 iheaderdir=${includedir}/chipcard2-client/crypttoken
 #iheader_HEADERS=
 
+# if IS_WINDOWS
+if IS_WINDOWS
+ mingw_ldflags=-L/mingw/lib
+endif
+
 starcoscard_la_SOURCES=\
   starcoscard.c
 
-starcoscard_la_LDFLAGS=-module
-starcoscard_la_LIBADD=-L../../lib/chipcard2-client -lchipcard2c
-
-MAINTAINERCLEANFILES=Makefile.in
+starcoscard_la_LDFLAGS=-module -no-undefined
+starcoscard_la_LIBADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) $(gwenhywfar_libs)
 

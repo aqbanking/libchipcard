@@ -30,19 +30,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include <ctype.h>
-
 
 
 GWEN_INHERIT(LCD_DRIVER, DRIVER_CCID)
 
-
-/* possible values:
- *   0: undetermined
- *   1: generic ccid driver pre 1.1.0
- *  -1: generic ccid driver 1.1.0 or higher
- */
-static int lc_driver__ccid_pre_1_1_0=0;
 
 
 LCD_DRIVER *DriverCCID_new(int argc, char **argv) {
@@ -691,19 +682,8 @@ GWEN_TYPE_UINT32 DriverCCID_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
   cnt=bufferlen/sizeof(PCSC_TLV_STRUCTURE);
   tlv=(PCSC_TLV_STRUCTURE*)buffer;
   for (i=0; i<cnt; i++) {
-    uint32_t v;
-
-    v=tlv[i].value;
-#ifdef LC_ENDIAN_LITTLE
-    /* only translate control codes for generic ccid driver >=1.1.0 */
-    if (lc_driver__ccid_pre_1_1_0==-1)
-      v=((v & 0xff000000)>>24) |
-	((v & 0x00ff0000)>>8) |
-	((v & 0x0000ff00)<<8) |
-	((v & 0x000000ff)<<24);
-#endif
-    DBG_NOTICE(lg, "TLV: %d (%08x)", tlv[i].tag, v);
-    ReaderCCID_SetFeatureCode(r, tlv[i].tag, v);
+    DBG_NOTICE(lg, "TLV: %d (%08x)", tlv[i].tag, tlv[i].value);
+    ReaderCCID_SetFeatureCode(r, tlv[i].tag, tlv[i].value);
   }
 
   if (GWEN_Buffer_GetUsedBytes(buf))
@@ -758,13 +738,6 @@ GWEN_TYPE_UINT32 DriverCCID_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
               "Could not connect any slot");
     return LC_ERROR_NO_SLOTS_CONNECTED;
   }
-
-  /* until now we should have received the debug message from the
-   * reader telling us about the version...
-   */
-  if (lc_driver__ccid_pre_1_1_0==0)
-    /* assume this is a new driver type */
-    lc_driver__ccid_pre_1_1_0=-1;
   return 0;
 }
 
@@ -1046,7 +1019,6 @@ void log_msg(const int priority, const char *fmt, ...) {
     DBG_DEBUG(0, "PCSC: %s", msgBuf);
     break;
   } /* switch */
-  DriverCCID__checkMsg(priority, msgBuf);
 }
 
 
@@ -1072,7 +1044,6 @@ void debug_msg(const int priority, const char *fmt, ...) {
     DBG_DEBUG(0, "PCSC: %s", msgBuf);
     break;
   } /* switch */
-  DriverCCID__checkMsg(priority, msgBuf);
 }
 
 
@@ -1112,64 +1083,5 @@ char *pcsc_stringify_error(long x) {
            (unsigned long) x);
   return errbuf;
 }
-
-
-
-void DriverCCID__checkMsg(int priority, const char *msg) {
-  if (lc_driver__ccid_pre_1_1_0==0 && priority>0) {
-    if (GWEN_Text_ComparePattern((const char*)msg,
-                                 "*ProductString: Generic CCID driver v*",
-                                 0)!=-1) {
-      const char *p;
-
-      p=msg;
-      p=strrchr(p, 'v');
-      if (p) {
-        int vmajor=0;
-        int vminor=0;
-        int vpatchlevel=0;
-
-        p++;
-        /* read vmajor */
-        while (*p && isdigit(*p)) {
-          vmajor=(vmajor*10)+(*p-'0');
-          p++;
-        }
-        if (*p=='.') {
-          p++;
-          /* read vminor */
-          while (*p && isdigit(*p)) {
-            vminor=(vminor*10)+(*p-'0');
-            p++;
-          }
-          if (*p=='.') {
-            /* read vpatchlevel */
-            p++;
-            while (*p && isdigit(*p)) {
-              vpatchlevel=(vpatchlevel*10)+(*p-'0');
-              p++;
-            }
-            DBG_NOTICE(0, "Detected Generic CCID driver (%d.%d.%d)",
-                       vmajor, vminor, vpatchlevel);
-
-            /* check whether we have to reverse the translation of the
-             * control codes
-             */
-            if (!(vmajor>1 || (vmajor==1 && vminor>0))) {
-              DBG_WARN(0,
-                       "Old Generic CCID driver, "
-                       "will not translate control codes");
-              lc_driver__ccid_pre_1_1_0=1;
-            }
-            else
-              lc_driver__ccid_pre_1_1_0=-1;
-          }
-        }
-      }
-    } /* if generic ccid driver */
-  } /* if driver type still undetermined */
-}
-
-
 
 

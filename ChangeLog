@@ -1,42 +1,413 @@
-2007-04-26  Christian Stimming  <cs@cs-ws>
 
-	* configure.ac: Make libchipcard compile on windows again.
+$Rev$
+
+2007/04/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added description for reader Omnikey Cardman 4040 (not tested yet)
+
+
+2007/04/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- use new CT_init_name() function with celetronic devices
+- celectronic CardStar2 has two slots, marked this in the driver description
+  file -> now I could finally test two slot mode and it works so far!!
+
+
+2007/04/21: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added special path for PC/SC drivers under SuSE
+
+
+2007/04/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed reader description for O2Micro
+- fixed compile bug in src/lib/sharedstuff
+
+
+2007/04/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added description for SCM 3320
+
+
+2007/03/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- implemented card command "IsoModifyPin_Ascii" (needed for STARCOS cards
+  in combination with readers without keypads)
+
+
+2007/02/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added function LC_Card_ReadBinary()
+- added new card type: eGK (for now only reads some MKT+ files, so the same
+  data is available with this card as with KVK cards)
+
+
+2007/02/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- disabled Linux-specific include on non-Linux systems
+
+
+2007/01/31: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- disabled Linux-specific parts of DriverCTAPI_KeyCallback1() when
+  KDMKTONE is not defined
+
+
+2007/01/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added SCR 331 to ccid_ifd.xml (it reportedly works with this driver)
+
+
+2007/01/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added device description files for Celectronic CardMedic 2
+
 
 ===========================================================================
-MARK: released Libchipcard2 2.1.9 (2006/09/25)
+MARK: released Libchipcard3 3.0.2  (2006/12/27)
 ===========================================================================
 
----------------------------------------------------------------------------
-Development of generation 2 of Libchipcard (Libchipcard2) has now been
-stopped, there will only be bugfix/maintenance releases.
-Development now concentrates on Libchipcard3.
----------------------------------------------------------------------------
 
+2006/12/27: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- server:
+  - client manager now removes all requests of a client which went down
+  - now also call LCDM_DeviceManager_ClientDown() when a client goes down
+- client:
+  - fixed a bug in geldkarte code (it now reads the BLOG of new cards as well)
+- updated distri.m4 to detect SuSE10.2 (why the hell did they change the 
+  format of the /etc/SuSE-release file??)
+- removed "--service-libs" from chipcard3-config
+
+
+===========================================================================
+MARK: released Libchipcard3 3.0.1  (2006/12/25)
+===========================================================================
+
+
+2006/12/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest changes in Reiner SCT Cyberjack driver
+- fixed a bug in device manager (was accessing already free'd data)
+
+
+2006/11/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in usbttyscanner: Was missing a macro definition when not using
+  sysfs
+
+
+2006/11/15: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added Cherry ST1044u to list of supported readers as suggested by 
+  Sascha Hauer (reader is now autodetected)
+- added note about udev rules for USB devices
+
+
+2006/11/05: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added 64-bit lib folders to all driver locations (so libchipcard will also
+  find drivers on those systems)
+
+
+===========================================================================
+MARK: released Libchipcard3 3.0.0  (2006/11/02)
+===========================================================================
+
+2006/11/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- the init script name "chipcardd3" has been successfully registered with
+  "The Linux Assigned Names And Numbers Authority" (http://www.lanana.org/)
+
+
+2006/10/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added reader flag "keepRunning", which is used for SCM SPR532, because this
+  reader doesn't like to be stopped (it can't be restarted afterwards, and
+  since the manufacturers driver isn't OpenSource I don't know how to fix it)
+- src/lib/sharedstuff/msgengine.c: Don't AND the tag type with 0x1f, this
+  would make some tags unavailable (especially some KVK tags)
+
+
+2006/10/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changed the driver description files regarding SCM SPR532: Now we only
+  support the original driver with the original firmware, because the
+  generic CCID driver is unable to perform secure pin verification with
+  some cards
+
+
+2006/10/13: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- make use of the latest additions to the Cyberjack driver
+- we are now fully capable of distinguishing two or more Cyberjack
+  readers which are connected in parallel
+
+
+2006/10/10: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a showstopper: If a reader reports an error while it is still being
+  started the daemon could crash
+- added nonstandard locations for CCID driver
+- pcmciascanner and usbttyscanner now add device path information if available
+- simplified card command description for PERFORM_VERIFICATION with the
+  generic CCID driver (it now works with Kobil Kaan Advanced USB and 
+  Omnikey CardMan 3621)
+- added some more readers to the list of devices I tested myself
+- cardcommander3: added command "rapdu" which sends an APDU to a reader
+- the command IsoPerformModification_Ascii now works with both Kobil Kaan
+  Advanced USB and Omnikey Cardman 3621. This allows changing the pin of
+  STARCOS cards again
+- added chipcardd3 command "listreaders": This command lists all supported
+  readers
+- improved handling of STARCOS cards: Now check for EF_CARD_VERSION. If it
+  exists it might tell us what kind of card is inserted
+
+
+===========================================================================
+MARK: released Libchipcard3 2.9.4beta  (2006/10/09)
+===========================================================================
+
+
+2006/10/09: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for SCM 3310 (now uses Generic CCID driver from Ludovic
+  Rousseau instead of the reader from the vendor)
+- with IFD drivers: call IFDHCreateChannelByName() instead of 
+  IFDHCreateChannel(). This allows to use multiple readers (even mutliple
+  readers of the same kind) with the generic CCID driver at the same time
+- export headers and functions needed for external driver development
+
+
+===========================================================================
+MARK: released Libchipcard3 2.9.3beta  (2006/10/02)
+===========================================================================
+
+2006/10/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- Libchipcard3 now compiles and runs under Windows!!
+  The checks of src/lib/client/testlib are now successfully performed.
+
+
+2006/10/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added accessType to driver.xml files (defaults to "port")
+- added devicePathTmpl to driver.xml files: Now devices can be accessed
+  using a devicePath instead of a port value (not used by internal drivers
+  for now)
+
+
+2006/09/30: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- IFD driver: If the driver reports error code 612 then we just retry to
+  connect the reader for a few times (this grants the reader a warmup
+  period)
+- drivers: changed createReaderFunction to extendReaderFunction (much less
+  arguments and easier to extend)
+
+
+2006/09/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- slave now restarts if the connection to the master is broken (or if the
+  master cannot be connected to). Before restarting the server waits for
+  a few seconds.
+- decreased verbosity
+- added init script
+- added support for mandriva to specfile
+
+
+2006/09/27: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added a wildcard to Cyberjack driver description to match the CTAPI file
+  even if ldconfig didn't create the necessary symlinks
+- added information to the README about how to install the CardMan 4000
+- added some notify codes/flags:
+  - LC_NOTIFY_CODE_DRIVER_ADD
+  - LC_NOTIFY_CODE_DRIVER_DEL
+  - LC_NOTIFY_FLAGS_DRIVER_ADD
+  - LC_NOTIFY_FLAGS_DRIVER_DEL
+  - LC_NOTIFY_CODE_READER_ADD
+  - LC_NOTIFY_CODE_READER_DEL
+  - LC_NOTIFY_FLAGS_READER_ADD
+  - LC_NOTIFY_FLAGS_READER_DEL
+- allowed these flags and masks in SetNotify client command
+- server now sends notifications when a reader is added/removed
+- "chipcard3-tool monitor" now receives these notifications and prints them
+
+
+===========================================================================
+MARK: released Libchipcard3 2.9.2beta  (2006/09/26)
+===========================================================================
+
+
+2006/09/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed RPM file creation: We now ship a separate RPM package with the
+  CryptToken plugin (this allows installing Libchipcard2 and Libchipcard3
+  in parallel except for the CryptToken plugins)
+- removed unneeded files in doc/
+- deactivated driver for Cherry keyboard's card reader in 
+  doc/chipcardd3.conf.example (should only be activated if there actually *is*
+  such a device)
 
 2006/09/25: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
+- fixed a bug in LCS_Server_DumpState() (unintended recursion)
 - fixed a serious memory leak in usbttyscanner.c
+- added another method to tell the chipcard daemon about harware changes:
+  if in the configuration file the variable "hardwareScanInterval" is set
+  to "0" then the server will only scan for hardware upon initial setup.
+  After that a scan can be triggered by sending the signal USR2 to the
+  daemon (e.g. "killall -USR2 chipcardd3" does the job).
+  The default method is to scan every 2 seconds for changes.
+
+
+===========================================================================
+MARK: released first beta of Libchipcard3: 2.9.1beta1  (2006/09/24)
+===========================================================================
+
+
+2006/09/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- src/drivers/ifd: introduced a workaround with Kobil Kaan Advanced USB and
+  the generic CCID driver: This combination returns alternating ATRs for
+  DDV1 cards. The falsely returned ATR is that of a DDV0 card, so if the 
+  driver now detects such an ATR it rereads it and only returns the DDV0 ATR 
+  if it has been confirmed by the second read.
+  This makes the fake-CTAPI now work with MoneyPlex even with a Kobil Kaan
+  Advanced USB!
+- reverted change of DDV1 ATRs in card description files (the change was
+  induced by the strange behaviour of the reader/driver noted above)
+- fixed a bug in DDV card code
+- fixed a bug in LC_ClientLcc_V_GetNextCard()
+- decreased verbosity of KVK service
+- create driver and service log folders upon "make install"
+
+
+2006/09/22: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- src/lib/server/driver: split driver.c into multiple source files to make
+  it easier to maintain
+- src/drivers: Now there is only one single IFD driver replacing previous
+  driver types ccid, ifd and ifdold
+- added "static" keyword to most functions in "*_p.h" files thus reducing
+  the number of exported symbols
+- pcsc code no longer needs PC/SC includes (they aren't available on some
+  systems, so we need to declare some stuff directly here)
+- implemented the last missing driver functions in slavemanager
+- chipcard3-tool now has the option "--start-all" which is used with the
+  command "monitor": If this option is given then the monitoring command
+  starts all readers before going into monitoring mode
+
+
+2006/09/21: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- src/lib/server: 
+  - merged server and fullserver (only one class now)
+  - added slave manager (manages communication with the master server)
+    Libchipcard3 has 3 modes now:
+      1) standAlone (same as before)
+      2) master (like libchipcard2 with enabled remote drivers)
+      3) slave
+    In slave mode no client connections are accepted. Instead the server
+    will connect to a master server (a libchipcard3 server running in master
+    mode) and announce all plugged and unplugged readers to the master.
+    The master handles a slave just like any other driver. It starts and
+    stops the remote readers just like it would do with local readers.
+    This new mode replaces the limited support for remote drivers in 
+    libchipcard2.
+    A usefull scenario is a central gnumed server which also runs the master 
+    chipcard3 daemon to which thin clients can connect and report their local
+    readers. The master server is then able to use the readers at thin
+    clients as they appear (e.g. for the KVK service).
+  - created new common class "LCCO_READER" which is now used also outside of
+    the device manager
+  - chipcard3-tool command "monitor" now shows the date and time of the
+    receiption of a notification
+- most IPC commands now use a numeric error code instead of "OK" and "ERROR"
+
+
+2006/09/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- "chipcardd3 init" works again (didn't work with Libchipcard2 either since
+  some changes in Gwenyhwfar, however, LCC2 is soon to be replaced by LCC3)
 
 
 2006/09/19: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
-- fixed a bug in device manager which crashed the chipcardd2 when a driver
-  returns a startup error
-- fixed a problem where the chipcard server leaves zombie processes (reported
-  by Marcel Naziri)
+- implemented card notifications (inserted, removed)
+- starcos crypttoken plugin works again
+- removed OpenSC stuff (OpenSC is able to use CTAPI drivers, so it can
+  use my fake-ctapi driver, too)
+- rewrote tutorials
 
 
-2006/09/02: Martin Preuss<martin@libchipcard.de>
+2006/09/16: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
-- fixed debug output of PCMCIA scanner
-- LC_Client_Walk now returns an error if not a single server could be
-  connected
+- Libchipcard3's current CCID driver is now able to handle IFD3 and IFD2
+  lowlevel drivers. Therefore the next release will only contain a single
+  IFD driver: ifd3 (which replaces current ccid, ifd and ifdold)
+
+
+2006/09/15: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- new generic ccid driver (>=1.1.0) now translates feature TLV values 
+  (big <-> little endian), so in order to use the feature functions we need to
+  translate them, too. 
+  Libchipcard3's driver now detects the version of the generic ccid driver
+  (it parses the debug messages of the ccid driver and scans for the
+   product string. Maybe there is a better way to determine the driver
+   name and version?).
+
+
+2006/09/12: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in ccid driver: Was checking for feature/control code even
+  for APDUs for cards
+- added ressource manager type PC/SC to client library.
+  This is a big step towards WIN32 compatiblity.
+
+
+2006/09/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added gcc visibility handling (now Libchipcard only exports symbols which
+  are part of the API)
+
+
+2006/09/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- reimplemented Libchipcard client. Now most code uses a basic set
+  of funtions which can also be used with e.g. PC/SC under Windows.
+  This is a big step towards being able to run Libchipcard under Windows.
+  - defined a common set of functions needed to work with chipcards
+  - implemented these basic functions (and extensions) for use against
+    a Libchipcard server
+  - API cleanup
+  - all card implementations now only use the limited subset of functions
+    in order to be usable under Windows. Since all card implementations
+    already used just a small set of functions this is no restriction.
+  - command construction and parsing is now done on the client side, so the
+    chipcard server becomes only a ressource manager
+  - added command "monitor" to chipcard3-tool: This command shows all
+    notifications received from the libchipcard3 ressource manager
+  - XML data files are now installed to $PREFIX/share/... instead of 
+    $PREFIX/etc/... since they are data files rather than configuration
+    files
+  - now used ony a single chipcard3-config script instead of separate scripts
+    for client and server
+
+
+===========================================================================
+MARK: forked branch aq_3 for Libchipcard3 (2006/09/08)
+===========================================================================
 
 
 2006/08/30: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - pcmciascanner.c: changed error message to debug message for missing PCMCIA
   bus (e.g. on Desktop PC there is no PCMCIA bus in most cases)
+- LC_Client_Walk now returns an error if not a single server could be
+  connected
 
 
 ===========================================================================

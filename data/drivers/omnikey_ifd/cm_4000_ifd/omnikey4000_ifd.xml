@@ -1,0 +1,97 @@
+
+<driver name="cm_4000_ifd" type="ifd">
+  <short>Driver for Omnikey CardMan 4000</short>
+  <manufacturer>
+    <name>Omnikey</name>
+    <url>http://www.omnikey.at</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libcm4000.so</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/usr/lib/pcsc/drivers</loc>
+      <loc>/usr/local/lib/pcsc/drivers</loc>
+      <loc>/lib64</loc>
+      <loc>/usr/lib64</loc>
+      <loc>/usr/local/lib64</loc>
+      <loc>/usr/lib64/pcsc/drivers</loc>
+      <loc>/usr/local/lib64/pcsc/drivers</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://www.omnikey.at</url>
+      <filename></filename>
+    </downloads>
+  </lib>
+
+  <readers>
+  
+    <reader name="omnikey_cm4000" busType="Pcmcia" 
+            vendor="0x0223" product="0x0002" >
+      <short>Omnikey CardMan 4000</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>Pcmcia</busorder>
+        <sortkey>BusPos</sortKey>
+        <offset>0</offset>
+      </autoport>
+      
+      <ports>
+        <port value="0">Device0</port>
+        <port value="1">Device1</port>
+        <port value="2">Device2</port>
+        <port value="3">Device3</port>
+        <port value="4">Device4</port>
+        <port value="5">Device5</port>
+        <port value="6">Device6</port>
+        <port value="7">Device7</port>
+      </ports>
+
+    </reader>
+
+    <reader name="omnikey_cm4040" busType="Pcmcia" 
+            vendor="0x0223" product="0x0200" >
+      <short>Omnikey CardMan 4040</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>Pcmcia</busorder>
+        <sortkey>BusPos</sortKey>
+        <offset>0</offset>
+      </autoport>
+      
+      <ports>
+        <port value="0">Device0</port>
+        <port value="1">Device1</port>
+        <port value="2">Device2</port>
+        <port value="3">Device3</port>
+        <port value="4">Device4</port>
+        <port value="5">Device5</port>
+        <port value="6">Device6</port>
+        <port value="7">Device7</port>
+      </ports>
+
+    </reader>
+
+  </readers>
+
+
+</driver>
+

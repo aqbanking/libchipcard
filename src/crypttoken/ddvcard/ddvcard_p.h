@@ -16,7 +16,7 @@
 
 
 #include <gwenhywfar/crypttoken.h>
-#include <chipcard2-client/client/card.h>
+#include <chipcard3/client/card.h>
 
 
 typedef struct LC_CT_PLUGIN_DDV LC_CT_PLUGIN_DDV;
@@ -29,7 +29,7 @@ GWEN_PLUGIN *LC_CryptTokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                                          const char *modName,
                                          const char *fileName);
 
-void LC_CryptTokenDDV_Plugin_FreeData(void *bp, void *p);
+void GWENHYWFAR_CB LC_CryptTokenDDV_Plugin_FreeData(void *bp, void *p);
 
 
 
@@ -46,7 +46,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_new(GWEN_PLUGIN_MANAGER *pm,
                                       LC_CLIENT *lc,
                                       const char *name);
 
-void LC_CryptTokenDDV_FreeData(void *bp, void *p);
+void GWENHYWFAR_CB LC_CryptTokenDDV_FreeData(void *bp, void *p);
 
 int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct,
 			      int manage);

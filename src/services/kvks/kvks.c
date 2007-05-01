@@ -21,8 +21,9 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard2-client/client/client_sv.h>
-#include <chipcard2-client/client/tlv.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/tlv.h>
+#include <chipcard3/client/io/lcc/clientlcc.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -56,11 +57,11 @@ LC_CLIENT *ServiceKVK_new(int argc, char **argv){
 
 
 
-void ServiceKVK_freeData(void *bp, void *p) {
+void GWENHYWFAR_CB ServiceKVK_freeData(void *bp, void *p) {
   SERVICE_KVK *kvks;
 
   kvks=(SERVICE_KVK*)p;
-  LC_Card_List2_freeAll(kvks->cards);
+  LC_Card_List2_free(kvks->cards);
   GWEN_FREE_OBJECT(kvks);
 }
 
@@ -82,7 +83,7 @@ int ServiceKVK_Start(LC_CLIENT *cl){
   DBG_NOTICE(0, "Connected.");
 
   /* start to wait for inserted cards */
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_ClientLcc_StartWait(cl, 0, 0);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(0, "Could not start to wait for cards");
     return -1;
@@ -111,9 +112,9 @@ const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err){
 
 
 GWEN_TYPE_UINT32 ServiceKVK_Command(LC_CLIENT *cl,
-                                    LC_SERVICECLIENT *scl,
-                                    GWEN_DB_NODE *dbRequest,
-                                    GWEN_DB_NODE *dbResponse) {
+			    LC_SERVICECLIENT *scl,
+			    GWEN_DB_NODE *dbRequest,
+			    GWEN_DB_NODE *dbResponse) {
   DBG_ERROR(0, "This service does not take commands");
   return SERVICE_KVK_ERROR_UNKNOWN_COMMAND;
 }
@@ -143,18 +144,37 @@ int ServiceKVK_NewCard(LC_CLIENT *cl, LC_CARD *cd) {
 
 
 GWEN_TYPE_UINT32 ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
-                                           int offset, int size) {
+				   int offset, int size) {
   GWEN_DB_NODE *dbReq;
   GWEN_TYPE_UINT32 rqid;
+  GWEN_BUFFER *cbuf;
+  LC_CLIENT_RESULT res;
 
-  DBG_INFO(LC_LOGDOMAIN, "Reading binary %04x:%04x", offset, size);
+  DBG_INFO(0, "Reading binary %04x:%04x", offset, size);
 
+  /* build APDU */
   dbReq=GWEN_DB_Group_new("ReadBinary");
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "offset", offset);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "lr", size);
-  rqid=LC_Client_SendExecCommand(cl, cd, dbReq);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "p2", LC_CARD_ISO_FLAGS_RECSEL_GIVEN);
+  cbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_Card_BuildApdu(cd, "IsoReadBinary", dbReq, cbuf);
+  if (res!=LC_Client_ResultOk) {
+    GWEN_Buffer_free(cbuf);
+    GWEN_DB_Group_free(dbReq);
+    return 0;
+  }
+  GWEN_DB_Group_free(dbReq);
+
+  /* send command request */
+  rqid=LC_ClientLcc_SendCommandCard(cl, cd,
+                                    GWEN_Buffer_GetStart(cbuf),
+                                    GWEN_Buffer_GetUsedBytes(cbuf),
+                                    LC_Client_CmdTargetCard);
+  GWEN_Buffer_free(cbuf);
   return rqid;
 }
 
@@ -163,39 +183,24 @@ GWEN_TYPE_UINT32 ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
 LC_CLIENT_RESULT ServiceKVK_CheckReadBinary(LC_CLIENT *cl, LC_CARD *cd) {
   SERVICE_KVK *kvks;
   LC_CLIENT_RESULT res;
-  GWEN_DB_NODE *dbRsp;
-  unsigned int bs;
-  const void *p;
+  GWEN_BUFFER *buf;
 
   assert(cl);
   kvks=GWEN_INHERIT_GETDATA(LC_CLIENT, SERVICE_KVK, cl);
   assert(kvks);
 
-  dbRsp=GWEN_DB_Group_new("response");
-
-  res=LC_Client_CheckExecCommand(cl, KVKSCard_GetCurrentRequest(cd), dbRsp);
+  buf=KVKSCard_GetBuffer(cd);
+  res=LC_ClientLcc_CheckCommandCard(cl, KVKSCard_GetCurrentRequest(cd),
+				    buf);
   if (res!=LC_Client_ResultOk) {
     if (res!=LC_Client_ResultWait) {
       DBG_ERROR(0, "Error response for request \"readBinary\"");
     }
-    GWEN_DB_Group_free(dbRsp);
     return res;
   }
 
-  p=GWEN_DB_GetBinValue(dbRsp,
-                        "command/response/data",
-                        0,
-                        0, 0,
-                        &bs);
-  if (p && bs) {
-    GWEN_Buffer_AppendBytes(KVKSCard_GetBuffer(cd), p, bs);
-  }
-  else {
-    DBG_ERROR(0, "No data in response");
-    GWEN_DB_Group_free(dbRsp);
-    return LC_Client_ResultDataError;
-  }
-  GWEN_DB_Group_free(dbRsp);
+  GWEN_Buffer_Crop(buf, 0, GWEN_Buffer_GetUsedBytes(buf)-2);
+
   return LC_Client_ResultOk;
 }
 
@@ -271,6 +276,7 @@ LC_CLIENT_RESULT ServiceKVK_CalcTagSize(LC_CLIENT *cl, LC_CARD *cd,
   j+=pos;
 
   *tagSize=j;
+  DBG_DEBUG(0, "TagSize: %d bytes", j);
 
   return LC_Client_ResultOk;
 }
@@ -450,69 +456,34 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
   kvks=GWEN_INHERIT_GETDATA(LC_CLIENT, SERVICE_KVK, cl);
   assert(kvks);
 
-  DBG_VERBOUS(0, "Handling card");
+  DBG_DEBUG(0, "Handling card %08x (%d)",
+            LC_Card_GetCardId(cd),
+            KVKSCard_GetStatus(cd));
 
   switch(KVKSCard_GetStatus(cd)) {
+
   case KVKSStatus_New:
-    DBG_ERROR(0, "Taking card");
-    rqid=LC_Client_SendTakeCard(cl, cd);
-    if (rqid==0) {
-      DBG_ERROR(0, "Could not send request \"takeCard\"");
-      KVKSCard_SetCurrentRequest(cd, 0);
-      KVKSCard_SetStatus(cd, KVKSStatus_Error);
-      return -1;
-    }
-    KVKSCard_SetCurrentRequest(cd, rqid);
+    KVKSCard_SetCurrentRequest(cd, 0);
     KVKSCard_SetStatus(cd, KVKSStatus_Opening);
     doneSomething++;
     break;
 
   case KVKSStatus_Opening:
-    res=LC_Client_CheckTakeCard(cl, KVKSCard_GetCurrentRequest(cd));
+    DBG_DEBUG(0, "Selecting CARD and APP");
+    res=LC_Card_SelectCard(cd, "kvk");
     if (res!=LC_Client_ResultOk) {
-      if (res==LC_Client_ResultWait) {
-        return 1;
-      }
-      else {
-        DBG_ERROR(0, "Error response for request \"takeCard\"");
-        LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
-        KVKSCard_SetCurrentRequest(cd, 0);
-        KVKSCard_SetStatus(cd, KVKSStatus_Error);
-        return -1;
-      }
-    }
-    LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
-
-    DBG_ERROR(0, "Selecting CARD and APP");
-    rqid=LC_Client_SendSelectCardApp(cl, cd, "kvk", "kvk");
-    if (rqid==0) {
-      DBG_ERROR(0, "Could not send request \"selectCardApp\"");
-      KVKSCard_SetCurrentRequest(cd, 0);
+      DBG_ERROR(0, "Could not select card");
       KVKSCard_SetStatus(cd, KVKSStatus_Error);
       return -1;
     }
-    KVKSCard_SetCurrentRequest(cd, rqid);
-    KVKSCard_SetStatus(cd, KVKSStatus_Selecting);
-    doneSomething++;
-    break;
-
-  case KVKSStatus_Selecting:
-    res=LC_Client_CheckSelectCardApp(cl, KVKSCard_GetCurrentRequest(cd));
+    res=LC_Card_SelectApp(cd, "kvk");
     if (res!=LC_Client_ResultOk) {
-      if (res==LC_Client_ResultWait) {
-        return 1;
-      }
-      else {
-        DBG_ERROR(0, "Error response for request \"selectCardApp\"");
-        LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
-        KVKSCard_SetCurrentRequest(cd, 0);
-        KVKSCard_SetStatus(cd, KVKSStatus_Error);
-        return -1;
-      }
+      DBG_ERROR(0, "Could not select app");
+      KVKSCard_SetStatus(cd, KVKSStatus_Error);
+      return -1;
     }
-    LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
 
-    DBG_ERROR(0, "Reading header");
+    DBG_DEBUG(0, "Reading header");
     rqid=ServiceKVK_SendReadBinary(cl, cd, 0x1e, 5);
     if (rqid==0) {
       DBG_ERROR(0, "Could not send request \"readBinary\"");
@@ -533,15 +504,16 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
       }
       else {
         DBG_ERROR(0, "Error response for request \"readBinary\"");
-        LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+        LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
         KVKSCard_SetCurrentRequest(cd, 0);
         KVKSCard_SetStatus(cd, KVKSStatus_Error);
         return -1;
       }
     }
-    LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+    LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+    KVKSCard_SetCurrentRequest(cd, 0);
 
-    DBG_ERROR(0, "Calculating data length");
+    DBG_DEBUG(0, "Calculating data length");
     res=ServiceKVK_CalcTagSize(cl, cd, &tagLength);
     if (res!=LC_Client_ResultOk) {
       if (res==LC_Client_ResultWait) {
@@ -555,7 +527,7 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
       }
     }
 
-    DBG_ERROR(0, "Reading data");
+    DBG_DEBUG(0, "Reading data");
     rqid=ServiceKVK_SendReadBinary(cl, cd, 5+0x1e, tagLength-5);
     if (rqid==0) {
       DBG_ERROR(0, "Could not send request \"readBinary\"");
@@ -576,15 +548,16 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
       }
       else {
         DBG_ERROR(0, "Error response for request \"readBinary\"");
-        LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+        LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
         KVKSCard_SetCurrentRequest(cd, 0);
         KVKSCard_SetStatus(cd, KVKSStatus_Error);
         return -1;
       }
     }
-    LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+    LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+    KVKSCard_SetCurrentRequest(cd, 0);
 
-    DBG_ERROR(0, "Analyzing data");
+    DBG_DEBUG(0, "Analyzing data");
     res=ServiceKVK_HandleData(cl, cd);
     if (res!=LC_Client_ResultOk) {
       DBG_ERROR(0, "Could not handle card data");
@@ -595,8 +568,8 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
 
     /* TODO: make driver beep */
 
-    DBG_ERROR(0, "Releasing card");
-    rqid=LC_Client_SendReleaseCard(cl, cd);
+    DBG_DEBUG(0, "Releasing card");
+    rqid=LC_ClientLcc_SendReleaseCard(cl, cd);
     if (rqid==0) {
       DBG_ERROR(0, "Could not send request \"releaseCard\"");
       KVKSCard_SetCurrentRequest(cd, 0);
@@ -609,20 +582,20 @@ int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
     break;
 
   case KVKSStatus_Releasing:
-    res=LC_Client_CheckReleaseCard(cl, KVKSCard_GetCurrentRequest(cd));
+    res=LC_ClientLcc_CheckReleaseCard(cl, KVKSCard_GetCurrentRequest(cd));
     if (res!=LC_Client_ResultOk) {
       if (res==LC_Client_ResultWait) {
         return 1;
       }
       else {
         DBG_ERROR(0, "Error response for request \"releaseCard\"");
-        LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+        LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
         KVKSCard_SetCurrentRequest(cd, 0);
         KVKSCard_SetStatus(cd, KVKSStatus_Error);
         return -1;
       }
     }
-    LC_Client_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
+    LC_ClientLcc_DeleteRequest(cl, KVKSCard_GetCurrentRequest(cd));
     KVKSCard_SetCurrentRequest(cd, 0);
     KVKSCard_SetStatus(cd, KVKSStatus_Done);
     DBG_NOTICE(0, "Card handled");
@@ -650,29 +623,33 @@ int ServiceKVK_Work(LC_CLIENT *cl) {
   int doneSomething=0;
   LC_CARD_LIST2_ITERATOR *cit;
   LC_CARD *card;
+  LC_CLIENT_RESULT res;
 
   assert(cl);
   kvks=GWEN_INHERIT_GETDATA(LC_CLIENT, SERVICE_KVK, cl);
   assert(kvks);
 
-  card=LC_Client_GetNextCard(cl);
-  if (card) {
+  res=LC_Client_GetNextCard(cl, &card, LC_CLIENT_TIMEOUT_NONE);
+  if (res==LC_Client_ResultOk) {
     int rv;
 
-    DBG_ERROR(0, "Got a new card");
+    DBG_INFO(0, "Got a new card");
+    doneSomething++;
 
     /* new card */
     rv=ServiceKVK_NewCard(cl, card);
     if (rv) {
       if (rv<0) {
-        DBG_WARN(0, "Could not handle new card");
+        DBG_ERROR(0, "Could not handle new card");
       }
       else {
-        DBG_INFO(0, "Not a KVK card");
+	DBG_INFO(0, "Not a KVK card");
       }
+      LC_Client_ReleaseCard(cl, card);
       LC_Card_free(card);
     }
     else {
+      DBG_NOTICE(0, "Got a KVK card");
       LC_Card_List2_PushBack(kvks->cards, card);
     }
   }
@@ -807,6 +784,7 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
     return -1;
   }
 
+  /* header */
   fprintf(f,"Version:libchipcard2-"CHIPCARD_VERSION_FULL_STRING"\n");
   dbuf=GWEN_Buffer_new(0, 32, 0, 1);
   GWEN_Time_toString(ti, "DD.MM.YYYY", dbuf);
@@ -816,7 +794,9 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
   fprintf(f, "Zeit:%s\n", GWEN_Buffer_GetStart(dbuf));
   GWEN_Time_free(ti);
   GWEN_Buffer_free(dbuf); dbuf=0;
+  fprintf(f, "Lesertyp:%s\n", LC_Card_GetReaderType(cd));
 
+  /* insurance data */
   fprintf(f,"KK-Name:%s\n",
           GWEN_DB_GetCharValue(dbData, "insuranceCompanyName", 0, ""));
   fprintf(f,"KK-Nummer:%s\n",
@@ -827,8 +807,35 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
           GWEN_DB_GetCharValue(dbData, "insuranceNumber", 0, ""));
   fprintf(f,"V-Status:%s\n",
           GWEN_DB_GetCharValue(dbData, "insuranceState", 0, ""));
-  fprintf(f,"V-Statusergaenzung:%s\n",
-          GWEN_DB_GetCharValue(dbData, "eastOrWest", 0, ""));
+  s=GWEN_DB_GetCharValue(dbData, "eastOrWest", 0, "");
+  fprintf(f,"V-Statusergaenzung:%s\n", s);
+  if (s) {
+    const char *x=0;
+
+    switch(*s) {
+    case '1': x="west"; break;
+    case '9': x="ost"; break;
+    case '6': x="BVG"; break;
+    case '7': x="SVA, nach Aufwand, dt.-nl Grenzgaenger"; break;
+    case '8': x="SVA, pauschal"; break;
+    case 'M': x="DMP Diabetes mellitus Typ 2, west"; break;
+    case 'X': x="DMP Diabetes mellitus Typ 2, ost"; break;
+    case 'A': x="DMP Brustkrebs, west"; break;
+    case 'C': x="DMP Brustkrebs, ost"; break;
+    case 'K': x="DMP KHK, west"; break;
+    case 'L': x="DMP KHK, ost"; break;
+    case '4': x="nichtversicherter Sozialhilfe-Empfaenger"; break;
+    case 'E': x="DMP Diabetes mellitus Typ 1, west"; break;
+    case 'N': x="DMP Diabetes mellitus Typ 1, ost"; break;
+    case 'D': x="DMP Asthma bronchiale, west"; break;
+    case 'F': x="DMP Asthma bronchiale, ost"; break;
+    case 'S': x="DMP COPD, west"; break;
+    case 'P': x="DMP COPD, ost"; break;
+    default:  x=0;
+    }
+    if (x)
+      fprintf(f,"V-Status-Erlaeuterung:%s\n", x);
+  }
   fprintf(f,"Titel:%s\n",
           GWEN_DB_GetCharValue(dbData, "title", 0, ""));
   fprintf(f,"Vorname:%s\n",

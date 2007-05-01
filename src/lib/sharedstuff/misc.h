@@ -11,10 +11,10 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD2_MISC_H
-#define CHIPCARD2_MISC_H
+#ifndef CHIPCARD3_MISC_H
+#define CHIPCARD3_MISC_H
 
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 #include <gwenhywfar/netlayer.h>
 

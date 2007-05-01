@@ -1,0 +1,69 @@
+
+<driver name="celectronic_ctapi" type="ctapi">
+  <short>Driver for the Celectronic CardStar Medic 2</short>
+  <manufacturer>
+    <name>Celectronic</name>
+    <url>http://www.celectronic.de/</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libctapi-celectronic.so</name>
+      <name>libctapi-celectronic.so.*</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/lib64</loc>
+      <loc>/usr/lib64</loc>
+      <loc>/usr/local/lib64</loc>
+    </locations>
+
+    <downloads>
+      <url></url>
+      <filename></filename>
+    </downloads>
+  </lib>
+
+  <readers>
+
+    <!-- Old Cyberjack or Cyberjack E-com -->
+    <reader name="cardstar_medic2" 
+            bustype="UsbRaw"
+            vendor="0x152a" product="0x8180"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            slots="2" >
+      <short></short>
+
+      <flags>
+        <!-- <flag>keypad</flag> -->
+      </flags>
+
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
+
+      <image>celec_csmedic2.jpg</image>
+    </reader>
+
+  </readers>
+
+</driver>
+

@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 
 #include <stdlib.h>
@@ -56,7 +56,7 @@ GWEN_MSGENGINE *LC_MsgEngine_new(){
 
 
 
-void LC_MsgEngine_FreeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p){
   GWEN_MSGENGINE *e;
   LC_MSGENGINE *le;
 
@@ -458,7 +458,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     size=GWEN_Buffer_GetBytesLeft(msgbuf);
     isBerTlv=(strcasecmp(GWEN_XMLNode_GetProperty(node,
                                                   "tlvtype",
-                                                  "bertlv"),
+                                                  "BER"),
                          "BER")==0);
     /* get tag type */
     if (size<2) {
@@ -468,6 +468,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     j=(unsigned char)(p[pos]);
     if (isBerTlv) {
       if ((j & 0x1f)==0x1f) {
+        DBG_ERROR(0, "here");
         pos++;
         if (pos>=size) {
           DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
@@ -479,7 +480,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
         j&=0x1f;
     }
     DBG_DEBUG(LC_LOGDOMAIN, "Tag type %02x%s", j,
-	      isBerTlv?" (BER-TLV)":"");
+              isBerTlv?" (BER-TLV)":"");
 
     /* get length */
     pos++;
@@ -533,7 +534,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
       DBG_ERROR(LC_LOGDOMAIN, "Too few bytes (%d>%d)", pos, size);
       return -1;
     }
-    DBG_DEBUG(LC_LOGDOMAIN, "Tag data length is %d (total %d)", j, pos);
+    DBG_DEBUG(LC_LOGDOMAIN, "Tag data length is %d (total %d)", j,
+              pos);
     if (GWEN_Buffer_AppendBytes(vbuf,
                                 GWEN_Buffer_GetPosPointer(msgbuf),
                                 pos)) {
@@ -924,7 +926,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     size=GWEN_Buffer_GetBytesLeft(vbuf);
     isBerTlv=(strcasecmp(GWEN_XMLNode_GetProperty(node,
                                                   "tlvtype",
-                                                  "bertlv"),
+                                                  "BER"),
                          "BER")==0);
     /* get tag type */
     if (size<2) {
@@ -941,8 +943,8 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
         }
         j=(unsigned char)(p[pos]);
       }
-      else
-        j&=0x1f;
+      //else
+      //  j&=0x1f;
     }
     DBG_DEBUG(LC_LOGDOMAIN, "Tag type %02x%s", j,
 	      isBerTlv?" (BER-TLV)":"");
@@ -998,7 +1000,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     tagData=p+pos;
     GWEN_Buffer_SetPos(vbuf, pos);
 
-    DBG_DEBUG(LC_LOGDOMAIN, "Tag: %02x (%d bytes)", tagType, tagLength);
+    DBG_ERROR(LC_LOGDOMAIN, "Tag: %02x (%d bytes)", tagType, tagLength);
     if (pos+j>size) {
       DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
       return -1;

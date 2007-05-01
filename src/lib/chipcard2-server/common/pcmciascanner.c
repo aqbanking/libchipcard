@@ -44,7 +44,7 @@ LC_DEVSCANNER *LC_PcmciaScanner_new() {
 
 #ifdef USE_LIBSYSFS
   if (! sysfs_get_mnt_path(sysfspath, sizeof(sysfspath))) {
-    DBG_NOTICE(0, "Will use sysfs to scan for PCMCIA devices")
+    DBG_NOTICE(0, "Will use sysfs to scan for ttyUSB devices")
   }
 #endif
 
@@ -56,11 +56,14 @@ LC_DEVSCANNER *LC_PcmciaScanner_new() {
 /* this function has been submitted by Thomas Viehmann. Thanks ;-) */
 int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl) {
 #ifndef USE_LIBSYSFS
-  DBG_INFO(0, "LibSysFS not supported");
+  DBG_INFO(0, "LibSysFS not supsknumed");
   return -1;
 #else
   struct sysfs_bus *bus = NULL;
   struct sysfs_device *curdev = NULL;
+#ifndef HAVE_SYSFS2
+  struct sysfs_device *temp_device = NULL;
+#endif
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
@@ -75,40 +78,40 @@ int LC_PcmciaScanner_ScanSysFS_Pcmcia(LC_DEVICE_LIST *dl) {
 
   devlist = sysfs_get_bus_devices(bus);
   if (devlist != NULL) {
-    dlist_for_each_data(devlist, curdev,
-			struct sysfs_device) {
-      sknum = strtol(curdev->bus_id, NULL, 16);
-      attributes = sysfs_get_device_attributes(curdev);
-      dlist_for_each_data(attributes, cur,
-			  struct sysfs_attribute) {
-	if (strcmp(cur->name,"manf_id")==0) {
-	  if (cur->value != NULL) {
-	    vendorId = strtol(cur->value, NULL, 16);
-	  }
-	  else {
-	    DBG_ERROR(0,"manf_id empty");
-	  }
-	}
-	if (strcmp(cur->name,"card_id")==0) {
-	  if (cur->value != NULL) {
-	    productId = strtol(cur->value, NULL, 16);
-	  }
-	  else {
-	    DBG_ERROR(0, "card_id empty");
-	  }
-	}
-      }
-      currentDevice=LC_Device_new(LC_Device_BusType_Pcmcia,
-				  0,
-				  sknum,
-				  vendorId, productId);
-      DBG_DEBUG(0, "Adding device %d (%04x/%04x)",
-		sknum,
-		vendorId,
-		productId);
-      LC_Device_SetDevicePos(currentDevice, sknum);
-      LC_Device_List_Add(currentDevice, dl);
-    }
+    dlist_for_each_data(devlist, curdev, 
+                        struct sysfs_device) {
+	  sknum = strtol(curdev->bus_id, NULL, 16);
+          attributes = sysfs_get_device_attributes(curdev);
+          dlist_for_each_data(attributes, cur, 
+                              struct sysfs_attribute) {
+            if (strcmp(cur->name,"manf_id")==0) {
+              if (cur->value != NULL) {
+                vendorId = strtol(cur->value, NULL, 16);
+              }
+              else {
+		DBG_ERROR(0,"manf_id empty");
+	      }
+	    }
+            if (strcmp(cur->name,"card_id")==0) {
+              if (cur->value != NULL) {
+                productId = strtol(cur->value, NULL, 16);
+              }
+	      else {
+		DBG_ERROR(0, "card_id empty");
+	      }
+            }
+          }
+          currentDevice=LC_Device_new(LC_Device_BusType_Pcmcia,
+                                      0,
+                                      sknum,
+                                      vendorId, productId);
+          DBG_DEBUG(0, "Adding device %d (%04x/%04x)",
+                    sknum,
+                    vendorId,
+                    productId);
+          LC_Device_SetDevicePos(currentDevice, sknum);
+          LC_Device_List_Add(currentDevice, dl);
+    }	  
   }
   sysfs_close_bus(bus);
   return 0;

@@ -14,12 +14,11 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include "global.h"
 #include <gwenhywfar/args.h>
 
-#define PROGRAM_VERSION "1.9"
+#define PROGRAM_VERSION "2.9"
 
 
 const GWEN_ARGS prg_args[]={
@@ -147,6 +146,17 @@ const GWEN_ARGS prg_args[]={
   "Show services."
 },
 {
+  0,                            /* flags */
+  GWEN_ArgsTypeInt,             /* type */
+  "startAll",                   /* name */
+  0,                            /* minnum */
+  1,                            /* maxnum */
+  0,                            /* short option */
+  "start-all",                   /* long option */
+  "Start all readers",           /* short description */
+  "Start all readers when monitoring server"
+},
+{
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
   GWEN_ArgsTypeInt,             /* type */
   "help",                       /* name */
@@ -192,12 +202,15 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
   case LC_Client_ResultGeneric:
     s="Generic error.";
     break;
+  case LC_Client_ResultNotSupported:
+    s="Function not supported.";
+    break;
   default:
     s="Unknown error.";
     break;
   }
 
-  fprintf(stderr, "Error in \"%s\": %s\n", x, s);
+  fprintf(stderr, "Error in \"%s\": %s (%d)\n", x, s, res);
   if (res==LC_Client_ResultCmdError && card) {
     fprintf(stderr, "  Last card command result:\n");
     fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
@@ -221,6 +234,7 @@ int main(int argc, char **argv) {
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
+  LC_CLIENT_RESULT res;
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -277,11 +291,10 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  cl=LC_Client_new("chipcard-tool", PROGRAM_VERSION, 0);
-  if (LC_Client_ReadConfigFile(cl,
-                               GWEN_DB_GetCharValue(db, "configfile",
-                                                    0, 0))) {
-    fprintf(stderr, "Error reading configuration.\n");
+  cl=LC_Client_new("chipcard3-tool", PROGRAM_VERSION);
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Could not initialize libchipcard3.\n");
     LC_Client_free(cl);
     GWEN_DB_Group_free(db);
     return RETURNVALUE_SETUP;
@@ -296,6 +309,9 @@ int main(int argc, char **argv) {
   }
   else if (strcasecmp(s, "atr")==0) {
     rv=getAtr(cl, db);
+  }
+  else if (strcasecmp(s, "monitor")==0) {
+    rv=monitor(cl, db);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);

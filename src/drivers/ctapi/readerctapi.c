@@ -21,7 +21,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 #include <unistd.h>
 #include <ctype.h>
@@ -32,27 +32,20 @@ GWEN_INHERIT(LCD_READER, READER_CTAPI)
 
 
 
-LCD_READER *ReaderCTAPI_new(GWEN_TYPE_UINT32 readerId,
-                           const char *name,
-                           int port,
-                           unsigned int slots,
-                           GWEN_TYPE_UINT32 flags,
-                           int ctn){
-  LCD_READER *r;
+int ReaderCTAPI_Extend(LCD_READER *r, int ctn) {
   READER_CTAPI *rc;
 
-  r=LCD_Reader_new(readerId, name, port, slots, flags);
   assert(r);
   GWEN_NEW_OBJECT(READER_CTAPI, rc);
   GWEN_INHERIT_SETDATA(LCD_READER, READER_CTAPI, r, rc, ReaderCTAPI_freeData);
 
   rc->ctn=ctn;
-  return r;
+  return 0;
 }
 
 
 
-void ReaderCTAPI_freeData(void *bp, void *p){
+void GWENHYWFAR_CB ReaderCTAPI_freeData(void *bp, void *p){
   READER_CTAPI *rc;
 
   rc=(READER_CTAPI*)p;

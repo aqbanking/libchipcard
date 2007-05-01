@@ -1,10 +1,13 @@
 INCLUDES=@all_includes@
 
-servicedir=@LC_SERVICE_PATH@
+servicedir=@lc_server_service_dir@
 service_PROGRAMS=cardfs
 
-SERVICE_LIB=-lchipcard2sv
-CLIENT_LIB=-lchipcard2c
+if IS_WINDOWS
+  CLIENT_LIB=-lchipcard3c32_$(LIBCHIPCARD_SO_EFFECTIVE)
+else
+  CLIENT_LIB=-lchipcard3c
+endif
 
 noinst_HEADERS=\
   cardfs_p.h
@@ -13,9 +16,6 @@ cardfs_SOURCES=\
   cardfs.c
 
 cardfs_LDADD=\
- -L../../lib/chipcard2-service $(SERVICE_LIB) \
- -L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
+ -L../../lib/chipcard3-client $(CLIENT_LIB) @gwenhywfar_libs@
 cardfs_LDFLAGS=@STRIPALL@
-
-MAINTAINERCLEANFILES=Makefile.in
 

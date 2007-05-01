@@ -390,7 +390,7 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
 
   sflags=LCSV_Service_GetFlags(sv);
 
-  DBG_DEBUG(0, "Checking service %s (%d)",
+  DBG_ERROR(0, "Checking service %s (%d)",
             LCSV_Service_GetServiceName(sv), st);
 
   if ((sflags & LC_SERVICE_FLAGS_CLIENT) &&

@@ -14,11 +14,10 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
 #include "examplecard.h"
 
 
@@ -114,33 +113,39 @@ int main(int argc, char **argv) {
   int rv;
   int i;
 
-  cl=LC_Client_new("tutorial3", "1.0", 0);
-  if (LC_Client_ReadConfigFile(cl, 0)){
-    fprintf(stderr, "ERROR: Error reading configuration.\n");
+  cl=LC_Client_new("tutorial3", "1.0");
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "Init");
     LC_Client_free(cl);
     return 1;
   }
 
   fprintf(stderr, "INFO: Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
+    LC_Client_free(cl);
     return 2;
   }
 
   fprintf(stderr, "Please insert an EC card or a GeldKarte.\n");
-  card=LC_Client_WaitForNextCard(cl, 30);
-  if (!card) {
-    fprintf(stderr, "ERROR: No card found.\n");
-    LC_Client_StopWait(cl);
+  res=LC_Client_GetNextCard(cl, &card, 30);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "GetNextCard");
+    LC_Client_Stop(cl);
+    LC_Client_free(cl);
     return 2;
   }
 
   /* stop waiting */
   fprintf(stderr, "INFO: Telling the server that we need no more cards.\n");
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -172,11 +177,13 @@ int main(int argc, char **argv) {
   fprintf(stderr, "INFO: Opening card.\n");
 
   /* This now internally calls the ExampleCard_Open() function */
+  fprintf(stderr, "INFO: Opening card.\n");
   res=LC_Card_Open(card);
   if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
+    showError(card, res, "CardOpen");
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -195,10 +202,21 @@ int main(int argc, char **argv) {
   res=LC_Card_Close(card);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "CardClose");
+    LC_Client_ReleaseCard(cl, card);
     LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
   fprintf(stderr, "INFO: Card closed.\n");
+
+  /* release card */
+  res=LC_Client_ReleaseCard(cl, card);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "CardRelease");
+    LC_Card_free(card);
+    LC_Client_free(cl);
+    return 2;
+  }
 
   /* cleanup */
   LC_Card_free(card);

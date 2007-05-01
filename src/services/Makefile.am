@@ -1,4 +1,3 @@
-SUBDIRS=cardfs kvks
-
-MAINTAINERCLEANFILES=Makefile.in
+SUBDIRS=kvks
+# cardfs
 

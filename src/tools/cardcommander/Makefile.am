@@ -1,14 +1,13 @@
-bin_PROGRAMS=cardcommander2
+bin_PROGRAMS=cardcommander3
 
 INCLUDES=@all_includes@
 
-DEFS=@DEFS@ -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
+# if IS_WINDOWS
+if IS_WINDOWS
+ mingw_ldflags=-L/mingw/lib
+endif
 
-CLIENT_LIB=-lchipcard2c
-
-cardcommander2_SOURCES = cardcommander.cpp
-cardcommander2_LDADD = -L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
-cardcommander2_LDFLAGS=@STRIPALL@
-
-MAINTAINERCLEANFILES=Makefile.in
+cardcommander3_SOURCES = cardcommander.cpp
+cardcommander3_LDADD = ../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+cardcommander3_LDFLAGS=@STRIPALL@
 

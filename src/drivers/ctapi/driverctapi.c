@@ -24,10 +24,19 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 #include <unistd.h>
 #include <ctype.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+
+#ifdef OS_LINUX
+# include <linux/kd.h>
+#endif
 
 
 GWEN_INHERIT(LCD_DRIVER, DRIVER_CTAPI)
@@ -56,7 +65,7 @@ LCD_DRIVER *DriverCTAPI_new(int argc, char **argv) {
   LCD_Driver_SetResetSlotFn(d, DriverCTAPI_ResetSlot);
   LCD_Driver_SetReaderStatusFn(d, DriverCTAPI_ReaderStatus);
   LCD_Driver_SetReaderInfoFn(d, DriverCTAPI_ReaderInfo);
-  LCD_Driver_SetCreateReaderFn(d, DriverCTAPI_CreateReader);
+  LCD_Driver_SetExtendReaderFn(d, DriverCTAPI_ExtendReader);
   LCD_Driver_SetGetErrorTextFn(d, DriverCTAPI_GetErrorText);
 
   rv=LCD_Driver_Init(d, argc, argv);
@@ -79,7 +88,7 @@ void DriverCTAPI_free(DRIVER_CTAPI *dct) {
 
 
 
-void DriverCTAPI_freeData(void *bp, void *p) {
+void GWENHYWFAR_CB DriverCTAPI_freeData(void *bp, void *p) {
   DRIVER_CTAPI *dct;
 
   dct=(DRIVER_CTAPI*)p;
@@ -103,7 +112,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Loading library", 0, 0)) {
+    if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Loading library", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -117,7 +126,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
+    if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -131,7 +140,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
+    if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -145,7 +154,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
-    if (LCD_Driver_Connect(d, "ERROR", "Resolving symbols", 0, 0)) {
+    if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
       DBG_ERROR(0, "Error communicating with the server");
       return -1;
     }
@@ -153,8 +162,50 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
     return -1;
   }
 
+  /* special extension for Reiner SCT driver */
+  err=GWEN_LibLoader_Resolve(dct->libLoader,
+			     "rsct_version",
+			     (void*)&dct->rsctVersionFn);
+  if (GWEN_Error_IsOk(err)) {
+    unsigned char vmajor, vminor, vpatchlevel;
+    unsigned short vbuild;
+
+    dct->rsctVersionFn(&vmajor, &vminor, &vpatchlevel, &vbuild);
+    DBG_INFO(0, "New Reiner SCT driver (v%d.%d.%d.%d) detected.",
+	     vmajor, vminor, vpatchlevel, vbuild);
+
+    err=GWEN_LibLoader_Resolve(dct->libLoader,
+			       "rsct_init_name",
+			       (void*)&dct->rsctInitNameFn);
+    if (GWEN_Error_IsOk(err))
+      err=GWEN_LibLoader_Resolve(dct->libLoader,
+				 "rsct_setkeycb",
+				 (void*)&dct->rsctSetKeyCb1Fn);
+    if (!GWEN_Error_IsOk(err)) {
+      DBG_ERROR_ERR(0, err);
+      GWEN_LibLoader_CloseLibrary(dct->libLoader);
+      if (LCD_Driver_Connect(d, LC_ERROR_GENERIC,
+			     "Resolving symbols", 0, 0)) {
+	DBG_ERROR(0, "Error communicating with the server");
+	return -1;
+      }
+      LCD_Driver_Disconnect(d);
+      return -1;
+    }
+  }
+
+  /* special extension for Kobil and Celectronic driver */
+  err=GWEN_LibLoader_Resolve(dct->libLoader,
+			     "CT_init_name",
+			     (void*)&dct->kobilInitNameFn);
+  if (GWEN_Error_IsOk(err)) {
+    DBG_INFO(0,
+	     "Function CT_init_name available "
+	     "(most likely Kobil or Celectronic driver)");
+  }
+
   /* send status report to server */
-  if (LCD_Driver_Connect(d, "OK", "Library loaded", 0, 0)) {
+  if (LCD_Driver_Connect(d, 0, "Library loaded", 0, 0)) {
     DBG_ERROR(0, "Error communicating with the server");
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     return -1;
@@ -231,14 +282,45 @@ int DriverCTAPI_TransformDAD(int i) {
 
 
 
+int DriverCTAPI_KeyCallback1(unsigned short ctn, void *user_data) {
+#ifdef KDMKTONE
+  LCD_READER *r;
+  int fd;
+
+  r=(LCD_READER*)user_data;
+  DBG_ERROR(0, "Key callback called");
+
+  fd=open("/dev/console", O_WRONLY);
+  if (fd!=-1) {
+    int arg;
+    int rv;
+
+    arg=(150<<16)+440; /* "A" for 150ms */
+    rv=ioctl(fd, KDMKTONE, arg);
+    close(fd);
+    if (!rv)
+      return 1;
+    DBG_ERROR(0, "Error on ioctl: %d (%s)", errno, strerror(errno));
+  }
+  else {
+    DBG_ERROR(0, "Error on open: %d (%s)", errno, strerror(errno));
+  }
+#endif
+  printf("\a"); /* fallback */
+
+  return 0;
+}
+
+
+
 GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
-                                      int toReader,
-                                      LCD_READER *r,
-                                      LCD_SLOT *slot,
-                                      const unsigned char *apdu,
-                                      unsigned int apdulen,
-                                      unsigned char *buffer,
-                                      int *bufferlen){
+			      int toReader,
+			      LCD_READER *r,
+			      LCD_SLOT *slot,
+			      const unsigned char *apdu,
+			      unsigned int apdulen,
+			      unsigned char *buffer,
+			      int *bufferlen){
   char retval;
   unsigned char dad;
   unsigned char sad;
@@ -395,7 +477,8 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
-  unsigned char apdu[]={0x20, 0x14, 0x01, 0x00, 0x00};
+  /*unsigned char apdu[]={0x20, 0x14, 0x01, 0x00, 0x00};*/
+  unsigned char apdu[]={0x20, 0x15, 0x01, 0x03};
   unsigned char responseBuffer[300];
   int lr;
   DRIVER_CTAPI *dct;
@@ -752,13 +835,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
 
 
 
-LCD_READER *DriverCTAPI_CreateReader(LCD_DRIVER *d,
-                                    GWEN_TYPE_UINT32 readerId,
-                                    const char *name,
-                                    int port,
-                                    unsigned int slots,
-                                    GWEN_TYPE_UINT32 flags){
-  LCD_READER *r;
+int DriverCTAPI_ExtendReader(LCD_DRIVER *d, LCD_READER *r) {
   DRIVER_CTAPI *dct;
 
   DBG_ERROR(0, "Creating reader...");
@@ -767,11 +844,10 @@ LCD_READER *DriverCTAPI_CreateReader(LCD_DRIVER *d,
   dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_CTAPI, d);
   assert(dct);
 
-  r=ReaderCTAPI_new(readerId, name, port, slots, flags,
-                    (dct->nextCtn)++);
-  DBG_NOTICE(0, "Created reader with CTN %d",
+  ReaderCTAPI_Extend(r, (dct->nextCtn)++);
+  DBG_NOTICE(0, "Extended reader with CTN %d",
              ReaderCTAPI_GetCtn(r));
-  return r;
+  return 0;
 }
 
 
@@ -793,8 +869,30 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
   DBG_NOTICE(LCD_Reader_GetLogger(r),
              "Initializing CTAPI driver with %d, %d (%04x)",
              ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r),
-             LCD_Reader_GetPort(r));
-  rvd=dct->initFn(ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r));
+	     LCD_Reader_GetPort(r));
+  if (LCD_Reader_GetDevicePath(r)) {
+    if (dct->rsctInitNameFn) {
+      DBG_NOTICE(0, "Initializing RSCT CTAPI by name \"%s\"",
+		 LCD_Reader_GetDevicePath(r));
+      rvd=dct->rsctInitNameFn(ReaderCTAPI_GetCtn(r),
+			      LCD_Reader_GetDevicePath(r));
+    }
+    else if (dct->kobilInitNameFn) {
+      DBG_NOTICE(0, "Initializing Kobil CTAPI by name \"%s\"",
+		 LCD_Reader_GetDevicePath(r));
+      rvd=dct->kobilInitNameFn(ReaderCTAPI_GetCtn(r),
+			       LCD_Reader_GetDevicePath(r));
+    }
+    else {
+      DBG_NOTICE(0, "Initializing CTAPI by port (no init_name function)");
+      rvd=dct->initFn(ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r));
+    }
+  }
+  else {
+    DBG_NOTICE(0, "Initializing CTAPI by port");
+    rvd=dct->initFn(ReaderCTAPI_GetCtn(r), LCD_Reader_GetPort(r));
+  }
+
   if (rvd!=0) {
     DBG_ERROR(LCD_Reader_GetLogger(r),
               "Could not init reader \"%s\" at port %d : %d",
@@ -805,6 +903,8 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
     return rvd;
   }
   LCD_Reader_AddStatus(r, LCD_READER_STATUS_UP);
+  if (dct->rsctSetKeyCb1Fn)
+    dct->rsctSetKeyCb1Fn(ReaderCTAPI_GetCtn(r), DriverCTAPI_KeyCallback1, r);
 
 #if 0
   slotList=LCD_Reader_GetSlots(r);

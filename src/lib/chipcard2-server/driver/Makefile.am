@@ -19,10 +19,6 @@ libchipcard2d_la_SOURCES=\
 libchipcard2d_la_LIBADD= \
   ../common/libcommon.la \
   ../../sharedstuff/libsharedstuff.la @gwenhywfar_libs@
-libchipcard2d_la_LDFLAGS= \
-  -no-undefined -Wl,--export-all-symbols \
-  @STRIPALL@ -version-info \
-   @LIBCHIPCARD_SO_CURRENT@:@LIBCHIPCARD_SO_REVISION@:@LIBCHIPCARD_SO_AGE@
 
 
 MAINTAINERCLEANFILES=Makefile.in

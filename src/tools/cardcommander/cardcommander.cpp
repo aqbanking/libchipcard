@@ -41,30 +41,19 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
 
 using namespace std;
 
 #define k_PRG_VERSION_INFO \
-    "cardcommander v0.3  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
-    "(c) 2004 Martin Preuss<martin@libchipcard.de>\n" \
-    "This program is free software licensed under GPL.\n"\
-    "See COPYING for details.\n"
+  "cardcommander v0.4  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
+  "(c) 2006 Martin Preuss<martin@libchipcard.de>\n" \
+  "This program is free software licensed under GPL.\n"\
+  "See COPYING for details.\n"
 
 
 const GWEN_ARGS prg_args[]={
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "configfile",                 /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "C",                          /* short option */
-  "configfile",                 /* long option */
-  "Configuration file to load", /* short description */
-  "Libchipcard2 configuration file to load. Uses the system file if omitted." /* long description */
-},
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
   GWEN_ArgsTypeChar,            /* type */
@@ -126,7 +115,7 @@ const GWEN_ARGS prg_args[]={
 void usage(const char *name, const char *ustr) {
   fprintf(stderr,
           I18N("CardCommander - A command line tool to manipulate a chip card.\n"
-               "(c) 2003,2004 Martin Preuss<martin@libchipcard.de>\n"
+               "(c) 2003-2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
                "modify it under the terms of the GNU Lesser General Public\n"
                "License as published by the Free Software Foundation; either\n"
@@ -182,7 +171,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
   }
 
   fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (card && res==LC_Client_ResultCmdError) {
     fprintf(stderr, "  Last card command result:\n");
     fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
             LC_Card_GetLastSW1(card),
@@ -234,11 +223,12 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     }
 
     fprintf(stdout, I18N("Waiting for a card to be inserted...\n"));
-    tcard=LC_Client_WaitForNextCard(cl, 20);
-    if (!tcard) {
-      fprintf(stderr, I18N("No card.\n"));
+    res=LC_Client_GetNextCard(cl, &tcard, 20);
+    if (res!=LC_Client_ResultOk) {
+      showError(0, res, "GetNextCard");
       return 3;
     }
+
     *card=tcard;
 
     res=LC_Card_Open(*card);
@@ -259,6 +249,14 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     res=LC_Card_Close(*card);
     if (res!=LC_Client_ResultOk) {
       showError(*card, res, "CardClose");
+      LC_Client_ReleaseCard(cl, *card);
+      LC_Card_free(*card);
+      *card=0;
+      return 3;
+    }
+    res=LC_Client_ReleaseCard(cl, *card);
+    if (res!=LC_Client_ResultOk) {
+      showError(*card, res, "ReleaseCard");
       LC_Card_free(*card);
       *card=0;
       return 3;
@@ -307,10 +305,60 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     lastAPDU=string(GWEN_Buffer_GetStart(abuf),
 		    GWEN_Buffer_GetUsedBytes(abuf));
     rbuf=GWEN_Buffer_new(0, 256, 0, 1);
-    res=LC_Card_ExecAPDU(*card, GWEN_Buffer_GetStart(abuf),
-			 GWEN_Buffer_GetUsedBytes(abuf),
+    res=LC_Card_ExecApdu(*card, GWEN_Buffer_GetStart(abuf),
+                         GWEN_Buffer_GetUsedBytes(abuf),
                          rbuf,
                          LC_Client_CmdTargetCard,
+                         30);
+    GWEN_Buffer_free(abuf);
+    if (res!=LC_Client_ResultOk) {
+      showError(*card, res, "ExecAPDU");
+      GWEN_Buffer_free(rbuf);
+      return 3;
+    }
+
+    fprintf(stdout, I18N("Result: %02x/%02x\nResponse: "),
+	    LC_Card_GetLastSW1(*card),
+	    LC_Card_GetLastSW2(*card));
+    GWEN_Text_DumpString(GWEN_Buffer_GetStart(rbuf),
+			 GWEN_Buffer_GetUsedBytes(rbuf),
+			 stdout, 2);
+    GWEN_Buffer_free(rbuf);
+  }
+  else if (strcasecmp(cm.c_str(), "rapdu")==0) {
+    GWEN_BUFFER *abuf;
+    GWEN_BUFFER *rbuf;
+
+    if (!*card) {
+      fprintf(stderr, I18N("Card is not open, try \"open\" first.\n"));
+      return 3;
+    }
+
+    abuf=GWEN_Buffer_new(0, 32, 0, 1);
+    if (strcasecmp(cm.c_str(), "rapdu")==0) {
+      if (GWEN_Text_FromHexBuffer(cmd.substr(i).c_str(), abuf)) {
+	fprintf(stderr,I18N("Only hex bytes are allowed.\n"));
+	GWEN_Buffer_free(abuf);
+	return 2;
+      }
+      fprintf(stdout, I18N("Sending APDU:\n"));
+    }
+    if (GWEN_Buffer_GetUsedBytes(abuf)<4) {
+      fprintf(stderr,I18N("An APDU needs at least 4 bytes.\n"));
+      GWEN_Buffer_free(abuf);
+      return 2;
+    }
+    GWEN_Text_DumpString(GWEN_Buffer_GetStart(abuf),
+			 GWEN_Buffer_GetUsedBytes(abuf),
+			 stdout, 2);
+
+    lastAPDU=string(GWEN_Buffer_GetStart(abuf),
+		    GWEN_Buffer_GetUsedBytes(abuf));
+    rbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    res=LC_Card_ExecApdu(*card, GWEN_Buffer_GetStart(abuf),
+                         GWEN_Buffer_GetUsedBytes(abuf),
+                         rbuf,
+                         LC_Client_CmdTargetReader,
                          30);
     GWEN_Buffer_free(abuf);
     if (res!=LC_Client_ResultOk) {
@@ -341,9 +389,11 @@ int execCommand(GWEN_DB_NODE *dbArgs,
       res=LC_Card_Close(*card);
       if (res!=LC_Client_ResultOk) {
 	showError(*card, res, "CardClose");
-	LC_Card_free(*card);
+        LC_Client_ReleaseCard(cl, *card);
+        LC_Card_free(*card);
 	*card=0;
       }
+      LC_Client_ReleaseCard(cl, *card);
       LC_Card_free(*card);
       *card=0;
     }
@@ -359,6 +409,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 		 "open  - connects the card\n"
 		 "close - disconnects the card \n"
 		 "apdu xx xx xx xx [xx...] - sends a command to the card\n"
+		 "rapdu xx xx xx xx [xx...] - sends a command to the reader\n"
 		 "info  - shows some information about the reader the \n"
 		 "        currently open card is inserted in\n"
 		 "help  - shows this little help screen\n"
@@ -427,9 +478,9 @@ int main(int argc, char **argv) {
     return 1;
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-		      "cardcommander2",
+		      "cardcommander3",
 		      GWEN_DB_GetCharValue(db, "logfile", 0,
-					   "cardcommander2.log"),
+					   "cardcommander3.log"),
 		      logType,
 		      GWEN_LoggerFacilityUser);
   if (rv) {
@@ -438,20 +489,17 @@ int main(int argc, char **argv) {
   }
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, logLevel);
 
-  cl=LC_Client_new("cardcommander2", "0", 0);
-  if (LC_Client_ReadConfigFile(cl,
-                               GWEN_DB_GetCharValue(db, "configfile",
-                                                    0, 0))) {
-    fprintf(stderr, "Error reading configuration.\n");
-    LC_Client_free(cl);
-    GWEN_DB_Group_free(db);
+  cl=LC_Client_new("cardcommander3", "0");
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(0, res, "Init");
     return 2;
   }
 
   fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StartWait");
+    showError(card, res, "Start");
     return 3;
   }
   fprintf(stderr, "Connected.\n");
@@ -463,9 +511,9 @@ int main(int argc, char **argv) {
     rv=execCommand(db, cl, &card, cmdstring);
   }
 
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
   }
 
   LC_Client_free(cl);

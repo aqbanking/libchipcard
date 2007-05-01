@@ -1,12 +1,17 @@
-INCLUDES=-I.. -I../.. @all_includes@
+INCLUDES=-I.. -I../.. -I../../.. -I$(top_builddir) @all_includes@
 
 typefiles=pininfo.xml
+
+DEFS += \
+  -DBUILDING_CHIPCARD
+
+#AM_CFLAGS=$(visibility_cflags)
 
 EXTRA_DIST=$(typefiles)
 
 noinst_LTLIBRARIES=libsharedstuff.la
 
-iheaderdir=${includedir}/chipcard2/sharedstuff
+iheaderdir=${includedir}/chipcard3/sharedstuff
 iheader_HEADERS=\
   msgengine.h \
   misc.h \

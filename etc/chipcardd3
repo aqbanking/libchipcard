@@ -1,0 +1,75 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          chipcardd3
+# Required-Start:    $syslog $remote_fs $local_fs $network
+# Required-Stop:     $syslog $remote_fs $local_fs $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: daemon for smartcard access
+# Description:       server that libchipcard3-based program can
+#                    connect to
+### END INIT INFO
+#
+# NOTE: The above assumes unix sockets are used (otherwise $network and 
+#       $named might be wanted)
+#
+# Start and stop chipcardd, adapted by packager from skeleton by:
+#
+#		Written by Miquel van Smoorenburg <miquels@cistron.nl>.
+#		Modified for Debian GNU/Linux
+#		by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/chipcardd3
+PIDFILE=/var/run/chipcardd3.pid
+DAEMON_ARGS="--pidfile $PIDFILE --exit-on-error --store-all-certs"
+NAME=chipcardd3
+DESC="libchipcard3 daemon"
+
+test -x $DAEMON || exit 0
+
+set -e
+
+check_var_run() {
+  if [ ! -d /var/run/chipcard3 ] ; then
+    mkdir -p /var/run/chipcard3
+  fi
+}
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	check_var_run
+	start-stop-daemon --start --quiet --pidfile $PIDFILE \
+		--exec $DAEMON -- $DAEMON_ARGS
+	echo "$NAME."
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
+	echo "$NAME."
+	;;
+  reload)
+	echo "Reloading $DESC configuration files."
+	start-stop-daemon --stop --signal 1 --quiet --pidfile \
+		$PIDFILE --exec $DAEMON
+	;;
+  restart|force-reload)
+	echo -n "Restarting $DESC: "
+	start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE \
+		--exec $DAEMON
+	sleep 1
+	check_var_run
+	start-stop-daemon --start --quiet --pidfile $PIDFILE \
+		--exec $DAEMON -- $DAEMON_ARGS
+	echo "$NAME."
+	;;
+  *)
+	N=$0
+	echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

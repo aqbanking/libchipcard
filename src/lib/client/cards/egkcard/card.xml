@@ -1,0 +1,25 @@
+<cards>
+  <card name="egk" extends="ProcessorCard" type="processor" >
+    <cardinfo>
+      <name>eGK</name>
+      <descr>
+        HBCI card, new style
+      </descr>
+      <atrs>
+       <atr>3b 9? ?? 81 b1 fe 45 1f *</atr>
+      </atrs>
+    </cardinfo>
+    
+    <commands>
+
+      <!-- no special commands for this card -->
+      
+    </commands>
+    
+    <!-- generic command responses -->
+    <results>
+    </results>
+
+  </card>
+</cards>
+

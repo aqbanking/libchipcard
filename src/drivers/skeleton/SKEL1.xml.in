@@ -1,0 +1,21 @@
+<PluginDescr>
+  <plugin name="SKEL1" type="Libchipcard2_Driver" >
+    <version>@CHIPCARD_VERSION_STRING@</version>
+    <author>Martin Preuss(martin@libchipcard.de)</author>
+    <short>Driver skeleton</short>
+    <descr>
+      Driver skeleton
+    </descr>
+  </plugin>
+  
+  
+  <plugin name="SKEL1" type="Libchipcard2_Driver" lang="de" >
+    <version>@CHIPCARD_VERSION_STRING@</version>
+    <author>Martin Preuss(martin@libchipcard.de)</author>
+    <short>Treiber-Geruest</short>
+    <descr>
+      Treiber-Geruest zum Erstellen eines neuen Treibers.
+    </descr>
+  </plugin>
+</PluginDescr>
+

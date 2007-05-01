@@ -15,9 +15,8 @@
 #define RSACARD_GLOBAL_H
 
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
-#include <chipcard2-client/cards/geldkarte.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/db.h>
@@ -39,6 +38,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
 int listReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
+int monitor(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
 

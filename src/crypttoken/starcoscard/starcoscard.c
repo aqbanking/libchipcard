@@ -19,9 +19,9 @@
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
-#include <chipcard2-client/cards/starcos.h>
-#include <chipcard2-client/cards/processorcard.h>
-#include <chipcard2-client/crypttoken/ct_card.h>
+#include <chipcard3/client/cards/starcos.h>
+#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard3/client/crypttoken/ct_card.h>
 
 
 GWEN_INHERIT(GWEN_CRYPTTOKEN, LC_CT_STARCOS)
@@ -47,6 +47,7 @@ GWEN_PLUGIN *LC_CryptTokenSTARCOS_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                                              const char *fileName) {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_STARCOS *cpl;
+  LC_CLIENT_RESULT res;
 
   pl=GWEN_CryptToken_Plugin_new(pm,
 				GWEN_CryptToken_Device_Card,
@@ -56,10 +57,12 @@ GWEN_PLUGIN *LC_CryptTokenSTARCOS_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
   GWEN_NEW_OBJECT(LC_CT_PLUGIN_STARCOS, cpl);
   GWEN_INHERIT_SETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_STARCOS, pl, cpl,
 		       LC_CryptTokenSTARCOS_Plugin_FreeData);
-  cpl->client=LC_Client_new("LC_CryptTokenSTARCOS", VERSION, 0);
-  if (LC_Client_ReadConfigFile(cpl->client, 0)) {
+  cpl->client=LC_Client_new("LC_CryptTokenSTARCOS", VERSION);
+
+  res=LC_Client_Init(cpl->client);
+  if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "Error reading libchipcard2 client configuration.");
+              "Error reading libchipcard3 client configuration (%d).", res);
     GWEN_Plugin_free(pl);
     return 0;
   }
@@ -75,7 +78,7 @@ GWEN_PLUGIN *LC_CryptTokenSTARCOS_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 
 
 
-void LC_CryptTokenSTARCOS_Plugin_FreeData(void *bp, void *p) {
+void GWENHYWFAR_CB LC_CryptTokenSTARCOS_Plugin_FreeData(void *bp, void *p) {
   LC_CT_PLUGIN_STARCOS *cpl;
 
   cpl=(LC_CT_PLUGIN_STARCOS*)p;
@@ -124,35 +127,39 @@ int LC_CryptTokenSTARCOS_Plugin_CheckToken(GWEN_PLUGIN *pl,
   pm=GWEN_Plugin_GetManager(pl);
   assert(pm);
 
-  res=LC_Client_StartWait(cpl->client, 0, 0);
+  res=LC_Client_Start(cpl->client);
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
-  hcard=LC_Client_WaitForNextCard(cpl->client, 5);
-  if (!hcard) {
+  res=LC_Client_GetNextCard(cpl->client, &hcard, 5);
+  if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "No card within specified timeout");
-    LC_Client_StopWait(cpl->client);
+	      "No card within specified timeout (%d)", res);
+    LC_Client_Stop(cpl->client);
     return GWEN_ERROR_CT_IO_ERROR;
   }
   else {
     int rv;
 
+    assert(hcard);
     /* ok, we have a card, don't wait for more */
-    LC_Client_StopWait(cpl->client);
+    LC_Client_Stop(cpl->client);
     /* check card */
     rv=LC_Starcos_ExtendCard(hcard);
     if (rv) {
       DBG_ERROR(LC_LOGDOMAIN,
-		"STARCOS card not available, please check your setup (%d)", rv);
+                "STARCOS card not available, please check your setup (%d)",
+                rv);
+      LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       return GWEN_ERROR_NOT_AVAILABLE;
     }
 
     res=LC_Card_Open(hcard);
     if (res!=LC_Client_ResultOk) {
+      LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       DBG_NOTICE(LC_LOGDOMAIN,
 		 "Could not open card (%d), maybe not a STARCOS card?",
@@ -162,48 +169,41 @@ int LC_CryptTokenSTARCOS_Plugin_CheckToken(GWEN_PLUGIN *pl,
     else {
       GWEN_DB_NODE *dbCardData;
 
-        dbCardData=LC_Starcos_GetCardDataAsDb(hcard);
-	assert(dbCardData);
+      dbCardData=LC_Starcos_GetCardDataAsDb(hcard);
+      assert(dbCardData);
 
-        currCardNumber=GWEN_DB_GetCharValue(dbCardData,
-                                            "ICCSN/cardNumber",
-                                            0,
-                                            0);
-	if (!currCardNumber) {
-          DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
-          abort();
+      currCardNumber=GWEN_DB_GetCharValue(dbCardData,
+                                          "ICCSN/cardNumber",
+                                          0,
+                                          0);
+      if (!currCardNumber) {
+        DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
+        abort();
+      }
+
+      DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
+
+      if (GWEN_Buffer_GetUsedBytes(name)==0) {
+        DBG_NOTICE(LC_LOGDOMAIN, "No or empty token name");
+        GWEN_Buffer_AppendString(name, currCardNumber);
+      }
+      else {
+        if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
+          DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
+          LC_Card_Close(hcard);
+          LC_Client_ReleaseCard(cpl->client, hcard);
+          LC_Card_free(hcard);
+          return GWEN_ERROR_CT_BAD_NAME;
         }
+      }
 
-        DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
-
-	if (GWEN_Buffer_GetUsedBytes(name)==0) {
-	  DBG_NOTICE(LC_LOGDOMAIN, "No or empty token name");
-	  GWEN_Buffer_AppendString(name, currCardNumber);
-	}
-	else {
-	  if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
-	    DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
-	    LC_Card_Close(hcard);
-	    LC_Card_free(hcard);
-	    return GWEN_ERROR_CT_BAD_NAME;
-	  }
-	}
-
-        GWEN_Buffer_AppendString(subTypeName,
-                                 LC_Card_GetSelectedApp(hcard));
-        LC_Card_Close(hcard);
-	LC_Card_free(hcard);
+      LC_Card_Close(hcard);
+      LC_Client_ReleaseCard(cpl->client, hcard);
+      LC_Card_free(hcard);
     } /* if card is open */
     return 0;
   } /* if there is a card */
-
 }
-
-
-
-
-
-
 
 
 
@@ -248,7 +248,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,
 
 
 
-void LC_CryptTokenSTARCOS_FreeData(void *bp, void *p) {
+void GWENHYWFAR_CB LC_CryptTokenSTARCOS_FreeData(void *bp, void *p) {
   LC_CT_STARCOS *lct;
 
   lct=(LC_CT_STARCOS*)p;
@@ -273,13 +273,15 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
 
   name=GWEN_CryptToken_GetTokenName(ct);
 
-  res=LC_Client_StartWait(lct->client, 0, 0);
+  DBG_DEBUG(LC_LOGDOMAIN, "Starting to wait for cards");
+  res=LC_Client_Start(lct->client);
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
   first=1;
+  hcard=0;
   for (;;) {
     int timeout;
 
@@ -289,14 +291,23 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
     else
       timeout=5;
 
-    hcard=LC_Client_WaitForNextCard(lct->client, timeout);
+    if (hcard==0) {
+      DBG_DEBUG(LC_LOGDOMAIN, "Waiting for next card...");
+      res=LC_Client_GetNextCard(lct->client, &hcard, timeout);
+      if (res!=LC_Client_ResultOk &&
+	  res!=LC_Client_ResultWait) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error while waiting for card (%d)", res);
+	return GWEN_ERROR_CT_IO_ERROR;
+      }
+    }
     if (!hcard) {
       int mres;
 
+      DBG_DEBUG(LC_LOGDOMAIN, "Still no card, asking user");
       mres=GWEN_CryptManager_InsertToken(lct->pluginManager, ct);
       if (mres) {
         DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
-        LC_Client_StopWait(lct->client);
+        LC_Client_Stop(lct->client);
         return GWEN_ERROR_USER_ABORTED;
       }
     }
@@ -304,21 +315,24 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
       int rv;
 
       /* ok, we have a card, now check it */
+      DBG_DEBUG(LC_LOGDOMAIN, "We have a card, checking");
       rv=LC_Starcos_ExtendCard(hcard);
       if (rv) {
         DBG_ERROR(LC_LOGDOMAIN,
                   "STARCOS card not available, please check your setup (%d)",
                   rv);
+        LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
-        LC_Client_StopWait(lct->client);
+        LC_Client_Stop(lct->client);
         return GWEN_ERROR_NOT_AVAILABLE;
       }
 
-      LC_Starcos_SetAppName(hcard, GWEN_CryptToken_GetTokenSubType(ct));
-
+      DBG_DEBUG(LC_LOGDOMAIN, "Opening card");
       res=LC_Card_Open(hcard);
       if (res!=LC_Client_ResultOk) {
+        LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
+        hcard=0;
         DBG_NOTICE(LC_LOGDOMAIN,
                    "Could not open card (%d), maybe not a STARCOS card?",
                    res);
@@ -326,6 +340,7 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
       else {
         GWEN_DB_NODE *dbCardData;
 
+        DBG_DEBUG(LC_LOGDOMAIN, "Checking card data");
         dbCardData=LC_Starcos_GetCardDataAsDb(hcard);
 	assert(dbCardData);
 
@@ -333,11 +348,12 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
                                             "ICCSN/cardNumber",
                                             0,
                                             0);
-	if (!currCardNumber) {
+        if (!currCardNumber) {
           DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
           GWEN_DB_Dump(dbCardData, stderr, 2);
           abort();
         }
+
 
         DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
 
@@ -353,21 +369,34 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
           break;
         }
 
+        DBG_ERROR(LC_LOGDOMAIN, "Closing card");
         LC_Card_Close(hcard);
-	LC_Card_free(hcard);
+        LC_Client_ReleaseCard(lct->client, hcard);
+        LC_Card_free(hcard);
+        hcard=0;
 
-        hcard=LC_Client_PeekNextCard(lct->client);
-        if (!hcard) {
-          int mres;
+        DBG_DEBUG(LC_LOGDOMAIN, "Looking for next card");
+        res=LC_Client_GetNextCard(lct->client, &hcard,
+				  LC_CLIENT_TIMEOUT_NONE);
+	if (res!=LC_Client_ResultOk) {
+	  int mres;
 
-          mres=GWEN_CryptManager_InsertCorrectToken(lct->pluginManager, ct);
-          if (mres) {
-            DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
-            LC_Client_StopWait(lct->client);
-            return GWEN_ERROR_USER_ABORTED;
-          }
-        } /* if there is no other card waiting */
-        else {
+	  if (res!=LC_Client_ResultWait) {
+	    DBG_ERROR(LC_LOGDOMAIN,
+		      "Communication error (%d)", res);
+	    LC_Client_Stop(lct->client);
+	    return GWEN_ERROR_CT_IO_ERROR;
+	  }
+
+          DBG_ERROR(LC_LOGDOMAIN, "No next card, asking user");
+	  mres=GWEN_CryptManager_InsertCorrectToken(lct->pluginManager, ct);
+	  if (mres) {
+	    DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
+	    LC_Client_Stop(lct->client);
+	    return GWEN_ERROR_USER_ABORTED;
+	  }
+	} /* if there is no other card waiting */
+	else {
           /* otherwise there already is another card in another reader,
            * so no need to bother the user. This allows to insert all
            * cards in all readers and let me choose the card ;-) */
@@ -379,9 +408,11 @@ int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
   } /* for */
 
   /* ok, now we have the card we wanted to have, now ask for the pin */
-  LC_Client_StopWait(lct->client);
+  DBG_DEBUG(LC_LOGDOMAIN, "No more cards needed");
+  LC_Client_Stop(lct->client);
 
   lct->card=hcard;
+  DBG_INFO(LC_LOGDOMAIN, "Card found");
   return 0;
 }
 
@@ -409,13 +440,12 @@ int LC_CryptTokenSTARCOS__Open(GWEN_CRYPTTOKEN *ct, int manage) {
   }
 
   /* get CryptToken info */
-  node=LC_Card_GetAppInfo(lct->card);
+  node=LC_Card_GetAppNode(lct->card);
   assert(node);
   nct=GWEN_XMLNode_FindFirstTag(node, "crypttoken", 0, 0);
   if (!nct) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Card application data does not contain a crypttoken");
-    GWEN_XMLNode_free(node);
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
@@ -425,10 +455,8 @@ int LC_CryptTokenSTARCOS__Open(GWEN_CRYPTTOKEN *ct, int manage) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Error reading CryptToken data from XML (%d)",
               rv);
-    GWEN_XMLNode_free(node);
     return rv;
   }
-  GWEN_XMLNode_free(node);
 
   return 0;
 }
@@ -499,6 +527,14 @@ int LC_CryptTokenSTARCOS_Close(GWEN_CRYPTTOKEN *ct) {
   lct->haveEgPin=0;
 
   res=LC_Card_Close(lct->card);
+  if (res!=LC_Client_ResultOk) {
+    LC_Client_ReleaseCard(lct->client, lct->card);
+    LC_Card_free(lct->card);
+    lct->card=0;
+    return GWEN_ERROR_CT_IO_ERROR;
+  }
+
+  res=LC_Client_ReleaseCard(lct->client, lct->card);
   if (res!=LC_Client_ResultOk) {
     LC_Card_free(lct->card);
     lct->card=0;

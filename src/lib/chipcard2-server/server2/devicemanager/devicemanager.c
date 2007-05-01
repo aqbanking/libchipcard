@@ -965,8 +965,20 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
         DBG_WARN(0, "Driver terminated normally");
         LCDM_Driver_SetProcess(d, 0);
         dst=LC_DriverStatusDown;
-        LCDM_DeviceManager_AbandonDriver(dm, d, dst,
-                                         "Driver terminated normally");
+        LCDM_Driver_SetStatus(d, dst);
+        LCS_Server_DriverChg(dm->server,
+                             LCDM_Driver_GetDriverId(d),
+                             LCDM_Driver_GetDriverType(d),
+                             LCDM_Driver_GetDriverName(d),
+                             LCDM_Driver_GetLibraryFile(d),
+                             dst,
+                             "Driver terminated normally");
+        if (LCDM_Driver_GetIpcId(d)) {
+          /* remove IPC node */
+          GWEN_IpcManager_RemoveClient(dm->ipcManager,
+                                       LCDM_Driver_GetIpcId(d));
+          LCDM_Driver_SetIpcId(d, 0);
+        }
         done++;
       }
       else if (pst==GWEN_ProcessStateAborted) {
@@ -1736,8 +1748,8 @@ void LCDM_DeviceManager_DriverIpcDown(LCDM_DEVICEMANAGER *dm,
                LCDM_Driver_GetDriverName(d),
                LCDM_Driver_GetDriverId(d));
     LCDM_Driver_SetIpcId(d, 0);
-    /*LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusDown,
-				     "Driver connection went down");*/
+    LCDM_DeviceManager_AbandonDriver(dm, d, LC_DriverStatusDown,
+				     "Driver connection went down");
   }
 }
 
@@ -1986,13 +1998,6 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
     DBG_ERROR(0, "Error in driver \"%08x\": %s",
               driverId, text);
-
-    /* remove request before removing the IPC client */
-    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
-      DBG_ERROR(0, "Could not remove request");
-      abort();
-    }
-
     ebuf=GWEN_Buffer_new(0, 256, 0, 1);
     GWEN_Buffer_AppendString(ebuf, "Driver error (");
     GWEN_Buffer_AppendString(ebuf, text);
@@ -2001,6 +2006,10 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
                                      LC_DriverStatusAborted,
                                      GWEN_Buffer_GetStart(ebuf));
     GWEN_Buffer_free(ebuf);
+    if (GWEN_IpcManager_RemoveRequest(dm->ipcManager, rid, 0)) {
+      DBG_ERROR(0, "Could not remove request");
+      abort();
+    }
     return -1;
   }
 

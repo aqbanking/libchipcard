@@ -1,0 +1,42 @@
+# $RCSfile$
+#                             -------------------
+#    cvs         : $Id$
+#    begin       : Mon Mar 01 2004
+#    copyright   : (C) 2004 by Martin Preuss
+#    email       : martin@libchipcard.de
+#
+# ***************************************************************************
+# *          Please see toplevel file COPYING for license details           *
+# ***************************************************************************/
+#
+#
+# This file is used by the chipcard3 daemon.
+# Please modify it to your needs and copy it to
+#           $PREFIX/etc/chipcard3/server/chipcardd3.conf
+#
+# This is an example of a configuration file to be used when there are only
+# USB readers known by Libchipcard2 in your system.
+# Currently these known USB readers are:
+# - Towitoko Chipdrive Pinpad
+# - Reiner SCT Cyberjack
+# - Kobil USB readers
+# and various others.
+#
+# For serial readers (or unknown readers) a driver section is needed.
+
+
+# if this is "0" then the server won't start
+enabled="1"
+
+
+server {
+  # local server, using Unix Domain Sockets which can only be
+  # connected from the very same machine
+  typ="local"                 
+  addr="/var/run/chipcard3.comm"
+} # server
+
+DeviceManager {
+}
+
+

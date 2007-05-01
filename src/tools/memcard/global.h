@@ -15,9 +15,9 @@
 #define RSACARD_GLOBAL_H
 
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
-#include <chipcard2-client/cards/memorycard.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/cards/memorycard.h>
 
 #include <gwenhywfar/logger.h>
 

@@ -1,7 +1,7 @@
 /***************************************************************************
  $RCSfile$
                              -------------------
-    cvs         : $Id: reader-libchipcard2.c 198 2006-07-14 17:42:25Z martin $
+    cvs         : $Id$
     begin       : Mon Mar 01 2004
     copyright   : (C) 2004 by Martin Preuss
     email       : martin@libchipcard.de

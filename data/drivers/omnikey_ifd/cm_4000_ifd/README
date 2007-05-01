@@ -8,7 +8,7 @@ Howto install the proprietary driver from http://www.omnikey.at
 4) "./install --nopcscd"
 
 This should create all necessary files and install the driver to appropriate
-locations where Libchipcard2 should find them.
+locations where Libchipcard3 should find them.
 
 If you already have a kernel module then you might want to just copy the
 file libcm4000.so from the package to "/usr/lib/pcsc/drivers/".

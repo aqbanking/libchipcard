@@ -1,0 +1,9 @@
+
+This is a driver skeleton. To use it for your own implementation of a driver
+you can simply use the tool "sed" to replace the following words:
+
+SKEL1 -> yourproject
+SKEL2 -> YOURPROJECT
+SKEL3 -> YourProject
+
+This also applies to file names.

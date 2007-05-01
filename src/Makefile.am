@@ -1,8 +1,4 @@
-SUBDIRS=lib drivers tools services fake_ctapi crypttoken test
+DIST_SUBDIRS=lib drivers tools crypttoken services fake_ctapi
 
-if USE_OPENSC
-SUBDIRS+=opensc
-endif
-
-MAINTAINERCLEANFILES=Makefile.in
+SUBDIRS=lib tools crypttoken fake_ctapi @lc_dir_nonwindows_src@
 

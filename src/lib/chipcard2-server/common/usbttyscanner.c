@@ -101,9 +101,7 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
   struct sysfs_attribute *cur = NULL;
   struct dlist *devlist = NULL;
   struct dlist *attributes = NULL;
-#ifdef HAVE_SYSFS2
   struct dlist *children = NULL;
-#endif
   int port=0, vendorId=0, productId=0;
   LC_DEVICE *currentDevice;
 
@@ -128,7 +126,6 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
             port = atoi(&child->name[6]);
         }
       }
-      sysfs_close_list(children);
 #else
       temp_device = sysfs_open_device_tree(curdev->path);
       if (temp_device) {

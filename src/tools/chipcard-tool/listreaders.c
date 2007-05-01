@@ -20,7 +20,8 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard2-client/mon/monitor.h>
+#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard3/client/mon/monitor.h>
 #include <gwenhywfar/debug.h>
 
 
@@ -93,9 +94,9 @@ void _listReaders_show(LCM_MONITOR *mon, GWEN_DB_NODE *dbArgs) {
                 LCM_Reader_GetReaderPort(mr));
         rflags=LCM_Reader_GetReaderFlags(mr);
         if (rflags) {
-          if (rflags & LC_CARD_READERFLAGS_KEYPAD)
+          if (rflags & LC_READER_FLAGS_KEYPAD)
             fprintf(stdout, ", keypad");
-          if (rflags & LC_CARD_READERFLAGS_DISPLAY)
+          if (rflags & LC_READER_FLAGS_DISPLAY)
             fprintf(stdout, ", display");
         }
         fprintf(stdout, ")\n");
@@ -113,6 +114,18 @@ int listReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   LC_CLIENT_RESULT res;
   LCM_MONITOR *mon;
   int verbosity;
+  const char *s;
+
+  s=LC_Client_GetIoTypeName(cl);
+  assert(s);
+  if (strcasecmp(s, LC_CLIENT_LCC_NAME)!=0) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "This command only works with the "
+              "libchipcard3 ressource manager (%s), but "
+              "you are using \"%s\"",
+              LC_CLIENT_LCC_NAME, s);
+    return 2;
+  }
 
   verbosity=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
   if (verbosity)

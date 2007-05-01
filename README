@@ -1,19 +1,24 @@
 
                                  Content
               -------------------------------------------------------
-              1. Introduction
-              2. Needed Components
-              3. Server Setup
-              4. Starting The Daemon
-              5. Server Environment Variables
-              6. Client Setup
-              7. Using Libchipcard2 in your own Projects
-              8. Remote Drivers
-              9. Using OpenSC with Libchipcard2
-              10. Using Libchipcard2 With MacOS
-              11. Using the OpenSource Generic CCID Driver
-              12. Changes in Server Configuration File in 1.9.16alpha
-              13. Projects Using Libchipcard2
+               1. Introduction
+               2. Needed Components
+               3. Server Setup
+               3.1. Security Mode
+               3.2. Adding Readers
+               3.3. File Permissions
+               4. Starting The Daemon
+               5. Server Environment Variables
+               6. Client Setup
+               7. Using Libchipcard3 in your own Projects
+               8. Using Libchipcard3 With MacOS
+               9. Special Drivers and Readers
+               9.1. Generic CCID Driver
+               9.2. Reiner SCT Cyberjack
+               9.3. Omnikey CardMan 4000
+               9.4. SCM SPR 532
+              10. Distribution Specific Notes
+              11. Projects Using Libchipcard3
               -------------------------------------------------------
 
 
@@ -21,37 +26,47 @@
 1. Introduction
 ===============
 
-Libchipcard2 is a library for generic access to chipcard readers. It contains
+Libchipcard3 is a library for generic access to chipcard readers. It contains
 a complete ressource manager and uses the hardware drivers provided by
 manufacturers of card readers. The number of readers to be used in parallel
 is unbound.
 
-Libchipcard2 has some advantages over existing card reader ressource managers:
+Libchipcard3 has some advantages over existing card reader ressource managers:
  - autodetection of readers at multiple buses
  - readers are only allocated upon request by a client (while no client needs
-   access to a given reader this reader is not accessed by Libchipcard2)
+   access to a given reader this reader is not accessed by Libchipcard3)
  - it provides a fake CTAPI which can be used by any CTAPI-aware program
-   to use Libchipcard2 via CTAPI
+   to use Libchipcard3 via CTAPI
 
-Libchipcard2 autodetects and automatically configures readers at the following
+Libchipcard3 autodetects and automatically configures readers at the following
 buses:
  - raw USB
  - USB serial
  - PCI
  - PCMCIA
 
+Libchipcard3 has been tested by myself with the following readers:
+- Kobil Kaan Advanced USB (works)
+- Towitoko Chipdrive Micro (serial, works)
+- old Reiner SCT Cyberjack (0x100, works)
+- new Reiner SCT Cyberjack (0x300, works)
+- Reiner SCT Cyberjack ECom (works)
+- Omnikey CardMan 3621 (USB, works)
+- Omnikey CardMan 4000 (PCMCIA, works)
+- Cherry G80-1501 (mode 2, works)
+- Cherry G80-1502 (mode 2, works)
+- SCM SCR 3310 (works)
+- SCM SPR 532 (works with original driver, see 9.4)
 
 
 
 2. Needed Components
 ====================
 
-Libchipcard2 needs the following packages:
+Libchipcard3 needs the following packages:
 - Gwenhywfar http://gwenhywfar.sf.net/          [required]
 - LibUSB     http://libusb.sf.net/              [strongly recommended]
-- LibSysFS   http://linux-diag.sf.net/          [recommended]
-- OpenSC     http://www.opensc.org/             [optional]
-- Kernel sources (needed for PCMCIA)            [optional]
+- LibSysFS   http://linux-diag.sf.net/          [strongly recommended]
 
 If LibUSB is available at compile time it will be used to scan the USB bus
 for new devices. Fortunately LibUSB is ported to the major *nix-alike 
@@ -63,11 +78,8 @@ For devices which use a /dev/ttyUSBx device the procfs file
 However, revent kernels (2.6.x) only allow root to view these files, so
 for these systems LibSysFS (part of sysfsutils) is needed.
 
-If OpenSC is installed then the OpenSC-driver for Libchipcard2 is built and
-installed. This driver allows OpenSC to use Libchipcard.
-
-If the kernel sources are installed at compile time then the PCMCIA scanner
-code is built. This allows to detect PCMCIA-based card readers.
+If LibSysFS is available then the PCMCIA scanner code is built. This allows to
+detect PCMCIA-based card readers.
 
 
 
@@ -75,14 +87,14 @@ code is built. This allows to detect PCMCIA-based card readers.
 ===============
 
 The chipcard daemon uses the configuration file 
-    $PREFIX/etc/chipcard2-server/chipcardd2.conf
+    $PREFIX/etc/chipcard3/server/chipcardd3.conf
 
 This file contains a description of which drivers to load and a list of
 configured readers.
 
 You can copy one of the example files installed to 
-"$PREFIX/etc/chipcard2-server/". For USB-only readers the minimal example
-can be used. For serial devices the file "chipcardd2.conf.example" can be used
+"$PREFIX/etc/chipcard3/server/". For USB-only readers the minimal example
+can be used. For serial devices the file "chipcardd3.conf.example" can be used
 as a starting point.
 
 
@@ -119,7 +131,7 @@ of security modes:
 For security modes "private" and "secure" some additional setup is to be done.
 You can do most of that additional setup with the following command:
 
-#>chipcardd2 init
+#>chipcardd3 init
 
 This will create all files necessary for "private" or "secure" mode (such as
 Diffie-Hellman-parameters, a self-signed certificate etc).
@@ -133,27 +145,36 @@ Please refer to the file doc/CERTIFICATES for details.
 3.2. Adding Readers
 -------------------
 
-#>chipcardd2 addreader --rname ARG --dtype ARG --rtype ARG --rport ARG
+#>chipcardd3 addreader --rname ARG --dtype ARG --rtype ARG --rport ARG
 
-Adds a reader to the configuration. Please see "chipcardd2 --help".
+Adds a reader to the configuration. Please see "chipcardd3 --help".
+
+
+3.3. File Permissions
+---------------------
+
+Some systems (namely Debian) provide packages which start the chipcard daemon
+as a special user ("chipcard") instead of root.
+However, you have to make sure that this special user is able to access the
+card reader (normally he isn't).
 
 
 
 4. Starting The Daemon
 ======================
 
-"chipcardd2 --help" lists all possible command line arguments.
+"chipcardd3 --help" lists all possible command line arguments.
 
 However, in most cases the following does suffice:
 
-#>chipcardd2 --pidfile PIDFILENAME
+#>chipcardd3 --pidfile PIDFILENAME
 where PIDFILENAME is the name of the PID file (used to store the process id
 of the server which can be used to send signals to it).
 
 
 For debugging purposes the following is more usefull:
 
-#>chipcardd2 --pidfile PIDFILENAME -f --logtype console --loglevel notice
+#>chipcardd3 --pidfile PIDFILENAME -f --logtype console --loglevel notice
 
 For "loglevel" you can use "--loglevel info" to increase the verbosity even
 more. 
@@ -187,74 +208,30 @@ LC_CTAPI_LOGLEVEL
 Loglevel to be used by the fake CTAPI.
 
 
-OPENSC_LOGLEVEL
------------------
-Loglevel to be used by the OpenSC reader driver.
-
 
 
 6. Client Setup
 ===============
 
-Clients for libchipcard2 use the configuration file 
-    $PREFIX/etc/chipcard2-client/chipcardc2.conf
+Clients for libchipcard3 use the configuration file 
+    $PREFIX/etc/chipcard3/client/chipcardc3.conf
 
-This file contains a description of the chipcard2 servers to connect to.
+This file contains a description of the chipcard3 servers to connect to.
 
 
 
-7. Using Libchipcard2 in your own Projects
+7. Using Libchipcard3 in your own Projects
 ==========================================
 
 Please have a look at the file in tutorials/. They pretty much explain how
-Libchipcard2 can be used.
+Libchipcard3 can be used.
 
 
 
-8. Remote Drivers
-=================
+8. Using Libchipcard3 With MacOS
+================================
 
-As of version 1.9.10 Libchipcard2 supports remote drivers. These drivers are
-used on thin clients (as requested by GnuMed).
-
-For this to work you need to enable remote drivers in the server configuration
-file ($PREFIX/etc/chipcard2-server/chipcardd2.conf).
-
-Also, you will have to add a "server" section in the server configuration file
-which is not "local" (because otherwise the remote driver could not connect
-to the server).
-
-The next step is to create a configuration file on the thin client which is
-used by the remote driver daemon 
-     $PREFIX/etc/chipcard2-server/chipcardrd.conf
-
-An example file is provided. The driver sections in such a file are nearly the
-same as in the server configuration file.
-
-
-
-9. Using OpenSC with Libchipcard2
-=================================
-
-You can enable this driver with OpenSC by adding the name "chipcard2" to
-the OpenSC configuration file variable "app/reader_drivers".
-You will also have to add a driver section to that configuration file below
-"app":
-
-  ----------------------------------------X8
-  reader_driver chipcard2 {
-    module = /usr/lib/reader-libchipcard2;
-  }
-  ----------------------------------------X8
-  
-Such a section allows OpenSC to dynamically load the driver module.
-
-
-
-10. Using Libchipcard2 With MacOS
-=================================
-
-The following commands will compile Libchipcard2 on MacOS:
+The following commands will compile Libchipcard3 on MacOS:
 
 --------------------------------------------------------------------------------------
 ./configure --prefix=/sw LDFLAGS=-L/sw/lib CFLAGS=-I/sw/include CPPFLAGS=-I/sw/include
@@ -262,16 +239,31 @@ make
 sudo make install
 --------------------------------------------------------------------------------------
 
-The configuration files are then expected in /sw/chipcard2-server.
+The configuration files are then expected in /sw/chipcard3/server.
 
 
 
-11. Using the OpenSource Generic CCID Driver
-============================================
+9. Special Drivers and Readers
+===============================
 
-Libchipcard2 2.1.5 and later has improved support for this GPL licensed
-driver. It can now use this driver as installed by your package manager
-(tested with Debian's binary packages).
+Most USB readers (like Cherry ST-1044u) might need you to add the following
+udev rule to your system (e.g. by creating a file with the following lines
+in /etc/udev/rules.d) when using Debian (or Ubuntu):
+
+-------------------------------------------------------------------X8
+SYSFS{idVendor}=="046a", SYSFS{idProduct}=="002d", GROUP="chipcard"
+-------------------------------------------------------------------X8
+
+This example is for the Cherry reader, for your reader you will have to use
+the correct values for "idVendor" and "idProduct".
+
+
+9.1. Generic CCID Driver
+-------------------------
+
+Libchipcard3 has improved support for this GPL licensed driver. It can use 
+this driver as installed by your distribution (tested with Debian's binary
+packages).
 
 However, if you need to compile the driver yourself some precautions have to
 be taken:
@@ -286,91 +278,76 @@ but not at runtime. So please do this:
 It is safe to leave the package libpcsclite on Debian installed, but the
 package containing the PC/SC daemon (pcscd) MUST NOT be installed, because
 that daemon grabs all readers it can find so other daemons (like the quite
-cooperative daemon of Libchipcard2) are unable to use them.
+cooperative daemon of Libchipcard3) are unable to use them.
+
+
+9.2. Reiner SCT Cyberjack
+--------------------------
+
+If you are using a Reiner SCT Cyberjack card reader on Debian then you should
+issue the following command to grant libchipcard access to the reader:
+ "gpasswd -a chipcard cyberjack".
+This adds the user "chipcard" (under which the chipcard daemon runs on Debian)
+to the group "cyberjack" thus allowing libchipcard to access this driver.
+
+
+9.3. Omnikey CardMan 4000
+--------------------------
+
+Current kernels (2.6.17 as of this writing) already include the module needed
+to access the reader at kernel level (module "cm4000_cs").
+However, you will need the CardMan driver package from Omnikey which contains
+the library "libcm4000.so".
+
+Please download that package from http://www.omnikey.com/. The package
+contains a script called "install". 
+
+DO NOT USE THAT!
+
+Just copy the included file "libcm4000.so" to /usr/lib/. That's all.
+
+If your system starts the chipcard server as a user other than root (e.g. 
+Debian does this) you should add the following udev rule (e.g. write the 
+following line into a file and place it under "/etc/udev/rules.d"):
+
+--------------------------------------------X8
+SUBSYSTEM="cardman_4000", GROUP="chipcard"
+--------------------------------------------X8
+
+This grants Libchipcard access to the cardman as soon as the reader is
+plugged-in.
+
+
+9.4. SCM SPR 532
+----------------
+
+Libchipcard3 no longer uses the generic CCID driver for this reader because
+with that driver it is impossible to perform secure verification or
+modification. Therefore we fallback to the driver of the manufacturer.
+However, this needs the reader to have the old firmware 4.15 installed, newer
+versions do not work.
+You can get the driver and firmware from http://www.libchipcard.de/.
 
 
 
-12. Changes in Server Configuration File in 1.9.16alpha
-=======================================================
-
-For 1.9.16alpha the server engine has been completely rewritten. It is now
-much easier to extend and it works much cleaner.
-
-However, the new modular design of the server made it necessary to change the
-structure of the configuration file a little.
-
-The current version of Libchipcard2 should be able to read existing files,
-but new files should be created according to the new format (see example
-files in doc/). Existing files should be modified.
-
-The changes are really minor:
-- "Driver" sections are now below the new section "DeviceManager" instead of
-  root
-- "Service" sections have moved from toplevel to below "ServiceManager"
-- "Reader" sections now use the variable "busType" instead of "com" to specify
-  how the reader is connected
-
-
-The new structure of the configuration file is this:
-
-  -------------------------------------------------------------------X8
-
-  Server {
-    # server settings, haven't changed since previous versions, neither in
-    # location nor in content
-  }
-  
-  DeviceManager {
-    # This is a new section, it contains the drivers which have been at the
-    # topmost level of the configuration file in previous versions.
-    
-    Driver {
-      # Driver section, the content itself is unchanged
-      
-      Reader {
-        # The driver section contains a single change, which doesn't pose much
-        # of a problem since a driver and reader section was mostly used with
-        # serial devices.
-        # The variable "com" (or sometimes "comType") was replaced by the
-        # variable "busType" (this is due to the internal reorganization).
-        # The following table shows how to convert existing settings:
-        #
-        #   Previously (com="")  I    New (busType="")
-        #   ---------------------+--------------------
-        #   com="serial"         I    busType="serial"
-        #   com="usb"            I    busType="UsbRaw"
-        #   com="usbserial"      I    busType="UsbTty"
-        #       ---              I    busType="Pci"
-        #       ---              I    busType="Pcmcia"
-        #   -------------------------------------------
-        # This allowed me to implement additional bus types (like PCMCIA).
-        
-      } # Reader
-    } # Driver
-  } # DeviceManager
-
-  CardManager {
-    # This is a new optional section which contains some card-related
-    # settings (see example in doc/)
-  } # CardManager
-  
-  ServiceManager {
-    # This section now contains the "Service" sections which were found in the
-    # topmost level in previous files.
-    
-    Service {
-      # This is a service section as in previous versions. The only change is
-      # that this section is now below "ServiceManager".
-    } # Service
-  }
-  -------------------------------------------------------------------X8
-
-
-
-13. Projects Using Libchipcard2
+10. Distribution Specific Notes
 ===============================
 
-The following is a list of projects which use Libchipcard2. This list
+
+10.1. Debian
+------------
+
+Debian packages use a special user which runs the chipcard server: "chipcard".
+This user must have the permissions to access the device files needed by the
+different drivers.
+
+
+
+
+11. Projects Using Libchipcard3
+===============================
+
+The following is a list of projects which use Libchipcard3. This list
 is rather incomplete, please contact the author of you want your project
 listed here as well.
 
@@ -382,8 +359,7 @@ listed here as well.
  - Gnumed
 
 
-
-Martin Preuss, Hamburg/Germany, 2006/06/15
+Martin Preuss, Hamburg/Germany, 2006/12/25
 
 
 

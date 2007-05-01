@@ -20,8 +20,9 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard2-client/mon/monitor.h>
-#include <chipcard2-client/client/client_cd.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard3/client/mon/monitor.h>
 #include <gwenhywfar/debug.h>
 
 
@@ -166,9 +167,9 @@ void _checkReaders_show(LCM_MONITOR *mon,
                 LCM_Reader_GetReaderPort(mr));
         rflags=LCM_Reader_GetReaderFlags(mr);
         if (rflags) {
-          if (rflags & LC_CARD_READERFLAGS_KEYPAD)
+          if (rflags & LC_READER_FLAGS_KEYPAD)
             fprintf(stdout, ", keypad");
-          if (rflags & LC_CARD_READERFLAGS_DISPLAY)
+          if (rflags & LC_READER_FLAGS_DISPLAY)
             fprintf(stdout, ", display");
         }
         ds=LCM_Reader_GetReaderInfo(mr);
@@ -202,6 +203,18 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   int timeOut;
   int doWait;
   GWEN_TYPE_UINT32 swId;
+  const char *s;
+
+  s=LC_Client_GetIoTypeName(cl);
+  assert(s);
+  if (strcasecmp(s, LC_CLIENT_LCC_NAME)!=0) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "This command only works with the "
+              "libchipcard3 ressource manager (%s), but "
+              "you are using \"%s\"",
+              LC_CLIENT_LCC_NAME, s);
+    return 2;
+  }
 
   doWait=GWEN_DB_VariableExists(dbArgs, "timeout");
   timeOut=GWEN_DB_GetIntValue(dbArgs, "timeout", 0, CHECKREADERS_TIMEOUT);
@@ -220,7 +233,7 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     return 2;
   }
 
-  swId=LC_Client_SendStartWait(cl, 0, 0);
+  swId=LC_ClientLcc_SendStartWait(cl, 0, 0);
   if (swId==0) {
     showError(0, LC_Client_ResultIpcError, "SendStartWait");
     return 2;
@@ -245,7 +258,7 @@ int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 	return 0;
       }
     }
-    res=LC_Client_Work_Wait(cl, 1);
+    res=LC_ClientLcc_Work_Wait(cl, 1);
     if (res==LC_Client_ResultOk || res==LC_Client_ResultWait) {
       int rv;
 

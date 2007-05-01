@@ -1,17 +1,15 @@
 
 EXTRA_DIST=\
-  driver.xml \
+  cherry_ctapi.xml \
   kvk.xml \
   memorycard.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/cherry_ctapi/cards
+carddatadir=@lc_client_xml_dir@/cards/cherry_ctapi
 carddata_DATA=\
   kvk.xml \
   memorycard.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/cherry_ctapi
-driverdata_DATA=driver.xml
-
-MAINTAINERCLEANFILES=Makefile.in
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=cherry_ctapi.xml
 

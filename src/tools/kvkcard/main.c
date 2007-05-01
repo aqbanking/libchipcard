@@ -32,27 +32,16 @@
 #define I18N(msg) msg
 
 
-#define PROGRAM_VERSION "1.9"
+#define PROGRAM_VERSION "2.9"
 
 #define k_PRG_VERSION_INFO \
-    "kvkcard v1.9  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
-    "(c) 2003 Martin Preuss<martin@libchipcard.de>\n" \
+    "kvkcard v2.9  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
+    "(c) 2006 Martin Preuss<martin@libchipcard.de>\n" \
     "This program is free software licensed under GPL.\n"\
     "See COPYING for details.\n"
 
 
 const GWEN_ARGS prg_args[]={
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "configfile",                 /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "C",                          /* short option */
-  "configfile",                 /* long option */
-  "Configuration file to load", /* short description */
-  "Libchipcard2 configuration file to load. Uses the system file if omitted." /* long description */
-},
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
   GWEN_ArgsTypeChar,            /* type */
@@ -124,8 +113,8 @@ const GWEN_ARGS prg_args[]={
 
 void usage(const char *name, const char *ustr) {
   fprintf(stderr,
-          I18N("KVKCard2 - A tool to read information from a German medical card.\n"
-               "(c) 2004 Martin Preuss<martin@libchipcard.de>\n"
+          I18N("KVKCard3 - A tool to read information from a German medical card.\n"
+               "(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
                "modify it under the terms of the GNU Lesser General Public\n"
                "License as published by the Free Software Foundation; either\n"
@@ -211,11 +200,13 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   GWEN_DB_NODE *dbData;
   GWEN_ERRORCODE err;
   int fd;
+  int i;
+  const char *s;
 
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
     return RETURNVALUE_WORK;
@@ -223,14 +214,36 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (v>1)
     fprintf(stderr, "Connected.\n");
 
-  if (v>1)
-    fprintf(stderr, "Please insert your German medical card.\n");
-  card=LC_Client_WaitForNextCard(cl, 30);
-  if (!card) {
-    fprintf(stderr, "ERROR: No card found.\n");
-    LC_Client_StopWait(cl);
-    return RETURNVALUE_WORK;
-  }
+  for (i=0;;i++) {
+    if (v>0)
+      fprintf(stderr, "Waiting for card...\n");
+    res=LC_Client_GetNextCard(cl, &card, 20);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "GetNextCard");
+      return RETURNVALUE_WORK;
+    }
+    if (v>0)
+      fprintf(stderr, "Found a card.\n");
+
+    s=LC_Card_GetCardType(card);
+    assert(s);
+    if (strcasecmp(s, "memory")==0)
+      break;
+
+    if (v>0)
+      fprintf(stderr, "Not a memory card, releasing.\n");
+    res=LC_Client_ReleaseCard(cl, card);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "ReleaseCard");
+      return RETURNVALUE_WORK;
+    }
+    LC_Card_free(card);
+
+    if (i>15) {
+      fprintf(stderr, "ERROR: No card found.\n");
+      return RETURNVALUE_WORK;
+    }
+  } /* for */
 
   /* extend card */
   rv=LC_KVKCard_ExtendCard(card);
@@ -242,9 +255,9 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   /* stop waiting */
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
     return RETURNVALUE_WORK;
   }
 
@@ -291,7 +304,6 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
             I18N("ERROR: Could not open file (%s).\n"),
             strerror(errno));
     LC_Card_Close(card);
-    LC_Card_free(card);
     return RETURNVALUE_WORK;
   }
   bio=GWEN_BufferedIO_File_new(fd);
@@ -307,6 +319,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     fprintf(stderr, "ERROR: Could not write to file.\n");
     GWEN_BufferedIO_Abandon(bio);
     LC_Card_Close(card);
+    LC_Client_ReleaseCard(cl, card);
     LC_Card_free(card);
     return RETURNVALUE_WORK;
   }
@@ -317,6 +330,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (!GWEN_Error_IsOk(err)) {
     DBG_ERROR_ERR(0, err);
     LC_Card_Close(card);
+    LC_Client_ReleaseCard(cl, card);
     LC_Card_free(card);
     return RETURNVALUE_WORK;
   }
@@ -329,6 +343,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   res=LC_Card_Close(card);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "CardClose");
+    LC_Client_ReleaseCard(cl, card);
     LC_Card_free(card);
     return RETURNVALUE_WORK;
   }
@@ -336,6 +351,12 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     if (v>1)
       fprintf(stderr, "Card closed.\n");
 
+  if (v>0)
+    fprintf(stderr, "Releasing card.\n");
+  res=LC_Client_ReleaseCard(cl, card);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "ReleaseCard");
+  }
   LC_Card_free(card);
 
   /* finished */
@@ -353,6 +374,7 @@ int main(int argc, char **argv) {
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
+  LC_CLIENT_RESULT res;
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -391,8 +413,8 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-                      "kvkcard2",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "kvkcard2.log"),
+                      "kvkcard3",
+		      GWEN_DB_GetCharValue(db, "logfile", 0, "kvkcard3.log"),
 		      logType,
 		      GWEN_LoggerFacilityUser);
   if (rv) {
@@ -409,13 +431,10 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  cl=LC_Client_new("kvkcard2", PROGRAM_VERSION, 0);
-  if (LC_Client_ReadConfigFile(cl,
-                               GWEN_DB_GetCharValue(db, "configfile",
-                                                    0, 0))) {
-    fprintf(stderr, "Error reading configuration.\n");
-    LC_Client_free(cl);
-    GWEN_DB_Group_free(db);
+  cl=LC_Client_new("kvkcard3", PROGRAM_VERSION);
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(0, res, "Init");
     return RETURNVALUE_SETUP;
   }
 

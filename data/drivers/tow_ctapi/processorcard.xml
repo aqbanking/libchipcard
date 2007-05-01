@@ -2,22 +2,22 @@
   <card name="ProcessorCard" >
 
     <commands>
-    	<!-- Select DF by 16-bit-id -->
+        <!-- Select DF by 16-bit-id -->
       <command name="SelectDFS" driver="tow_ctapi">
         <send>
-	  			<APDU lr="255" >
-  	    		<ELEM type="dword">0x00a40000</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="word" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
+          <APDU lr="255" >
+            <ELEM type="dword">0x00a40000</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM name="fileId" type="word" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+        </results>
+        <responses>
+          <response type="success">
+            <ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
               <tlv id="0x6f">
                 <ELEM name="fci" type="tlv" tlvtype="simple" 
                       maxnum="0">
@@ -58,26 +58,26 @@
                 </ELEM>
               </tlv>
             </ELEM>
-	  			</response>
-				</responses>
-    	</command>
+          </response>
+        </responses>
+      </command>
 
-    	<!-- Select DF by application-id -->
+        <!-- Select DF by application-id -->
       <command name="SelectDFL" driver="tow_ctapi">
         <send>
-	  			<APDU lr="255" >
-  	    		<ELEM type="dword">0x00a40400</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="bytes" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
+          <APDU lr="255" >
+            <ELEM type="dword">0x00a40400</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM name="fileId" type="bytes" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+        </results>
+        <responses>
+          <response type="success">
+            <ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
               <tlv id="0x6f">
                 <ELEM name="fci" type="tlv" tlvtype="simple" 
                       maxnum="0">
@@ -118,26 +118,26 @@
                 </ELEM>
               </tlv>
             </ELEM>
-	  			</response>
-				</responses>
-    	</command>
+          </response>
+        </responses>
+      </command>
 
       <!-- Select EF by id -->
       <command name="SelectEFS" driver="tow_ctapi">
         <send>
-	  			<APDU lr="255" >
-  	    		<ELEM type="dword">0x00a40200</ELEM>
-	  			</APDU>
-	  			<DATA>
-	    			<ELEM name="fileId" type="word" />
-	  			</DATA>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
+          <APDU lr="255" >
+            <ELEM type="dword">0x00a40200</ELEM>
+          </APDU>
+          <DATA>
+            <ELEM name="fileId" type="word" />
+          </DATA>
+        </send>
+        <results>
+          <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+        </results>
+        <responses>
+          <response type="success">
+            <ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
               <tlv id="0x6f">
                 <ELEM name="fci" type="tlv" tlvtype="simple" 
                       maxnum="0">
@@ -162,23 +162,23 @@
                 </ELEM>
               </tlv>
             </ELEM>
-	  			</response>
-				</responses>
-    	</command>
+          </response>
+        </responses>
+      </command>
 
       <!-- Select Master File -->
       <command name="SelectMF" driver="tow_ctapi">
-      	<send>
-	  			<APDU >
-  	    		<ELEM type="dword">0x00a4000c</ELEM>
-	  			</APDU>
-				</send>
-				<results>
-      		<result sw1="0x6a" sw2="0x82" type="error">File not found</result>
-				</results>
-				<responses>
-	  			<response type="success">
-	    	 		<ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
+        <send>
+          <APDU >
+            <ELEM type="dword">0x00a4000c</ELEM>
+          </APDU>
+        </send>
+        <results>
+          <result sw1="0x6a" sw2="0x82" type="error">File not found</result>
+        </results>
+        <responses>
+          <response type="success">
+            <ELEM name="fileInfo" type="tlv" tlvtype="simple" minnum="0">
               <tlv id="0x6f">
                 <ELEM name="fci" type="tlv" tlvtype="simple"
                       maxnum="0">
@@ -219,61 +219,13 @@
                 </ELEM>
               </tlv>
             </ELEM>
-	  			</response>
-				</responses>
-    	</command>
-
-      <!-- Read Record -->
-      <command name="ReadRecord" driver="tow_ctapi">
-      	<send>
-	  			<APDU lr="255" >
-  	    		<ELEM type="word">0x00b2</ELEM>
-            <ELEM name="recNum" type="byte" />
-            <ELEM type="byte">0x04</ELEM>
-	  			</APDU>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-         <result sw1="0x6a" sw2="0x83" type="error" >
-           Record not found
-         </result>
-       </results>
-    	</command>
-
-      <!-- Update Record -->
-      <command name="WriteRecord" driver="tow_ctapi">
-      	<send>
-	  			<APDU>
-  	    		<ELEM type="word">0x00dc</ELEM>
-            <ELEM name="recNum" type="byte" />
-            <ELEM type="byte">0x04</ELEM>
-	  			</APDU>
-          <DATA>
-            <ELEM name="data" type="bytes" />
-          </DATA>
-				</send>
-       <results>
-         <result sw1="0x61" type="success" >
-           Command executed, correct size in SW2
-         </result>
-         <result sw1="0x69" sw2="0x86" type="error" >
-           No EF selected (internal error)
-         </result>
-         <result sw1="0x6a" sw2="0x83" type="error" >
-           Record not found
-         </result>
-       </results>
-    	</command>
+          </response>
+        </responses>
+      </command>
 
     </commands>
 
 
-    
     <!-- generic command responses -->
     <results>
       <!-- success -->

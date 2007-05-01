@@ -1,26 +1,14 @@
 
 EXTRA_DIST=\
-  driver.xml \
-  ddv0.xml \
-  ddv1.xml \
-  geldkarte.xml \
-  kvk.xml \
-  processorcard.xml \
-  starcos.xml
+  scmx32_ifd.xml \
+  card.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/scmx32_ifd/cards
+carddatadir=@lc_client_xml_dir@/cards/scmx32_ifd
 carddata_DATA=\
-  ddv0.xml \
-  ddv1.xml \
-  geldkarte.xml \
-  kvk.xml \
-  processorcard.xml \
-  starcos.xml
+  card.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/scmx32_ifd
-driverdata_DATA=driver.xml
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=scmx32_ifd.xml
 
-
-MAINTAINERCLEANFILES=Makefile.in
 

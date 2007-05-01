@@ -18,9 +18,9 @@
 #undef BUILDING_LIBCHIPCARD2_DLL
 
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
-#include <chipcard2-client/cards/kvkcard.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/cards/kvkcard.h>
 
 
 /*
@@ -77,7 +77,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res,
   }
 
   fprintf(stderr, "Error in \"%s\": %s\n", failedCommand, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (card && res==LC_Client_ResultCmdError) {
     int sw1;
     int sw2;
 
@@ -104,33 +104,39 @@ int main(int argc, char **argv) {
   int rv;
   GWEN_DB_NODE *dbData;
 
-  cl=LC_Client_new("tutorial2", "1.0", 0);
-  if (LC_Client_ReadConfigFile(cl, 0)){
-    fprintf(stderr, "ERROR: Error reading configuration.\n");
+  cl=LC_Client_new("tutorial2", "1.0");
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "Init");
     LC_Client_free(cl);
     return 1;
   }
 
   fprintf(stderr, "INFO: Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
+    LC_Client_free(cl);
     return 2;
   }
 
   fprintf(stderr, "Please insert a German medical card.\n");
-  card=LC_Client_WaitForNextCard(cl, 30);
-  if (!card) {
-    fprintf(stderr, "ERROR: No card found.\n");
-    LC_Client_StopWait(cl);
+  res=LC_Client_GetNextCard(cl, &card, 30);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "GetNextCard");
+    LC_Client_Stop(cl);
+    LC_Client_free(cl);
     return 2;
   }
 
   /* stop waiting */
   fprintf(stderr, "INFO: Telling the server that we need no more cards.\n");
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -175,9 +181,10 @@ int main(int argc, char **argv) {
   fprintf(stderr, "INFO: Opening card.\n");
   res=LC_Card_Open(card);
   if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
+    showError(card, res, "CardOpen");
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -190,7 +197,9 @@ int main(int argc, char **argv) {
   dbData=LC_KVKCard_GetCardData(card);
   if (!dbData) {
     fprintf(stderr, "ERROR: No card data available.\n");
-    LC_Card_Close(card);
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
 
@@ -203,21 +212,36 @@ int main(int argc, char **argv) {
 
   /* ====================================================================== */
 
+
   /* close card */
   fprintf(stderr, "INFO: Closing card.\n");
   res=LC_Card_Close(card);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "CardClose");
+    LC_Client_ReleaseCard(cl, card);
     LC_Card_free(card);
+    LC_Client_free(cl);
     return 2;
   }
   fprintf(stderr, "INFO: Card closed.\n");
+
+  /* release card */
+  res=LC_Client_ReleaseCard(cl, card);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "CardRelease");
+    LC_Card_free(card);
+    LC_Client_free(cl);
+    return 2;
+  }
 
   /* cleanup */
   LC_Card_free(card);
   LC_Client_free(cl);
   return 0;
 }
+
+
+
 
 
 

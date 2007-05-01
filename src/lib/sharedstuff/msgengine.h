@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 #include <gwenhywfar/msgengine.h>
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 /**
  * @file sharedstuff/msgengine.h

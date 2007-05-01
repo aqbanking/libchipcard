@@ -14,15 +14,14 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 #include "examplecard_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/cards/processorcard.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/cards/processorcard.h>
 
 
 /* This must be at the top of the file to tell GWEN that we are to inherit
@@ -96,7 +95,7 @@ int ExampleCard_UnextendCard(LC_CARD *card){
  * a pointer to the derived type (in this case EXAMPLE_CARD). You need to cast
  * these pointers to their real types respectively.
  */
-void ExampleCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p){
   EXAMPLE_CARD *xc;
 
   assert(bp);
@@ -116,7 +115,7 @@ void ExampleCard_freeData(void *bp, void *p){
  * may later be used again, because the function LC_Card_Open() also does
  * the connection work and must therefore only be called *once*.
  */
-LC_CLIENT_RESULT ExampleCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   EXAMPLE_CARD *xc;
 
@@ -178,7 +177,7 @@ LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card){
  * Additionally, you can do your own deinit stuff here before actually
  * releasing the card.
  */
-LC_CLIENT_RESULT ExampleCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card){
   LC_CLIENT_RESULT res;
   EXAMPLE_CARD *xc;
 

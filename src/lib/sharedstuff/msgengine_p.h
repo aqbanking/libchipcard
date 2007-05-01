@@ -34,8 +34,10 @@ struct LC_MSGENGINE {
 
 
 
-void LC_MsgEngine_FreeData(void *bp, void *p);
+static
+void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p);
 
+static
 int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
                           GWEN_BUFFER *msgbuf,
                           GWEN_XMLNODE *node,
@@ -43,35 +45,45 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
                           char escapeChar,
                           const char *delimiters);
 
+static
 int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
                            GWEN_BUFFER *gbuf,
                            GWEN_BUFFER *data,
                            GWEN_XMLNODE *node);
 
+static
 GWEN_DB_VALUETYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
                                          const char *tname);
 
+
+static
 const char *LC_MsgEngine_GetCharValue(GWEN_MSGENGINE *e,
                                       const char *name,
                                       const char *defValue);
 
+static
 int LC_MsgEngine_GetIntValue(GWEN_MSGENGINE *e,
                              const char *name,
                              int defValue);
 
 
+static
 int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
                              GWEN_XMLNODE *node,
                              GWEN_DB_NODE *gr,
                              GWEN_BUFFER *vbuf);
 
+static
 int LC_MsgEngine_BinTypeWrite(GWEN_MSGENGINE *e,
                               GWEN_XMLNODE *node,
                               GWEN_DB_NODE *gr,
                               GWEN_BUFFER *dbuf);
 
 
+static
 GWEN_TYPE_UINT32 LC_MsgEngine__FromBCD(GWEN_TYPE_UINT32 value);
+
+static
 GWEN_TYPE_UINT32 LC_MsgEngine__ToBCD(GWEN_TYPE_UINT32 value);
 
 

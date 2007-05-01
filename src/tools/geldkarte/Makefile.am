@@ -1,17 +1,16 @@
-bin_PROGRAMS=geldkarte2
+bin_PROGRAMS=geldkarte3
 
 INCLUDES=@all_includes@
 
-DEFS=@DEFS@ -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
-
 noinst_HEADERS=global.h
 
-CLIENT_LIB=-lchipcard2c
+# if IS_WINDOWS
+if IS_WINDOWS
+ mingw_ldflags=-L/mingw/lib
+endif
 
-geldkarte2_SOURCES=\
+geldkarte3_SOURCES=\
   main.c
-geldkarte2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
-geldkarte2_LDFLAGS=@STRIPALL@
-
-MAINTAINERCLEANFILES=Makefile.in
+geldkarte3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+geldkarte3_LDFLAGS=@STRIPALL@
 

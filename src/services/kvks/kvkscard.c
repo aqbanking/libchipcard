@@ -14,15 +14,12 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
-
 
 #include "kvkscard_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/cards/processorcard.h>
+#include <chipcard3/chipcard3.h>
 
 
 /* This must be at the top of the file to tell GWEN that we are to inherit
@@ -42,7 +39,7 @@ int KVKSCard_ExtendCard(LC_CARD *card){
   KVKS_CARD *xc;
   int rv;
 
-  rv=LC_ProcessorCard_ExtendCard(card);
+  rv=LC_MemoryCard_ExtendCard(card);
   if (rv) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not extend card as processor card");
     return rv;
@@ -86,7 +83,7 @@ int KVKSCard_UnextendCard(LC_CARD *card){
   GWEN_DB_Group_free(xc->dbCardData);
   GWEN_FREE_OBJECT(xc);
 
-  rv=LC_ProcessorCard_UnextendCard(card);
+  rv=LC_MemoryCard_UnextendCard(card);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here");
   }
@@ -101,7 +98,7 @@ int KVKSCard_UnextendCard(LC_CARD *card){
  * a pointer to the derived type (in this case KVKS_CARD). You need to cast
  * these pointers to their real types respectively.
  */
-void KVKSCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB KVKSCard_freeData(void *bp, void *p){
   KVKS_CARD *xc;
 
   assert(bp);

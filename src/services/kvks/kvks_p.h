@@ -15,9 +15,9 @@
 #define CHIPCARD_SERVICE_KVK_P_H
 
 
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-service/service.h>
-#include <chipcard2-client/client/card.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/service/service.h>
+#include <chipcard3/client/card.h>
 
 
 #define SERVICE_KVK_ERROR_UNKNOWN_COMMAND        1
@@ -33,16 +33,16 @@ LC_CLIENT *ServiceKVK_new(int argc, char **argv);
 int ServiceKVK_Start(LC_CLIENT *sv);
 
 
-void ServiceKVK_freeData(void *bp, void *p);
+void GWENHYWFAR_CB ServiceKVK_freeData(void *bp, void *p);
 
 
 const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err);
 
 
 GWEN_TYPE_UINT32 ServiceKVK_Command(LC_CLIENT *cl,
-                                    LC_SERVICECLIENT *scl,
-                                    GWEN_DB_NODE *dbRequest,
-                                    GWEN_DB_NODE *dbResponse);
+			    LC_SERVICECLIENT *scl,
+			    GWEN_DB_NODE *dbRequest,
+			    GWEN_DB_NODE *dbResponse);
 
 int ServiceKVK_Work(LC_CLIENT *cl);
 

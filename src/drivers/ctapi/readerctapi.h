@@ -15,15 +15,10 @@
 #define CHIPCARD_READER_CTAPI_H
 
 #include <gwenhywfar/libloader.h>
-#include "reader_l.h"
+#include <chipcard3/server/driver/reader.h>
 
 
-LCD_READER *ReaderCTAPI_new(GWEN_TYPE_UINT32 readerId,
-                           const char *name,
-                           int port,
-                           unsigned int slots,
-                           GWEN_TYPE_UINT32 flags,
-                           int ctn);
+int ReaderCTAPI_Extend(LCD_READER *r, int ctn);
 
 int ReaderCTAPI_GetCtn(const LCD_READER *r);
 void ReaderCTAPI_SetCtn(LCD_READER *r, int ctn);

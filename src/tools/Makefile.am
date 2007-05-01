@@ -1,7 +1,4 @@
-SUBDIRS=rsacard geldkarte memcard chipcard-tool kvkcard cardcommander
-if ! IS_WINDOWS
-SUBDIRS+=chipcardd2 chipcardrd
-endif
+DIST_SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander chipcardd 
 
-MAINTAINERCLEANFILES=Makefile.in
+SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander @lc_dir_nonwindows_tools@
 

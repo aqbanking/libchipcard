@@ -23,6 +23,8 @@
 #define CHIPCARD_CARD_EXAMPLECARD_P_H
 
 #include "examplecard.h"
+#include <chipcard3/client/card_imp.h>
+
 
 /**
  * This type definition MUST NEVER be used outside this file and the
@@ -39,11 +41,11 @@ struct EXAMPLE_CARD {
 };
 
 
-void ExampleCard_freeData(void *bp, void *p);
+void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p);
 
 
-LC_CLIENT_RESULT ExampleCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT ExampleCard_Close(LC_CARD *card);
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card);
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card);
 
 
 

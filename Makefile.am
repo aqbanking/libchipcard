@@ -1,6 +1,4 @@
-MAINTAINERCLEANFILES=Makefile.in
-
-SUBDIRS=bin data doc m4 src tutorials
+SUBDIRS=bin data etc doc m4 src tutorials
 
 EXTRA_DIST= \
  AUTHORS \
@@ -10,34 +8,21 @@ EXTRA_DIST= \
  INSTALL \
  NEWS \
  README \
- chipcard2-server.m4 \
- chipcard2-client.m4 \
- libchipcard2.spec.in libchipcard2.spec
+ chipcard3.m4 \
+ libchipcard3.spec.in libchipcard3.spec
 
-bin_SCRIPTS = chipcard2-server-config chipcard2-client-config
+bin_SCRIPTS = chipcard3-config
 M4dir = $(datadir)/aclocal
-M4_DATA = chipcard2-server.m4 chipcard2-client.m4
+M4_DATA = chipcard3.m4 
 ACLOCAL_AMFLAGS = -I m4
 
 CLEANFILES = $(bin_SCRIPTS)
 
-chipcard2-server-config: chipcard2-server-config.in
-	echo "#! /bin/sh" >chipcard2-server-config.tmp && \
-	echo 'prefix="@prefix@"' >>chipcard2-server-config.tmp && \
-	cat chipcard2-server-config.in >>chipcard2-server-config.tmp && \
-	$(SED) -e 's!@libchipcard2s_config@!$(libchipcard2s_config_am)!' \
-	        chipcard2-server-config.tmp >chipcard2-server-config && \
-	chmod a+x chipcard2-server-config
-	rm -f chipcard2-server-config.tmp
-
-chipcard2-client-config: chipcard2-client-config.in
-	echo "#! /bin/sh" >chipcard2-client-config.tmp && \
-	echo 'prefix="@prefix@"' >>chipcard2-client-config.tmp && \
-	cat chipcard2-client-config.in >>chipcard2-client-config.tmp && \
-	$(SED) -e 's!@libchipcard2s_config@!$(libchipcard2s_config_am)!' \
-	        chipcard2-client-config.tmp >chipcard2-client-config && \
-	chmod a+x chipcard2-client-config
-	rm -f chipcard2-client-config.tmp
+chipcard3-config: chipcard3-config.in
+	echo "#! /bin/sh" >chipcard3-config && \
+	echo 'prefix="@prefix@"' >>chipcard3-config && \
+	cat chipcard3-config.in >>chipcard3-config && \
+	chmod a+x chipcard3-config
 
 rpm:    $(PACKAGE).spec dist
 	rpmbuild="rpm" && \
@@ -86,9 +71,13 @@ install-srcdoc: $(PACKAGE).tag
 
 
 install-data-local:
-	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_PIDDIR@"
-	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_LOGDIR@"
-	$(mkinstalldirs) "$(DESTDIR)/@LC_DEFAULT_NEWCERTDIR@"
-	$(mkinstalldirs) "$(DESTDIR)/@LC_LOWLEVELDRIVER_PATH@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_pid_dir@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@/drivers"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@/services"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_def_newcert_dir@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_def_cert_dir@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_server_lowlevel_driver_dir@"
+	$(mkinstalldirs) "$(DESTDIR)@lc_client_def_cert_dir@"
 
 

@@ -2,13 +2,10 @@ INCLUDES=@all_includes@
 
 EXTRA_DIST=kvks.xml.in kvks.xml
 
-servicedir=@LC_SERVICE_PATH@
+servicedir=@lc_server_service_dir@
 service_PROGRAMS=kvks
 service_DATA=kvks.xml
 
-
-SERVICE_LIB=-lchipcard2sv
-CLIENT_LIB=-lchipcard2c
 
 noinst_HEADERS=\
   kvks_p.h \
@@ -19,10 +16,13 @@ kvks_SOURCES=\
   kvks.c \
   kvkscard.c
 
+# if IS_WINDOWS
+if IS_WINDOWS
+ mingw_ldflags=-L/mingw/lib
+endif
+
 kvks_LDADD=\
- -L../../lib/chipcard2-service $(SERVICE_LIB) \
- -L../../lib/chipcard2-client $(CLIENT_LIB) @gwenhywfar_libs@
+ ../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
 kvks_LDFLAGS=@STRIPALL@
 
-MAINTAINERCLEANFILES=Makefile.in
 

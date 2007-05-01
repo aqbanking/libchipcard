@@ -1,21 +1,19 @@
 
 EXTRA_DIST=\
-  driver.xml \
+  orga_ctapi.xml \
   ddv0.xml \
   ddv1.xml \
   kvk.xml \
   processorcard.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/orga_ctapi/cards
+carddatadir=@lc_client_xml_dir@/cards/orga_ctapi
 carddata_DATA=\
   ddv0.xml \
   ddv1.xml \
   kvk.xml \
   processorcard.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/orga_ctapi
-driverdata_DATA=driver.xml
-
-MAINTAINERCLEANFILES=Makefile.in
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=orga_ctapi.xml
 

@@ -16,9 +16,12 @@
 
 #include "ctapi.h"
 
-#include <chipcard2-client/client/client.h>
-#include <chipcard2-client/client/card.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/card.h>
 #include <gwenhywfar/misc.h>
+
+
+#define CTAPI_DEF_PINMAXLEN 8
 
 
 typedef struct CTAPI_CONTEXT CTAPI_CONTEXT;
@@ -52,6 +55,9 @@ void CT__showError(LC_CARD *card,
 		   const char *failedCommand);
 
 LC_CLIENT_RESULT CT__openCard(CTAPI_CONTEXT *ctx, int timeout);
+LC_CLIENT_RESULT CT__closeCard(CTAPI_CONTEXT *ctx);
+
+int CT__fillPinInfo(LC_PININFO *pi, CTAPI_APDU *apdu);
 
 char CT__secureVerify(CTAPI_CONTEXT *ctx,
                       unsigned char *dad,
@@ -118,6 +124,10 @@ CTAPI_APDU *CTAPI_APDU_new(unsigned char *cmd, int len);
 void CTAPI_APDU_free(CTAPI_APDU *apdu);
 
 int CT__getPinId(CTAPI_APDU *apdu);
+
+
+static void CT__dumpString2Buffer(const unsigned char *s, unsigned l,
+                                  GWEN_BUFFER *mbuf);
 
 
 #endif

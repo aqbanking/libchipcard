@@ -440,34 +440,24 @@ int LC_Client_Walk(LC_CLIENT *cl) {
   LC_SERVER *sv;
   int rv;
   int done;
-  int okCount;
 
   assert(cl);
 
   /* check all servers */
   done=0;
-  okCount=0;
   sv=LC_Server_List_First(cl->servers);
   while(sv) {
     rv=LC_Client_CheckServer(cl, sv);
     if (rv==-1) {
       DBG_INFO(LC_LOGDOMAIN, "Error checking server");
     }
-    else {
-      if (rv==0)
-        done++;
-      okCount++;
-    }
+    else if (rv==0)
+      done++;
     sv=LC_Server_List_Next(sv);
   } /* while */
 
   /* TODO: Check requests for timeouts */
 
-  /* check whether any server succeeded */
-  if (okCount==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "Errors on all servers");
-    return -1;
-  }
   return done?0:1;
 }
 

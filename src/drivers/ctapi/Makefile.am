@@ -1,11 +1,11 @@
 INCLUDES=\
-  -I$(top_srcdir)/src/lib/chipcard2-server/driver \
-  -I$(top_builddir)/src/lib/chipcard2-server/driver \
+  -I$(top_srcdir)/src/lib/server/driver \
+  -I$(top_builddir)/src/lib/server/driver \
   @all_includes@
 
 EXTRA_DIST=ctapi.xml.in
 
-driverdir=@LC_DEVICEDRIVER_PATH@
+driverdir=@lc_server_driver_dir@
 driver_PROGRAMS=ctapi
 driver_DATA=ctapi.xml
 
@@ -20,9 +20,7 @@ ctapi_SOURCES=\
   readerctapi.c \
   main.c
 
-ctapi_LDADD=../../lib/chipcard2-server/driver/libchipcard2d.la \
+ctapi_LDADD=../../lib/server/driver/libchipcard3d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ctapi_LDFLAGS=@STRIPALL@
-
-MAINTAINERCLEANFILES=Makefile.in
 

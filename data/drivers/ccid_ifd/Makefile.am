@@ -1,25 +1,17 @@
 
 EXTRA_DIST=\
+  ccid_ifd.xml \
   card.xml \
-  driver.xml \
-  ddv0.xml \
-  ddv1.xml \
   kvk.xml \
-  processorcard.xml \
   starcos.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/ccid_ifd/cards
+carddatadir=@lc_client_xml_dir@/cards/ccid_ifd
 carddata_DATA=\
   card.xml \
-  ddv0.xml \
-  ddv1.xml \
   kvk.xml \
-  processorcard.xml \
   starcos.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/ccid_ifd
-driverdata_DATA=driver.xml
-
-MAINTAINERCLEANFILES=Makefile.in
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=ccid_ifd.xml
 

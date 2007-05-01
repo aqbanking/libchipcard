@@ -1,27 +1,17 @@
 
 EXTRA_DIST=\
-  driver.xml \
+  cyberjack_ctapi.xml \
   card.xml \
-  ddv0.xml \
-  ddv1.xml \
-  geldkarte.xml \
   kvk.xml \
-  processorcard.xml \
-  starcos.xml
+  processorcard.xml
 
 
-carddatadir=@libchipcard2s_config_am@/drivers/cyberjack_ctapi/cards
+carddatadir=@lc_client_xml_dir@/cards/cyberjack_ctapi
 carddata_DATA=\
   card.xml \
-  ddv0.xml \
-  ddv1.xml \
-  geldkarte.xml \
   kvk.xml \
-  processorcard.xml \
-  starcos.xml
+  processorcard.xml
 
-driverdatadir=@libchipcard2s_config_am@/drivers/cyberjack_ctapi
-driverdata_DATA=driver.xml
-
-MAINTAINERCLEANFILES=Makefile.in
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=cyberjack_ctapi.xml
 

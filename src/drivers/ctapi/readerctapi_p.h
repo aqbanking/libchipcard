@@ -23,7 +23,7 @@ struct READER_CTAPI {
   int ctn;
 };
 
-void ReaderCTAPI_freeData(void *bp, void *p);
+void GWENHYWFAR_CB ReaderCTAPI_freeData(void *bp, void *p);
 
 
 #endif /* CHIPCARD_READER_CTAPI_P_H */

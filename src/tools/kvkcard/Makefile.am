@@ -1,17 +1,18 @@
-bin_PROGRAMS=kvkcard2
+bin_PROGRAMS=kvkcard3
 
 INCLUDES=@all_includes@
 
-DEFS=@DEFS@ -DLC_DEFAULT_DATADIR=\"@libchipcard2c_config_am@\"
-
 noinst_HEADERS=global.h
 
-CLIENT_LIB=-lchipcard2c
+# if IS_WINDOWS
+if IS_WINDOWS
+ mingw_ldflags=-L/mingw/lib
+endif
 
-kvkcard2_SOURCES=\
+kvkcard3_SOURCES=\
   main.c
-kvkcard2_LDADD=-L../../lib/chipcard2-client $(CLIENT_LIB)
-kvkcard2_LDFLAGS=@STRIPALL@
+kvkcard3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+kvkcard3_LDFLAGS=@STRIPALL@
 
 MAINTAINERCLEANFILES=Makefile.in
 

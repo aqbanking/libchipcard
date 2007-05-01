@@ -14,7 +14,6 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include <errno.h>
 #include <string.h>
@@ -28,27 +27,16 @@
 #define I18N(msg) msg
 
 
-#define PROGRAM_VERSION "1.9"
+#define PROGRAM_VERSION "2.9"
 
 #define k_PRG_VERSION_INFO \
-    "memcard v1.9  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
-    "(c) 2003 Martin Preuss<martin@libchipcard.de>\n" \
+    "memcard v2.9  (part of libchipcard v"k_CHIPCARD_VERSION_STRING")\n"\
+    "(c) 2006 Martin Preuss<martin@libchipcard.de>\n" \
     "This program is free software licensed under GPL.\n"\
     "See COPYING for details.\n"
 
 
 const GWEN_ARGS prg_args[]={
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "configfile",                 /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "C",                          /* short option */
-  "configfile",                 /* long option */
-  "Configuration file to load", /* short description */
-  "Configuration file to load." /* long description */
-},
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
   GWEN_ArgsTypeChar,            /* type */
@@ -165,7 +153,7 @@ const GWEN_ARGS prg_args[]={
 void usage(const char *ustr) {
   fprintf(stderr,"%s%s",
           I18N("MemCard2 - A tool to read/write data from/to a memory chip card\n"
-               "(c) 2004 Martin Preuss<martin@libchipcard.de>\n"
+               "(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
                "modify it under the terms of the GNU Lesser General Public\n"
                "License as published by the Free Software Foundation; either\n"
@@ -213,7 +201,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
   }
 
   fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (card && res==LC_Client_ResultCmdError) {
     int sw1;
     int sw2;
 
@@ -253,7 +241,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
     return RETURNVALUE_WORK;
@@ -264,16 +252,28 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   for (i=0;;i++) {
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
-    card=LC_Client_WaitForNextCard(cl, 2);
-    if (card) {
-      if (v>0)
-        fprintf(stderr, "Found a card.\n");
-
-      s=LC_Card_GetCardType(card);
-      assert(s);
-      if (strcasecmp(s, "memory")==0)
-        break;
+    res=LC_Client_GetNextCard(cl, &card, 20);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "GetNextCard");
+      return RETURNVALUE_WORK;
     }
+    if (v>0)
+      fprintf(stderr, "Found a card.\n");
+
+    s=LC_Card_GetCardType(card);
+    assert(s);
+    if (strcasecmp(s, "memory")==0)
+      break;
+
+    if (v>0)
+      fprintf(stderr, "Not a memory card, releasing.\n");
+    res=LC_Client_ReleaseCard(cl, card);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "ReleaseCard");
+      return RETURNVALUE_WORK;
+    }
+    LC_Card_free(card);
+
     if (i>15) {
       fprintf(stderr, "ERROR: No card found.\n");
       return RETURNVALUE_WORK;
@@ -303,9 +303,10 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   /* stop waiting */
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
+    LC_Client_ReleaseCard(cl, card);
     return RETURNVALUE_WORK;
   }
 
@@ -322,6 +323,8 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
             I18N("ERROR: Could not open file (%s).\n"),
             strerror(errno));
     LC_Card_Close(card);
+    LC_Client_ReleaseCard(cl, card);
+
     return RETURNVALUE_WORK;
   }
 
@@ -365,6 +368,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       if (fname)
         fclose(f);
       LC_Card_Close(card);
+      LC_Client_ReleaseCard(cl, card);
       GWEN_Buffer_free(buf);
       return RETURNVALUE_WORK;
     }
@@ -382,6 +386,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       if (fname)
         fclose(f);
       LC_Card_Close(card);
+      LC_Client_ReleaseCard(cl, card);
       GWEN_Buffer_free(buf);
       return RETURNVALUE_WORK;
     }
@@ -424,6 +429,15 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   else
     if (v>1)
       fprintf(stderr, "Card closed.\n");
+
+  if (v>0)
+    fprintf(stderr, "Releasing card.\n");
+  res=LC_Client_ReleaseCard(cl, card);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "ReleaseCard");
+    return RETURNVALUE_WORK;
+  }
+  LC_Card_free(card);
 
   /* finished */
   if (v>1)
@@ -470,7 +484,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "StartWait");
     if (fname)
@@ -483,16 +497,32 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   for (i=0;;i++) {
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
-    card=LC_Client_WaitForNextCard(cl, 2);
-    if (card) {
-      if (v>0)
-        fprintf(stderr, "Found a card.\n");
-
-      s=LC_Card_GetCardType(card);
-      assert(s);
-      if (strcasecmp(s, "memory")==0)
-        break;
+    res=LC_Client_GetNextCard(cl, &card, 20);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "GetNextCard");
+      if (fname)
+        fclose(f);
+      return RETURNVALUE_WORK;
     }
+    if (v>0)
+      fprintf(stderr, "Found a card.\n");
+
+    s=LC_Card_GetCardType(card);
+    assert(s);
+    if (strcasecmp(s, "memory")==0)
+      break;
+
+    if (v>0)
+      fprintf(stderr, "Not a memory card, releasing.\n");
+    res=LC_Client_ReleaseCard(cl, card);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "ReleaseCard");
+      if (fname)
+        fclose(f);
+      return RETURNVALUE_WORK;
+    }
+    LC_Card_free(card);
+
     if (i>15) {
       fprintf(stderr, "ERROR: No card found.\n");
       if (fname)
@@ -507,6 +537,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     fprintf(stderr, "Could not extend card as memory card\n");
     if (fname)
       fclose(f);
+    LC_Client_ReleaseCard(cl, card);
     return RETURNVALUE_WORK;
   }
 
@@ -520,6 +551,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
             res);
     if (fname)
       fclose(f);
+    LC_Client_ReleaseCard(cl, card);
     return RETURNVALUE_WORK;
   }
   if (v>0)
@@ -528,11 +560,12 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   /* stop waiting */
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StopWait");
+    showError(card, res, "Stop");
     if (fname)
       fclose(f);
+    LC_Client_ReleaseCard(cl, card);
     return RETURNVALUE_WORK;
   }
 
@@ -566,6 +599,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       if (fname)
         fclose(f);
       LC_Card_Close(card);
+      LC_Client_ReleaseCard(cl, card);
       return RETURNVALUE_WORK;
     }
 
@@ -591,6 +625,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       if (fname)
         fclose(f);
       LC_Card_Close(card);
+      LC_Client_ReleaseCard(cl, card);
       return RETURNVALUE_WORK;
     }
 
@@ -612,6 +647,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
         if (fname)
           fclose(f);
         LC_Card_Close(card);
+        LC_Client_ReleaseCard(cl, card);
         GWEN_Buffer_free(tbuf);
         return RETURNVALUE_WORK;
       }
@@ -623,6 +659,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
         if (fname)
           fclose(f);
         LC_Card_Close(card);
+        LC_Client_ReleaseCard(cl, card);
         GWEN_Buffer_free(tbuf);
         return RETURNVALUE_WORK;
       }
@@ -652,6 +689,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
               I18N("ERROR: Could not close file (%s).\n"),
               strerror(errno));
       LC_Card_Close(card);
+      LC_Client_ReleaseCard(cl, card);
       return RETURNVALUE_WORK;
     }
   }
@@ -668,6 +706,15 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     if (v>1)
       fprintf(stderr, "Card closed.\n");
 
+  res=LC_Client_ReleaseCard(cl, card);
+  if (res!=LC_Client_ResultOk) {
+    showError(card, res, "ReleaseCard");
+    return RETURNVALUE_WORK;
+  }
+  else
+    if (v>1)
+      fprintf(stderr, "Card released.\n");
+
   /* finished */
   if (v>1)
     fprintf(stderr, "Finished.\n");
@@ -683,6 +730,7 @@ int main(int argc, char **argv) {
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
+  LC_CLIENT_RESULT res;
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -721,8 +769,8 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-                      "memcard2",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "memcard2.log"),
+                      "memcard3",
+		      GWEN_DB_GetCharValue(db, "logfile", 0, "memcard3.log"),
 		      logType,
 		      GWEN_LoggerFacilityUser);
   if (rv) {
@@ -739,13 +787,10 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  cl=LC_Client_new("memcard2", PROGRAM_VERSION, 0);
-  if (LC_Client_ReadConfigFile(cl,
-                               GWEN_DB_GetCharValue(db, "configfile",
-                                                    0, 0))) {
-    fprintf(stderr, "Error reading configuration.\n");
-    LC_Client_free(cl);
-    GWEN_DB_Group_free(db);
+  cl=LC_Client_new("memcard3", PROGRAM_VERSION);
+  res=LC_Client_Init(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(0, res, "Init");
     return RETURNVALUE_SETUP;
   }
 
@@ -759,6 +804,11 @@ int main(int argc, char **argv) {
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);
     rv=RETURNVALUE_PARAM;
+  }
+
+  res=LC_Client_Fini(cl);
+  if (res!=LC_Client_ResultOk) {
+    showError(0, res, "Init");
   }
 
   LC_Client_free(cl);

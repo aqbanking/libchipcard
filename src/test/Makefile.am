@@ -5,7 +5,11 @@ INCLUDES= \
   -I$(top_srcdir)/src/lib/chipcard2-server/common \
   @all_includes@
 
-CLIENT_LIB=-lchipcard2c
+if IS_WINDOWS
+  CLIENT_LIB=-lchipcard2c32_$(LIBCHIPCARD_SO_EFFECTIVE)
+else
+  CLIENT_LIB=-lchipcard2c
+endif
 
 noinst_PROGRAMS=lstest lctest
 

@@ -14,14 +14,13 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 
 /* You always need to include the header files of Libchipcard2 to work with
  * it ;-)
  */
-#include <chipcard2/chipcard2.h>
-#include <chipcard2-client/client/client.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
 
 
 /**
@@ -32,23 +31,24 @@ int main(int argc, char **argv) {
   LC_CLIENT *cl;
   LC_CARD *card;
 
-  cl=LC_Client_new("tutorial1a", "1.0", 0);
-  LC_Client_ReadConfigFile(cl, 0);
+  cl=LC_Client_new("tutorial1a", "1.0");
+  LC_Client_Init(cl);
 
-  LC_Client_StartWait(cl, 0, 0);
+  LC_Client_Start(cl);
 
   fprintf(stderr, "Please insert a chip card.\n");
-  card=LC_Client_WaitForNextCard(cl, 30);
+  LC_Client_GetNextCard(cl, &card, 30);
 
-  LC_Client_StopWait(cl);
+  LC_Client_Stop(cl);
 
   LC_Card_Open(card);
 
   LC_Card_Dump(card, stderr, 0);
 
   LC_Card_Close(card);
-
+  LC_Client_ReleaseCard(cl, card);
   LC_Card_free(card);
+
   LC_Client_free(cl);
   return 0;
 }

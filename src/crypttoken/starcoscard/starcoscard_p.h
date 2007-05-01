@@ -16,7 +16,7 @@
 
 
 #include <gwenhywfar/crypttoken.h>
-#include <chipcard2-client/client/card.h>
+#include <chipcard3/client/card.h>
 
 
 typedef struct LC_CT_PLUGIN_STARCOS LC_CT_PLUGIN_STARCOS;
@@ -29,7 +29,7 @@ GWEN_PLUGIN *LC_CryptTokenSTARCOS_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                                          const char *modName,
                                          const char *fileName);
 
-void LC_CryptTokenSTARCOS_Plugin_FreeData(void *bp, void *p);
+void GWENHYWFAR_CB LC_CryptTokenSTARCOS_Plugin_FreeData(void *bp, void *p);
 
 
 
@@ -50,7 +50,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenSTARCOS_new(GWEN_PLUGIN_MANAGER *pm,
                                           const char *subTypeName,
                                           const char *name);
 
-void LC_CryptTokenSTARCOS_FreeData(void *bp, void *p);
+void GWENHYWFAR_CB LC_CryptTokenSTARCOS_FreeData(void *bp, void *p);
 
 int LC_CryptTokenSTARCOS__GetCard(GWEN_CRYPTTOKEN *ct,
                                   int manage);

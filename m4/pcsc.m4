@@ -9,8 +9,8 @@ dnl IN:
 dnl   nothing
 dnl OUT:
 dnl   Variables:
-dnl     pcsc_libraries: Path to the SSL libraries 
-dnl     pcsc_lib: SSL libraries to link against
+dnl     pcsc_libraries: Path to the PC/SC libraries 
+dnl     pcsc_lib: PC/SC libraries to link against
 dnl     pcsc_includes: Path to the PC/SC includes
 dnl     have_pcsc: "yes" if pc/sc is available
 dnl   Defines:
@@ -31,10 +31,10 @@ if test "$OSYSTEM" != "windows" ; then
     if test "$OSYSTEM" != "windows" ; then
       AC_ARG_WITH(pcsc-includes, [  --with-pcsc-includes=DIR adds pcsc include path],
         [pcsc_search_inc_dirs="$withval"],
-        [pcsc_search_inc_dirs="/usr/include\
-               	       /usr/local/include\
-          	       /usr/local/pcsc/include\
-  		       /usr/pcsc/include\
+        [pcsc_search_inc_dirs="/usr/include/PCSC\
+               	       /usr/local/include/PCSC\
+          	       /usr/local/pcsc/include/PCSC\
+  		       /usr/pcsc/include/PCSC\
                        "])
 
       dnl search for pcsc

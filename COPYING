@@ -1,14 +1,14 @@
 
-Libchipcard2 is licensed under the GNU GPL (see below).
+Libchipcard3 is licensed under the GNU GPL (see below).
 
-If you want to use Libchipcard2 in non-GPL software please contact the
+If you want to use Libchipcard3 in non-GPL software please contact the
 author Martin Preuss <martin@libchipcard.de> for an individual license.
 
-As the copyright holder of Libchipcard2, Martin Preuss grants the following
+As the copyright holder of Libchipcard3, Martin Preuss grants the following
 license exception:
 
 Martin Preuss explicitly allows the compilation and distribution of
-Libchipcard2 with the OpenSSL Toolkit.
+Libchipcard3 with the OpenSSL Toolkit.
 No developer is required to provide this exception in a derived work.
 
 

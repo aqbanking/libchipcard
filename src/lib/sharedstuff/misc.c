@@ -20,7 +20,7 @@
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/buffer.h>
 
-#include <chipcard2/chipcard2.h>
+#include <chipcard3/chipcard3.h>
 
 
 #include <stdlib.h>
@@ -129,6 +129,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
       flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
     else if (strcasecmp(p, "driverHasVerify")==0)
       flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
+      else if (strcasecmp(p, "keepRunning")==0)
+        flags|=LC_READER_FLAGS_KEEP_RUNNING;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -167,6 +169,8 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
         flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
       else if (strcasecmp(p, "driverHasVerify")==0)
         flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
+      else if (strcasecmp(p, "keepRunning")==0)
+        flags|=LC_READER_FLAGS_KEEP_RUNNING;
       else {
         DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
       }
@@ -203,6 +207,9 @@ void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
   if (fl & LC_READER_FLAGS_DRIVER_HAS_VERIFY)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          name, "driverHasVerify");
+  if (fl & LC_READER_FLAGS_KEEP_RUNNING)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                         name, "keepRunning");
 }
 
 

@@ -21,7 +21,8 @@
 #ifndef CHIPCARD_CARD_KVKSCARD_H
 #define CHIPCARD_CARD_KVKSCARD_H
 
-#include <chipcard2-client/client/card.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/memorycard.h>
 
 #include <gwenhywfar/buffer.h>
 
@@ -30,7 +31,6 @@ typedef enum {
   KVKSStatus_Error=-1,
   KVKSStatus_New=0,
   KVKSStatus_Opening,
-  KVKSStatus_Selecting,
   KVKSStatus_ReadingHeader,
   KVKSStatus_ReadingData,
   KVKSStatus_Releasing,

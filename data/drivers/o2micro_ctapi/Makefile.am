@@ -1,13 +1,11 @@
 
 EXTRA_DIST=\
-  driver.xml
+  o2micro_ctapi.xml
 
 
-#carddatadir=@libchipcard2s_config_am@/drivers/tow_ctapi/cards
+#carddatadir=@lc_client_xml_dir@/cards/o2micro_ctapi
 #carddata_DATA=
 
-driverdatadir=@libchipcard2s_config_am@/drivers/o2micro_ctapi
-driverdata_DATA=driver.xml
-
-MAINTAINERCLEANFILES=Makefile.in
+driverdatadir=@lc_server_data_dir@/drivers
+driverdata_DATA=o2micro_ctapi.xml
 

@@ -1,13 +1,16 @@
-SUBDIRS=sharedstuff chipcard2-server chipcard2-client chipcard2-service
+DIST_SUBDIRS=sharedstuff client server
 
-EXTRA_DIST=chipcard2.h.in version.h.in
+SUBDIRS=sharedstuff client
 
-iheaderdir=${includedir}/chipcard2
+if !IS_WINDOWS
+SUBDIRS+=server
+endif
+
+EXTRA_DIST=chipcard3.h.in version.h.in
+
+iheaderdir=${includedir}/chipcard3
 iheader_HEADERS=\
-  chipcard2.h \
+  chipcard3.h \
   version.h
-
-
-MAINTAINERCLEANFILES=Makefile.in
 
 

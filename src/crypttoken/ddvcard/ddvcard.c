@@ -19,9 +19,9 @@
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
-#include <chipcard2-client/cards/ddvcard.h>
-#include <chipcard2-client/cards/processorcard.h>
-#include <chipcard2-client/crypttoken/ct_card.h>
+#include <chipcard3/client/cards/ddvcard.h>
+#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard3/client/crypttoken/ct_card.h>
 
 
 GWEN_INHERIT(GWEN_CRYPTTOKEN, LC_CT_DDV)
@@ -47,6 +47,7 @@ GWEN_PLUGIN *LC_CryptTokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 					 const char *fileName) {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_DDV *cpl;
+  LC_CLIENT_RESULT res;
 
   pl=GWEN_CryptToken_Plugin_new(pm,
 				GWEN_CryptToken_Device_Card,
@@ -56,10 +57,11 @@ GWEN_PLUGIN *LC_CryptTokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
   GWEN_NEW_OBJECT(LC_CT_PLUGIN_DDV, cpl);
   GWEN_INHERIT_SETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_DDV, pl, cpl,
 		       LC_CryptTokenDDV_Plugin_FreeData);
-  cpl->client=LC_Client_new("LC_CryptTokenDDV", VERSION, 0);
-  if (LC_Client_ReadConfigFile(cpl->client, 0)) {
+  cpl->client=LC_Client_new("LC_CryptTokenDDV", VERSION);
+  res=LC_Client_Init(cpl->client);
+  if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "Error reading libchipcard2 client configuration.");
+	      "Error reading libchipcard3 client configuration (%d).", res);
     GWEN_Plugin_free(pl);
     return 0;
   }
@@ -75,7 +77,7 @@ GWEN_PLUGIN *LC_CryptTokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 
 
 
-void LC_CryptTokenDDV_Plugin_FreeData(void *bp, void *p) {
+void GWENHYWFAR_CB LC_CryptTokenDDV_Plugin_FreeData(void *bp, void *p) {
   LC_CT_PLUGIN_DDV *cpl;
 
   cpl=(LC_CT_PLUGIN_DDV*)p;
@@ -123,35 +125,38 @@ int LC_CryptTokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
   pm=GWEN_Plugin_GetManager(pl);
   assert(pm);
 
-  res=LC_Client_StartWait(cpl->client, 0, 0);
+  res=LC_Client_Start(cpl->client);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
-  hcard=LC_Client_WaitForNextCard(cpl->client, 5);
-  if (!hcard) {
+  res=LC_Client_GetNextCard(cpl->client, &hcard, 5);
+  if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "No card within specified timeout");
-    LC_Client_StopWait(cpl->client);
+	      "No card within specified timeout (%d)", res);
+    LC_Client_Stop(cpl->client);
     return GWEN_ERROR_CT_IO_ERROR;
   }
   else {
     int rv;
 
+    assert(hcard);
     /* ok, we have a card, don't wait for more */
-    LC_Client_StopWait(cpl->client);
+    LC_Client_Stop(cpl->client);
     /* check card */
     rv=LC_DDVCard_ExtendCard(hcard);
     if (rv) {
       DBG_ERROR(LC_LOGDOMAIN,
 		"DDV card not available, please check your setup (%d)", rv);
+      LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       return GWEN_ERROR_NOT_AVAILABLE;
     }
 
     res=LC_Card_Open(hcard);
     if (res!=LC_Client_ResultOk) {
+      LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       DBG_NOTICE(LC_LOGDOMAIN,
 		 "Could not open card (%d), maybe not a DDV card?",
@@ -183,13 +188,16 @@ int LC_CryptTokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
 	  if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
 	    DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
 	    LC_Card_Close(hcard);
-	    LC_Card_free(hcard);
+            LC_Client_ReleaseCard(cpl->client, hcard);
+            LC_Card_free(hcard);
 	    return GWEN_ERROR_CT_BAD_NAME;
 	  }
 	}
 
         LC_Card_Close(hcard);
-	LC_Card_free(hcard);
+        LC_Client_ReleaseCard(cpl->client, hcard);
+        LC_Card_free(hcard);
+        hcard=0;
     } /* if card is open */
     return 0;
   } /* if there is a card */
@@ -210,7 +218,7 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_new(GWEN_PLUGIN_MANAGER *pm,
   LC_CT_DDV *lct;
   GWEN_CRYPTTOKEN *ct;
 
-  DBG_ERROR(0, "Creating crypttoken (DDV)");
+  DBG_INFO(LC_LOGDOMAIN, "Creating crypttoken (DDV)");
 
   /* create crypt token */
   ct=GWEN_CryptToken_new(pm,
@@ -241,12 +249,14 @@ GWEN_CRYPTTOKEN *LC_CryptTokenDDV_new(GWEN_PLUGIN_MANAGER *pm,
 
 
 
-void LC_CryptTokenDDV_FreeData(void *bp, void *p) {
+void GWENHYWFAR_CB LC_CryptTokenDDV_FreeData(void *bp, void *p) {
   LC_CT_DDV *lct;
 
   lct=(LC_CT_DDV*)p;
-  if (lct->card)
+  if (lct->card) {
+    LC_Client_ReleaseCard(lct->client, lct->card);
     LC_Card_free(lct->card);
+  }
   GWEN_FREE_OBJECT(lct);
 }
 
@@ -267,13 +277,14 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
 
   name=GWEN_CryptToken_GetTokenName(ct);
 
-  res=LC_Client_StartWait(lct->client, 0, 0);
+  res=LC_Client_Start(lct->client);
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
   first=1;
+  hcard=0;
   for (;;) {
     int timeout;
 
@@ -283,14 +294,21 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
     else
       timeout=5;
 
-    hcard=LC_Client_WaitForNextCard(lct->client, timeout);
+    if (hcard==0) {
+      res=LC_Client_GetNextCard(lct->client, &hcard, timeout);
+      if (res!=LC_Client_ResultOk &&
+	  res!=LC_Client_ResultWait) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error while waiting for card (%d)", res);
+	return GWEN_ERROR_CT_IO_ERROR;
+      }
+    }
     if (!hcard) {
       int mres;
 
       mres=GWEN_CryptManager_InsertToken(lct->pluginManager, ct);
       if (mres) {
         DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
-        LC_Client_StopWait(lct->client);
+        LC_Client_Stop(lct->client);
         return GWEN_ERROR_USER_ABORTED;
       }
     }
@@ -302,14 +320,17 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
       if (rv) {
         DBG_ERROR(LC_LOGDOMAIN,
                   "DDV card not available, please check your setup (%d)", rv);
+        LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
-        LC_Client_StopWait(lct->client);
+	LC_Client_Stop(lct->client);
         return GWEN_ERROR_NOT_AVAILABLE;
       }
 
       res=LC_Card_Open(hcard);
       if (res!=LC_Client_ResultOk) {
+        LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
+        hcard=0;
         DBG_NOTICE(LC_LOGDOMAIN,
                    "Could not open card (%d), maybe not a DDV card?",
                    res);
@@ -344,20 +365,30 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
         }
 
         LC_Card_Close(hcard);
-	LC_Card_free(hcard);
+        LC_Client_ReleaseCard(lct->client, hcard);
+        LC_Card_free(hcard);
+        hcard=0;
 
-        hcard=LC_Client_PeekNextCard(lct->client);
-        if (!hcard) {
-          int mres;
+	res=LC_Client_GetNextCard(lct->client, &hcard,
+				  LC_CLIENT_TIMEOUT_NONE);
+	if (res!=LC_Client_ResultOk) {
+	  int mres;
 
-          mres=GWEN_CryptManager_InsertCorrectToken(lct->pluginManager, ct);
-          if (mres) {
-            DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
-            LC_Client_StopWait(lct->client);
-            return GWEN_ERROR_USER_ABORTED;
-          }
-        } /* if there is no other card waiting */
-        else {
+	  if (res!=LC_Client_ResultWait) {
+	    DBG_ERROR(LC_LOGDOMAIN,
+		      "Communication error (%d)", res);
+	    LC_Client_Stop(lct->client);
+	    return GWEN_ERROR_CT_IO_ERROR;
+	  }
+
+	  mres=GWEN_CryptManager_InsertCorrectToken(lct->pluginManager, ct);
+	  if (mres) {
+	    DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
+	    LC_Client_Stop(lct->client);
+	    return GWEN_ERROR_USER_ABORTED;
+	  }
+	} /* if there is no other card waiting */
+	else {
           /* otherwise there already is another card in another reader,
            * so no need to bother the user. This allows to insert all
            * cards in all readers and let me choose the card ;-) */
@@ -369,7 +400,7 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
   } /* for */
 
   /* ok, now we have the card we wanted to have, now ask for the pin */
-  LC_Client_StopWait(lct->client);
+  LC_Client_Stop(lct->client);
 
   /* now get the access pin */
   havepin=0;
@@ -381,6 +412,7 @@ int LC_CryptTokenDDV__GetCard(GWEN_CRYPTTOKEN *ct, int manage) {
                                GWEN_CryptToken_PinType_Access);
     if (rv) {
       LC_Card_Close(hcard);
+      LC_Client_ReleaseCard(lct->client, hcard);
       LC_Card_free(hcard);
       DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
       return GWEN_ERROR_CT_IO_ERROR;
@@ -413,13 +445,12 @@ int LC_CryptTokenDDV_Open(GWEN_CRYPTTOKEN *ct, int manage) {
   }
 
   /* get CryptToken info */
-  node=LC_Card_GetAppInfo(lct->card);
+  node=LC_Card_GetAppNode(lct->card);
   assert(node);
   nct=GWEN_XMLNode_FindFirstTag(node, "crypttoken", 0, 0);
   if (!nct) {
     DBG_ERROR(LC_LOGDOMAIN,
-              "Card application data does not contain a crypttoken");
-    GWEN_XMLNode_free(node);
+	      "Card application data does not contain a crypttoken");
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
@@ -427,12 +458,10 @@ int LC_CryptTokenDDV_Open(GWEN_CRYPTTOKEN *ct, int manage) {
   rv=GWEN_CryptToken_ReadXml(ct, nct);
   if (rv) {
     DBG_ERROR(LC_LOGDOMAIN,
-              "Error reading CryptToken data from XML (%d)",
-              rv);
-    GWEN_XMLNode_free(node);
+	      "Error reading CryptToken data from XML (%d)",
+	      rv);
     return rv;
   }
-  GWEN_XMLNode_free(node);
 
   return 0;
 }
@@ -460,13 +489,18 @@ int LC_CryptTokenDDV_Close(GWEN_CRYPTTOKEN *ct) {
 
   res=LC_Card_Close(lct->card);
   if (res!=LC_Client_ResultOk) {
+    LC_Client_ReleaseCard(lct->client, lct->card);
     LC_Card_free(lct->card);
     lct->card=0;
     return GWEN_ERROR_CT_IO_ERROR;
   }
 
+  res=LC_Client_ReleaseCard(lct->client, lct->card);
   LC_Card_free(lct->card);
   lct->card=0;
+  if (res!=LC_Client_ResultOk)
+    return GWEN_ERROR_CT_IO_ERROR;
+
   return 0;
 }
 
@@ -868,7 +902,7 @@ int LC_CryptTokenDDV__IncSignSeq(GWEN_CRYPTTOKEN *ct,
   }
 
   /* read signature sequence counter from card */
-  res=LC_ProcessorCard_SelectEF(lct->card, "EF_SEQ");
+  res=LC_Card_SelectEf(lct->card, "EF_SEQ");
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     return GWEN_ERROR_CT_IO_ERROR;
@@ -953,7 +987,7 @@ int LC_CryptTokenDDV_GetSignSeq(GWEN_CRYPTTOKEN *ct,
   }
 
   /* read signature sequence counter from card */
-  res=LC_ProcessorCard_SelectEF(lct->card, "EF_SEQ");
+  res=LC_Card_SelectEf(lct->card, "EF_SEQ");
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     return GWEN_ERROR_CT_IO_ERROR;

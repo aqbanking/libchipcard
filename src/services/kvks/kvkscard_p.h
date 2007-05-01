@@ -45,7 +45,7 @@ struct KVKS_CARD {
 };
 
 
-void KVKSCard_freeData(void *bp, void *p);
+void GWENHYWFAR_CB KVKSCard_freeData(void *bp, void *p);
 
 
 LC_CLIENT_RESULT KVKSCard_Open(LC_CARD *card);
