@@ -11,7 +11,7 @@ noinst_HEADERS=\
   serviceclient_p.h \
   service_p.h
 
-iheaderdir=${includedir}/chipcard3/client/service
+iheaderdir=${includedir}/chipcard/client/service
 iheader_HEADERS=\
   serviceclient.h \
   service.h

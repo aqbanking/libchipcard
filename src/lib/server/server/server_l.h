@@ -86,7 +86,7 @@ typedef enum {
 } LCS_SERVER_ROLE;
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "common/card.h"
 #include "common/reader.h"
 #include "connection_l.h"

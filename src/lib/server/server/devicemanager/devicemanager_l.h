@@ -36,7 +36,7 @@ GWEN_INHERIT_FUNCTION_DEFS(LCDM_DEVICEMANAGER)
 
 #include "server_l.h"
 #include "lockmanager_l.h"
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "common/card.h"
 #include "common/devmonitor.h"
 

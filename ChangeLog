@@ -1,6 +1,14 @@
 
 $Rev$
 
+2007/05/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- renamed LC_Card_SelectMF() to LC_Card_SelectMf() for a consistent API
+- improved API doc
+- started renaming all Libchipcard3 names to simply Libchipcard. This will
+  simplify future releases.
+
+
 2007/04/30: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added description for reader Omnikey Cardman 4040 (not tested yet)

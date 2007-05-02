@@ -19,7 +19,7 @@
 #include "server_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>

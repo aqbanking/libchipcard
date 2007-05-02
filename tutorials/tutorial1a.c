@@ -19,8 +19,8 @@
 /* You always need to include the header files of Libchipcard2 to work with
  * it ;-)
  */
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
 
 
 /**

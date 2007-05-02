@@ -25,7 +25,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -613,7 +613,7 @@ GWEN_XMLNODE *LC_Card_FindFile(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_SelectMF(LC_CARD *card) {
+LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_CLIENT_RESULT res;

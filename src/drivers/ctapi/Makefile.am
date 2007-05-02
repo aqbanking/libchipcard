@@ -20,7 +20,7 @@ ctapi_SOURCES=\
   readerctapi.c \
   main.c
 
-ctapi_LDADD=../../lib/server/driver/libchipcard3d.la \
+ctapi_LDADD=../../lib/server/driver/libchipcardd.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 ctapi_LDFLAGS=@STRIPALL@
 

@@ -18,7 +18,7 @@
 #include "clientpcsc_p.h"
 #include "cardpcsc_l.h"
 
-#include <chipcard3/client/client_imp.h>
+#include <chipcard/client/client_imp.h>
 
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/misc.h>

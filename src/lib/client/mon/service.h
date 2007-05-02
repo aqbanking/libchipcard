@@ -23,7 +23,7 @@
 
 typedef struct LCM_SERVICE LCM_SERVICE;
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>

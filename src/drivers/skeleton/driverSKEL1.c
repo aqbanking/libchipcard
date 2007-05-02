@@ -31,7 +31,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <unistd.h>
 #include <ctype.h>

@@ -18,13 +18,13 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/types.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 typedef struct LCD_DRIVER LCD_DRIVER;
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LCD_DRIVER, CHIPCARD_API);
 
-#include <chipcard3/server/driver/reader.h>
-#include <chipcard3/sharedstuff/pininfo.h>
+#include <chipcard/server/driver/reader.h>
+#include <chipcard/sharedstuff/pininfo.h>
 
 
 #define LCD_DRIVER_IPC_MAXWORK 256

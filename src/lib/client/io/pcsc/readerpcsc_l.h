@@ -16,7 +16,7 @@
 
 #include <gwenhywfar/misc.h>
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 
 
 #define LC_READER_PCSC_MAX_FEATURES 32

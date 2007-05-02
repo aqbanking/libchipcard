@@ -17,7 +17,7 @@
 #include "driverctapi.h"
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard3/server/driver/driver.h>
+#include <chipcard/server/driver/driver.h>
 
 
 #define LCD_DRIVERCTAPI_DAD_CT   1

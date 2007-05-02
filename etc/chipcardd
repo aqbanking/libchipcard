@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          chipcardd3
+# Provides:          chipcardd
 # Required-Start:    $syslog $remote_fs $local_fs $network
 # Required-Stop:     $syslog $remote_fs $local_fs $named
 # Default-Start:     2 3 4 5
@@ -21,19 +21,19 @@
 #
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/sbin/chipcardd3
-PIDFILE=/var/run/chipcardd3.pid
+DAEMON=/usr/sbin/chipcardd
+PIDFILE=/var/run/chipcardd.pid
 DAEMON_ARGS="--pidfile $PIDFILE --exit-on-error --store-all-certs"
-NAME=chipcardd3
-DESC="libchipcard3 daemon"
+NAME=chipcardd
+DESC="libchipcard daemon"
 
 test -x $DAEMON || exit 0
 
 set -e
 
 check_var_run() {
-  if [ ! -d /var/run/chipcard3 ] ; then
-    mkdir -p /var/run/chipcard3
+  if [ ! -d /var/run/chipcard ] ; then
+    mkdir -p /var/run/chipcard
   fi
 }
 

@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_READER_IFD_L_H
 #define CHIPCARD_READER_IFD_L_H
 
-#include <chipcard3/server/driver/reader.h>
+#include <chipcard/server/driver/reader.h>
 
 
 void ReaderIFD_Extend(LCD_READER *r);

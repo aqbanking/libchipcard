@@ -22,7 +22,7 @@ if IS_WINDOWS
 endif
 
 kvks_LDADD=\
- ../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+ ../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
 kvks_LDFLAGS=@STRIPALL@
 
 

@@ -10,13 +10,13 @@
 # ***************************************************************************/
 #
 #
-# This file is used by chipcard3 client programs.
+# This file is used by chipcard client programs.
 # Please modify it to your needs and copy it to 
-#              $PREFIX/etc/chipcard3/client/chipcardc3.conf
+#              $PREFIX/etc/chipcard/client/chipcardc.conf
 #
 
 #
-# Each server section tells a chipcard3 client where a chipcard3-server
+# Each server section tells a chipcard client where a chipcard-server
 # is sitting.
 #
 server {
@@ -34,7 +34,7 @@ server {
   # 
   # - "public"
   #   server using TCP sockets (not encrypted, for security reasons you should
-  #   not use such a server with chipcard3)
+  #   not use such a server with chipcard)
   #
   # - "private"
   #   server using SSL secured sockets.
@@ -53,7 +53,7 @@ server {
   #
   # address the server is listening on (or socket file if type is "local")
   #
-  addr="/var/run/chipcard3.comm"
+  addr="/var/run/chipcard.comm"
   
   #
   # TCP port the server is listening on (not used if type is "local")
@@ -68,9 +68,9 @@ server {
   # server is amongst those stored there then the connection is regarded as
   # secure).
   # Please note that this folder must be readable by every user who wants
-  # to use libchipcard3-client programs.
+  # to use libchipcard-client programs.
   #
-  #certdir="/etc/chipcard3/client/certs"
+  #certdir="/etc/chipcard/client/certs"
   
   #
   # this is the folder where newly received SSL certificates are stored.
@@ -78,17 +78,17 @@ server {
   # tell the SSL code that the certificates inside those files are to be
   # accepted
   #
-  #newcertdir="/home/martin/.chipcard3/newcerts"
+  #newcertdir="/home/martin/.chipcard/newcerts"
   
   #
   # if type is "secure" then the client needs to send a certificate to the
   # server in order to identify itself. This file should be in PEM format.
   # (see OpenSSL documentation)
   # When creating a certificate you should set the "commonName" field in the
-  # certificate to the name used to identify yourself to the chipcard3 
+  # certificate to the name used to identify yourself to the chipcard 
   # server (most likely your username or real name)
   #
-  #certfile="/etc/chipcard3/client/cert.pem"
+  #certfile="/etc/chipcard/client/cert.pem"
   
 } # service
 

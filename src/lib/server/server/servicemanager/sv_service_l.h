@@ -25,7 +25,7 @@ typedef struct LCSV_SERVICE LCSV_SERVICE;
 
 GWEN_LIST_FUNCTION_DEFS(LCSV_SERVICE, LCSV_Service)
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 LCSV_SERVICE *LCSV_Service_new();

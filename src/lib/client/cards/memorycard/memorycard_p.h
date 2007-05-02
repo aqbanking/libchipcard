@@ -14,8 +14,8 @@
 #ifndef CHIPCARD_CARD_MEMORYCARD_P_H
 #define CHIPCARD_CARD_MEMORYCARD_P_H
 
-#include <chipcard3/client/card_imp.h>
-#include <chipcard3/client/cards/memorycard.h>
+#include <chipcard/client/card_imp.h>
+#include <chipcard/client/cards/memorycard.h>
 
 
 #define LC_MEMORYCARD_DEFAULT_WRITEBOUNDARY 249

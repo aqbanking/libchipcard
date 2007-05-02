@@ -34,13 +34,13 @@ cards, German "GeldKarte" and HBCI (homebanking) cards (both type 0 and
 type 1).
 It accesses the readers via CTAPI or IFD interfaces and has successfully
 been tested with Towitoko, Kobil, SCM, Orga, Omnikey and Reiner-SCT readers.
-This package contains the chipcard3-daemon needed to access card readers.
+This package contains the chipcard-daemon needed to access card readers.
 
 %package devel
 Summary: LibChipCard server development kit
 Group: Development/Libraries
 %description devel
-This package contains chipcard3-config and header files for writing 
+This package contains chipcard-config and header files for writing 
 drivers, services or even your own chipcard daemon for LibChipCard.
 
 %package crypttoken
@@ -67,10 +67,10 @@ LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir} make DESTDIR=$RPM_BUILD_ROOT \
 
 %post
 /sbin/ldconfig
-/sbin/chkconfig --add chipcardd3
+/sbin/chkconfig --add chipcardd
 
 %preun
-/sbin/chkconfig --del chipcardd3
+/sbin/chkconfig --del chipcardd
 
 %postun
 /sbin/ldconfig
@@ -79,36 +79,36 @@ LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir} make DESTDIR=$RPM_BUILD_ROOT \
 %files
 %defattr(-,root,root,0755)
 %doc README COPYING ChangeLog
-%{_libdir}/libchipcard3c.so
-%{_libdir}/libchipcard3c.so.*
-%{_libdir}/libchipcard3d.so
-%{_libdir}/libchipcard3d.so.*
-#%{_libdir}/libchipcard3i.so
-#%{_libdir}/libchipcard3i.so.*
-%{_libdir}/libchipcard3_ctapi.so
-%{_libdir}/libchipcard3_ctapi.so.*
-%{_libdir}/chipcard3/server
-%{_sysconfdir}/chipcard3/client
-%{_sysconfdir}/chipcard3/server
-%{_bindir}/cardcommander3
-%{_bindir}/chipcard3-tool
-%{_bindir}/geldkarte3
-%{_bindir}/kvkcard3
-%{_bindir}/memcard3
-%{_sbindir}/chipcardd3
-%{_datadir}/chipcard3/client
-%{_datadir}/chipcard3/server
-%{_localstatedir}/log/chipcard3/drivers
-%{_localstatedir}/log/chipcard3/services
-%attr(0755,root,root) /etc/init.d/chipcardd3
+%{_libdir}/libchipcardc.so
+%{_libdir}/libchipcardc.so.*
+%{_libdir}/libchipcardd.so
+%{_libdir}/libchipcardd.so.*
+#%{_libdir}/libchipcardi.so
+#%{_libdir}/libchipcardi.so.*
+%{_libdir}/libchipcard_ctapi.so
+%{_libdir}/libchipcard_ctapi.so.*
+%{_libdir}/chipcard/server
+%{_sysconfdir}/chipcard/client
+%{_sysconfdir}/chipcard/server
+%{_bindir}/cardcommander
+%{_bindir}/chipcard-tool
+%{_bindir}/geldkarte
+%{_bindir}/kvkcard
+%{_bindir}/memcard
+%{_sbindir}/chipcardd
+%{_datadir}/chipcard/client
+%{_datadir}/chipcard/server
+%{_localstatedir}/log/chipcard/drivers
+%{_localstatedir}/log/chipcard/services
+%attr(0755,root,root) /etc/init.d/chipcardd
 
 %files devel
 %defattr(-,root,root,0755)
 %doc README COPYING ChangeLog
-%{_bindir}/chipcard3-config
+%{_bindir}/chipcard-config
 %{_includedir}/*
 %{_libdir}/*.*a
-%{_datadir}/aclocal/chipcard3.m4
+%{_datadir}/aclocal/chipcard.m4
 
 %files crypttoken
 %defattr(-,root,root,0755)

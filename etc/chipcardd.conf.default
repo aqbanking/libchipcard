@@ -10,9 +10,9 @@
 # ***************************************************************************/
 #
 #
-# This file is used by the chipcard3 daemon.
+# This file is used by the chipcard daemon.
 # Please modify it to your needs and copy it to
-#           $PREFIX/etc/chipcard3/server/chipcardd3.conf
+#           $PREFIX/etc/chipcard/server/chipcardd.conf
 #
 # This is an example of a configuration file to be used when there are only
 # USB readers known by Libchipcard2 in your system.
@@ -33,7 +33,7 @@ server {
   # local server, using Unix Domain Sockets which can only be
   # connected from the very same machine
   typ="local"                 
-  addr="/var/run/chipcard3.comm"
+  addr="/var/run/chipcard.comm"
 } # server
 
 DeviceManager {

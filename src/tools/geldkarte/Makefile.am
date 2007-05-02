@@ -1,4 +1,4 @@
-bin_PROGRAMS=geldkarte3
+bin_PROGRAMS=geldkarte
 
 INCLUDES=@all_includes@
 
@@ -9,8 +9,8 @@ if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib
 endif
 
-geldkarte3_SOURCES=\
+geldkarte_SOURCES=\
   main.c
-geldkarte3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
-geldkarte3_LDFLAGS=@STRIPALL@
+geldkarte_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
+geldkarte_LDFLAGS=@STRIPALL@
 

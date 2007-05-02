@@ -21,8 +21,8 @@
 
 typedef struct LCM_MONITOR LCM_MONITOR;
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/mon/server.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/mon/server.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <time.h>

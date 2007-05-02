@@ -1,4 +1,4 @@
-bin_PROGRAMS=chipcard3-tool
+bin_PROGRAMS=chipcard-tool
 
 INCLUDES=@all_includes@
 
@@ -9,14 +9,14 @@ if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib
 endif
 
-chipcard3_tool_SOURCES=\
+chipcard_tool_SOURCES=\
   main.c \
   checkreaders.c \
   getatr.c \
   listreaders.c \
   monitor.c
-chipcard3_tool_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
-chipcard3_tool_LDFLAGS=@STRIPALL@
+chipcard_tool_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
+chipcard_tool_LDFLAGS=@STRIPALL@
 
 MAINTAINERCLEANFILES=Makefile.in
 

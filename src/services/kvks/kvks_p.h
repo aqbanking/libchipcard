@@ -15,9 +15,9 @@
 #define CHIPCARD_SERVICE_KVK_P_H
 
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/service/service.h>
-#include <chipcard3/client/card.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/service/service.h>
+#include <chipcard/client/card.h>
 
 
 #define SERVICE_KVK_ERROR_UNKNOWN_COMMAND        1

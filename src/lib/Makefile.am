@@ -6,11 +6,11 @@ if !IS_WINDOWS
 SUBDIRS+=server
 endif
 
-EXTRA_DIST=chipcard3.h.in version.h.in
+EXTRA_DIST=chipcard.h.in version.h.in
 
-iheaderdir=${includedir}/chipcard3
+iheaderdir=${includedir}/chipcard
 iheader_HEADERS=\
-  chipcard3.h \
+  chipcard.h \
   version.h
 
 

@@ -19,7 +19,7 @@
 #include "client_p.h"
 #include "card_l.h"
 #include "mon/monitor_l.h"
-#include <chipcard3/sharedstuff/msgengine.h>
+#include <chipcard/sharedstuff/msgengine.h>
 
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/misc.h>

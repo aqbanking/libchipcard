@@ -34,7 +34,7 @@ GWEN_LIST2_FUNCTION_DEFS(LCCO_CARD, LCCO_Card)
 GWEN_INHERIT_FUNCTION_DEFS(LCCO_CARD)
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 LCCO_CARD *LCCO_Card_new();

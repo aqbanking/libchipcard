@@ -36,7 +36,7 @@ GWEN_LIST2_FUNCTION_DEFS(LCCO_READER, LCCO_Reader)
 GWEN_INHERIT_FUNCTION_DEFS(LCCO_READER)
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 typedef enum {

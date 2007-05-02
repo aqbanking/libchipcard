@@ -20,7 +20,7 @@
 /*@{*/
 
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #ifdef __cplusplus
@@ -77,10 +77,10 @@ typedef enum {
 #endif
 
 
-#include <chipcard3/client/card.h>
-#include <chipcard3/client/notifications.h>
-#include <chipcard3/client/mon/monitor.h>
-#include <chipcard3/client/switch.h>
+#include <chipcard/client/card.h>
+#include <chipcard/client/notifications.h>
+#include <chipcard/client/mon/monitor.h>
+#include <chipcard/client/switch.h>
 
 
 #ifdef __cplusplus

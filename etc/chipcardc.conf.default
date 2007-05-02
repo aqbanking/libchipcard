@@ -10,9 +10,9 @@
 # ***************************************************************************/
 #
 #
-# This file is used by chipcard3 client programs.
+# This file is used by chipcard client programs.
 # Please modify it to your needs and copy it to 
-#              $PREFIX/etc/chipcard3/client/chipcardc3.conf
+#              $PREFIX/etc/chipcard3/client/chipcardc.conf
 #
 
 char resmgr="lcc"
@@ -23,7 +23,7 @@ char resmgr="lcc"
 #
 server {
   char typ="local"
-  char addr="/var/run/chipcard3.comm"
+  char addr="/var/run/chipcard.comm"
 } # service
 
 

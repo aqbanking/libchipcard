@@ -15,7 +15,7 @@
 
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 GWEN_LIST2_FUNCTIONS(LC_GELDKARTE_VALUES, LC_GeldKarte_Values)

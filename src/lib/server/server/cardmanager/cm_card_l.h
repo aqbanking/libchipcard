@@ -15,7 +15,7 @@
 #ifndef CHIPCARD_SERVER2_CM_CARD_L_H
 #define CHIPCARD_SERVER2_CM_CARD_L_H
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "common/card.h"
 #include <time.h>
 

@@ -16,7 +16,7 @@
 
 #include "clientlcc.h"
 #define LC_CARD_EXTEND_CLIENT
-#include <chipcard3/client/client_imp.h>
+#include <chipcard/client/client_imp.h>
 
 
 

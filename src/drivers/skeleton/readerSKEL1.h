@@ -15,7 +15,7 @@
 #define CHIPCARD_READER_SKEL2_H
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard3/server/driver/reader.h>
+#include <chipcard/server/driver/reader.h>
 
 
 int ReaderSKEL3_Extend(LCD_READER *r, int ctn);

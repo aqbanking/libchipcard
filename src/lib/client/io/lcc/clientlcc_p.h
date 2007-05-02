@@ -18,7 +18,7 @@
 #include "request_l.h"
 #include "server_l.h"
 
-#include <chipcard3/client/card_imp.h>
+#include <chipcard/client/card_imp.h>
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/ipc.h>

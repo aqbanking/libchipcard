@@ -21,7 +21,7 @@
 
 #include "client.h"
 
-#include <chipcard3/client/notifications.h>
+#include <chipcard/client/notifications.h>
 
 #include <gwenhywfar/db.h>
 

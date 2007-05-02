@@ -17,7 +17,7 @@
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/list2.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #ifdef __cplusplus
 extern "C" {

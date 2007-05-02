@@ -1,4 +1,4 @@
-bin_PROGRAMS=kvkcard3
+bin_PROGRAMS=kvkcard
 
 INCLUDES=@all_includes@
 
@@ -9,10 +9,10 @@ if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib
 endif
 
-kvkcard3_SOURCES=\
+kvkcard_SOURCES=\
   main.c
-kvkcard3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
-kvkcard3_LDFLAGS=@STRIPALL@
+kvkcard_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
+kvkcard_LDFLAGS=@STRIPALL@
 
 MAINTAINERCLEANFILES=Makefile.in
 

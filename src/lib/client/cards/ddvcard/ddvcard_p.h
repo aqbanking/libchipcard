@@ -15,8 +15,8 @@
 #define CHIPCARD_CARD_DDVCARD_P_H
 
 
-#include <chipcard3/client/card_imp.h>
-#include <chipcard3/client/cards/ddvcard.h>
+#include <chipcard/client/card_imp.h>
+#include <chipcard/client/cards/ddvcard.h>
 
 
 typedef struct LC_DDVCARD LC_DDVCARD;

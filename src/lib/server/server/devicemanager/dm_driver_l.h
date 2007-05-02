@@ -28,7 +28,7 @@ typedef struct LCDM_DRIVER LCDM_DRIVER;
 GWEN_LIST_FUNCTION_DEFS(LCDM_DRIVER, LCDM_Driver);
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "devicemanager_l.h"
 
 

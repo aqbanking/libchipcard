@@ -20,8 +20,8 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard3/client/mon/monitor.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard/client/mon/monitor.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
 #include <gwenhywfar/debug.h>
 
 

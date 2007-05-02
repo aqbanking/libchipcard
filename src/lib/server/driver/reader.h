@@ -22,14 +22,14 @@
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/inherit.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 typedef struct LCD_READER LCD_READER;
 GWEN_LIST_FUNCTION_LIB_DEFS(LCD_READER, LCD_Reader, CHIPCARD_API);
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LCD_READER, CHIPCARD_API);
 
-#include <chipcard3/server/driver/slot.h>
+#include <chipcard/server/driver/slot.h>
 
 
 

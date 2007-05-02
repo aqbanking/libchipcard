@@ -20,7 +20,7 @@
 /*@{*/
 
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 
 #ifdef __cplusplus
 extern "C" {

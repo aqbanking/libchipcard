@@ -16,7 +16,7 @@
 
 
 #include "cl_client_p.h"
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>

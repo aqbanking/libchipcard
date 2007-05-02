@@ -79,6 +79,8 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/xml.h>
 
+#include <inttypes.h>
+
 
 #define LC_DEFAULT_PORT 7392 /* FIXME: make this adjustable by configure */
 #define LC_DEFAULT_UDS_SOCK "/var/run/chipcard3.sock"
@@ -107,7 +109,7 @@
 #define LC_ERROR_TIMEOUT               0x00000012
 #define LC_ERROR_IPC                   0x00000013
 /*@}*/
-const char *LC_Error_toString(GWEN_TYPE_UINT32 err);
+const char *LC_Error_toString(uint32_t err);
 
 
 #define LC_LOGDOMAIN "ccclient"
@@ -125,12 +127,12 @@ const char *LC_Error_toString(GWEN_TYPE_UINT32 err);
 /*@}*/
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name);
+uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name);
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name);
+uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name);
 CHIPCARD_API void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
                                       const char *name,
-                                      GWEN_TYPE_UINT32 fl);
+                                      uint32_t fl);
 
 /** driver is a remote driver, not started by the server */
 #define LC_DRIVER_FLAGS_RUNTIME_MASK  0xffff0000
@@ -142,12 +144,12 @@ CHIPCARD_API void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
 #define LC_DRIVER_FLAGS_HAS_MODIFY_FN 0x00000002
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name);
+uint32_t LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name);
 
 CHIPCARD_API
 int LC_DriverFlags_toDb(GWEN_DB_NODE *db,
                         const char *name,
-                        GWEN_TYPE_UINT32 flags);
+                        uint32_t flags);
 
 
 /** service provided by a client */
@@ -159,10 +161,10 @@ int LC_DriverFlags_toDb(GWEN_DB_NODE *db,
 #define LC_SERVICE_FLAGS_SILENT   0x00000004
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name);
+uint32_t LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name);
 CHIPCARD_API void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
                                        const char *name,
-                                       GWEN_TYPE_UINT32 fl);
+                                       uint32_t fl);
 
 
 /** Notification flags */
@@ -213,10 +215,10 @@ CHIPCARD_API void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
   LC_NOTIFY_FLAGS_CLIENT_CMDRECV)
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name);
+uint32_t LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name);
 CHIPCARD_API void LC_NotifyFlags_toDb(GWEN_DB_NODE *db,
                                       const char *name,
-                                      GWEN_TYPE_UINT32 fl);
+                                      uint32_t fl);
 
 
 /*@}*/

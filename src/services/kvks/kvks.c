@@ -21,9 +21,9 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/client/client.h>
-#include <chipcard3/client/tlv.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard/client/client.h>
+#include <chipcard/client/tlv.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
 
 #include <unistd.h>
 #include <stdio.h>

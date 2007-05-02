@@ -8,21 +8,21 @@ EXTRA_DIST= \
  INSTALL \
  NEWS \
  README \
- chipcard3.m4 \
- libchipcard3.spec.in libchipcard3.spec
+ chipcard.m4 \
+ libchipcard.spec.in libchipcard.spec
 
-bin_SCRIPTS = chipcard3-config
+bin_SCRIPTS = chipcard-config
 M4dir = $(datadir)/aclocal
-M4_DATA = chipcard3.m4 
+M4_DATA = chipcard.m4 
 ACLOCAL_AMFLAGS = -I m4
 
 CLEANFILES = $(bin_SCRIPTS)
 
-chipcard3-config: chipcard3-config.in
-	echo "#! /bin/sh" >chipcard3-config && \
-	echo 'prefix="@prefix@"' >>chipcard3-config && \
-	cat chipcard3-config.in >>chipcard3-config && \
-	chmod a+x chipcard3-config
+chipcard-config: chipcard-config.in
+	echo "#! /bin/sh" >chipcard-config && \
+	echo 'prefix="@prefix@"' >>chipcard-config && \
+	cat chipcard-config.in >>chipcard-config && \
+	chmod a+x chipcard-config
 
 rpm:    $(PACKAGE).spec dist
 	rpmbuild="rpm" && \
@@ -41,7 +41,7 @@ win32:
 	 rm -Rf win32-devel && \
 	 rm -Rf win32-tmp
 	mkdir -p distribution/win32-bin && \
-	 cp -r src/libchipcard32.dll distribution/win32-bin/ && \
+	 cp -r src/libchipcard2.dll distribution/win32-bin/ && \
 	 strip distribution/win32-bin/*.dll && \
 	 cd distribution && tar pczvf @PACKAGE@-@VERSION@-win32-bin.tgz win32-bin && \
 	 rm -Rf win32-bin
