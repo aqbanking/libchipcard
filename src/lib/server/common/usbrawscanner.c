@@ -40,7 +40,9 @@
 #endif
 
 
+#ifdef USE_LIBUSB
 static int lc_usbrawscanner__initcount=0;
+#endif
 
 
 LC_DEVSCANNER *LC_UsbRawScanner_new() {
