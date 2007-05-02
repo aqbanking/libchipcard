@@ -1,4 +1,4 @@
-INCLUDES=-I.. @all_includes@
+INCLUDES=-I.. -I$(srcdir)/.. @all_includes@
 
 DEFS=@DEFS@ -DLC_LOWLEVELDRIVER_PATH=\"@lc_server_lowlevel_driver_dir@\"
 
