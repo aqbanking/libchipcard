@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 
 #include <stdlib.h>

@@ -27,9 +27,9 @@
 #include <gwenhywfar/nl_http.h>
 #include <gwenhywfar/net2.h>
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
-#include <chipcard/client/io/lcc/clientlcc.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/io/lcc/clientlcc.h>
 
 #include <stdlib.h>
 #include <assert.h>

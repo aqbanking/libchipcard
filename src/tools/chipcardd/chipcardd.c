@@ -124,8 +124,8 @@ ARGUMENTS *Arguments_new() {
 #endif
   ar->dataDir=LC_DEFAULT_DATADIR;
   ar->configFile=0;
-  ar->pidFile=LC_DEFAULT_PIDDIR "/chipcardd.pid";
-  ar->logFile=LC_DEFAULT_LOGDIR "/chipcardd.log";
+  ar->pidFile=LC_DEFAULT_PIDDIR "/chipcardd3.pid";
+  ar->logFile=LC_DEFAULT_LOGDIR "/chipcardd3.log";
   ar->logLevel=GWEN_LoggerLevelNotice;
 #ifdef HAVE_SYSLOG_H
   ar->logType=GWEN_LoggerTypeSyslog;
@@ -456,7 +456,7 @@ int getConfigFile(ARGUMENTS *args, GWEN_BUFFER *nbuf) {
     /* try system configuration file */
     GWEN_Buffer_Reset(nbuf);
     GWEN_Directory_OsifyPath(LC_DEFAULT_CONFDIR, nbuf, 1);
-    GWEN_Buffer_AppendString(nbuf, DIRSEP "chipcardd.conf");
+    GWEN_Buffer_AppendString(nbuf, DIRSEP "chipcardd3.conf");
     DBG_INFO(0, "Trying \"%s\"", GWEN_Buffer_GetStart(nbuf));
     f=fopen(GWEN_Buffer_GetStart(nbuf), "r");
     if (f) {

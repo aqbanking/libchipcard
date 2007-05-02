@@ -24,10 +24,10 @@
 
 typedef struct LCM_SERVER LCM_SERVER;
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client/mon/reader.h>
-#include <chipcard/client/mon/driver.h>
-#include <chipcard/client/mon/service.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/mon/reader.h>
+#include <chipcard3/client/mon/driver.h>
+#include <chipcard3/client/mon/service.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>

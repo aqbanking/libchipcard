@@ -15,7 +15,7 @@ noinst_HEADERS=\
   kvkcard_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=${includedir}/chipcard3/client/cards
 iheader_HEADERS=\
   kvkcard.h
 

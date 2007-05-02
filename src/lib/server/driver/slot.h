@@ -27,12 +27,12 @@
 #include <gwenhywfar/misc.h>
 #include <time.h>
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 typedef struct LCD_SLOT LCD_SLOT;
 GWEN_LIST_FUNCTION_LIB_DEFS(LCD_SLOT, LCD_Slot, CHIPCARD_API);
 
-#include <chipcard/server/driver/reader.h>
+#include <chipcard3/server/driver/reader.h>
 
 
 

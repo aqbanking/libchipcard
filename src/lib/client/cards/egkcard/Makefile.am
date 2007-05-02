@@ -15,7 +15,7 @@ noinst_HEADERS=\
   egkcard_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=${includedir}/chipcard3/client/cards
 iheader_HEADERS=\
   egkcard.h
 

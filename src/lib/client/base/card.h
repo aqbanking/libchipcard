@@ -31,9 +31,9 @@ typedef struct LC_CARD LC_CARD;
 }
 #endif
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
-#include <chipcard/sharedstuff/pininfo.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/sharedstuff/pininfo.h>
 
 
 #ifdef __cplusplus
@@ -71,7 +71,7 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LC_CARD, LC_Card, CHIPCARD_API)
 
 
 
-/** @name Opening, Closing, Destroying
+/** @name Opening, Closing, Destroying, Executing
  *
  */
 /*@{*/
@@ -96,38 +96,15 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
 
 /**
- * Closes the given card.
+ * Closed the given card.
  * The action taken here depends on the derived card class (e.g.
  * LC_DdvCard).
  */
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
-/*@}*/
 
 
 
-/** @name Executing Card Commands
- *
- * There are two ways of letting Libchipcard execute card commands:
- * <ul>
- *  <li>directly sending a prebuilt APDU</li>
- *  <li>
- *   referencing a command by name so that Libchipcard can built the
- *   APDU for the particular reader and card combination.
- * </ul>
- * When working with Libchipcard the latter method is preferred since only
- * in this case Libchipcard can adapt APDUs in order to make them work
- * with a given combination of card and reader. Otherwise the application
- * has to take care of the specialties of a given reader or card by itself.
- */
-/*@{*/
-
-/**
- * Execute a prebuilt APDU and return the result.
- * This function can be used when relaying APDUs from other APIs (such as
- * the CTAPI shipped with Libchipcard which allows to access the service of
- * Libchipcard via CTAPI).
- */
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
                                   const char *apdu,
@@ -136,16 +113,6 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
                                   LC_CLIENT_CMDTARGET t,
                                   int timeout);
 
-/**
- * Executes a command referenced by name.
- * This function looks for the given command in the description files
- * of the currently selected card and reader which holds the card.
- * This way the resulting APDU will work with that particular combination.
- *
- * This function only works after the functions @ref LC_Card_SelectApp
- * and LC_Card_SelectCard have been called (which is done implicitly by
- * the open-functions set by e.g. @ref LC_DDVCard_ExtendCard() etc.
- */
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                                      const char *commandName,
@@ -153,10 +120,6 @@ LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                                      GWEN_DB_NODE *rspData,
                                      int timeout);
 
-/**
- * This function is used internally by @ref LC_Card_ExecCommand to create
- * an APDU from a command for a particular combination of card and reader.
- */
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_BuildApdu(LC_CARD *card,
                                    const char *command,
@@ -168,78 +131,39 @@ LC_CLIENT_RESULT LC_Card_BuildApdu(LC_CARD *card,
 
 
 
-/** @name Select Card/Application Type
+/** @name Select Application/DF/EF
  *
- * Functions in this group tell Libchipcard which instruction set is to be
- * used for @ref LC_Card_ExecApdu(). It also selects the XML descriptions
- * appropriate for the card application to be used by the functions
- * @ref LC_Card_SelectDf() and LC_Card_SelectEf().
- *
- * A card can contain multiple applications, e.g. some HBCI cards additionally
- * contain the GeldKarte application. Different card applications contain
- * different files/folders (EF/DF), so Libchipcard needs to be told which
- * card application is to be used.
  */
 /*@{*/
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectCard(LC_CARD *card, const char *s);
-
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_SelectApp(LC_CARD *card, const char *appName);
-/*@}*/
-
-
-/** @name Select MF/DF/EF
- *
- */
-/*@{*/
-
-/**
- * This function selects the master file (corresponds to root on a
- * filesystem).
- */
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card);
-
-/**
- * Select a dedicated file below the currently selected one (or the master
- * file). A DF can be thought of as a folder in a filesystem.
- * Libchipcard looks this DF up in the XML description files of the current
- * card and application an creates the appropriate APDU to select the DF
- * either by short or long id (as determined by the XML files).
- */
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname);
-
-/**
- * Select an elementary file below the currently selected DF (or MF).
- * An EF can be thought of as a file in a filesystem.
- * Libchipcard looks this EF up in the XML description files of the current
- * card and application an creates the appropriate APDU to select the EF
- * either by short or long id (as determined by the XML files).
- */
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname);
-/*@}*/
-
-
-/** @name XML Descriptions
- *
- */
-/*@{*/
-CHIPCARD_API
-GWEN_XMLNODE *LC_Card_GetCardNode(const LC_CARD *card);
 
 CHIPCARD_API
 GWEN_XMLNODE *LC_Card_GetAppNode(const LC_CARD *card);
 
 CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_SelectCard(LC_CARD *card, const char *s);
+
+CHIPCARD_API
+GWEN_XMLNODE *LC_Card_GetCardNode(const LC_CARD *card);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_SelectMF(LC_CARD *card);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname);
+
+CHIPCARD_API
 GWEN_XMLNODE *LC_Card_GetDfNode(const LC_CARD *card);
+
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname);
 
 CHIPCARD_API
 GWEN_XMLNODE *LC_Card_GetEfNode(const LC_CARD *card);
-
 /*@}*/
+
 
 
 
@@ -293,8 +217,7 @@ const GWEN_STRINGLIST *LC_Card_GetCardTypes(const LC_CARD *cd);
  * must neither manipulate nor free it.
  */
 CHIPCARD_API
-unsigned int LC_Card_GetAtr(const LC_CARD *cd,
-			    const unsigned char **pbuf);
+unsigned int LC_Card_GetAtr(const LC_CARD *cd, const unsigned char **pbuf);
 
 
 /**

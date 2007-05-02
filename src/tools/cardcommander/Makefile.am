@@ -1,4 +1,4 @@
-bin_PROGRAMS=cardcommander
+bin_PROGRAMS=cardcommander3
 
 INCLUDES=@all_includes@
 
@@ -7,7 +7,7 @@ if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib
 endif
 
-cardcommander_SOURCES = cardcommander.cpp
-cardcommander_LDADD = ../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
-cardcommander_LDFLAGS=@STRIPALL@
+cardcommander3_SOURCES = cardcommander.cpp
+cardcommander3_LDADD = ../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+cardcommander3_LDFLAGS=@STRIPALL@
 

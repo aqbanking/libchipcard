@@ -20,7 +20,7 @@ SKEL1_SOURCES=\
   readerSKEL1.c \
   main.c
 
-SKEL1_LDADD=../../lib/server/driver/libchipcardd.la \
+SKEL1_LDADD=../../lib/server/driver/libchipcard3d.la \
   @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
 SKEL1_LDFLAGS=@STRIPALL@
 

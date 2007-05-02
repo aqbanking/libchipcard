@@ -16,8 +16,8 @@
 
 #include "ctapi.h"
 
-#include <chipcard/client/client.h>
-#include <chipcard/client/card.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/card.h>
 #include <gwenhywfar/misc.h>
 
 

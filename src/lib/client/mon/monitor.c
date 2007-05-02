@@ -22,8 +22,8 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard/chipcard.h>
-#include <chipcard/client/card.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/card.h>
 
 
 #include <stdlib.h>

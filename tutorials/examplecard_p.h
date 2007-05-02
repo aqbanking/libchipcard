@@ -23,7 +23,7 @@
 #define CHIPCARD_CARD_EXAMPLECARD_P_H
 
 #include "examplecard.h"
-#include <chipcard/client/card_imp.h>
+#include <chipcard3/client/card_imp.h>
 
 
 /**

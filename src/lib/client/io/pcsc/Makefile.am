@@ -14,7 +14,7 @@ noinst_HEADERS=\
   clientpcsc_l.h clientpcsc_p.h \
   readerpcsc_l.h readerpcsc_p.h
 
-iheaderdir=${includedir}/chipcard/client/io/pcsc
+iheaderdir=${includedir}/chipcard3/client/io/pcsc
 iheader_HEADERS=\
   clientpcsc.h
 

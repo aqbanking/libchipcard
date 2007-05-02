@@ -14,8 +14,8 @@
 #ifndef CHIPCARD_CARD_KVKCARD_P_H
 #define CHIPCARD_CARD_KVKCARD_P_H
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/kvkcard.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/kvkcard.h>
 
 
 typedef struct LC_KVKCARD LC_KVKCARD;

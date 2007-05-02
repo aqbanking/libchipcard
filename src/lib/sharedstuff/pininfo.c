@@ -13,8 +13,6 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include <gwenhywfar/types.h>
-#include <chipcard/chipcard.h>
 
 
 GWEN_INHERIT_FUNCTIONS(LC_PININFO)

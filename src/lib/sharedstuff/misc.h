@@ -14,7 +14,7 @@
 #ifndef CHIPCARD3_MISC_H
 #define CHIPCARD3_MISC_H
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 #include <gwenhywfar/netlayer.h>
 

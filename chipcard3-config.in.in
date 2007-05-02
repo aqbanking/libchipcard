@@ -1,4 +1,4 @@
-# $Id: chipcard-client-config.in.in 217 2006-09-08 02:37:16Z martin $
+# $Id: chipcard3-client-config.in.in 217 2006-09-08 02:37:16Z martin $
 # Author of this file: Martin Preuss<martin@libchipcard.de>
 
 prefix=@prefix@
@@ -12,10 +12,10 @@ result=""
 for d in $*; do
     case $d in
 	--includes)
-	    result="$result @libchipcard_includes@ @gwenhywfar_includes@"
+	    result="$result @libchipcard3_includes@ @gwenhywfar_includes@"
 	    ;;
 	--client-libs)
-	    result="$result @libchipcardc_libs@"
+	    result="$result @libchipcard3c_libs@"
 	    ;;
 	--vmajor)
 	    result="$result @CHIPCARD_VERSION_MAJOR@"
@@ -51,11 +51,11 @@ for d in $*; do
 	    echo "Usage:"
 	    echo "$0 --includes gives you the include flags"
 	    echo "$0 --client-libs gives the client library flags"
-	    echo "$0 --vmajor gives the major version of LibChipcard"
-	    echo "$0 --vminor gives the minor version of LibChipcard"
-	    echo "$0 --vpatchlevel gives the patchlevel of LibChipcard"
-	    echo "$0 --vbuild gives the build number of LibChipcard"
-	    echo "$0 --vtag gives the tag of LibChipcard (cvs, beta or stable)"
+	    echo "$0 --vmajor gives the major version of LibChipcard3"
+	    echo "$0 --vminor gives the minor version of LibChipcard3"
+	    echo "$0 --vpatchlevel gives the patchlevel of LibChipcard3"
+	    echo "$0 --vbuild gives the build number of LibChipcard3"
+	    echo "$0 --vtag gives the tag of LibChipcard3 (cvs, beta or stable)"
 	    echo "$0 --vstring returns a version string"
 	    echo "$0 --client-datadir returns the data folder of the client"
 	    echo "$0 --server-datadir returns the data folder of the server"

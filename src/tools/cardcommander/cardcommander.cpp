@@ -41,8 +41,8 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
 
 using namespace std;
 

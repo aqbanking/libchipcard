@@ -18,13 +18,13 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/misc.h>
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 #include "common/reader.h"
 #include "lockmanager_l.h"
 
 #include <time.h>
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 #include "devicemanager_l.h"
 #include "dm_driver_l.h"
 #include "dm_slot_l.h"

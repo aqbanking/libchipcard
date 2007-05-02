@@ -15,7 +15,7 @@
 #define CHIPCARD_READER_CTAPI_H
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard/server/driver/reader.h>
+#include <chipcard3/server/driver/reader.h>
 
 
 int ReaderCTAPI_Extend(LCD_READER *r, int ctn);

@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_CLIENT_NOTIFICATIONS_L_H
 #define CHIPCARD_CLIENT_NOTIFICATIONS_L_H
 
-#include <chipcard/client/notifications.h>
+#include <chipcard3/client/notifications.h>
 
 GWEN_LIST_FUNCTION_DEFS(LC_NOTIFICATION, LC_Notification)
 

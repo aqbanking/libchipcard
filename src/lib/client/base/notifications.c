@@ -19,7 +19,7 @@
 #include "notifications_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 #include <stdlib.h>
 #include <assert.h>

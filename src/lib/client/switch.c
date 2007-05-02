@@ -16,8 +16,8 @@
 
 #include "switch.h"
 #include "base/client_l.h"
-#include <chipcard/client/io/lcc/clientlcc.h>
-#include <chipcard/client/io/pcsc/clientpcsc.h>
+#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard3/client/io/pcsc/clientpcsc.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/db.h>

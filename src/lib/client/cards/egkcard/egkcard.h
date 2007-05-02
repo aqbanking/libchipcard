@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_CARD_EGKCARD_H
 #define CHIPCARD_CARD_EGKCARD_H
 
-#include <chipcard/client/card.h>
+#include <chipcard3/client/card.h>
 
 #ifdef __cplusplus
 extern "C" {

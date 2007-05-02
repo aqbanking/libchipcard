@@ -18,9 +18,9 @@
 #undef BUILDING_LIBCHIPCARD2_DLL
 
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
-#include <chipcard/client/cards/kvkcard.h>
+#include <chipcard3/chipcard3.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/cards/kvkcard.h>
 
 
 /*

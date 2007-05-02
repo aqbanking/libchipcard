@@ -21,7 +21,7 @@ typedef struct LC_REQUEST LC_REQUEST;
 
 #include <time.h>
 
-#include <chipcard/client/card.h>
+#include <chipcard3/client/card.h>
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_REQUEST, LC_Request);

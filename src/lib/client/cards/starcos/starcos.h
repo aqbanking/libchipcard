@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_CARD_STARCOS_H
 #define CHIPCARD_CARD_STARCOS_H
 
-#include <chipcard/client/card.h>
+#include <chipcard3/client/card.h>
 #include <gwenhywfar/keyspec.h>
 #include <gwenhywfar/crypt.h>
 

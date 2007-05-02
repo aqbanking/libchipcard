@@ -15,8 +15,8 @@
 #define CHIPCARD_CARD_EGKCARD_P_H
 
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/egkcard.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/egkcard.h>
 
 
 typedef struct LC_EGKCARD LC_EGKCARD;

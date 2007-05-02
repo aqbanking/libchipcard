@@ -16,8 +16,8 @@
 
 #include "clientlcc_p.h"
 #include "cardlcc_l.h"
-#include <chipcard/client/card.h>
-#include <chipcard/client/mon/monitor.h>
+#include <chipcard3/client/card.h>
+#include <chipcard3/client/mon/monitor.h>
 
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/misc.h>

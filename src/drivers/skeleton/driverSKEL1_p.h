@@ -16,7 +16,7 @@
 
 #include "driverSKEL1.h"
 
-#include <chipcard/server/driver/driver.h>
+#include <chipcard3/server/driver/driver.h>
 
 
 struct DRIVER_SKEL2 {

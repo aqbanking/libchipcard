@@ -19,9 +19,9 @@
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
-#include <chipcard/client/cards/starcos.h>
-#include <chipcard/client/cards/processorcard.h>
-#include <chipcard/client/crypttoken/ct_card.h>
+#include <chipcard3/client/cards/starcos.h>
+#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard3/client/crypttoken/ct_card.h>
 
 
 GWEN_INHERIT(GWEN_CRYPTTOKEN, LC_CT_STARCOS)

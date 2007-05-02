@@ -8,7 +8,7 @@ crypttokenplugin_LTLIBRARIES=ddvcard.la
 noinst_HEADERS=\
   ddvcard_p.h
 
-iheaderdir=${includedir}/chipcard/client/crypttoken
+iheaderdir=${includedir}/chipcard3/client/crypttoken
 #iheader_HEADERS=
 
 # if IS_WINDOWS
@@ -20,6 +20,6 @@ ddvcard_la_SOURCES=\
   ddvcard.c
 
 ddvcard_la_LDFLAGS=-module -no-undefined
-ddvcard_la_LIBADD=../../lib/client/libchipcardc.la $(mingw_ldflags) $(gwenhywfar_libs)
+ddvcard_la_LIBADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

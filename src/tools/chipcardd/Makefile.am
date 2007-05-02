@@ -20,10 +20,10 @@ if IS_WINDOWS
 endif
 
 
-sbin_PROGRAMS=chipcardd
+sbin_PROGRAMS=chipcardd3
 noinst_HEADERS=chipcardd_p.h
 
-chipcardd_SOURCES=\
+chipcardd3_SOURCES=\
   addreader.c \
   delreader.c \
   testreader.c \
@@ -32,9 +32,9 @@ chipcardd_SOURCES=\
   mkcert.c \
   chipcardd.c
 
-chipcardd_LDADD=\
-  ../../lib/server/server/libchipcards.la \
+chipcardd3_LDADD=\
+  ../../lib/server/server/libchipcard3s.la \
   ../../lib/server/common/libcommon.la  \
   ../../lib/sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@ @libusb_libs@ @libsysfs_libs@
-chipcardd_LDFLAGS=@STRIPALL@
+chipcardd3_LDFLAGS=@STRIPALL@
 

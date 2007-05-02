@@ -14,8 +14,8 @@
 #ifndef CHIPCARD_CARD_PROCESSORCARD_P_H
 #define CHIPCARD_CARD_PROCESSORCARD_P_H
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/processorcard.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/processorcard.h>
 
 
 typedef struct LC_PROCESSORCARD LC_PROCESSORCARD;

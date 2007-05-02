@@ -13,8 +13,8 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include <chipcard/client/cards/starcos.h>
-#include <chipcard/chipcard.h>
+#include <chipcard3/client/cards/starcos.h>
+#include <chipcard3/chipcard3.h>
 
 
 GWEN_LIST_FUNCTIONS(LC_STARCOS_KEYDESCR, LC_Starcos_KeyDescr)

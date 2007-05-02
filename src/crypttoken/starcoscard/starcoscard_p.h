@@ -16,7 +16,7 @@
 
 
 #include <gwenhywfar/crypttoken.h>
-#include <chipcard/client/card.h>
+#include <chipcard3/client/card.h>
 
 
 typedef struct LC_CT_PLUGIN_STARCOS LC_CT_PLUGIN_STARCOS;

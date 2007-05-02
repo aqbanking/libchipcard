@@ -8,7 +8,7 @@ AM_CFLAGS=$(visibility_cflags)
 
 noinst_LTLIBRARIES=libctcard.la
 
-iheaderdir=${includedir}/chipcard/client/crypttoken
+iheaderdir=${includedir}/chipcard3/client/crypttoken
 iheader_HEADERS=\
   ct_card.h
 

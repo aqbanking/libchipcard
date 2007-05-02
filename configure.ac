@@ -3,7 +3,7 @@
 AC_PREREQ(2.59)
 AC_INIT
 AC_CANONICAL_TARGET([])
-AC_CONFIG_SRCDIR([chipcard-config.in.in])
+AC_CONFIG_SRCDIR([chipcard3-config.in.in])
 AC_CONFIG_HEADER([config.h])
 
 
@@ -16,7 +16,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=3
 CHIPCARD_VERSION_MINOR=0
 CHIPCARD_VERSION_PATCHLEVEL=3
-CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_BUILD=2
 CHIPCARD_VERSION_TAG="svn"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
@@ -83,7 +83,7 @@ AC_SUBST(LIBCHIPCARD_SO_AGE)
 AC_SUBST(LIBCHIPCARD_SO_EFFECTIVE)
 
 
-AM_INIT_AUTOMAKE(libchipcard, $CHIPCARD_VERSION_RELEASE_STRING)
+AM_INIT_AUTOMAKE(libchipcard3, $CHIPCARD_VERSION_RELEASE_STRING)
 
 
 
@@ -283,27 +283,27 @@ case "$OS_TYPE" in
     posix)
         lc_sys_is_windows=0
         
-        lc_client_config_dir="\${sysconfdir}/chipcard/client"
-        lc_client_config_file="chipcardc.conf"
-        lc_client_def_cert_dir="\${sysconfdir}/chipcard/client/certs"
-        lc_client_def_newcert_dir="~/.libchipcard/certs"
-        lc_client_def_cert_file="~/.libchipcard/user.cert"
-        lc_client_xml_dir="\${datadir}/chipcard/client"
+        lc_client_config_dir="\${sysconfdir}/chipcard3/client"
+        lc_client_config_file="chipcardc3.conf"
+        lc_client_def_cert_dir="\${sysconfdir}/chipcard3/client/certs"
+        lc_client_def_newcert_dir="~/.libchipcard3/certs"
+        lc_client_def_cert_file="~/.libchipcard3/user.cert"
+        lc_client_xml_dir="\${datadir}/chipcard3/client"
 
-        lc_server_config_dir="\${sysconfdir}/chipcard/server"
-        lc_server_data_dir="\${datadir}/chipcard/server"
-        lc_server_lowlevel_driver_dir="\${libdir}/chipcard/server/lowlevel"
-        lc_server_def_cert_dir="\${sysconfdir}/chipcard/server/certs"
-        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd/newcerts"
-        lc_server_driver_dir="\${libdir}/chipcard/server/drivers"
-        lc_server_service_dir="\${libdir}/chipcard/server/services"
-        lc_server_log_dir="\${localstatedir}/log/chipcard"
+        lc_server_config_dir="\${sysconfdir}/chipcard3/server"
+        lc_server_data_dir="\${datadir}/chipcard3/server"
+        lc_server_lowlevel_driver_dir="\${libdir}/chipcard3/server/lowlevel"
+        lc_server_def_cert_dir="\${sysconfdir}/chipcard3/server/certs"
+        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd3/newcerts"
+        lc_server_driver_dir="\${libdir}/chipcard3/server/drivers"
+        lc_server_service_dir="\${libdir}/chipcard3/server/services"
+        lc_server_log_dir="\${localstatedir}/log/chipcard3"
         lc_server_pid_dir="\${localstatedir}/run"
-        lc_server_def_dh_dir="\${sysconfdir}/chipcard/server/dh"
+        lc_server_def_dh_dir="\${sysconfdir}/chipcard3/server/dh"
 
-        libchipcard_includes="-I\${prefix}/include"
-        libchipcardc_libs="-L\${libdir} -lchipcardc"
-        libchipcardi_libs="-L\${libdir} -lchipcardi"
+        libchipcard3_includes="-I\${prefix}/include"
+        libchipcard3c_libs="-L\${libdir} -lchipcard3c"
+        libchipcard3i_libs="-L\${libdir} -lchipcard3i"
         
         lc_dir_nonwindows_src="drivers services"
         lc_dir_nonwindows_tools="chipcardd"
@@ -314,27 +314,27 @@ case "$OS_TYPE" in
         ACX_WINDOWS_PATHS
         lc_sys_is_windows=1
 
-        lc_client_config_dir="\${sysconfdir}/chipcard/client"
-        lc_client_config_file="chipcardc.conf"
-        lc_client_def_cert_dir="\${sysconfdir}/chipcard/client/certs"
-        lc_client_def_newcert_dir="~/.libchipcard/certs"
-        lc_client_def_cert_file="~/.libchipcard/user.cert"
-        lc_client_xml_dir="\${datadir}/chipcard/client"
+        lc_client_config_dir="\${sysconfdir}/chipcard3/client"
+        lc_client_config_file="chipcardc3.conf"
+        lc_client_def_cert_dir="\${sysconfdir}/chipcard3/client/certs"
+        lc_client_def_newcert_dir="~/.libchipcard3/certs"
+        lc_client_def_cert_file="~/.libchipcard3/user.cert"
+        lc_client_xml_dir="\${datadir}/chipcard3/client"
 
-        lc_server_config_dir="\${sysconfdir}/chipcard/server"
-        lc_server_data_dir="\${datadir}/chipcard/server"
-        lc_server_lowlevel_driver_dir="\${libdir}/chipcard/server/lowlevel"
-        lc_server_def_cert_dir="\${sysconfdir}/chipcard/server/certs"
-        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd/newcerts"
-        lc_server_driver_dir="\${libdir}/chipcard/server/drivers"
-        lc_server_service_dir="\${libdir}/chipcard/server/services"
-        lc_server_log_dir="\${localstatedir}/log/chipcard"
+        lc_server_config_dir="\${sysconfdir}/chipcard3/server"
+        lc_server_data_dir="\${datadir}/chipcard3/server"
+        lc_server_lowlevel_driver_dir="\${libdir}/chipcard3/server/lowlevel"
+        lc_server_def_cert_dir="\${sysconfdir}/chipcard3/server/certs"
+        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd3/newcerts"
+        lc_server_driver_dir="\${libdir}/chipcard3/server/drivers"
+        lc_server_service_dir="\${libdir}/chipcard3/server/services"
+        lc_server_log_dir="\${localstatedir}/log/chipcard3"
         lc_server_pid_dir="\${localstatedir}/run"
-        lc_server_def_dh_dir="\${sysconfdir}/chipcard/server/dh"
+        lc_server_def_dh_dir="\${sysconfdir}/chipcard3/server/dh"
 
-        libchipcard_includes="-I\${prefix}/include"
-        libchipcardc_libs="-L\${libdir} -lchipcardc"
-        libchipcardi_libs="-L\${libdir} -lchipcardi"
+        libchipcard3_includes="-I\${prefix}/include"
+        libchipcard3c_libs="-L\${libdir} -lchipcard3c"
+        libchipcard3i_libs="-L\${libdir} -lchipcard3i"
     	;;
 esac
 
@@ -360,9 +360,9 @@ AC_SUBST(lc_server_log_dir)
 AC_SUBST(lc_server_pid_dir)
 AC_SUBST(lc_server_def_dh_dir)
 
-AC_SUBST(libchipcardd_libs)
-AC_SUBST(libchipcardc_libs)
-AC_SUBST(libchipcard_includes)
+AC_SUBST(libchipcard3d_libs)
+AC_SUBST(libchipcard3c_libs)
+AC_SUBST(libchipcard3_includes)
 
 AC_SUBST(lc_dir_nonwindows_src)
 AC_SUBST(lc_dir_nonwindows_tools)
@@ -447,7 +447,7 @@ if test "$enable_fulldoc" = "yes"; then
 	DOXYGEN_INPUT="src/lib"
         DOXYGEN_DEFINE=""
 else
-	DOXYGEN_INPUT="chipcard"
+	DOXYGEN_INPUT="chipcard3"
 	DOXYGEN_DEFINE="DOXYGEN_HIDE"
 fi
 AC_SUBST(DOXYGEN_INPUT)
@@ -582,9 +582,9 @@ fi
 #
 
 AC_CONFIG_FILES([Makefile
-                 chipcard-config.in
+                 chipcard3-config.in
                  Doxyfile
-                 libchipcard.spec
+                 libchipcard3.spec
                  bin/Makefile
                  bin/prepare.sh.in
                  data/Makefile
@@ -607,7 +607,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/lib/Makefile
                  src/lib/version.h
-                 src/lib/chipcard.h
+                 src/lib/chipcard3.h
                  src/lib/sharedstuff/Makefile
                  src/lib/client/Makefile
                  src/lib/client/ressource.rc
@@ -674,11 +674,11 @@ AC_OUTPUT
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
-rm -Rf chipcard
-mkdir chipcard
-AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard.h"
-ln -s "${lprefix}/src/lib/version.h" chipcard/version.h
-ln -s "${lprefix}/src/lib/chipcard.h" chipcard/chipcard.h
+rm -Rf chipcard3
+mkdir chipcard3
+AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard3.h"
+ln -s "${lprefix}/src/lib/version.h" chipcard3/version.h
+ln -s "${lprefix}/src/lib/chipcard3.h" chipcard3/chipcard3.h
 
 
 
@@ -690,7 +690,7 @@ lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
 # symlink all headers from src/lib/sharedstuff/*
-mkdir chipcard/sharedstuff
+mkdir chipcard3/sharedstuff
 hfiles=`( cd "${srcdir}/src/lib/sharedstuff" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/sharedstuff/${f}"
@@ -700,7 +700,7 @@ for f in ${hfiles}; do
     *_l.h)
           ;;
     *)   
-          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard/sharedstuff/${f}"
+          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard3/sharedstuff/${f}"
           ;;
   esac
 done
@@ -721,18 +721,18 @@ lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard pro
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
-rm -Rf chipcard/client
-mkdir chipcard/client
+rm -Rf chipcard3/client
+mkdir chipcard3/client
 
 # symlink all headers from src/lib/client
 hfiles=`( cd "${srcdir}/src/lib/client" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${f}"
   case ${f} in
-    *_p.h | *version.h | *chipcard.h)
+    *_p.h | *version.h | *chipcard3.h)
               ;;
     *)
-              ln -s "${lprefix}/src/lib/client/${f}" "chipcard/client/${f}"
+              ln -s "${lprefix}/src/lib/client/${f}" "chipcard3/client/${f}"
               ;;
   esac
 done
@@ -746,7 +746,7 @@ for f in ${hfiles}; do
     *_p.h | *_l.h)
       ;;
     *)   
-      ln -s "${lprefix}/src/lib/client/base/${f}" "chipcard/client/${f}"
+      ln -s "${lprefix}/src/lib/client/base/${f}" "chipcard3/client/${f}"
       ;;
   esac
 done
@@ -754,7 +754,7 @@ done
 
 # symlink all headers from src/lib/client/*
 for sm in $lc_modules; do
-  mkdir chipcard/client/${sm}
+  mkdir chipcard3/client/${sm}
   hfiles=`( cd "${srcdir}/src/lib/client/${sm}" && ls *.h 2>/dev/null )`
   for f in ${hfiles}; do
     AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${sm}/${f}"
@@ -762,7 +762,7 @@ for sm in $lc_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "chipcard/client/${sm}/${f}"
+        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "chipcard3/client/${sm}/${f}"
         ;;
     esac
   done
@@ -771,7 +771,7 @@ done
 
 # symlink all headers from src/lib/client/io/*
 for sm in $lc_client_io_modules; do
-  mkdir chipcard/client/io/${sm}
+  mkdir chipcard3/client/io/${sm}
   hfiles=`( cd "${srcdir}/src/lib/client/io/${sm}" && ls *.h 2>/dev/null )`
   for f in ${hfiles}; do
     AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/io/${sm}/${f}"
@@ -779,7 +779,7 @@ for sm in $lc_client_io_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/io/${sm}/${f}" "chipcard/client/io/${sm}/${f}"
+        ln -s "${lprefix}/src/lib/client/io/${sm}/${f}" "chipcard3/client/io/${sm}/${f}"
         ;;
     esac
   done
@@ -795,7 +795,7 @@ for sm in $lc_client_card_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "chipcard/client/cards/${f}"
+        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "chipcard3/client/cards/${f}"
         ;;
     esac
   done
@@ -803,7 +803,7 @@ done
 
 
 # symlink all headers from src/lib/server/driver/*
-mkdir -p chipcard/server/driver
+mkdir -p chipcard3/server/driver
 hfiles=`( cd "${srcdir}/src/lib/server/driver" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/server/driver/${f}"
@@ -811,7 +811,7 @@ for f in ${hfiles}; do
     *_p.h | *_l.h)
       ;;
     *)   
-      ln -s "${lprefix}/src/lib/server/driver/${f}" "chipcard/server/driver/${f}"
+      ln -s "${lprefix}/src/lib/server/driver/${f}" "chipcard3/server/driver/${f}"
       ;;
   esac
 done

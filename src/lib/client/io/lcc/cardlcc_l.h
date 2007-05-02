@@ -15,7 +15,7 @@
 #define CHIPCARD_CLIENT_CARDLCC_L_H
 
 #define LC_CARD_EXTEND_CLIENT
-#include <chipcard/client/card_imp.h>
+#include <chipcard3/client/card_imp.h>
 
 
 LC_CARD *LC_CardLcc_new(LC_CLIENT *cl,

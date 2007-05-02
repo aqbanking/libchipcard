@@ -16,7 +16,7 @@ DEFS += \
 
 AM_CFLAGS=$(visibility_cflags)
 
-iheaderdir=${includedir}/chipcard/client
+iheaderdir=${includedir}/chipcard3/client
 iheader_HEADERS=\
  client.h client_imp.h \
  card.h card_imp.h card_l.h \

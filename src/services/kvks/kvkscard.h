@@ -21,8 +21,8 @@
 #ifndef CHIPCARD_CARD_KVKSCARD_H
 #define CHIPCARD_CARD_KVKSCARD_H
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/memorycard.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/memorycard.h>
 
 #include <gwenhywfar/buffer.h>
 

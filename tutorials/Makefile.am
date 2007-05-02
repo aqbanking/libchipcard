@@ -2,7 +2,7 @@ INCLUDES=@all_includes@
 
 EXTRA_DIST=README examplecard.xml tutorials.h
 
-CLIENT_LIB=../src/lib/client/libchipcardc.la
+CLIENT_LIB=../src/lib/client/libchipcard3c.la
 
 noinst_PROGRAMS=\
  tutorial1a tutorial1b tutorial1c \

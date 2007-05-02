@@ -19,7 +19,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 
 /* This must be at the top of the file to tell GWEN that we are to inherit
@@ -166,7 +166,7 @@ LC_CLIENT_RESULT KVKSCard_Reopen(LC_CARD *card){
   }
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMf(card);
+  res=LC_Card_SelectMF(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;

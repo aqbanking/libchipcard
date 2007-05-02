@@ -14,10 +14,10 @@
 #ifndef CHIPCARD_CARD_GELDKARTE_H
 #define CHIPCARD_CARD_GELDKARTE_H
 
-#include <chipcard/client/card.h>
-#include <chipcard/client/cards/geldkarte_blog.h>
-#include <chipcard/client/cards/geldkarte_llog.h>
-#include <chipcard/client/cards/geldkarte_values.h>
+#include <chipcard3/client/card.h>
+#include <chipcard3/client/cards/geldkarte_blog.h>
+#include <chipcard3/client/cards/geldkarte_llog.h>
+#include <chipcard3/client/cards/geldkarte_values.h>
 
 
 #ifdef __cplusplus

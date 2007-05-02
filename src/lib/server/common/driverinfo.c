@@ -16,7 +16,7 @@
 
 
 #include "driverinfo_p.h"
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/text.h>

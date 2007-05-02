@@ -17,7 +17,7 @@
 #define LC_CLIENT_LCC_NAME "lcc"
 
 
-#include <chipcard/client/client.h>
+#include <chipcard3/client/client.h>
 
 
 /** @addtogroup chipcardc_client_lcc

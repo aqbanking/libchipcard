@@ -18,9 +18,9 @@ EXTRA_DIST=\
   d_virtual.c \
   d_work.c
 
-lib_LTLIBRARIES=libchipcardd.la
+lib_LTLIBRARIES=libchipcard3d.la
 
-iheaderdir=${includedir}/chipcard/server/driver
+iheaderdir=${includedir}/chipcard3/server/driver
 iheader_HEADERS=\
   driver.h \
   reader.h \
@@ -32,12 +32,12 @@ noinst_HEADERS=\
   slot_p.h
 
 
-libchipcardd_la_SOURCES=\
+libchipcard3d_la_SOURCES=\
   driver.c \
   reader.c \
   slot.c
 
-libchipcardd_la_LIBADD= \
+libchipcard3d_la_LIBADD= \
   ../common/libcommon.la \
   ../../sharedstuff/libsharedstuff.la @gwenhywfar_libs@
 

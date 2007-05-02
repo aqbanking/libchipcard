@@ -13,7 +13,7 @@
 #ifndef CHIPCARDD2_P_H
 #define CHIPCARDD2_P_H
 
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 #include "server_l.h"
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/logger.h>

@@ -21,7 +21,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_PROCESSORCARD)

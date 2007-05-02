@@ -21,5 +21,5 @@ starcoscard_la_SOURCES=\
   starcoscard.c
 
 starcoscard_la_LDFLAGS=-module -no-undefined
-starcoscard_la_LIBADD=../../lib/client/libchipcardc.la $(mingw_ldflags) $(gwenhywfar_libs)
+starcoscard_la_LIBADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) $(gwenhywfar_libs)
 

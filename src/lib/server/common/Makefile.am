@@ -19,7 +19,7 @@ noinst_HEADERS=\
   usbttyscanner_l.h
 
 
-iheaderdir=${includedir}/chipcard/server/common
+iheaderdir=${includedir}/chipcard3/server/common
 iheader_HEADERS=\
   card.h \
   driverinfo.h \

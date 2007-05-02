@@ -19,7 +19,7 @@ noinst_HEADERS=\
  service_l.h \
  service_p.h
 
-iheaderdir=${includedir}/chipcard/client/mon
+iheaderdir=${includedir}/chipcard3/client/mon
 iheader_HEADERS=\
  client.h \
  driver.h \

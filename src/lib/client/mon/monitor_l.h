@@ -15,9 +15,9 @@
 #define LC_MON_MONITOR_L_H
 
 
-#include <chipcard/client/mon/monitor.h>
-#include <chipcard/client/client.h>
-#include <chipcard/client/notifications.h>
+#include <chipcard3/client/mon/monitor.h>
+#include <chipcard3/client/client.h>
+#include <chipcard3/client/notifications.h>
 
 
 LCM_MONITOR *LCM_Monitor_new();

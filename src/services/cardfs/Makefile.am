@@ -4,9 +4,9 @@ servicedir=@lc_server_service_dir@
 service_PROGRAMS=cardfs
 
 if IS_WINDOWS
-  CLIENT_LIB=-lchipcardc32_$(LIBCHIPCARD_SO_EFFECTIVE)
+  CLIENT_LIB=-lchipcard3c32_$(LIBCHIPCARD_SO_EFFECTIVE)
 else
-  CLIENT_LIB=-lchipcardc
+  CLIENT_LIB=-lchipcard3c
 endif
 
 noinst_HEADERS=\
@@ -16,6 +16,6 @@ cardfs_SOURCES=\
   cardfs.c
 
 cardfs_LDADD=\
- -L../../lib/chipcard-client $(CLIENT_LIB) @gwenhywfar_libs@
+ -L../../lib/chipcard3-client $(CLIENT_LIB) @gwenhywfar_libs@
 cardfs_LDFLAGS=@STRIPALL@
 

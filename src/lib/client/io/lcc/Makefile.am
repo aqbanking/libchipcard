@@ -18,7 +18,7 @@ noinst_HEADERS=\
   request_l.h request_p.h \
   server_l.h server_p.h
 
-iheaderdir=${includedir}/chipcard/client/io/lcc
+iheaderdir=${includedir}/chipcard3/client/io/lcc
 iheader_HEADERS=\
   clientlcc.h
 

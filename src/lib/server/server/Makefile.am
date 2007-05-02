@@ -20,7 +20,7 @@ DEFS+=\
  -DLCS_DEFAULT_DHDIR=\"@lc_server_def_dh_dir@\"
 
 
-noinst_LTLIBRARIES=libchipcards.la
+noinst_LTLIBRARIES=libchipcard3s.la
 
 noinst_HEADERS=\
   connection_l.h \
@@ -32,13 +32,13 @@ noinst_HEADERS=\
   lockmanager_l.h \
   lockmanager_p.h
 
-libchipcards_la_SOURCES=\
+libchipcard3s_la_SOURCES=\
   connection.c \
   lockrequest.c \
   lockmanager.c \
   server.c
 
-libchipcards_la_LIBADD=\
+libchipcard3s_la_LIBADD=\
   devicemanager/libdevmgr.la \
   cardmanager/libcardmgr.la \
   clientmanager/libclientmgr.la \

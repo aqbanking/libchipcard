@@ -22,7 +22,7 @@ noinst_HEADERS=\
   geldkarte_values_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=${includedir}/chipcard3/client/cards
 iheader_HEADERS=\
   geldkarte.h \
   geldkarte_blog.h \

@@ -19,7 +19,7 @@
 #include <gwenhywfar/libloader.h>
 #include <inttypes.h>
 
-#include <chipcard/server/driver/driver.h>
+#include <chipcard3/server/driver/driver.h>
 
 
 #define CCID_POWER_UP             500

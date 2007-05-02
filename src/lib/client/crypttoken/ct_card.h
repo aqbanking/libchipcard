@@ -14,7 +14,7 @@
 #ifndef LC_CT_CARD_H
 #define LC_CT_CARD_H
 
-#include <chipcard/client/card.h>
+#include <chipcard3/client/card.h>
 #include <gwenhywfar/crypttoken.h>
 
 

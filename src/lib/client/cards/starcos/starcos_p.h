@@ -14,8 +14,8 @@
 #ifndef CHIPCARD_CARD_STARCOS_P_H
 #define CHIPCARD_CARD_STARCOS_P_H
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/starcos.h>
+#include <chipcard3/client/card_imp.h>
+#include <chipcard3/client/cards/starcos.h>
 #include "starcos_keydescr_l.h"
 
 typedef struct LC_STARCOS LC_STARCOS;

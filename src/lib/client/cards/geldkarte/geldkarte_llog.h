@@ -103,7 +103,7 @@ typedef struct LC_GELDKARTE_LLOG LC_GELDKARTE_LLOG;
 /* headers */
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard/chipcard.h>
+#include <chipcard3/chipcard3.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,4 +1,4 @@
-bin_PROGRAMS=memcard
+bin_PROGRAMS=memcard3
 
 INCLUDES=@all_includes@
 
@@ -9,8 +9,8 @@ if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib
 endif
 
-memcard_SOURCES=\
+memcard3_SOURCES=\
   main.c
-memcard_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
-memcard_LDFLAGS=@STRIPALL@
+memcard3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
+memcard3_LDFLAGS=@STRIPALL@
 
