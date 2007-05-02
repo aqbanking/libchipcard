@@ -1,3 +1,14 @@
+===========================================================================
+                 Libchipcard3 3.0.3 (2007-05-02 r391)
+===========================================================================
+
+This version includes several new features that have been back-ported
+from the (soon to become) libchipcard4 branch. In particular, newly
+supported readers are CardMedic 2, SCR 331, SCM 3320, Omnikey Cardman
+4040, and also for the card type eGK. For the Celetronic CardStar2 the
+second slot of this readers is supported now as well. Some build
+problems have been fixed.
+
 
 ===========================================================================
                  Libchipcard3 3.0.2 (2006/12/27)
