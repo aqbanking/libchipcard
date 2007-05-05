@@ -366,6 +366,7 @@ LC_Client_SetRecvNotificationFn(LC_CLIENT *cl,
 LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl) {
   LC_CLIENT_RESULT res;
 
+  assert(cl);
   /* read my own stuff from the config file */
   cl->shortTimeout=GWEN_DB_GetIntValue(cl->dbConfig, "shortTimeout", 0,
                                        LC_DEFAULT_SHORT_TIMEOUT);
