@@ -112,9 +112,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ClientPcsc_V_Init(LC_CLIENT *cl,
                            NULL,                  /* reserved2 */
                            &(xcl->scardContext)); /* ptr to context */
   if (rv!=SCARD_S_SUCCESS) {
-    DBG_ERROR(LC_LOGDOMAIN,
-              "SCardEstablishContext: %ld (%04lx)", rv,
-              rv);
+    if (rv == SCARD_E_NO_SERVICE) {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"SCardEstablishContext: Error SCARD_E_NO_SERVICE: The Smartcard resource manager is not running. Maybe you have to start the Smartcard service manually?");
+    } else {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"SCardEstablishContext: %ld (%04lx)", rv,
+		rv);
+    }
     return LC_Client_ResultIoError;
   }
 
