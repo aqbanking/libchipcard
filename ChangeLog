@@ -1,7 +1,17 @@
 
 $Rev$
 
-2007-06-17  Andreas Köhler  <andi5.py@gmx.net>
+===========================================================================
+MARK: released Libchipcard3 3.0.4  (2007-11-08)
+===========================================================================
+
+
+2007/11/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added reader description for new Cyberjack readers
+
+
+2007-06-17  Andreas Koehler  <andi5.py@gmx.net>
 
 	* m4/searchfiles.m4: When searching for files and choosing the
 	path separator, examine $build instead of $host.
@@ -11,6 +21,7 @@ $Rev$
 	a cross-compiler, but using host is more precise nonetheless.
 
 	* configure.ac: Use AC_CANONICAL_BUILD and _HOST, but not _TARGET
+
 
 ===========================================================================
 MARK: released Libchipcard3 3.0.3  (2007-05-02 r391)

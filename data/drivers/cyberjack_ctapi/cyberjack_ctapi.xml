@@ -23,8 +23,8 @@
     </locations>
 
     <downloads>
-      <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.12/</url>
-      <filename>ctapi-cyberjack-2.0.12.tar.bz2</filename>
+      <url>http://support.reiner-sct.de/</url>
+      <filename>ctapi-cyberjack-3.0.5.tar.bz2</filename>
     </downloads>
   </lib>
 
@@ -110,6 +110,87 @@
 
     </reader>
 
+    <!-- New Ecom -->
+    <reader name="cyberjack3" 
+            ctn="1" bustype="UsbRaw"
+            vendor="0x0c4b" product="0x0400">
+
+    <!-- This is for newer Cyberjack drivers
+    <reader name="cyberjack2" 
+            ctn="1" bustype="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0c4b" product="0x0300">
+    -->
+    
+      <short>Cyberjack Ecom (a)</short>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+      
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+      
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
+
+      <image>cyberjack_ecoma.jpg</image>
+
+    </reader>
+
+    <!-- Pinpad (a) with new firmware -->
+    <reader name="cyberjack4" 
+            ctn="1" bustype="UsbRaw"
+            vendor="0x0c4b" product="0x0401">
+
+    <!-- This is for newer Cyberjack drivers
+    <reader name="cyberjack2" 
+            ctn="1" bustype="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0c4b" product="0x0300">
+    -->
+    
+      <short>Cyberjack Pinpad (a2)</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      
+      <autoport>
+        <mode>pos</mode>
+        <busorder>UsbRaw</busorder>
+        <sortkey>vendorId</sortKey>
+        <offset>1</offset>
+      </autoport>
+      
+      <ports>
+        <port value="1">Device0</port>
+        <port value="2">Device1</port>
+        <port value="3">Device2</port>
+        <port value="4">Device3</port>
+        <port value="5">Device4</port>
+        <port value="6">Device5</port>
+        <port value="7">Device6</port>
+        <port value="8">Device7</port>
+      </ports>
+
+      <image>cyberjack_pinpad_a2.jpg</image>
+
+    </reader>
+
   </readers>
 
 
@@ -129,7 +210,7 @@
     
     <downloads>
       <url>http://support.reiner-sct.de/downloads/LINUX/V2.0.12/</url>
-      <filename>ctapi-cyberjack-2.0.12.tar.bz2</filename>
+      <filename>ctapi-cyberjack-3.0.5.tar.bz2</filename>
     </downloads>
   </lib>
 

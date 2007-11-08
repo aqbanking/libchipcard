@@ -51,7 +51,7 @@ mp:
 	autoheader
 	automake --add-missing
 	autoconf
-	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" ./configure --enable-maintainer-mode
+	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" ./configure --enable-maintainer-mode --with-gwen-dir=/opt/devel/openhbci --prefix=/opt/devel/openhbci
 
 mp-debug:
 	libtoolize -f --automake
