@@ -35,24 +35,24 @@ struct LCCO_READER {
   unsigned int port;
   char *devicePath;
   char *devicePathTmpl;
-  GWEN_TYPE_UINT32 flags;
+  uint32_t flags;
 
   LC_DEVICE_BUSTYPE busType;
-  GWEN_TYPE_UINT32 vendorId;
-  GWEN_TYPE_UINT32 productId;
+  uint32_t vendorId;
+  uint32_t productId;
 
   /* runtime variables */
   int isAvailable;
-  GWEN_TYPE_UINT32 busId;
-  GWEN_TYPE_UINT32 deviceId;
+  uint32_t busId;
+  uint32_t deviceId;
 
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 driversReaderId;
+  uint32_t readerId;
+  uint32_t driversReaderId;
   LC_READER_STATUS status;
 
   time_t lastStatusChangeTime;
 
-  GWEN_TYPE_UINT32 refCount;
+  uint32_t refCount;
 
 };
 

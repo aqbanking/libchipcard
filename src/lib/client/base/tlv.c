@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -97,7 +97,7 @@ LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv) {
   unsigned int pos;
   unsigned int j;
   LC_TLV *tlv;
-  GWEN_TYPE_UINT32 startPos;
+  uint32_t startPos;
 
   if (!GWEN_Buffer_GetBytesLeft(mbuf)) {
     DBG_ERROR(LC_LOGDOMAIN, "Buffer empty");

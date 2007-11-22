@@ -35,8 +35,7 @@ struct LC_SERVICE_CLIENT {
   const char *libraryFile;       /* -l ARG */
   const char *serviceId;         /* -i ARG */
   const char *typ;               /* -t ARG */
-  const char *certFile;          /* -c ARG */
-  const char *certDir;           /* -C ARG */
+  const char *configDir;         /* -C ARG */
 
   /* runtime data */
   int stopService;
@@ -57,16 +56,16 @@ LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
 
 
 int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
-                                 GWEN_TYPE_UINT32 rid,
+                                 uint32_t rid,
                                  GWEN_DB_NODE *dbReq);
 int LC_Service_HandleServiceClose(LC_CLIENT *cl,
-                                  GWEN_TYPE_UINT32 rid,
+                                  uint32_t rid,
                                   GWEN_DB_NODE *dbReq);
 int LC_Service_HandleServiceCommand(LC_CLIENT *cl,
-                                    GWEN_TYPE_UINT32 rid,
+                                    uint32_t rid,
                                     GWEN_DB_NODE *dbReq);
 int LC_Service_HandleInRequest(LC_CLIENT *cl,
-                               GWEN_TYPE_UINT32 rid,
+                               uint32_t rid,
                                const char *name,
                                GWEN_DB_NODE *dbReq);
 

@@ -18,7 +18,7 @@
 
 #include "request_p.h"
 #include <gwenhywfar/debug.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -29,13 +29,13 @@
 
 GWEN_LIST_FUNCTIONS(LC_REQUEST, LC_Request);
 
-static GWEN_TYPE_UINT32 LC_Request__lastRequestId=0;
+static uint32_t LC_Request__lastRequestId=0;
 
 
 LC_REQUEST *LC_Request_new(LC_CARD *card,
                            GWEN_DB_NODE *dbReq,
-                           GWEN_TYPE_UINT32 serverId,
-                           GWEN_TYPE_UINT32 ipcRequestId){
+                           uint32_t serverId,
+                           uint32_t ipcRequestId){
   LC_REQUEST *rq;
 
   assert(dbReq);
@@ -73,14 +73,14 @@ time_t LC_Request_GetRequestTime(const LC_REQUEST *rq){
 
 
 
-GWEN_TYPE_UINT32 LC_Request_GetRequestId(const LC_REQUEST *rq){
+uint32_t LC_Request_GetRequestId(const LC_REQUEST *rq){
   assert(rq);
   return rq->requestId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Request_GetServerId(const LC_REQUEST *rq){
+uint32_t LC_Request_GetServerId(const LC_REQUEST *rq){
   assert(rq);
   return rq->serverId;
 }
@@ -94,21 +94,21 @@ GWEN_DB_NODE *LC_Request_GetRequestData(const LC_REQUEST *rq){
 
 
 
-GWEN_TYPE_UINT32 LC_Request_GetIpcRequestId(const LC_REQUEST *rq){
+uint32_t LC_Request_GetIpcRequestId(const LC_REQUEST *rq){
   assert(rq);
   return rq->ipcRequestId;
 }
 
 
 
-void LC_Request_SetIpcRequestId(LC_REQUEST *rq, GWEN_TYPE_UINT32 rqid){
+void LC_Request_SetIpcRequestId(LC_REQUEST *rq, uint32_t rqid){
   assert(rq);
   rq->ipcRequestId=rqid;
 }
 
 
 
-void LC_Request_SetRequestId(LC_REQUEST *rq, GWEN_TYPE_UINT32 rqid){
+void LC_Request_SetRequestId(LC_REQUEST *rq, uint32_t rqid){
   assert(rq);
   rq->requestId=rqid;
 }
@@ -131,7 +131,7 @@ int LC_Request_GetIsAborted(const LC_REQUEST *rq){
 
 void LC_Request_SetIsAborted(LC_REQUEST *rq, int b){
   assert(rq);
-  rq->aborted=1;
+  rq->aborted=b;
 }
 
 

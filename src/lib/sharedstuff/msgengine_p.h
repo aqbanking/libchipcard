@@ -52,8 +52,8 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
                            GWEN_XMLNODE *node);
 
 static
-GWEN_DB_VALUETYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
-                                         const char *tname);
+GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
+					 const char *tname);
 
 
 static
@@ -81,10 +81,10 @@ int LC_MsgEngine_BinTypeWrite(GWEN_MSGENGINE *e,
 
 
 static
-GWEN_TYPE_UINT32 LC_MsgEngine__FromBCD(GWEN_TYPE_UINT32 value);
+uint32_t LC_MsgEngine__FromBCD(uint32_t value);
 
 static
-GWEN_TYPE_UINT32 LC_MsgEngine__ToBCD(GWEN_TYPE_UINT32 value);
+uint32_t LC_MsgEngine__ToBCD(uint32_t value);
 
 
 

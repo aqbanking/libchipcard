@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -70,8 +70,8 @@ void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p){
 
 
 
-GWEN_TYPE_UINT32 LC_MsgEngine__FromBCD(GWEN_TYPE_UINT32 value) {
-  GWEN_TYPE_UINT32 rv;
+uint32_t LC_MsgEngine__FromBCD(uint32_t value) {
+  uint32_t rv;
 
   rv=0;
   rv+=((value>>28)&0xf)*10000000;
@@ -88,8 +88,8 @@ GWEN_TYPE_UINT32 LC_MsgEngine__FromBCD(GWEN_TYPE_UINT32 value) {
 
 
 
-GWEN_TYPE_UINT32 LC_MsgEngine__ToBCD(GWEN_TYPE_UINT32 value) {
-  GWEN_TYPE_UINT32 rv;
+uint32_t LC_MsgEngine__ToBCD(uint32_t value) {
+  uint32_t rv;
 
   rv=0;
   rv+=value/10000000;
@@ -209,7 +209,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
   else if (strcasecmp(type, "dword")==0) {
     int bigEndian;
     int isBCD;
-    GWEN_TYPE_UINT32 value;
+    uint32_t value;
     int c;
     char numbuf[32];
 
@@ -345,7 +345,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     int size;
     int condense;
     int kvk;
-    GWEN_TYPE_UINT32 vpos=0;
+    uint32_t vpos=0;
 
     kvk=atoi(GWEN_XMLNode_GetProperty(node, "kvk", "0"));
     condense=atoi(GWEN_XMLNode_GetProperty(node, "condense", "1"));
@@ -403,8 +403,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
        afterwards, e.g. by iconv(3), but of course this also
        changes the length of the corresponding string buffer! */
     if (kvk) {
-      GWEN_TYPE_UINT32 size;
-      GWEN_TYPE_UINT32 j;
+      uint32_t size;
+      uint32_t j;
       char *p; /* GWEN_Buffer_GetStart returns a 'char*' */
 
       size=GWEN_Buffer_GetPos(vbuf)-vpos;
@@ -643,7 +643,7 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
   else if (strcasecmp(type, "dword")==0) {
     int bigEndian;
     int isBCD;
-    GWEN_TYPE_UINT32 value;
+    uint32_t value;
 
     DBG_DEBUG(LC_LOGDOMAIN, "Supporting type \"dword\"");
     isBCD=atoi(GWEN_XMLNode_GetProperty(node, "bcd", "0"));
@@ -839,8 +839,8 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
 
 
 
-GWEN_DB_VALUETYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
-                                         const char *tname){
+GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
+					 const char *tname){
   LC_MSGENGINE *le;
 
   assert(e);
@@ -850,15 +850,15 @@ GWEN_DB_VALUETYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
   if (strcasecmp(tname, "byte")==0 ||
       strcasecmp(tname, "word")==0 ||
       strcasecmp(tname, "dword")==0)
-    return GWEN_DB_VALUETYPE_INT;
+    return GWEN_DB_NodeType_ValueInt;
   else if (strcasecmp(tname, "bytes")==0 ||
            strcasecmp(tname, "tlv")==0)
-    return GWEN_DB_VALUETYPE_BIN;
+    return GWEN_DB_NodeType_ValueBin;
   else if (strcasecmp(tname, "bcd")==0 ||
            strcasecmp(tname, "fpin2")==0)
-    return GWEN_DB_VALUETYPE_CHAR;
+    return GWEN_DB_NodeType_ValueChar;
   else
-    return GWEN_DB_VALUETYPE_UNKNOWN;
+    return GWEN_DB_NodeType_Unknown;
 }
 
 
@@ -918,7 +918,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     }
 
     DBG_VERBOUS(LC_LOGDOMAIN, "Entering BinTypeRead with this:");
-    if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelVerbous)
+    if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevel_Verbous)
       GWEN_Buffer_Dump(vbuf, stderr, 2);
 
     p=GWEN_Buffer_GetStart(vbuf);
@@ -1000,7 +1000,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     tagData=p+pos;
     GWEN_Buffer_SetPos(vbuf, pos);
 
-    DBG_ERROR(LC_LOGDOMAIN, "Tag: %02x (%d bytes)", tagType, tagLength);
+    DBG_VERBOUS(LC_LOGDOMAIN, "Tag: %02x (%d bytes)", tagType, tagLength);
     if (pos+j>size) {
       DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
       return -1;

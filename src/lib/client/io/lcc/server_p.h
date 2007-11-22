@@ -22,9 +22,9 @@
 
 struct LC_SERVER {
   GWEN_LIST_ELEMENT(LC_SERVER);
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   LC_SERVER_STATUS status;
-  GWEN_TYPE_UINT32 currentCommand;
+  uint32_t currentCommand;
 };
 
 

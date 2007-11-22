@@ -33,12 +33,12 @@ struct LCCM_CARDMANAGER {
 
 static
 void LCCM_CardManager__RemoveCardsInSlots(LCCM_CARDMANAGER *cm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           int slotNum);
 
 static
 void LCCM_CardManager__RemoveCardsInReader(LCCM_CARDMANAGER *cm,
-                                           GWEN_TYPE_UINT32 rid);
+                                           uint32_t rid);
 
 
 

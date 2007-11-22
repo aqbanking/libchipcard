@@ -80,10 +80,10 @@ const char *LC_Device_BusType_toString(LC_DEVICE_BUSTYPE i) {
 
 
 LC_DEVICE *LC_Device_new(LC_DEVICE_BUSTYPE busType,
-                         GWEN_TYPE_UINT32 busId,
-                         GWEN_TYPE_UINT32 deviceId,
-                         GWEN_TYPE_UINT32 vendorId,
-                         GWEN_TYPE_UINT32 productId) {
+                         uint32_t busId,
+                         uint32_t deviceId,
+                         uint32_t vendorId,
+                         uint32_t productId) {
   LC_DEVICE *ud;
 
   GWEN_NEW_OBJECT(LC_DEVICE, ud);
@@ -151,14 +151,14 @@ LC_DEVICE_BUSTYPE LC_Device_GetBusType(const LC_DEVICE *ud) {
 
 
 
-GWEN_TYPE_UINT32 LC_Device_GetDevicePos(const LC_DEVICE *ud){
+uint32_t LC_Device_GetDevicePos(const LC_DEVICE *ud){
   assert(ud);
   return ud->devicePos;
 }
 
 
 
-void LC_Device_SetDevicePos(LC_DEVICE *ud, GWEN_TYPE_UINT32 i) {
+void LC_Device_SetDevicePos(LC_DEVICE *ud, uint32_t i) {
   assert(ud);
   ud->devicePos=i;
 }
@@ -166,28 +166,28 @@ void LC_Device_SetDevicePos(LC_DEVICE *ud, GWEN_TYPE_UINT32 i) {
 
 
 
-GWEN_TYPE_UINT32 LC_Device_GetBusId(const LC_DEVICE *ud){
+uint32_t LC_Device_GetBusId(const LC_DEVICE *ud){
   assert(ud);
   return ud->busId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Device_GetDeviceId(const LC_DEVICE *ud){
+uint32_t LC_Device_GetDeviceId(const LC_DEVICE *ud){
   assert(ud);
   return ud->deviceId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Device_GetVendorId(const LC_DEVICE *ud){
+uint32_t LC_Device_GetVendorId(const LC_DEVICE *ud){
   assert(ud);
   return ud->vendorId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Device_GetProductId(const LC_DEVICE *ud){
+uint32_t LC_Device_GetProductId(const LC_DEVICE *ud){
   assert(ud);
   return ud->productId;
 }
@@ -276,10 +276,10 @@ void LC_Device_SetReaderType(LC_DEVICE *ud, const char *s) {
 
 LC_DEVICE *LC_Device_List_Find(LC_DEVICE_LIST *dl,
                                LC_DEVICE_BUSTYPE busType,
-                               GWEN_TYPE_UINT32 busId,
-                               GWEN_TYPE_UINT32 deviceId,
-                               GWEN_TYPE_UINT32 vendorId,
-                               GWEN_TYPE_UINT32 productId) {
+                               uint32_t busId,
+                               uint32_t deviceId,
+                               uint32_t vendorId,
+                               uint32_t productId) {
   LC_DEVICE *d;
 
   d=LC_Device_List_First(dl);
@@ -300,7 +300,7 @@ LC_DEVICE *LC_Device_List_Find(LC_DEVICE_LIST *dl,
 
 LC_DEVICE *LC_Device_Get(LC_DEVICE_LIST *dl,
 			 LC_DEVICE_BUSTYPE busType,
-			 GWEN_TYPE_UINT32 dpos) {
+			 uint32_t dpos) {
   LC_DEVICE *d;
 
   d=LC_Device_List_First(dl);

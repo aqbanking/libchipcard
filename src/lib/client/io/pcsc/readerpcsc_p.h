@@ -24,7 +24,7 @@ struct LC_READER_PCSC {
   char *readerType;
   LC_CARD *currentCard;
 
-  GWEN_TYPE_UINT32 featureCode[LC_READER_PCSC_MAX_FEATURES];
+  uint32_t featureCode[LC_READER_PCSC_MAX_FEATURES];
 
 };
 

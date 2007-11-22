@@ -21,8 +21,8 @@
 #ifndef CHIPCARD_CARD_KVKSCARD_H
 #define CHIPCARD_CARD_KVKSCARD_H
 
-#include <chipcard3/client/card_imp.h>
-#include <chipcard3/client/cards/memorycard.h>
+#include <chipcard/client/card_imp.h>
+#include <chipcard/client/cards/memorycard.h>
 
 #include <gwenhywfar/buffer.h>
 
@@ -49,8 +49,8 @@ KVKS_STATUS KVKSCard_GetStatus(const LC_CARD *card);
 void KVKSCard_SetStatus(LC_CARD *card, KVKS_STATUS st);
 
 
-GWEN_TYPE_UINT32 KVKSCard_GetCurrentRequest(const LC_CARD *card);
-void KVKSCard_SetCurrentRequest(LC_CARD *card, GWEN_TYPE_UINT32 i);
+uint32_t KVKSCard_GetCurrentRequest(const LC_CARD *card);
+void KVKSCard_SetCurrentRequest(LC_CARD *card, uint32_t i);
 
 GWEN_DB_NODE *KVKSCard_GetDbCardData(const LC_CARD *card);
 /* takes over ownership */

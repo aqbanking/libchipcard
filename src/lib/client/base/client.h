@@ -20,7 +20,7 @@
 /*@{*/
 
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #ifdef __cplusplus
@@ -58,12 +58,13 @@ typedef enum {
   LC_Client_ResultCfgError,
   LC_Client_ResultNotFound,
   LC_Client_ResultIoError,
-  LC_Client_ResultBadPin
+  LC_Client_ResultBadPin,
+  LC_Client_ResultDontExecute,
 } LC_CLIENT_RESULT;
 
 
 /**
- * Targets for commands (used by @ref LC_Card_ExecAPDU)
+ * Targets for commands (used by @ref LC_Card_ExecApdu)
  */
 typedef enum {
   LC_Client_CmdTargetCard=0,
@@ -77,10 +78,10 @@ typedef enum {
 #endif
 
 
-#include <chipcard3/client/card.h>
-#include <chipcard3/client/notifications.h>
-#include <chipcard3/client/mon/monitor.h>
-#include <chipcard3/client/switch.h>
+#include <chipcard/client/card.h>
+#include <chipcard/client/notifications.h>
+#include <chipcard/client/mon/monitor.h>
+#include <chipcard/client/switch.h>
 
 
 #ifdef __cplusplus
@@ -199,9 +200,6 @@ GWEN_XMLNODE *LC_Client_GetAppNodes(const LC_CLIENT *cl);
 CHIPCARD_API
 GWEN_XMLNODE *LC_Client_GetCardNodes(const LC_CLIENT *cl);
 
-CHIPCARD_API
-GWEN_DB_NODE *LC_Client_GetReaderConfig(const LC_CLIENT *cl,
-                                        const char *reader);
 /*@}*/
 
 
@@ -216,7 +214,7 @@ LCM_MONITOR *LC_Client_GetMonitor(const LC_CLIENT *cl);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl,
-                                     GWEN_TYPE_UINT32 flags);
+                                     uint32_t flags);
 
 CHIPCARD_API
 LC_CLIENT_RECV_NOTIFICATION_FN

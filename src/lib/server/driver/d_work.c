@@ -14,38 +14,70 @@
 
 
 
+int LCD_Driver_WaitForNextResponse(LCD_DRIVER *d,
+				   uint32_t rqid,
+				   GWEN_DB_NODE **pDbRsp,
+				   int timeout) {
+  time_t startt;
+  GWEN_IO_LAYER_WORKRESULT res;
 
-int LCD_Driver__Work(LCD_DRIVER *d, int timeout){
-  GWEN_NETLAYER_RESULT res;
-  int rv;
+  startt=time(0);
 
-  if (!GWEN_Net_HasActiveConnections()) {
-    DBG_ERROR(0, "No active connections, stopping");
-    return -1;
-  }
+  for (;;) {
+    int rv;
+    int done=0;
+    GWEN_DB_NODE *dbRsp;
 
-  res=GWEN_Net_HeartBeat(timeout);
-  if (res==GWEN_NetLayerResult_Error) {
-    DBG_ERROR(0, "Network error");
-    return -1;
-  }
-  else if (res==GWEN_NetLayerResult_Idle) {
-    DBG_VERBOUS(0, "No activity");
-  }
-
-  while(1) {
-    DBG_DEBUG(0, "Driver: Working");
-    /* activity detected, work with it */
-    rv=GWEN_IpcManager_Work(d->ipcManager);
-    if (rv==-1) {
-      DBG_ERROR(0, "Error while working with IPC");
-      return -1;
+    /* let io manager work until there is nothing to do */
+    while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+      done=1;
+    if (res==GWEN_Io_Layer_WorkResultError) {
+      DBG_ERROR(0, "Error working on io layers");
+      return GWEN_ERROR_IO;
     }
-    else if (rv==1)
-      break;
-  }
 
-  return 0;
+    /* let ipc manager work until there is nothing to do */
+    while((rv=GWEN_IpcManager_Work(d->ipcManager))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(0, "Error working on ipc");
+      return rv;
+    }
+
+    /* get next response */
+    dbRsp=GWEN_IpcManager_GetResponseData(d->ipcManager, rqid);
+    if (dbRsp) {
+      DBG_VERBOUS(LC_LOGDOMAIN, "Got a response to request \"%08x\"", rqid);
+      *pDbRsp=dbRsp;
+      return 0;
+    }
+
+    if (done==0) {
+      int d;
+      int secs;
+
+      /* check timeout */
+      d=(int)difftime(time(0), startt);
+      if (timeout!=GWEN_TIMEOUT_FOREVER) {
+	if (timeout==GWEN_TIMEOUT_NONE ||
+	    d>timeout) {
+	  DBG_INFO(GWEN_LOGDOMAIN,
+		   "Timeout (%d) while waiting, giving up",
+		   timeout);
+	  return GWEN_ERROR_TRY_AGAIN;
+	}
+      }
+
+      /* calculate waiting time */
+      if (timeout==GWEN_TIMEOUT_FOREVER)
+	secs=(timeout/1000)-d;
+      else
+	secs=5;
+
+      /* actually wait for changes in io */
+      GWEN_Io_Manager_Wait(secs*1000, 0);
+    }
+  } /* for */
 }
 
 
@@ -56,7 +88,7 @@ int LCD_Driver_CheckStatusChanges(LCD_DRIVER *d) {
   r=LCD_Reader_List_First(LCD_Driver_GetReaders(d));
   while(r) {
     LCD_READER *rnext;
-    GWEN_TYPE_UINT32 retval;
+    uint32_t retval;
 
     rnext=LCD_Reader_List_Next(r);
 
@@ -81,7 +113,7 @@ int LCD_Driver_CheckStatusChanges(LCD_DRIVER *d) {
         sl=LCD_Slot_List_First(slList);
         while(sl) {
           int isInserted;
-          GWEN_TYPE_UINT32 newStatus, oldStatus;
+          uint32_t newStatus, oldStatus;
           int cardNum;
   
           newStatus=LCD_Slot_GetStatus(sl);
@@ -150,11 +182,12 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
   time_t lastStatusCheckTime;
   time_t t1;
 
+  assert(d);
+
   lastStatusCheckTime=(time_t)0;
   while(!d->stopDriver) {
-    GWEN_NETLAYER_RESULT res;
-    GWEN_TYPE_UINT32 rid;
-    int needHeartbeat;
+    GWEN_IO_LAYER_WORKRESULT res;
+    uint32_t rid;
 
     t1=time(0);
     if (difftime(t1, lastStatusCheckTime)>=1) {
@@ -164,39 +197,33 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
       lastStatusCheckTime=t1;
     }
 
-    needHeartbeat=0;
-    while(!needHeartbeat) {
-      int j;
+    while(!d->stopDriver) {
+      int rv;
+      int done=0;
+  
+      /* let io manager work until there is nothing to do */
+      while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+	done=1;
+      if (res==GWEN_Io_Layer_WorkResultError) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error working on io layers");
+	return -1;
+      }
+  
+      /* let ipc manager work until there is nothing to do */
+      while((rv=GWEN_IpcManager_Work(d->ipcManager))==0)
+	done=1;
+      if (rv<0) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error working on ipc");
+	return rv;
+      }
 
       t1=time(0);
       if (difftime(t1, lastStatusCheckTime)>=1) {
-        /* Do some hardware work */
-        DBG_VERBOUS(0, "Checking for status changes");
-        LCD_Driver_CheckStatusChanges(d);
-        lastStatusCheckTime=t1;
-      }
-      for(j=0; ; j++) {
-        int rv;
-
-        if (j>LCD_DRIVER_IPC_MAXWORK) {
-          DBG_ERROR(0, "IPC running wild, aborting driver");
-          return -1;
-        }
-        t1=time(0);
-        if (difftime(t1, lastStatusCheckTime)>=1) {
-          /* Do some hardware work */
-          DBG_VERBOUS(0, "Checking for status changes");
-          LCD_Driver_CheckStatusChanges(d);
-          lastStatusCheckTime=t1;
-        }
-        /* work as long as possible */
-        rv=GWEN_IpcManager_Work(d->ipcManager);
-        if (rv==-1) {
-          DBG_ERROR(0, "Error while working with IPC");
-          return -1;
-        }
-        else if (rv==1)
-          break;
+	/* Do some hardware work */
+	DBG_VERBOUS(0, "Checking for status changes");
+	LCD_Driver_CheckStatusChanges(d);
+	lastStatusCheckTime=t1;
+        done=1;
       }
 
       rid=LCD_Driver_GetNextInRequest(d);
@@ -214,7 +241,7 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
           DBG_ERROR(0, "Bad IPC command (no command name), discarding");
           LCD_Driver_RemoveCommand(d, rid, 0);
         }
-        rv=LCD_Driver_HandleRequest(d, rid, name, dbReq);
+	rv=LCD_Driver_HandleRequest(d, rid, name, dbReq);
         if (rv==1) {
           DBG_WARN(0, "Unknown command \"%s\", discarding", name);
           if (GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 0)) {
@@ -222,43 +249,22 @@ int LCD_Driver_Work(LCD_DRIVER *d) {
             abort();
           }
         }
-        else if (rv==-1) {
-          DBG_ERROR(0, "Error while handling request, going down");
-          return -1;
-        }
-        else {
-          for(j=0; ; j++) {
-            int rv;
-
-            if (j>LCD_DRIVER_IPC_MAXWORK) {
-              DBG_ERROR(0, "IPC running wild, aborting driver");
-              return -1;
-            }
-
-            /* work as long as possible (flush responses) */
-            rv=GWEN_IpcManager_Work(d->ipcManager);
-            if (rv==-1) {
-              DBG_ERROR(0, "Error while working with IPC");
-              return -1;
-            }
-            else if (rv==1)
-              break;
-          }
-        } /* if something done */
+	else if (rv<0) {
+	  DBG_ERROR(0, "Error while handling request, going down");
+	  return rv;
+	}
+	else
+	  /* something has been done */
+	  done=1;
       } /* if incoming request */
-      else
-        needHeartbeat=1;
-    } /* while !needHeartbeat */
 
-    res=GWEN_Net_HeartBeat(750);
-    if (res==GWEN_NetLayerResult_Error) {
-      DBG_ERROR(0, "Network error");
-      return -1;
-    }
-    else if (res==GWEN_NetLayerResult_Idle) {
-      DBG_VERBOUS(0, "No activity");
-    }
+      if (done==0) {
+	/* actually wait for changes in io */
+	GWEN_Io_Manager_Wait(750, 0);
+      }
+    } /* for */
   } /* while driver is not to be stopped */
+
   return 0;
 }
 

@@ -22,9 +22,6 @@
 
 #include <gwenhywfar/ipc.h>
 #include <gwenhywfar/pathmanager.h>
-#include <gwenhywfar/nl_http.h>
-#include <gwenhywfar/nl_ssl.h>
-#include <gwenhywfar/nl_socket.h>
 
 #include <unistd.h>
 #include <sys/types.h>

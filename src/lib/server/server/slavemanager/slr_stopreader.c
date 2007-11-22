@@ -15,10 +15,10 @@
 
 
 int LCSL_SlaveManager_HandleStopReader(LCSL_SLAVEMANAGER *slm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq) {
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   const char *s;
   unsigned int x;
   LCDM_DEVICEMANAGER *dm;

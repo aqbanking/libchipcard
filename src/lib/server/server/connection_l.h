@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_SERVER2_CONN_L_H
 #define CHIPCARD_SERVER2_CONN_L_H
 
-#include <gwenhywfar/netlayer.h>
+#include <gwenhywfar/iolayer.h>
 
 
 typedef enum {
@@ -28,16 +28,15 @@ typedef enum {
 #include "server_l.h"
 
 
-void LCS_Connection_TakeOver(GWEN_NETLAYER *conn);
-void LCS_Connection_SetType(GWEN_NETLAYER *conn,
+void LCS_Connection_TakeOver(GWEN_IO_LAYER *conn);
+void LCS_Connection_SetType(GWEN_IO_LAYER *conn,
                             LCS_CONNECTION_TYPE t);
-LCS_CONNECTION_TYPE LCS_Connection_GetType(const GWEN_NETLAYER *conn);
+LCS_CONNECTION_TYPE LCS_Connection_GetType(const GWEN_IO_LAYER *conn);
 
-int LCS_Connection_IsOfType(GWEN_NETLAYER *conn);
+int LCS_Connection_IsOfType(GWEN_IO_LAYER *conn);
 
-void LCS_Connection_SetServer(GWEN_NETLAYER *conn,
-                              LCS_SERVER *cs);
-LCS_SERVER *LCS_Connection_GetServer(const GWEN_NETLAYER *conn);
+void LCS_Connection_SetServer(GWEN_IO_LAYER *conn, LCS_SERVER *cs);
+LCS_SERVER *LCS_Connection_GetServer(const GWEN_IO_LAYER *conn);
 
 
 #endif /* CHIPCARD_SERVER2_CONN_L_H */

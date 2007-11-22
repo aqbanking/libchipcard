@@ -26,15 +26,15 @@
 
 
 int LCCL_ClientManager_HandleLockReader(LCCL_CLIENTMANAGER *clm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t clientId;
+  uint32_t readerId;
   int cmdVer;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 lrId;
+  uint32_t lrId;
   GWEN_IPC_REQUEST *req;
   GWEN_TIME *ti;
 
@@ -138,9 +138,9 @@ int LCCL_ClientManager_WorkLockReader(GWEN_IPC_REQUEST *req) {
   LCCL_CLIENT *cl;
   LCDM_DEVICEMANAGER *dm;
   int rv;
-  GWEN_TYPE_UINT32 rid;
-  GWEN_TYPE_UINT32 lrId;
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t rid;
+  uint32_t lrId;
+  uint32_t readerId;
 
   DBG_ERROR(0, "Working on LockReader request");
 

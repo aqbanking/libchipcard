@@ -19,9 +19,9 @@
 
 struct LCM_SERVICE {
   GWEN_LIST_ELEMENT(LCM_SERVICE)
-  GWEN_TYPE_UINT32 serviceId;
+  uint32_t serviceId;
   char *serviceName;
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   char *status;
   GWEN_BUFFER *logBuffer;
   time_t lastChangeTime;

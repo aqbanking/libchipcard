@@ -16,13 +16,13 @@
 #endif
 
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
 
 
 /*
  * This is a small tutorial on how to use the basic functions of
- * libchipcard2. It just waits for a card to be inserted and prints some
+ * libchipcard. It just waits for a card to be inserted and prints some
  * card's information.
  * This is the most basic type of application using a chipcard, no error
  * checking is performed.
@@ -37,9 +37,9 @@
 
 
 int main(int argc, char **argv) {
-  /* The basic object of Libchipcard2 itself is LC_CLIENT.
+  /* The basic object of Libchipcard itself is LC_CLIENT.
    * You must create and initialize such an object before doing anything
-   * with Libchipcard2.
+   * with Libchipcard.
    */
   LC_CLIENT *cl;
 
@@ -48,21 +48,21 @@ int main(int argc, char **argv) {
    */
   LC_CARD *card;
 
-  /* Create an instance of Libchipcard2.
-   * Libchipcard2 wants to know what application is requesting its service to
+  /* Create an instance of Libchipcard.
+   * Libchipcard wants to know what application is requesting its service to
    * improve server-side logging. It also makes it easier to debug
-   * Libchipcard2.
-   * The last parameter is the path to the data folder of Libchipcard2.
+   * Libchipcard.
+   * The last parameter is the path to the data folder of Libchipcard.
    * We don't want any special handling here so we provide a NULL to make
-   * Libchipcard2 use its default path.
+   * Libchipcard use its default path.
    */
   cl=LC_Client_new("tutorial1b", "1.0");
 
-  /* Initialize Libchipcard2 by reading its configuration file.
+  /* Initialize Libchipcard by reading its configuration file.
    */
   LC_Client_Init(cl);
 
-  /* We now need to tell Libchipcard2 that we are interested in chipcards.
+  /* We now need to tell Libchipcard that we are interested in chipcards.
    * After sending this command the chipcard server will notify us about
    * available cards.
    * Only now the server will be connected, and if we are the only client
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
    */
   LC_Card_free(card);
 
-  /* Release all ressources associated with Libchipcard2.
+  /* Release all ressources associated with Libchipcard.
    * You should always do this at the end of your program to prevent
    * memory leaks.
    */

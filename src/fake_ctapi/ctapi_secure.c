@@ -66,7 +66,7 @@ int CT__fillPinInfo(LC_PININFO *pi, CTAPI_APDU *apdu) {
   switch(i & 0x3) {
   case 0x00:
     DBG_DEBUG(CT_API_LOGDOMAIN, "Pin encoding is BCD");
-    LC_PinInfo_SetEncoding(pi, LC_PinInfo_EncodingBcd);
+    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Bcd);
     if (GWEN_TLV_GetTagLength(tlv)>8) {
       /* special case: there are template bytes in the command, check
        * whether is is hex 0x2Y with Y!=0
@@ -77,7 +77,7 @@ int CT__fillPinInfo(LC_PININFO *pi, CTAPI_APDU *apdu) {
         j=(unsigned int)p[8];
         if (j==0xff) {
           DBG_ERROR(0, "Pin Encoding really is FPIN2");
-          LC_PinInfo_SetEncoding(pi, LC_PinInfo_EncodingFpin2);
+	  LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_FPin2);
         }
       }
     }
@@ -85,7 +85,7 @@ int CT__fillPinInfo(LC_PININFO *pi, CTAPI_APDU *apdu) {
 
   case 0x01:
     DBG_DEBUG(CT_API_LOGDOMAIN, "Pin encoding is ASCII");
-    LC_PinInfo_SetEncoding(pi, LC_PinInfo_EncodingAscii);
+    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
     j=(int)p[6];
     if (j==0 || j>CTAPI_DEF_PINMAXLEN)
       j=CTAPI_DEF_PINMAXLEN;
@@ -94,7 +94,7 @@ int CT__fillPinInfo(LC_PININFO *pi, CTAPI_APDU *apdu) {
 
   case 0x02:
     DBG_DEBUG(CT_API_LOGDOMAIN, "Pin encoding is FPIN2");
-    LC_PinInfo_SetEncoding(pi, LC_PinInfo_EncodingFpin2);
+    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_FPin2);
     LC_PinInfo_SetMaxLength(pi, 14);
     break;
 

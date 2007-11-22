@@ -87,7 +87,7 @@ struct LCDM_DEVICEMANAGER {
   int nextNewPort;
   int lastAutoReader;
 
-  GWEN_TYPE_UINT32 lastReaderId;
+  uint32_t lastReaderId;
 
   int readerUsage;
 };
@@ -112,23 +112,23 @@ void LCDM_DeviceManager_AbandonReader(LCDM_DEVICEMANAGER *dm,
 
 
 static
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
                                                     const LCCO_READER *r);
 
 static
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
                                                    const LCCO_READER *r);
 
 static
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
                                                    const LCDM_DRIVER *d);
 
 static
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
                                                      const LCCO_READER *r);
 
 static
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
                                                     const LCCO_READER *r);
 
 
@@ -147,31 +147,31 @@ int LCDM_DeviceManager__Work(LCDM_DEVICEMANAGER *dm);
 
 static
 int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq);
 
 static
 int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           GWEN_DB_NODE *dbReq);
 static
 int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq);
 
 static
 int LCDM_DeviceManager_HandleReaderError(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq);
 
 static
 int LCDM_DeviceManager_HandleReaderAdd(LCDM_DEVICEMANAGER *dm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        GWEN_DB_NODE *dbReq);
 
 static
 int LCDM_DeviceManager_HandleReaderDel(LCDM_DEVICEMANAGER *dm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        GWEN_DB_NODE *dbReq);
 
 

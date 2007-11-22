@@ -20,7 +20,7 @@
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/buffer.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -106,10 +106,10 @@ const char *LC_ReaderStatus_toString(LC_READER_STATUS rst) {
 
 
 
-GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
+uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
   int i;
   const char *p;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t flags=0;
 
   for (i=0; ; i++) {
     p=GWEN_DB_GetCharValue(db, name, i, 0);
@@ -129,8 +129,12 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
       flags|=LC_READER_FLAGS_SUSPENDED_CHECKS;
     else if (strcasecmp(p, "driverHasVerify")==0)
       flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
-      else if (strcasecmp(p, "keepRunning")==0)
-        flags|=LC_READER_FLAGS_KEEP_RUNNING;
+    else if (strcasecmp(p, "keepRunning")==0)
+      flags|=LC_READER_FLAGS_KEEP_RUNNING;
+    else if (strcasecmp(p, "lowWriteBoundary")==0)
+      flags|=LC_READER_FLAGS_LOW_WRITE_BOUNDARY;
+    else if (strcasecmp(p, "noMemorySw")==0)
+      flags|=LC_READER_FLAGS_NO_MEMORY_SW;
     else {
       DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
     }
@@ -141,9 +145,9 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
 
 
 
-GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
+uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
   const char *p;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t flags=0;
   GWEN_XMLNODE *n;
 
   n=GWEN_XMLNode_FindFirstTag(node, name, 0, 0);
@@ -171,6 +175,10 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
         flags|=LC_READER_FLAGS_DRIVER_HAS_VERIFY;
       else if (strcasecmp(p, "keepRunning")==0)
         flags|=LC_READER_FLAGS_KEEP_RUNNING;
+      else if (strcasecmp(p, "lowWriteBoundary")==0)
+	flags|=LC_READER_FLAGS_LOW_WRITE_BOUNDARY;
+      else if (strcasecmp(p, "noMemorySw")==0)
+	flags|=LC_READER_FLAGS_NO_MEMORY_SW;
       else {
         DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
       }
@@ -185,7 +193,7 @@ GWEN_TYPE_UINT32 LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
 
 void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
                          const char *name,
-                         GWEN_TYPE_UINT32 fl) {
+                         uint32_t fl) {
   assert(db);
   assert(name);
   GWEN_DB_DeleteVar(db, name);
@@ -210,13 +218,19 @@ void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
   if (fl & LC_READER_FLAGS_KEEP_RUNNING)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
                          name, "keepRunning");
+  if (fl & LC_READER_FLAGS_LOW_WRITE_BOUNDARY)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+			 name, "lowWriteBoundary");
+  if (fl & LC_READER_FLAGS_NO_MEMORY_SW)
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+			 name, "noMemorySw");
 }
 
 
 
-GWEN_TYPE_UINT32 LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
+uint32_t LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
   const char *p;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t flags=0;
   int i;
 
   for (i=0; ; i++) {
@@ -289,7 +303,7 @@ GWEN_TYPE_UINT32 LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
 
 void LC_NotifyFlags_toDb(GWEN_DB_NODE *db,
                          const char *name,
-                         GWEN_TYPE_UINT32 fl) {
+                         uint32_t fl) {
   assert(db);
   assert(name);
   GWEN_DB_DeleteVar(db, name);
@@ -394,10 +408,10 @@ const char *LC_ServiceStatus_toString(LC_SERVICE_STATUS st) {
 
 
 
-GWEN_TYPE_UINT32 LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name){
+uint32_t LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name){
   const char *p;
   int i;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t flags=0;
 
   for (i=0; ; i++) {
     p=GWEN_DB_GetCharValue(db, name, i, 0);
@@ -421,7 +435,7 @@ GWEN_TYPE_UINT32 LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name){
 
 void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
                           const char *name,
-                          GWEN_TYPE_UINT32 flags) {
+                          uint32_t flags) {
   GWEN_DB_DeleteVar(db, name);
   if (flags & LC_SERVICE_FLAGS_AUTOLOAD)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "autoload");
@@ -433,10 +447,10 @@ void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
 
 
 
-GWEN_TYPE_UINT32 LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
+uint32_t LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
   const char *p;
   int i;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t flags=0;
 
   for (i=0; ; i++) {
     p=GWEN_DB_GetCharValue(db, name, i, 0);
@@ -463,7 +477,7 @@ GWEN_TYPE_UINT32 LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
 
 
 int LC_DriverFlags_toDb(GWEN_DB_NODE *db, const char *name,
-                        GWEN_TYPE_UINT32 flags) {
+                        uint32_t flags) {
   GWEN_DB_DeleteVar(db, name);
   if (flags & LC_DRIVER_FLAGS_AUTO)
     if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "auto"))
@@ -489,7 +503,7 @@ int LC_DriverFlags_toDb(GWEN_DB_NODE *db, const char *name,
 
 
 
-const char *LC_Error_toString(GWEN_TYPE_UINT32 err) {
+const char *LC_Error_toString(uint32_t err) {
   switch (err) {
   case LC_ERROR_NONE:                   return "none";
   case LC_ERROR_GENERIC:                return "generic";

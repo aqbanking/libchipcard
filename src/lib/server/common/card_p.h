@@ -23,23 +23,23 @@ struct LCCO_CARD {
   GWEN_INHERIT_ELEMENT(LCCO_CARD)
 
   /* runtime variables */
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t cardId;
   LC_CARD_STATUS status;
   LC_CARD_TYPE cardType;
   GWEN_STRINGLIST *cardTypes;
 
   char *readerType;
   char *driverType;
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 readerFlags;
-  GWEN_TYPE_UINT32 readersCardId;
-  GWEN_TYPE_UINT32 driversReaderId;
+  uint32_t readerId;
+  uint32_t readerFlags;
+  uint32_t readersCardId;
+  uint32_t driversReaderId;
   int slotNum;
-  GWEN_TYPE_UINT32 cardNum;
+  uint32_t cardNum;
 
   GWEN_BUFFER *atr;
 
-  GWEN_TYPE_UINT32 lockId;
+  uint32_t lockId;
 
   int usage;
 };

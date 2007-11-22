@@ -23,11 +23,11 @@ struct LC_DEVICE {
   GWEN_LIST_ELEMENT(LC_DEVICE);
   char *path;
   LC_DEVICE_BUSTYPE busType;
-  GWEN_TYPE_UINT32 devicePos;
-  GWEN_TYPE_UINT32 busId;
-  GWEN_TYPE_UINT32 deviceId;
-  GWEN_TYPE_UINT32 vendorId;
-  GWEN_TYPE_UINT32 productId;
+  uint32_t devicePos;
+  uint32_t busId;
+  uint32_t deviceId;
+  uint32_t vendorId;
+  uint32_t productId;
   char *busName;
   char *deviceName;
   char *readerType;

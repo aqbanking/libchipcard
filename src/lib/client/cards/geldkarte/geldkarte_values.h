@@ -49,7 +49,7 @@ typedef struct LC_GELDKARTE_VALUES LC_GELDKARTE_VALUES;
 /* headers */
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #ifdef __cplusplus
 extern "C" {

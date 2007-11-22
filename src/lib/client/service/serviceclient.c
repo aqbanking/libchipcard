@@ -29,7 +29,7 @@ GWEN_LIST_FUNCTIONS(LC_SERVICECLIENT, LC_ServiceClient);
 GWEN_INHERIT_FUNCTIONS(LC_SERVICECLIENT)
 
 
-LC_SERVICECLIENT *LC_ServiceClient_new(GWEN_TYPE_UINT32 id){
+LC_SERVICECLIENT *LC_ServiceClient_new(uint32_t id){
   LC_SERVICECLIENT *cl;
 
   GWEN_NEW_OBJECT(LC_SERVICECLIENT, cl);
@@ -73,7 +73,7 @@ void LC_ServiceClient_SetUserName(LC_SERVICECLIENT *cl, const char *s){
 
 
 
-GWEN_TYPE_UINT32 LC_ServiceClient_GetClientId(const LC_SERVICECLIENT *cl){
+uint32_t LC_ServiceClient_GetClientId(const LC_SERVICECLIENT *cl){
   assert(cl);
   return cl->clientId;
 }

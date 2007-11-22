@@ -24,10 +24,10 @@
 
 typedef struct LCM_SERVER LCM_SERVER;
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/mon/reader.h>
-#include <chipcard3/client/mon/driver.h>
-#include <chipcard3/client/mon/service.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/mon/reader.h>
+#include <chipcard/client/mon/driver.h>
+#include <chipcard/client/mon/service.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>
@@ -40,7 +40,7 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_SERVER, LCM_Server, CHIPCARD_API)
 
 
 CHIPCARD_API
-LCM_SERVER *LCM_Server_new(GWEN_TYPE_UINT32 serverId);
+LCM_SERVER *LCM_Server_new(uint32_t serverId);
 CHIPCARD_API
 void LCM_Server_free(LCM_SERVER *ms);
 
@@ -50,7 +50,7 @@ void LCM_Server_free(LCM_SERVER *ms);
  * server. Therefore every LCM object holds this id.
  */
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Server_GetServerId(const LCM_SERVER *ms);
+uint32_t LCM_Server_GetServerId(const LCM_SERVER *ms);
 
 /**
  * This is the id the server assigned to us (since we are a client to the

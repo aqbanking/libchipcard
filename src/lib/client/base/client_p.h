@@ -20,6 +20,16 @@
 #include <gwenhywfar/msgengine.h>
 
 
+#define LCC_PM_LIBNAME    "libchipcard"
+#define LCC_PM_SYSCONFDIR "sysconfdir"
+#define LCC_PM_DATADIR    "datadir"
+
+#define LCC_REGKEY_PATHS       "Software\\Libchipcard\\Paths"
+#define LCC_REGKEY_DATADIR     "pkgdatadir"
+#define LCC_REGKEY_SYSCONFDIR  "sysconfdir"
+
+
+
 struct LC_CLIENT {
   GWEN_INHERIT_ELEMENT(LC_CLIENT)
   char *ioTypeName;
@@ -59,6 +69,7 @@ static int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
                                   GWEN_XMLNODE *node);
 
 static int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
+                                  const char *basedir,
                                   const char *tPlural,
                                   const char *tSingular);
 
@@ -103,10 +114,10 @@ static GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
 
 
 
-static int LC_Client__BuildApdu(LC_CLIENT *cl,
-                                GWEN_XMLNODE *node,
-                                GWEN_DB_NODE *cmdData,
-                                GWEN_BUFFER *gbuf);
+static LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
+					     GWEN_XMLNODE *node,
+					     GWEN_DB_NODE *cmdData,
+					     GWEN_BUFFER *gbuf);
 
 static int LC_Client_ParseResult(LC_CLIENT *cl,
                                  GWEN_XMLNODE *node,

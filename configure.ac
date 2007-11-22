@@ -1,10 +1,10 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.60)
 AC_INIT
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_SRCDIR([chipcard3-config.in.in])
+AC_CONFIG_SRCDIR([chipcard-config.in.in])
 AC_CONFIG_HEADER([config.h])
 
 
@@ -14,9 +14,9 @@ AC_CONFIG_HEADER([config.h])
 # versions
 #
 
-CHIPCARD_VERSION_MAJOR=3
+CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=0
-CHIPCARD_VERSION_PATCHLEVEL=4
+CHIPCARD_VERSION_PATCHLEVEL=0
 CHIPCARD_VERSION_BUILD=0
 CHIPCARD_VERSION_TAG="stable"
 
@@ -26,9 +26,9 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 # SO version
 #
-LIBCHIPCARD_SO_CURRENT=1
+LIBCHIPCARD_SO_CURRENT=2
 LIBCHIPCARD_SO_AGE=0
-LIBCHIPCARD_SO_REVISION=3
+LIBCHIPCARD_SO_REVISION=0
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -84,7 +84,7 @@ AC_SUBST(LIBCHIPCARD_SO_AGE)
 AC_SUBST(LIBCHIPCARD_SO_EFFECTIVE)
 
 
-AM_INIT_AUTOMAKE(libchipcard3, $CHIPCARD_VERSION_RELEASE_STRING)
+AM_INIT_AUTOMAKE(libchipcard, $CHIPCARD_VERSION_RELEASE_STRING)
 
 
 
@@ -199,27 +199,6 @@ AQ_DISTRIBUTION
 
 
 # ---------------------------------------------------------------------------
-# check for libusb
-#
-
-AC_LIBUSB
-AC_MSG_CHECKING(whether libUSB might be used)
-if test "$have_libusb" != "yes" ; then
-    AC_MSG_WARN([
-*** LibUSB not found, autoconfiguration will not be available.
-*** If you are using USB devices under Linux, FreeBSD, NetBSD, OpenBSD or
-*** Darwin you really should consider installing libusb.
-*** You can get it from http://libusb.sourceforge.net.])
-else
-    all_includes="$all_includes $libusb_includes"
-    all_libraries="$all_libraries $libusb_libs"
-    AC_DEFINE(USE_LIBUSB, 1, [whether libUSB is to be used])
-    AC_MSG_RESULT(yes)
-fi
-
-
-
-# ---------------------------------------------------------------------------
 # check for libsysfs
 #
 
@@ -239,39 +218,11 @@ fi
 
 
 
-# ---------------------------------------------------------------------------
-# check for OpenSC
-#
-
-#PKG_CHECK_MODULES([OPENSC], [libopensc >= 0.9.4], [
-#    all_includes="$all_includes $opensc_includes"
-#    AC_DEFINE(USE_OPENSC, 1, [whether OpenSC is to be used])
-#    have_opensc=yes
-#    ], [
-#    AC_MSG_WARN(OpenSC not found, OpenSC driver will not be available.)
-#    have_opensc=no
-#])
-#if test "$have_opensc" = "yes"; then
-#  opensc_version="`pkg-config --modversion libopensc`"
-#  case "$opensc_version" in
-#    0.9.*|0.10.*)
-#      ;;
-#    *)
-#      AC_DEFINE(LCC_OPENSC11, 1, [OpenSC >=0.11.x ])
-#      ;;
-#  esac
-#fi
-#AC_SUBST(opensc_version)
-#
-#AM_CONDITIONAL(USE_OPENSC, [test "$have_opensc" = "yes"])
-
-
-
 ###-------------------------------------------------------------------------
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(2,3,0,0)
+AC_GWENHYWFAR(3,0,0,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -280,62 +231,61 @@ all_includes="$all_includes $gwenhywfar_includes"
 # OS dependent settings
 #
 
+libchipcard_includes="-I\${prefix}/include"
+libchipcardc_libs="-L\${libdir} -lchipcardc"
+libchipcardi_libs="-L\${libdir} -lchipcardi"
+
 case "$OS_TYPE" in
     posix)
         lc_sys_is_windows=0
         
-        lc_client_config_dir="\${sysconfdir}/chipcard3/client"
-        lc_client_config_file="chipcardc3.conf"
-        lc_client_def_cert_dir="\${sysconfdir}/chipcard3/client/certs"
-        lc_client_def_newcert_dir="~/.libchipcard3/certs"
-        lc_client_def_cert_file="~/.libchipcard3/user.cert"
-        lc_client_xml_dir="\${datadir}/chipcard3/client"
+        lc_client_config_dir="\${sysconfdir}/chipcard/client"
+        lc_client_config_file="chipcardc.conf"
+        lc_client_def_cert_dir="\${sysconfdir}/chipcard/client/certs"
+        lc_client_def_newcert_dir="~/.libchipcard/certs"
+        lc_client_def_cert_file="~/.libchipcard/user.cert"
+        lc_client_xml_dir="\${datadir}/chipcard/client"
 
-        lc_server_config_dir="\${sysconfdir}/chipcard3/server"
-        lc_server_data_dir="\${datadir}/chipcard3/server"
-        lc_server_lowlevel_driver_dir="\${libdir}/chipcard3/server/lowlevel"
-        lc_server_def_cert_dir="\${sysconfdir}/chipcard3/server/certs"
-        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd3/newcerts"
-        lc_server_driver_dir="\${libdir}/chipcard3/server/drivers"
-        lc_server_service_dir="\${libdir}/chipcard3/server/services"
-        lc_server_log_dir="\${localstatedir}/log/chipcard3"
+        lc_server_config_dir="\${sysconfdir}/chipcard/server"
+        lc_server_data_dir="\${datadir}/chipcard/server"
+        lc_server_lowlevel_driver_dir="\${libdir}/chipcard/server/lowlevel"
+        lc_server_def_cert_dir="\${sysconfdir}/chipcard/server/certs"
+        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd/newcerts"
+        lc_server_driver_dir="\${libdir}/chipcard/server/drivers"
+        lc_server_service_dir="\${libdir}/chipcard/server/services"
+        lc_server_log_dir="\${localstatedir}/log/chipcard"
         lc_server_pid_dir="\${localstatedir}/run"
-        lc_server_def_dh_dir="\${sysconfdir}/chipcard3/server/dh"
+        lc_server_def_dh_dir="\${sysconfdir}/chipcard/server/dh"
 
-        libchipcard3_includes="-I\${prefix}/include"
-        libchipcard3c_libs="-L\${libdir} -lchipcard3c"
-        libchipcard3i_libs="-L\${libdir} -lchipcard3i"
         
         lc_dir_nonwindows_src="drivers services"
         lc_dir_nonwindows_tools="chipcardd"
         
+        lc_os_driver_dir="posix"
     	;;
     windows)
         AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
-        ACX_WINDOWS_PATHS
         lc_sys_is_windows=1
 
-        lc_client_config_dir="\${sysconfdir}/chipcard3/client"
-        lc_client_config_file="chipcardc3.conf"
-        lc_client_def_cert_dir="\${sysconfdir}/chipcard3/client/certs"
-        lc_client_def_newcert_dir="~/.libchipcard3/certs"
-        lc_client_def_cert_file="~/.libchipcard3/user.cert"
-        lc_client_xml_dir="\${datadir}/chipcard3/client"
+        lc_client_config_dir="\${sysconfdir}/chipcard/client"
+        lc_client_config_file="chipcardc.conf"
+        lc_client_def_cert_dir="\${sysconfdir}/chipcard/client/certs"
+        lc_client_def_newcert_dir="~/.libchipcard/certs"
+        lc_client_def_cert_file="~/.libchipcard/user.cert"
+        lc_client_xml_dir="\${datadir}/chipcard/client"
 
-        lc_server_config_dir="\${sysconfdir}/chipcard3/server"
-        lc_server_data_dir="\${datadir}/chipcard3/server"
-        lc_server_lowlevel_driver_dir="\${libdir}/chipcard3/server/lowlevel"
-        lc_server_def_cert_dir="\${sysconfdir}/chipcard3/server/certs"
-        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd3/newcerts"
-        lc_server_driver_dir="\${libdir}/chipcard3/server/drivers"
-        lc_server_service_dir="\${libdir}/chipcard3/server/services"
-        lc_server_log_dir="\${localstatedir}/log/chipcard3"
+        lc_server_config_dir="\${sysconfdir}/chipcard/server"
+        lc_server_data_dir="\${datadir}/chipcard/server"
+        lc_server_lowlevel_driver_dir="\${libdir}/chipcard/server/lowlevel"
+        lc_server_def_cert_dir="\${sysconfdir}/chipcard/server/certs"
+        lc_server_def_newcert_dir="\${localstatedir}/lib/chipcardd/newcerts"
+        lc_server_driver_dir="\${libdir}/chipcard/server/drivers"
+        lc_server_service_dir="\${libdir}/chipcard/server/services"
+        lc_server_log_dir="\${localstatedir}/log/chipcard"
         lc_server_pid_dir="\${localstatedir}/run"
-        lc_server_def_dh_dir="\${sysconfdir}/chipcard3/server/dh"
+        lc_server_def_dh_dir="\${sysconfdir}/chipcard/server/dh"
 
-        libchipcard3_includes="-I\${prefix}/include"
-        libchipcard3c_libs="-L\${libdir} -lchipcard3c"
-        libchipcard3i_libs="-L\${libdir} -lchipcard3i"
+        lc_os_driver_dir="win32"
     	;;
 esac
 
@@ -361,15 +311,114 @@ AC_SUBST(lc_server_log_dir)
 AC_SUBST(lc_server_pid_dir)
 AC_SUBST(lc_server_def_dh_dir)
 
-AC_SUBST(libchipcard3d_libs)
-AC_SUBST(libchipcard3c_libs)
-AC_SUBST(libchipcard3_includes)
+AC_SUBST(libchipcardd_libs)
+AC_SUBST(libchipcardc_libs)
+AC_SUBST(libchipcard_includes)
 
 AC_SUBST(lc_dir_nonwindows_src)
 AC_SUBST(lc_dir_nonwindows_tools)
 
+AC_SUBST(lc_os_driver_dir)
+
 AC_SUBST(all_includes)
 AC_SUBST(all_libraries)
+
+
+
+###-------------------------------------------------------------------------
+#
+# check whether local installation mode is enabled
+#
+
+AC_MSG_CHECKING(whether local installation mode is wanted)
+AC_ARG_ENABLE(local-install,
+  [  --enable-local-install         allow local installation mode (default=no)],
+  enable_local_install="$enableval",
+  enable_local_install="no")
+AC_MSG_RESULT($enable_local_install)
+
+if test "$enable_local_install" != "no"; then
+  AC_DEFINE(ENABLE_LOCAL_INSTALL, 1, [whether local install is wanted])
+fi
+
+
+
+###-------------------------------------------------------------------------
+#
+# check data search dir
+#
+AC_MSG_CHECKING(data search dir)
+AC_ARG_WITH(data-searchdir, [  --with-data-searchdir=DIR where to search for data files],
+  [lc_data_searchdir="$withval"],
+  [lc_data_searchdir=""])
+
+if test -z "${lc_data_searchdir}"; then
+  if test "$OSYSTEM" = "windows"; then
+    lc_data_searchdir="share/chipcard/client"
+  else
+    if test "$enable_local_install" != "no"; then
+      lc_data_searchdir="share/chipcard/client"
+    else
+      lc_data_searchdir="$lc_client_xml_dir"
+    fi
+  fi
+fi
+
+AC_SUBST(lc_data_searchdir)
+AC_MSG_RESULT($lc_data_searchdir)
+
+
+
+###-------------------------------------------------------------------------
+#
+# check locale search dir
+#
+AC_MSG_CHECKING(locale search dir)
+AC_ARG_WITH(locale-searchdir, [  --with-locale-searchdir=DIR where to search for locale files],
+  [lc_locale_searchdir="$withval"],
+  [lc_locale_searchdir=""])
+
+if test -z "${lc_locale_searchdir}"; then
+  if test "$OSYSTEM" = "windows"; then
+    lc_locale_searchdir="share/locale"
+  else
+    if test "$enable_local_install" != "no"; then
+      lc_locale_searchdir="share/locale"
+    else
+      lc_locale_searchdir="\$(localedir)"
+    fi
+  fi
+fi
+
+AC_SUBST(lc_locale_searchdir)
+AC_MSG_RESULT($lc_locale_searchdir)
+
+
+
+###-------------------------------------------------------------------------
+#
+# check cfg search dir
+#
+AC_MSG_CHECKING(cfg search dir)
+AC_ARG_WITH(cfg-searchdir, [  --with-cfg-searchdir=DIR where to search for cfg files],
+  [lc_cfg_searchdir="$withval"],
+  [lc_cfg_searchdir=""])
+
+if test -z "$lc_cfg_searchdir"; then
+  if test "$OSYSTEM" = "windows"; then
+    lc_cfg_searchdir="etc/chipcard/client"
+  else
+    if test "$enable_local_install" != "no"; then
+      lc_cfg_searchdir="etc/chipcard/client"
+    else
+      lc_cfg_searchdir="$lc_client_config_dir"
+    fi
+  fi
+fi
+
+
+AC_SUBST(lc_cfg_searchdir)
+AC_MSG_RESULT($lc_cfg_searchdir)
 
 
 
@@ -448,7 +497,7 @@ if test "$enable_fulldoc" = "yes"; then
 	DOXYGEN_INPUT="src/lib"
         DOXYGEN_DEFINE=""
 else
-	DOXYGEN_INPUT="chipcard3"
+	DOXYGEN_INPUT="chipcard"
 	DOXYGEN_DEFINE="DOXYGEN_HIDE"
 fi
 AC_SUBST(DOXYGEN_INPUT)
@@ -583,32 +632,34 @@ fi
 #
 
 AC_CONFIG_FILES([Makefile
-                 chipcard3-config.in
+                 chipcard-config.in
                  Doxyfile
-                 libchipcard3.spec
+                 libchipcard.spec
                  bin/Makefile
-                 bin/prepare.sh.in
                  data/Makefile
                  data/drivers/Makefile
-                 data/drivers/ccid_ifd/Makefile
-                 data/drivers/cherry_ctapi/Makefile
-                 data/drivers/cyberjack_ctapi/Makefile
-                 data/drivers/kobil_ctapi/Makefile
-                 data/drivers/omnikey_ifd/Makefile
-                 data/drivers/omnikey_ifd/cm_2020_ifd/Makefile
-                 data/drivers/omnikey_ifd/cm_4000_ifd/Makefile
-                 data/drivers/orga_ctapi/Makefile
-                 data/drivers/scmx32_ifd/Makefile
-                 data/drivers/scm33x_ifd/Makefile
-                 data/drivers/tow_ctapi/Makefile
-                 data/drivers/o2micro_ctapi/Makefile
-                 data/drivers/celectronic_ctapi/Makefile
+                 data/drivers/posix/Makefile
+                 data/drivers/posix/ccid_ifd/Makefile
+                 data/drivers/posix/cherry_ctapi/Makefile
+                 data/drivers/posix/cyberjack_ctapi/Makefile
+                 data/drivers/posix/kobil_ctapi/Makefile
+                 data/drivers/posix/omnikey_ifd/Makefile
+                 data/drivers/posix/omnikey_ifd/cm_2020_ifd/Makefile
+                 data/drivers/posix/omnikey_ifd/cm_4000_ifd/Makefile
+                 data/drivers/posix/orga_ctapi/Makefile
+                 data/drivers/posix/scmx32_ifd/Makefile
+                 data/drivers/posix/scm33x_ifd/Makefile
+                 data/drivers/posix/tow_ctapi/Makefile
+                 data/drivers/posix/o2micro_ctapi/Makefile
+                 data/drivers/posix/celectronic_ctapi/Makefile
+                 data/drivers/win32/Makefile
+                 data/drivers/win32/cyberjack_ctapi/Makefile
                  doc/Makefile
                  etc/Makefile
                  src/Makefile
                  src/lib/Makefile
                  src/lib/version.h
-                 src/lib/chipcard3.h
+                 src/lib/chipcard.h
                  src/lib/sharedstuff/Makefile
                  src/lib/client/Makefile
                  src/lib/client/ressource.rc
@@ -625,7 +676,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/cards/processorcard/Makefile
                  src/lib/client/cards/starcos/Makefile
                  src/lib/client/mon/Makefile
-                 src/lib/client/crypttoken/Makefile
+                 src/lib/client/ct/Makefile
                  src/lib/client/service/Makefile
                  src/lib/server/Makefile
                  src/lib/server/ressource.rc
@@ -637,11 +688,9 @@ AC_CONFIG_FILES([Makefile
                  src/lib/server/server/clientmanager/Makefile
                  src/lib/server/server/servicemanager/Makefile
                  src/lib/server/server/slavemanager/Makefile
-                 src/crypttoken/Makefile
-                 src/crypttoken/ddvcard/Makefile
-                 src/crypttoken/ddvcard/ddvcard.xml
-                 src/crypttoken/starcoscard/Makefile
-                 src/crypttoken/starcoscard/starcoscard.xml
+                 src/ct/Makefile
+                 src/ct/ddvcard/Makefile
+                 src/ct/ddvcard/ddvcard.xml
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ctapi/ctapi.xml
@@ -675,11 +724,11 @@ AC_OUTPUT
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
-rm -Rf chipcard3
-mkdir chipcard3
-AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard3.h"
-ln -s "${lprefix}/src/lib/version.h" chipcard3/version.h
-ln -s "${lprefix}/src/lib/chipcard3.h" chipcard3/chipcard3.h
+rm -Rf chipcard
+mkdir chipcard
+AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard.h"
+ln -s "${lprefix}/src/lib/version.h" chipcard/version.h
+ln -s "${lprefix}/src/lib/chipcard.h" chipcard/chipcard.h
 
 
 
@@ -691,7 +740,7 @@ lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
 # symlink all headers from src/lib/sharedstuff/*
-mkdir chipcard3/sharedstuff
+mkdir chipcard/sharedstuff
 hfiles=`( cd "${srcdir}/src/lib/sharedstuff" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/sharedstuff/${f}"
@@ -701,7 +750,7 @@ for f in ${hfiles}; do
     *_l.h)
           ;;
     *)   
-          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard3/sharedstuff/${f}"
+          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard/sharedstuff/${f}"
           ;;
   esac
 done
@@ -712,8 +761,8 @@ done
 # create header directory for client, make symlinks
 #
 
-lc_modules="io cards crypttoken mon service"
-#client cards mon fs crypttoken
+lc_modules="io cards ct mon service"
+#client cards mon fs
 lc_client_io_modules="lcc pcsc"
 
 lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard processorcard"
@@ -722,18 +771,18 @@ lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard pro
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
-rm -Rf chipcard3/client
-mkdir chipcard3/client
+rm -Rf chipcard/client
+mkdir chipcard/client
 
 # symlink all headers from src/lib/client
 hfiles=`( cd "${srcdir}/src/lib/client" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${f}"
   case ${f} in
-    *_p.h | *version.h | *chipcard3.h)
+    *_p.h | *version.h | *chipcard.h)
               ;;
     *)
-              ln -s "${lprefix}/src/lib/client/${f}" "chipcard3/client/${f}"
+              ln -s "${lprefix}/src/lib/client/${f}" "chipcard/client/${f}"
               ;;
   esac
 done
@@ -747,7 +796,7 @@ for f in ${hfiles}; do
     *_p.h | *_l.h)
       ;;
     *)   
-      ln -s "${lprefix}/src/lib/client/base/${f}" "chipcard3/client/${f}"
+      ln -s "${lprefix}/src/lib/client/base/${f}" "chipcard/client/${f}"
       ;;
   esac
 done
@@ -755,7 +804,7 @@ done
 
 # symlink all headers from src/lib/client/*
 for sm in $lc_modules; do
-  mkdir chipcard3/client/${sm}
+  mkdir chipcard/client/${sm}
   hfiles=`( cd "${srcdir}/src/lib/client/${sm}" && ls *.h 2>/dev/null )`
   for f in ${hfiles}; do
     AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${sm}/${f}"
@@ -763,7 +812,7 @@ for sm in $lc_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "chipcard3/client/${sm}/${f}"
+        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "chipcard/client/${sm}/${f}"
         ;;
     esac
   done
@@ -772,7 +821,7 @@ done
 
 # symlink all headers from src/lib/client/io/*
 for sm in $lc_client_io_modules; do
-  mkdir chipcard3/client/io/${sm}
+  mkdir chipcard/client/io/${sm}
   hfiles=`( cd "${srcdir}/src/lib/client/io/${sm}" && ls *.h 2>/dev/null )`
   for f in ${hfiles}; do
     AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/io/${sm}/${f}"
@@ -780,7 +829,7 @@ for sm in $lc_client_io_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/io/${sm}/${f}" "chipcard3/client/io/${sm}/${f}"
+        ln -s "${lprefix}/src/lib/client/io/${sm}/${f}" "chipcard/client/io/${sm}/${f}"
         ;;
     esac
   done
@@ -796,7 +845,7 @@ for sm in $lc_client_card_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "chipcard3/client/cards/${f}"
+        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "chipcard/client/cards/${f}"
         ;;
     esac
   done
@@ -804,7 +853,7 @@ done
 
 
 # symlink all headers from src/lib/server/driver/*
-mkdir -p chipcard3/server/driver
+mkdir -p chipcard/server/driver
 hfiles=`( cd "${srcdir}/src/lib/server/driver" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/server/driver/${f}"
@@ -812,7 +861,7 @@ for f in ${hfiles}; do
     *_p.h | *_l.h)
       ;;
     *)   
-      ln -s "${lprefix}/src/lib/server/driver/${f}" "chipcard3/server/driver/${f}"
+      ln -s "${lprefix}/src/lib/server/driver/${f}" "chipcard/server/driver/${f}"
       ;;
   esac
 done
@@ -826,14 +875,21 @@ done
 echo
 echo "Summary:"
 echo "================================="
-echo "Libchipcard version : $CHIPCARD_VERSION_FULL_STRING"
-echo "Support for LibSysFS: $have_libsysfs"
-echo "Support for LibUSB  : $have_libusb"
-if test "$have_libsysfs" != "yes" -o "$have_libusb" != "yes"; then
-  echo ""
-  echo "HINT: You really should install libsysfs and libusb (including"
-  echo "development packages), this will make Libchipcard much more usefull."
-  echo "Otherwise autodetection of readers is not fully available."
+echo "Libchipcard version     : $CHIPCARD_VERSION_FULL_STRING"
+echo "System                  : $OSYSTEM"
+echo "Support for LibSysFS    : $have_libsysfs"
+echo "Cfg Installation Folder : $lc_client_config_dir"
+echo "Cfg Search Folder       : $lc_cfg_searchdir"
+echo "Data Installation Folder: $lc_client_xml_dir"
+echo "Data Search Folder      : $lc_data_searchdir"
+echo "Local Installation Mode : $enable_local_install"
+if test "$OS_TYPE" != "windows"; then
+  if test "$have_libsysfs" != "yes" ; then
+    echo ""
+    echo "HINT: You really should install libsysfs (including"
+    echo "development packages), this will make Libchipcard much more usefull."
+    echo "Otherwise autodetection of readers is not fully available."
+  fi
 fi
 echo ""
 echo "You can now build Libchipcard with 'make' (on *BSD use 'gmake')."

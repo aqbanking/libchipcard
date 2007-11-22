@@ -22,11 +22,11 @@
 
 
 int LCCL_ClientManager_HandleStopWait(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   int cmdVer;
 
   assert(dbReq);

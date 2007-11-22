@@ -22,13 +22,13 @@ struct LCD_SLOT {
   GWEN_LIST_ELEMENT(LCD_SLOT);
   LCD_READER *reader;
   unsigned int slotNum;
-  GWEN_TYPE_UINT32 cardNum;
+  uint32_t cardNum;
   GWEN_BUFFER *atr;
-  GWEN_TYPE_UINT32 status;
-  GWEN_TYPE_UINT32 lastStatus;
-  GWEN_TYPE_UINT32 flags;
+  uint32_t status;
+  uint32_t lastStatus;
+  uint32_t flags;
   time_t lastStatusChange;
-  GWEN_TYPE_UINT32 protocolInfo;
+  uint32_t protocolInfo;
 };
 
 

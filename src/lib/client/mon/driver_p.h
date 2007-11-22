@@ -19,7 +19,7 @@
 
 struct LCM_DRIVER {
   GWEN_LIST_ELEMENT(LCM_DRIVER)
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   char *driverId;
   char *driverType;
   char *driverName;

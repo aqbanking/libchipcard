@@ -24,7 +24,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -103,7 +103,7 @@ void GWENHYWFAR_CB DriverIFD_freeData(void *bp, void *p) {
 
 
 int DriverIFD_Start(LCD_DRIVER *d) {
-  GWEN_ERRORCODE err;
+  int err;
   DRIVER_IFD *dct;
 
   assert(d);
@@ -114,7 +114,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   dct->libLoader=GWEN_LibLoader_new();
   err=GWEN_LibLoader_OpenLibrary(dct->libLoader,
                                  LCD_Driver_GetLibraryFile(d));
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Loading library", 0, 0)) {
@@ -128,7 +128,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHCreateChannel",
                              (void*)&dct->createChannelFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -142,7 +142,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHCloseChannel",
                              (void*)&dct->closeChannelFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -156,7 +156,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHPowerICC",
                              (void*)&dct->powerIccFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -170,7 +170,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHTransmitToICC",
                              (void*)&dct->transmitFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -184,12 +184,12 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHCreateChannelByName",
                              (void*)&dct->createChannelByNameFn);
-  if (GWEN_Error_IsOk(err)) {
+  if (!err) {
     DBG_NOTICE(0, "Detected IFD version 3");
     err=GWEN_LibLoader_Resolve(dct->libLoader,
                                "IFDHControl",
                                (void*)&dct->control3Fn);
-    if (!GWEN_Error_IsOk(err)) {
+    if (err) {
       DBG_ERROR_ERR(0, err);
       GWEN_LibLoader_CloseLibrary(dct->libLoader);
       if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -205,7 +205,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
     err=GWEN_LibLoader_Resolve(dct->libLoader,
                                "IFDHControl",
                                (void*)&dct->control2Fn);
-    if (!GWEN_Error_IsOk(err)) {
+    if (err) {
       DBG_ERROR_ERR(0, err);
       GWEN_LibLoader_CloseLibrary(dct->libLoader);
       if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -222,7 +222,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHICCPresence",
                              (void*)&dct->presenceFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -236,7 +236,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "IFDHGetCapabilities",
                              (void*)&dct->getCapsFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -245,6 +245,14 @@ int DriverIFD_Start(LCD_DRIVER *d) {
     }
     LCD_Driver_Disconnect(d);
     return -1;
+  }
+
+  err=GWEN_LibLoader_Resolve(dct->libLoader,
+			     "IFDHSetProtocolParameters",
+			     (void*)&dct->setProtoFn);
+  if (err) {
+    DBG_WARN(0, "IFDHSetProtocolParameters() not found (%d)", err);
+    /* ignore error */
   }
 
   /* send status report to server */
@@ -259,7 +267,7 @@ int DriverIFD_Start(LCD_DRIVER *d) {
 
 
 
-const char *DriverIFD_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverIFD_GetErrorText(LCD_DRIVER *d, uint32_t err) {
   const char *s;
   DRIVER_IFD *dct;
 
@@ -319,18 +327,19 @@ int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
-                                    int toReader,
-                                    LCD_READER *r,
-                                    LCD_SLOT *slot,
-                                    const unsigned char *apdu,
-                                    unsigned int apdulen,
-                                    unsigned char *buffer,
-                                    int *bufferlen){
+uint32_t DriverIFD_SendAPDU(LCD_DRIVER *d,
+			    int toReader,
+			    LCD_READER *r,
+			    LCD_SLOT *slot,
+			    const unsigned char *apdu,
+			    unsigned int apdulen,
+			    unsigned char *buffer,
+			    int *bufferlen){
   long retval;
-  GWEN_TYPE_UINT32 tmplen;
+  DWORD tmplen;
   DRIVER_IFD *dct;
   const char *lg;
+  int bufferLenAtStart;
 
   lg=LCD_Reader_GetLogger(r);
 
@@ -343,11 +352,12 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
   assert(buffer);
 
   tmplen=*bufferlen;
+  bufferLenAtStart=*bufferlen;
 
   if (toReader) {
     if (dct->ifdVersion>=3) {
       int feature;
-      GWEN_TYPE_UINT32 controlCode;
+      uint32_t controlCode;
   
       feature=apdu[0];
       controlCode=
@@ -366,7 +376,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
       DBG_INFO(lg,
                "Sending command to reader (ControlCode=%08x):", controlCode);
       GWEN_Text_LogString((const char*)apdu+5,
-                          apdulen-5, lg, GWEN_LoggerLevelInfo);
+			  apdulen-5, lg, GWEN_LoggerLevel_Info);
       retval=dct->control3Fn(LCD_Slot_GetSlotNum(slot),
                              controlCode,
                              apdu+5,
@@ -379,7 +389,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
       assert(apdulen>3);
       DBG_INFO(lg, "Sending command to reader:");
       GWEN_Text_LogString((const char*)apdu, apdulen, lg,
-                          GWEN_LoggerLevelInfo);
+                          GWEN_LoggerLevel_Info);
       retval=dct->control2Fn(LCD_Slot_GetSlotNum(slot),
                              apdu,
                              apdulen,
@@ -400,7 +410,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
         /* real response is burried within the complete response */
         DBG_INFO(lg, "Found response within response, extracting");
         GWEN_Text_LogString((const char*)buffer, *bufferlen, lg,
-                            GWEN_LoggerLevelInfo);
+                            GWEN_LoggerLevel_Info);
         pSrc=buffer+3;
         pDst=buffer;
         memmove(pDst, pSrc, rlen);
@@ -414,8 +424,8 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
     SCARD_IO_HEADER rxHeader;
 
     DBG_INFO(lg,
-             "Sending command to card (bufferlen=%d):", tmplen);
-    GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+             "Sending command to card (bufferlen=%d):", (unsigned int)tmplen);
+    GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevel_Info);
     txHeader.protocol=LCD_Slot_GetProtocolInfo(slot);
     //txHeader.protocol=1;
     txHeader.length=sizeof(SCARD_IO_HEADER);
@@ -432,7 +442,7 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
 
   if (retval==0) {
     DBG_INFO(lg, "Response:");
-    GWEN_Text_LogString((const char*)buffer, *bufferlen, lg, GWEN_LoggerLevelInfo);
+    GWEN_Text_LogString((const char*)buffer, *bufferlen, lg, GWEN_LoggerLevel_Info);
   }
 
   if (retval!=0) {
@@ -441,10 +451,50 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
               retval);
     return retval;
   }
-  if (tmplen<2 || tmplen>258) {
-    DBG_ERROR(lg,
-              "Bad response size (%d)", tmplen);
-    return LC_ERROR_BAD_RESPONSE;
+
+  if (LCD_Slot_GetProtocolInfo(slot)!=0 ||
+      !(LCD_Reader_GetReaderFlags(r) & LC_READER_FLAGS_NO_MEMORY_SW)) {
+    if (tmplen<2 || tmplen>258) {
+      DBG_ERROR(lg,
+		"Bad response size (%d)", (unsigned int)tmplen);
+      return LC_ERROR_BAD_RESPONSE;
+    }
+  }
+  else {
+    uint8_t sw1, sw2;
+
+    /* preset: no precise diagnostics plus special sw2*/
+    sw1=0x64;
+    sw2=0xff;
+
+    DBG_INFO(lg, "Manufacturing SW1/SW2 for memory cards");
+    if (apdu[0]==0x00 && apdu[1]==0xb0) {
+      /* read binary */
+      if ((apdu[4]==0x00 && tmplen) ||
+	  (apdu[4]>=tmplen)) {
+	if (tmplen) {
+	  sw1=0x90;
+	  sw2=0x90;
+	}
+      }
+    }
+    else if (apdu[0]==0x00 && apdu[1]==0xd0) {
+      /* write binary */
+      sw1=0x90;
+      sw2=0x00;
+    }
+
+    if (tmplen+2<bufferLenAtStart) {
+      buffer[tmplen]=0x90;
+      buffer[tmplen+1]=0x00;
+      tmplen+=2;
+      *bufferlen=tmplen;
+    }
+    else {
+      DBG_ERROR(lg, "Buffer too small (%d<%d)",
+		bufferLenAtStart, (int)(tmplen+2));
+      return LC_ERROR_BUFFER_OVERFLOW;
+    }
   }
 
   if ((unsigned char)buffer[tmplen-2]!=0x90) {
@@ -461,10 +511,10 @@ GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+long DriverIFD__ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
-  GWEN_TYPE_UINT32 atrLen;
+  DWORD atrLen;
   DRIVER_IFD *dct;
   LCD_READER *r;
 
@@ -490,13 +540,13 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
     if (atrBuffer[0]==0x3b &&
         atrBuffer[1]==0xef) {
       unsigned char atrBuffer2[300];
-      GWEN_TYPE_UINT32 atrLen2;
+      DWORD atrLen2;
       DBG_NOTICE(0, "Suspicious ATR, rereading it");
       atrLen2=sizeof(atrBuffer2);
       retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                              CCID_POWER_UP,
                              atrBuffer2,
-                             &atrLen2);
+			     &atrLen2);
       if (atrLen2>2) {
         if (atrBuffer2[1]!=0xef) {
           DBG_NOTICE(0, "Got another ATR in second attempt, using that");
@@ -545,28 +595,71 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 	       "CCID: Soft error %d", (int)retval);
     LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
     LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
-    if (retval==CCID_ERROR_POWER_ACTION) {
-      DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-		 "CCID: Ignoring error, assuming missing card");
-    }
-    else
-      return retval;
+    return retval;
   }
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
-  long retval;
-  unsigned char atrBuffer[300];
-  GWEN_TYPE_UINT32 atrLen;
+uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+  int i;
   DRIVER_IFD *dct;
+  long retval;
 
   assert(d);
   dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
   assert(dct);
 
+  retval=DriverIFD__ConnectSlot(d, sl);
+  if (retval!=CCID_ERROR_POWER_ACTION) {
+    DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	     "CCID: Result is not POWER_ACTION (%d)",
+	     (int)retval);
+    return retval;
+  }
+
+  if (dct->setProtoFn==NULL)
+    return retval;
+
+  /* try protocols 0 through 15 */
+  for (i=0; i<16; i++) {
+    /* set protocol bt don't change PTS */
+    retval=dct->setProtoFn(LCD_Slot_GetSlotNum(sl),
+			   i, 0, 0, 0, 0);
+    if (retval) {
+      DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	       "CCID: Error setting protocol %d (%d)",
+	       i, (int)retval);
+    }
+    else {
+      retval=DriverIFD__ConnectSlot(d, sl);
+      if (retval!=CCID_ERROR_POWER_ACTION) {
+	DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+		 "CCID: Result is not POWER_ACTION (%d, proto=%d)",
+		 (int)retval, i);
+	return retval;
+      }
+    }
+  }
+
+  /* assuming no card inserted */
+  DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	   "Assuming no card is inserted");
+  return 0;
+}
+
+
+
+uint32_t DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+  long retval;
+  unsigned char atrBuffer[300];
+  DWORD atrLen;
+  DRIVER_IFD *dct;
+
+  assert(d);
+  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
+  assert(dct);
 
   DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
            "Disconnecting slot %d", LCD_Slot_GetSlotNum(sl));
@@ -576,11 +669,11 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                          CCID_POWER_DOWN,
                          atrBuffer,
-                         &atrLen);
+			 &atrLen);
   if (atrLen) {
     DBG_DEBUG(0, "Received ATR:");
     GWEN_Text_LogString((const char*)atrBuffer,
-                        atrLen, 0, GWEN_LoggerLevelDebug);
+                        atrLen, 0, GWEN_LoggerLevel_Debug);
   }
   if (retval!=0) {
     DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
@@ -593,10 +686,10 @@ GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
-  GWEN_TYPE_UINT32 atrLen;
+  DWORD atrLen;
   DRIVER_IFD *dct;
 
   assert(d);
@@ -610,11 +703,11 @@ GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   retval=dct->powerIccFn(LCD_Slot_GetSlotNum(sl),
                          CCID_RESET,
                          atrBuffer,
-                         &atrLen);
+			 &atrLen);
   if (atrLen) {
     DBG_DEBUG(0, "Received ATR:");
     GWEN_Text_LogString((const char*)atrBuffer,
-                        atrLen, 0, GWEN_LoggerLevelDebug);
+                        atrLen, 0, GWEN_LoggerLevel_Debug);
   }
   if (retval==CCID_ICC_PRESENT) {
     LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
@@ -636,7 +729,7 @@ GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slList;
   long retval;
@@ -716,13 +809,12 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
-                                       GWEN_BUFFER *buf) {
+uint32_t DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r, GWEN_BUFFER *buf){
   DRIVER_IFD *dct;
   const char *lg;
   long retval;
   unsigned char buffer[256];
-  GWEN_TYPE_UINT32 bufferlen;
+  DWORD bufferlen;
   int cnt;
   int i;
   PCSC_TLV_STRUCTURE *tlv;
@@ -744,11 +836,11 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                            NULL, 0,
                            buffer,
                            bufferlen,
-                           &bufferlen);
+			   &bufferlen);
     if (retval==0) {
       DBG_INFO(lg, "Response:");
       GWEN_Text_LogString((const char*)buffer, bufferlen, lg,
-                          GWEN_LoggerLevelInfo);
+                          GWEN_LoggerLevel_Info);
     }
     else {
       DBG_ERROR(lg,
@@ -758,7 +850,8 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
   
     if (bufferlen % sizeof(PCSC_TLV_STRUCTURE)) {
       DBG_ERROR(lg,
-                "Inconsistent size of response (%d)", bufferlen);
+		"Inconsistent size of response (%d)",
+		(unsigned int)bufferlen);
       return LC_ERROR_BAD_RESPONSE;
     }
   
@@ -793,7 +886,7 @@ GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slotList;
   unsigned int oks;
@@ -868,7 +961,7 @@ GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slotList;
   unsigned int oks;

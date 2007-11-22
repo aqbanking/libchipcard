@@ -13,51 +13,14 @@
 #include <stdlib.h>
 #include <strings.h>
 
+#include <gwenhywfar/types.h>
+#include <chipcard/chipcard.h>
 
 
 GWEN_INHERIT_FUNCTIONS(LC_PININFO)
 GWEN_LIST_FUNCTIONS(LC_PININFO, LC_PinInfo)
 GWEN_LIST2_FUNCTIONS(LC_PININFO, LC_PinInfo)
 
-
-LC_PININFO_ENCODING LC_PinInfo_Encoding_fromString(const char *s) {
-  if (s) {
-    if (strcasecmp(s, "none")==0)
-      return LC_PinInfo_EncodingNone;
-    else if (strcasecmp(s, "bin")==0)
-      return LC_PinInfo_EncodingBin;
-    else if (strcasecmp(s, "bcd")==0)
-      return LC_PinInfo_EncodingBcd;
-    else if (strcasecmp(s, "ascii")==0)
-      return LC_PinInfo_EncodingAscii;
-    else if (strcasecmp(s, "fpin2")==0)
-      return LC_PinInfo_EncodingFpin2;
-  }
-  return LC_PinInfo_EncodingUnknown;
-}
-
-
-const char *LC_PinInfo_Encoding_toString(LC_PININFO_ENCODING v) {
-  switch(v) {
-    case LC_PinInfo_EncodingNone:
-      return "none";
-
-    case LC_PinInfo_EncodingBin:
-      return "bin";
-
-    case LC_PinInfo_EncodingBcd:
-      return "bcd";
-
-    case LC_PinInfo_EncodingAscii:
-      return "ascii";
-
-    case LC_PinInfo_EncodingFpin2:
-      return "fpin2";
-
-    default:
-      return "unknown";
-  } /* switch */
-} 
 
 
 LC_PININFO *LC_PinInfo_new() {
@@ -111,7 +74,7 @@ int LC_PinInfo_toDb(const LC_PININFO *st, GWEN_DB_NODE *db) {
       return -1;
   if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "id", st->id))
     return -1;
-  if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "encoding", LC_PinInfo_Encoding_toString(st->encoding))) 
+  if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "encoding", GWEN_Crypt_PinEncoding_toString(st->encoding)))
     return -1;
   if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "minLength", st->minLength))
     return -1;
@@ -125,21 +88,31 @@ int LC_PinInfo_toDb(const LC_PININFO *st, GWEN_DB_NODE *db) {
 }
 
 
-LC_PININFO *LC_PinInfo_fromDb(GWEN_DB_NODE *db) {
-LC_PININFO *st;
-
+int LC_PinInfo_ReadDb(LC_PININFO *st, GWEN_DB_NODE *db) {
+  assert(st);
   assert(db);
-  st=LC_PinInfo_new();
   LC_PinInfo_SetName(st, GWEN_DB_GetCharValue(db, "name", 0, 0));
   LC_PinInfo_SetId(st, GWEN_DB_GetIntValue(db, "id", 0, 0));
-  LC_PinInfo_SetEncoding(st, LC_PinInfo_Encoding_fromString(GWEN_DB_GetCharValue(db, "encoding", 0, 0)));
+  LC_PinInfo_SetEncoding(st, GWEN_Crypt_PinEncoding_fromString(GWEN_DB_GetCharValue(db, "encoding", 0, 0)));
   LC_PinInfo_SetMinLength(st, GWEN_DB_GetIntValue(db, "minLength", 0, 0));
   LC_PinInfo_SetMaxLength(st, GWEN_DB_GetIntValue(db, "maxLength", 0, 0));
   LC_PinInfo_SetAllowChange(st, GWEN_DB_GetIntValue(db, "allowChange", 0, 0));
   LC_PinInfo_SetFiller(st, GWEN_DB_GetIntValue(db, "filler", 0, 0));
+  return 0;
+}
+
+
+LC_PININFO *LC_PinInfo_fromDb(GWEN_DB_NODE *db) {
+  LC_PININFO *st;
+
+  assert(db);
+  st=LC_PinInfo_new();
+  LC_PinInfo_ReadDb(st, db);
   st->_modified=0;
   return st;
 }
+
+
 
 
 const char *LC_PinInfo_GetName(const LC_PININFO *st) {
@@ -152,7 +125,7 @@ void LC_PinInfo_SetName(LC_PININFO *st, const char *d) {
   assert(st);
   if (st->name)
     free(st->name);
-  if (d)
+  if (d && *d)
     st->name=strdup(d);
   else
     st->name=0;
@@ -162,13 +135,13 @@ void LC_PinInfo_SetName(LC_PININFO *st, const char *d) {
 
 
 
-GWEN_TYPE_UINT32 LC_PinInfo_GetId(const LC_PININFO *st) {
+uint32_t LC_PinInfo_GetId(const LC_PININFO *st) {
   assert(st);
   return st->id;
 }
 
 
-void LC_PinInfo_SetId(LC_PININFO *st, GWEN_TYPE_UINT32 d) {
+void LC_PinInfo_SetId(LC_PININFO *st, uint32_t d) {
   assert(st);
   st->id=d;
   st->_modified=1;
@@ -177,13 +150,13 @@ void LC_PinInfo_SetId(LC_PININFO *st, GWEN_TYPE_UINT32 d) {
 
 
 
-LC_PININFO_ENCODING LC_PinInfo_GetEncoding(const LC_PININFO *st) {
+GWEN_CRYPT_PINENCODING LC_PinInfo_GetEncoding(const LC_PININFO *st) {
   assert(st);
   return st->encoding;
 }
 
 
-void LC_PinInfo_SetEncoding(LC_PININFO *st, LC_PININFO_ENCODING d) {
+void LC_PinInfo_SetEncoding(LC_PININFO *st, GWEN_CRYPT_PINENCODING d) {
   assert(st);
   st->encoding=d;
   st->_modified=1;
@@ -282,8 +255,6 @@ void LC_PinInfo_List2_freeAll(LC_PININFO_LIST2 *stl) {
 }
 
 
-
-
 LC_PININFO_LIST *LC_PinInfo_List_dup(const LC_PININFO_LIST *stl) {
   if (stl) {
     LC_PININFO_LIST *nl;
@@ -304,6 +275,7 @@ LC_PININFO_LIST *LC_PinInfo_List_dup(const LC_PININFO_LIST *stl) {
   else
     return 0;
 }
+
 
 
 

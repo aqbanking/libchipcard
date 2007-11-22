@@ -41,7 +41,7 @@ void GWENHYWFAR_CB ReaderIFD_FreeData(void *bp, void *p) {
 
 
 
-GWEN_TYPE_UINT32 ReaderIFD_GetFeatureCode(const LCD_READER *r, int f) {
+uint32_t ReaderIFD_GetFeatureCode(const LCD_READER *r, int f) {
   READER_IFD *rc;
 
   assert(r);
@@ -56,7 +56,7 @@ GWEN_TYPE_UINT32 ReaderIFD_GetFeatureCode(const LCD_READER *r, int f) {
 
 
 
-void ReaderIFD_SetFeatureCode(LCD_READER *r, int f, GWEN_TYPE_UINT32 c) {
+void ReaderIFD_SetFeatureCode(LCD_READER *r, int f, uint32_t c) {
   READER_IFD *rc;
 
   assert(r);

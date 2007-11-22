@@ -15,9 +15,9 @@
 #define CHIPCARD_SERVICE_KVK_P_H
 
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/service/service.h>
-#include <chipcard3/client/card.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/service/service.h>
+#include <chipcard/client/card.h>
 
 
 #define SERVICE_KVK_ERROR_UNKNOWN_COMMAND        1
@@ -36,10 +36,10 @@ int ServiceKVK_Start(LC_CLIENT *sv);
 void GWENHYWFAR_CB ServiceKVK_freeData(void *bp, void *p);
 
 
-const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err);
+const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, uint32_t err);
 
 
-GWEN_TYPE_UINT32 ServiceKVK_Command(LC_CLIENT *cl,
+uint32_t ServiceKVK_Command(LC_CLIENT *cl,
 			    LC_SERVICECLIENT *scl,
 			    GWEN_DB_NODE *dbRequest,
 			    GWEN_DB_NODE *dbResponse);
@@ -50,7 +50,7 @@ int ServiceKVK_Work(LC_CLIENT *cl);
 int ServiceKVK_NewCard(LC_CLIENT *cl, LC_CARD *cd);
 int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd);
 
-GWEN_TYPE_UINT32 ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
+uint32_t ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
                                            int offset, int size);
 LC_CLIENT_RESULT ServiceKVK_CheckReadBinary(LC_CLIENT *cl, LC_CARD *cd);
 LC_CLIENT_RESULT ServiceKVK_CalcTagSize(LC_CLIENT *cl, LC_CARD *cd,

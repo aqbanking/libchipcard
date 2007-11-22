@@ -24,9 +24,9 @@ struct LC_REQUEST {
   GWEN_LIST_ELEMENT(LC_REQUEST);
   GWEN_DB_NODE *requestData;
   time_t requestTime;
-  GWEN_TYPE_UINT32 requestId;
-  GWEN_TYPE_UINT32 ipcRequestId;
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t requestId;
+  uint32_t ipcRequestId;
+  uint32_t serverId;
   int aborted;
   LC_CARD *card;
 };

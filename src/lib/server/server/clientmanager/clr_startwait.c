@@ -24,11 +24,11 @@
 
 
 int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   GWEN_DB_NODE *dbRsp;
   int cmdVer;
   int rv;
@@ -117,11 +117,12 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
   const char *atr;
   unsigned int atrLen;
   char numbuf[16];
-  GWEN_TYPE_UINT32 flags;
+  uint32_t flags;
   LC_CARD_TYPE ct;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   GWEN_STRINGLISTENTRY *se;
   LCCM_CARDMANAGER *cm;
+  int rv;
 
   cm=LCS_Server_GetCardManager(clm->server);
   assert(cm);
@@ -197,11 +198,12 @@ int LCCL_ClientManager_SendCardAvailable(LCCL_CLIENTMANAGER *clm,
   /*DBG_ERROR(0, "Sending:");
   GWEN_DB_Dump(gr, stderr, 2);*/
 
-  rid=GWEN_IpcManager_SendRequest(clm->ipcManager,
-                                  LCCL_Client_GetClientId(cl),
-                                  gr);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send \"CardAvailable\" to client");
+  rv=GWEN_IpcManager_SendRequest(clm->ipcManager,
+				 LCCL_Client_GetClientId(cl),
+				 gr,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send \"CardAvailable\" to client (%d)", rv);
     return -LC_ERROR_GENERIC;
   }
   else {

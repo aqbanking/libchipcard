@@ -18,13 +18,13 @@
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/misc.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "common/reader.h"
 #include "lockmanager_l.h"
 
 #include <time.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "devicemanager_l.h"
 #include "dm_driver_l.h"
 #include "dm_slot_l.h"
@@ -38,30 +38,30 @@ LCDM_DRIVER *LCDM_Reader_GetDriver(const LCCO_READER *r);
 void LCDM_Reader_SetTimeout(LCCO_READER *r, int secs);
 int LCDM_Reader_CheckTimeout(const LCCO_READER *r);
 
-GWEN_TYPE_UINT32 LCDM_Reader_GetUsageCount(const LCCO_READER *r);
+uint32_t LCDM_Reader_GetUsageCount(const LCCO_READER *r);
 void LCDM_Reader_IncUsageCount(LCCO_READER *r, int count);
 void LCDM_Reader_DecUsageCount(LCCO_READER *r, int count);
 time_t LCDM_Reader_GetIdleSince(const LCCO_READER *r);
 
-GWEN_TYPE_UINT32 LCDM_Reader_GetCurrentRequestId(const LCCO_READER *r);
-void LCDM_Reader_SetCurrentRequestId(LCCO_READER *r, GWEN_TYPE_UINT32 rid);
+uint32_t LCDM_Reader_GetCurrentRequestId(const LCCO_READER *r);
+void LCDM_Reader_SetCurrentRequestId(LCCO_READER *r, uint32_t rid);
 
 
 LCS_LOCKMANAGER *LCDM_Reader_GetLockManager(const LCCO_READER *r, int slot);
 
-GWEN_TYPE_UINT32 LCDM_Reader_LockReader(LCCO_READER *r,
-                                        GWEN_TYPE_UINT32 clid,
+uint32_t LCDM_Reader_LockReader(LCCO_READER *r,
+                                        uint32_t clid,
                                         int maxLockTime,
                                         int maxLockCount);
 int LCDM_Reader_CheckLockRequest(LCCO_READER *r,
-                                 GWEN_TYPE_UINT32 reqid);
+                                 uint32_t reqid);
 int LCDM_Reader_RemoveLockRequest(LCCO_READER *r,
-                                  GWEN_TYPE_UINT32 rqid);
+                                  uint32_t rqid);
 
 int LCDM_Reader_CheckLockAccess(LCCO_READER *r,
-                                GWEN_TYPE_UINT32 rqid);
+                                uint32_t rqid);
 
-int LCDM_Reader_Unlock(LCCO_READER *r, GWEN_TYPE_UINT32 rqid);
+int LCDM_Reader_Unlock(LCCO_READER *r, uint32_t rqid);
 
 
 

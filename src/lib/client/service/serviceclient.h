@@ -21,7 +21,7 @@ typedef struct LC_SERVICECLIENT LC_SERVICECLIENT;
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/inherit.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 GWEN_LIST_FUNCTION_LIB_DEFS(LC_SERVICECLIENT, LC_ServiceClient, CHIPCARD_API);
@@ -31,14 +31,14 @@ GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_SERVICECLIENT, CHIPCARD_API);
 
 
 CHIPCARD_API
-LC_SERVICECLIENT *LC_ServiceClient_new(GWEN_TYPE_UINT32 id);
+LC_SERVICECLIENT *LC_ServiceClient_new(uint32_t id);
 
 CHIPCARD_API
 void LC_ServiceClient_free(LC_SERVICECLIENT *cl);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_ServiceClient_GetClientId(const LC_SERVICECLIENT *cl);
+uint32_t LC_ServiceClient_GetClientId(const LC_SERVICECLIENT *cl);
 
 
 CHIPCARD_API

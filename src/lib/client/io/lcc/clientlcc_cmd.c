@@ -12,11 +12,11 @@
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendStartWait(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 rflags,
-                                            GWEN_TYPE_UINT32 rmask){
+uint32_t LC_ClientLcc_SendStartWait(LC_CLIENT *cl,
+				    uint32_t rflags,
+				    uint32_t rmask){
   GWEN_DB_NODE *db;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
 
   db=GWEN_DB_Group_new("Client_StartWait");
 
@@ -69,7 +69,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendStartWait(LC_CLIENT *cl,
 
 LC_CLIENT_RESULT
 LC_ClientLcc_CheckStartWait(LC_CLIENT *cl,
-                            GWEN_TYPE_UINT32 rid){
+                            uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
 
@@ -93,9 +93,9 @@ LC_ClientLcc_CheckStartWait(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_StartWait(LC_CLIENT *cl,
-                                        GWEN_TYPE_UINT32 rflags,
-                                        GWEN_TYPE_UINT32 rmask) {
-  GWEN_TYPE_UINT32 rqid;
+                                        uint32_t rflags,
+                                        uint32_t rmask) {
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendStartWait(cl, rflags, rmask);
@@ -103,8 +103,7 @@ LC_CLIENT_RESULT LC_ClientLcc_StartWait(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"startWait\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetShortTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetShortTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -132,9 +131,9 @@ LC_CLIENT_RESULT LC_ClientLcc_StartWait(LC_CLIENT *cl,
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendStopWait(LC_CLIENT *cl) {
+uint32_t LC_ClientLcc_SendStopWait(LC_CLIENT *cl) {
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
 
   dbReq=GWEN_DB_Group_new("Client_StopWait");
 
@@ -152,7 +151,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendStopWait(LC_CLIENT *cl) {
 
 LC_CLIENT_RESULT
 LC_ClientLcc_CheckStopWait(LC_CLIENT *cl,
-                           GWEN_TYPE_UINT32 rid){
+                           uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
 
@@ -176,7 +175,7 @@ LC_ClientLcc_CheckStopWait(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_StopWait(LC_CLIENT *cl) {
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendStopWait(cl);
@@ -184,8 +183,7 @@ LC_CLIENT_RESULT LC_ClientLcc_StopWait(LC_CLIENT *cl) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"stopWait\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetShortTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetShortTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -213,9 +211,9 @@ LC_CLIENT_RESULT LC_ClientLcc_StopWait(LC_CLIENT *cl) {
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendTakeCard(LC_CLIENT *cl, LC_CARD *cd) {
+uint32_t LC_ClientLcc_SendTakeCard(LC_CLIENT *cl, LC_CARD *cd) {
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
 
   dbReq=GWEN_DB_Group_new("Client_TakeCard");
@@ -240,7 +238,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendTakeCard(LC_CLIENT *cl, LC_CARD *cd) {
 
 LC_CLIENT_RESULT
 LC_ClientLcc_CheckTakeCard(LC_CLIENT *cl,
-                           GWEN_TYPE_UINT32 rid){
+                           uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
   LC_REQUEST *rq;
@@ -279,7 +277,7 @@ LC_ClientLcc_CheckTakeCard(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_TakeCard(LC_CLIENT *cl, LC_CARD *cd) {
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendTakeCard(cl, cd);
@@ -287,8 +285,7 @@ LC_CLIENT_RESULT LC_ClientLcc_TakeCard(LC_CLIENT *cl, LC_CARD *cd) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"takeCard\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetVeryLongTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetVeryLongTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -316,9 +313,9 @@ LC_CLIENT_RESULT LC_ClientLcc_TakeCard(LC_CLIENT *cl, LC_CARD *cd) {
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendReleaseCard(LC_CLIENT *cl, LC_CARD *cd){
+uint32_t LC_ClientLcc_SendReleaseCard(LC_CLIENT *cl, LC_CARD *cd){
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
 
   dbReq=GWEN_DB_Group_new("Client_ReleaseCard");
@@ -342,7 +339,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendReleaseCard(LC_CLIENT *cl, LC_CARD *cd){
 
 LC_CLIENT_RESULT
 LC_ClientLcc_CheckReleaseCard(LC_CLIENT *cl,
-                              GWEN_TYPE_UINT32 rid){
+                              uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
 
@@ -366,7 +363,7 @@ LC_ClientLcc_CheckReleaseCard(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_ReleaseCard(LC_CLIENT *cl, LC_CARD *cd) {
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendReleaseCard(cl, cd);
@@ -374,8 +371,7 @@ LC_CLIENT_RESULT LC_ClientLcc_ReleaseCard(LC_CLIENT *cl, LC_CARD *cd) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"releaseCard\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetVeryLongTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetVeryLongTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -400,13 +396,13 @@ LC_CLIENT_RESULT LC_ClientLcc_ReleaseCard(LC_CLIENT *cl, LC_CARD *cd) {
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendCommandCard(LC_CLIENT *cl,
-                                              LC_CARD *cd,
-                                              const char *apdu,
-                                              unsigned int len,
-                                              LC_CLIENT_CMDTARGET t) {
+uint32_t LC_ClientLcc_SendCommandCard(LC_CLIENT *cl,
+				      LC_CARD *cd,
+				      const char *apdu,
+				      unsigned int len,
+				      LC_CLIENT_CMDTARGET t) {
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
   const char *s;
 
@@ -445,7 +441,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendCommandCard(LC_CLIENT *cl,
 
 LC_CLIENT_RESULT
 LC_ClientLcc_CheckCommandCard(LC_CLIENT *cl,
-                              GWEN_TYPE_UINT32 rid,
+                              uint32_t rid,
                               GWEN_BUFFER *data){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
@@ -511,7 +507,7 @@ LC_CLIENT_RESULT LC_ClientLcc_CommandCard(LC_CLIENT *cl,
                                           GWEN_BUFFER *rbuf,
                                           LC_CLIENT_CMDTARGET t,
                                           int timeout){
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendCommandCard(cl, card, apdu, len, t);
@@ -519,7 +515,7 @@ LC_CLIENT_RESULT LC_ClientLcc_CommandCard(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"commandCard\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid, timeout);
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, timeout);
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");

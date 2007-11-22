@@ -20,8 +20,8 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard3/client/mon/monitor.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard/client/mon/monitor.h>
+#include <chipcard/client/client.h>
 #include <gwenhywfar/debug.h>
 
 
@@ -29,17 +29,21 @@
 int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   LC_CLIENT_RESULT res;
   int timeOut;
-  LC_CARD *card;
+  LC_CARD *card=NULL;
 
   timeOut=GWEN_DB_GetIntValue(dbArgs, "timeout", 0, CARD_TIMEOUT);
 
-  res=LC_ClientLcc_StartWait(cl, 0, 0);
+  res=LC_Client_Start(cl);
   if (res!=LC_Client_ResultOk) {
     showError(0, res, "StartWait");
     return 2;
   }
 
   res=LC_Client_GetNextCard(cl, &card, timeOut);
+  if (res!=LC_Client_ResultOk) {
+    showError(0, res, "GetNextCard");
+    return 2;
+  }
   if (!card) {
     fprintf(stderr, "ERROR: No card found.\n");
     return 2;
@@ -54,7 +58,7 @@ int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   }
   LC_Card_free(card);
 
-  res=LC_ClientLcc_StopWait(cl);
+  res=LC_Client_Stop(cl);
   if (res!=LC_Client_ResultOk) {
     showError(0, res, "StopWait");
     return 2;

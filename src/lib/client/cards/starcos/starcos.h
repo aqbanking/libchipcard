@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_CARD_STARCOS_H
 #define CHIPCARD_CARD_STARCOS_H
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 #include <gwenhywfar/keyspec.h>
 #include <gwenhywfar/crypt.h>
 
@@ -126,7 +126,7 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid);
+uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid);
 
 /**
  * returns 8 random bytes

@@ -90,7 +90,7 @@ void LC_ReaderPcsc_SetCurrentCard(LC_READER_PCSC *r, LC_CARD *card) {
 
 
 
-GWEN_TYPE_UINT32 LC_ReaderPcsc_GetFeatureCode(const LC_READER_PCSC *r,
+uint32_t LC_ReaderPcsc_GetFeatureCode(const LC_READER_PCSC *r,
                                               int idx) {
   assert(r);
   assert(idx<LC_READER_PCSC_MAX_FEATURES);
@@ -101,7 +101,7 @@ GWEN_TYPE_UINT32 LC_ReaderPcsc_GetFeatureCode(const LC_READER_PCSC *r,
 
 void LC_ReaderPcsc_SetFeatureCode(LC_READER_PCSC *r,
                                   int idx,
-                                  GWEN_TYPE_UINT32 code) {
+                                  uint32_t code) {
   assert(r);
   assert(idx<LC_READER_PCSC_MAX_FEATURES);
   r->featureCode[idx]=code;

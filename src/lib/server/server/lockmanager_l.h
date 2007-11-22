@@ -36,8 +36,8 @@ const char *LCS_LockManager_GetObjectTypeName(const LCS_LOCKMANAGER *lm);
  * @param duration maximum number of seconds the lock will hold
  * @param maxLocks maximum number of locks allowed for this client
  */
-GWEN_TYPE_UINT32 LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
-                                             GWEN_TYPE_UINT32 clid,
+uint32_t LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
+                                             uint32_t clid,
                                              int duration,
                                              int maxLocks);
 
@@ -49,25 +49,25 @@ GWEN_TYPE_UINT32 LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
  * @param maxLocks maximum number of locks allowed for this client
  */
 int LCS_LockManager_RequestLockWithId(LCS_LOCKMANAGER *lm,
-                                      GWEN_TYPE_UINT32 lockid,
-                                      GWEN_TYPE_UINT32 clid,
+                                      uint32_t lockid,
+                                      uint32_t clid,
                                       int duration,
                                       int maxLocks);
 
-GWEN_TYPE_UINT32 LCS_LockManager_GetNextRequestId();
+uint32_t LCS_LockManager_GetNextRequestId();
 
 
 /**
  * @return -1 on error, 0 if request granted, 1 of not
  */
 int LCS_LockManager_CheckRequest(LCS_LOCKMANAGER *lm,
-                                 GWEN_TYPE_UINT32 reqid);
+                                 uint32_t reqid);
 
 /**
  * Removes a lock applied by the combination of
  * @ref LCS_LockManager_RequestLock and @ref LCS_LockManager_CheckRequest.
  */
-int LCS_LockManager_Unlock(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 reqid);
+int LCS_LockManager_Unlock(LCS_LOCKMANAGER *lm, uint32_t reqid);
 
 
 /**
@@ -77,7 +77,7 @@ int LCS_LockManager_Unlock(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 reqid);
  * @return 0 if ok, !=0 on error
  */
 int LCS_LockManager_RemoveRequest(LCS_LOCKMANAGER *lm,
-                                  GWEN_TYPE_UINT32 reqid);
+                                  uint32_t reqid);
 
 
 /**
@@ -86,13 +86,13 @@ int LCS_LockManager_RemoveRequest(LCS_LOCKMANAGER *lm,
  * card for use by other clients).
  */
 void LCS_LockManager_RemoveAllClientRequests(LCS_LOCKMANAGER *lm,
-                                             GWEN_TYPE_UINT32 clid);
+                                             uint32_t clid);
 
 int LCS_LockManager_HasLockRequests(const LCS_LOCKMANAGER *lm);
 
 
 int LCS_LockManager_CheckAccess(LCS_LOCKMANAGER *lm,
-                                GWEN_TYPE_UINT32 reqid);
+                                uint32_t reqid);
 
 
 #endif

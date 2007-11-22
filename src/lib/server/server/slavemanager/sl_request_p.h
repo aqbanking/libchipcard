@@ -23,8 +23,8 @@ struct LCSL_REQUEST {
   LCCO_CARD *card;
   LCCO_READER *reader;
   LCSL_SLAVEMANAGER *slaveManager;
-  GWEN_TYPE_UINT32 uint32Data1;
-  GWEN_TYPE_UINT32 uint32Data2;
+  uint32_t uint32Data1;
+  uint32_t uint32Data2;
 };
 
 static void GWENHYWFAR_CB LCSL_Request_FreeData(void *bp, void *p);

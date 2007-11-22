@@ -150,7 +150,7 @@ void LCSL_Reader_AddRemovedCard(LCCO_READER *r, LCCO_CARD *card) {
 
 
 
-GWEN_TYPE_UINT32 LCSL_Reader_GetFlags(const LCCO_READER *r) {
+uint32_t LCSL_Reader_GetFlags(const LCCO_READER *r) {
   LCSL_READER *xr;
 
   assert(r);
@@ -162,7 +162,7 @@ GWEN_TYPE_UINT32 LCSL_Reader_GetFlags(const LCCO_READER *r) {
 
 
 
-void LCSL_Reader_SetFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
+void LCSL_Reader_SetFlags(LCCO_READER *r, uint32_t fl) {
   LCSL_READER *xr;
 
   assert(r);
@@ -174,7 +174,7 @@ void LCSL_Reader_SetFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
 
 
 
-void LCSL_Reader_AddFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
+void LCSL_Reader_AddFlags(LCCO_READER *r, uint32_t fl) {
   LCSL_READER *xr;
 
   assert(r);
@@ -186,7 +186,7 @@ void LCSL_Reader_AddFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
 
 
 
-void LCSL_Reader_DelFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
+void LCSL_Reader_DelFlags(LCCO_READER *r, uint32_t fl) {
   LCSL_READER *xr;
 
   assert(r);
@@ -198,7 +198,7 @@ void LCSL_Reader_DelFlags(LCCO_READER *r, GWEN_TYPE_UINT32 fl) {
 
 
 
-GWEN_TYPE_UINT32 LCSL_Reader_GetMasterReaderId(const LCCO_READER *r) {
+uint32_t LCSL_Reader_GetMasterReaderId(const LCCO_READER *r) {
   LCSL_READER *xr;
 
   assert(r);
@@ -210,7 +210,7 @@ GWEN_TYPE_UINT32 LCSL_Reader_GetMasterReaderId(const LCCO_READER *r) {
 
 
 
-void LCSL_Reader_SetMasterReaderId(LCCO_READER *r, GWEN_TYPE_UINT32 i) {
+void LCSL_Reader_SetMasterReaderId(LCCO_READER *r, uint32_t i) {
   LCSL_READER *xr;
 
   assert(r);
@@ -222,7 +222,7 @@ void LCSL_Reader_SetMasterReaderId(LCCO_READER *r, GWEN_TYPE_UINT32 i) {
 
 
 
-GWEN_TYPE_UINT32 LCSL_Reader_GetSlaveReaderId(const LCCO_READER *r) {
+uint32_t LCSL_Reader_GetSlaveReaderId(const LCCO_READER *r) {
   LCSL_READER *xr;
 
   assert(r);
@@ -234,7 +234,7 @@ GWEN_TYPE_UINT32 LCSL_Reader_GetSlaveReaderId(const LCCO_READER *r) {
 
 
 
-void LCSL_Reader_SetSlaveReaderId(LCCO_READER *r, GWEN_TYPE_UINT32 i) {
+void LCSL_Reader_SetSlaveReaderId(LCCO_READER *r, uint32_t i) {
   LCSL_READER *xr;
 
   assert(r);

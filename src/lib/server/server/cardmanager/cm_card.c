@@ -27,7 +27,7 @@
 
 GWEN_INHERIT(LCCO_CARD, LCCM_CARD)
 
-static GWEN_TYPE_UINT32 lccm_card__next_request_id=0;
+static uint32_t lccm_card__next_request_id=0;
 
 
 void LCCM_Card_extend(LCCO_CARD *cd) {
@@ -70,7 +70,7 @@ void GWENHYWFAR_CB LCCM_Card_FreeData(void *bp, void *p) {
 
 
 int LCCM_Card_RequestLock(LCCO_CARD *cd,
-                          GWEN_TYPE_UINT32 clid,
+                          uint32_t clid,
                           int duration,
                           int maxLocks) {
   LCCM_CARD *dc;
@@ -110,7 +110,7 @@ int LCCM_Card_RequestLock(LCCO_CARD *cd,
 
 
 LCS_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
-                                                  GWEN_TYPE_UINT32 clid){
+                                                  uint32_t clid){
   LCCM_CARD *dc;
   LCS_LOCKREQUEST *rq;
 
@@ -135,7 +135,7 @@ LCS_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
 
 
 int LCCM_Card_CountClientRequests(const LCCO_CARD *cd,
-                                  GWEN_TYPE_UINT32 clid){
+                                  uint32_t clid){
   LCCM_CARD *dc;
   LCS_LOCKREQUEST *rq;
   int count=0;
@@ -160,7 +160,7 @@ int LCCM_Card_CountClientRequests(const LCCO_CARD *cd,
 
 
 
-int LCCM_Card_CheckRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
+int LCCM_Card_CheckRequest(LCCO_CARD *cd, uint32_t clid) {
   LCCM_CARD *dc;
   LCS_LOCKREQUEST *rq;
 
@@ -199,7 +199,7 @@ int LCCM_Card_CheckRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
 
 
 
-int LCCM_Card_RemoveRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
+int LCCM_Card_RemoveRequest(LCCO_CARD *cd, uint32_t clid) {
   LCCM_CARD *dc;
   LCS_LOCKREQUEST *rq;
 
@@ -225,7 +225,7 @@ int LCCM_Card_RemoveRequest(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
 
 
 void LCCM_Card_RemoveAllClientRequests(LCCO_CARD *cd,
-                                       GWEN_TYPE_UINT32 clid){
+                                       uint32_t clid){
   LCCM_CARD *dc;
   LCS_LOCKREQUEST *rq;
   int prevCount;
@@ -268,7 +268,7 @@ void LCCM_Card_RemoveAllClientRequests(LCCO_CARD *cd,
 
 
 
-int LCCM_Card_Unlock(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
+int LCCM_Card_Unlock(LCCO_CARD *cd, uint32_t clid) {
   LCCM_CARD *dc;
 
   assert(cd);
@@ -310,7 +310,7 @@ int LCCM_Card_HasLockRequests(const LCCO_CARD *cd) {
 
 
 
-int LCCM_Card_CheckAccess(LCCO_CARD *cd, GWEN_TYPE_UINT32 clid) {
+int LCCM_Card_CheckAccess(LCCO_CARD *cd, uint32_t clid) {
   LCCM_CARD *dc;
 
   assert(cd);

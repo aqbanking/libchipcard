@@ -74,37 +74,37 @@ LC_DEVICE_LIST *LC_DevMonitor_GetCurrentDevices(const LC_DEVMONITOR *um);
 
 
 LC_DEVICE *LC_Device_new(LC_DEVICE_BUSTYPE busType,
-                         GWEN_TYPE_UINT32 busId,
-                         GWEN_TYPE_UINT32 deviceId,
-                         GWEN_TYPE_UINT32 vendorId,
-                         GWEN_TYPE_UINT32 productId);
+                         uint32_t busId,
+                         uint32_t deviceId,
+                         uint32_t vendorId,
+                         uint32_t productId);
 void LC_Device_free(LC_DEVICE *ud);
 LC_DEVICE *LC_Device_dup(const LC_DEVICE *od);
 
 
 LC_DEVICE *LC_Device_List_Find(LC_DEVICE_LIST *dl,
                                LC_DEVICE_BUSTYPE busType,
-                               GWEN_TYPE_UINT32 busId,
-                               GWEN_TYPE_UINT32 deviceId,
-                               GWEN_TYPE_UINT32 vendorId,
-                               GWEN_TYPE_UINT32 productId);
+                               uint32_t busId,
+                               uint32_t deviceId,
+                               uint32_t vendorId,
+                               uint32_t productId);
 
 LC_DEVICE *LC_Device_Get(LC_DEVICE_LIST *dl,
                          LC_DEVICE_BUSTYPE busType,
-                         GWEN_TYPE_UINT32 dpos);
+                         uint32_t dpos);
 
 
-GWEN_TYPE_UINT32 LC_Device_GetDevicePos(const LC_DEVICE *ud);
-void LC_Device_SetDevicePos(LC_DEVICE *ud, GWEN_TYPE_UINT32 i);
+uint32_t LC_Device_GetDevicePos(const LC_DEVICE *ud);
+void LC_Device_SetDevicePos(LC_DEVICE *ud, uint32_t i);
 
 const char *LC_Device_GetPath(const LC_DEVICE *ud);
 void LC_Device_SetPath(LC_DEVICE *ud, const char *s);
 
 LC_DEVICE_BUSTYPE LC_Device_GetBusType(const LC_DEVICE *ud);
-GWEN_TYPE_UINT32 LC_Device_GetBusId(const LC_DEVICE *ud);
-GWEN_TYPE_UINT32 LC_Device_GetDeviceId(const LC_DEVICE *ud);
-GWEN_TYPE_UINT32 LC_Device_GetVendorId(const LC_DEVICE *ud);
-GWEN_TYPE_UINT32 LC_Device_GetProductId(const LC_DEVICE *ud);
+uint32_t LC_Device_GetBusId(const LC_DEVICE *ud);
+uint32_t LC_Device_GetDeviceId(const LC_DEVICE *ud);
+uint32_t LC_Device_GetVendorId(const LC_DEVICE *ud);
+uint32_t LC_Device_GetProductId(const LC_DEVICE *ud);
 
 const char *LC_Device_GetBusName(const LC_DEVICE *ud);
 void LC_Device_SetBusName(LC_DEVICE *ud, const char *s);

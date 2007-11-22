@@ -21,9 +21,9 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/cards/processorcard.h>
-#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/cards/processorcard.h>
+#include <chipcard/client/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_STARCOS)
@@ -220,7 +220,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMF(card);
+  res=LC_Card_SelectMf(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -998,7 +998,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   int modLen;
   const void *p;
   unsigned int bs;
-  GWEN_ERRORCODE err;
+  int err;
 
   assert(key);
 
@@ -1038,7 +1038,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
   dbKey=GWEN_DB_Group_new("key");
   err=GWEN_CryptKey_toDb(key, dbKey, 1);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(LC_LOGDOMAIN, err);
     GWEN_DB_Group_free(dbKey);
     GWEN_Buffer_free(mbuf);
@@ -1385,12 +1385,12 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
 
 
 
-GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
+uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   unsigned int i;
   GWEN_BUFFER *buf;
-  GWEN_TYPE_UINT32 seq;
+  uint32_t seq;
   GWEN_DB_NODE *dbData;
 
   assert(card);
@@ -1432,7 +1432,7 @@ GWEN_TYPE_UINT32 LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
   }
   GWEN_Buffer_free(buf);
 
-  seq=(GWEN_TYPE_UINT32)GWEN_DB_GetIntValue(dbData, "seq", 0, 0);
+  seq=(uint32_t)GWEN_DB_GetIntValue(dbData, "seq", 0, 0);
   if (seq==0) {
     DBG_ERROR(LC_LOGDOMAIN, "No signature counter in data");
     GWEN_DB_Dump(dbData, stderr, 2);

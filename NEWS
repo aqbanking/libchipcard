@@ -1,22 +1,135 @@
 
 ===========================================================================
-                 Libchipcard3 3.0.4 (2007-11-08)
+                 Libchipcard 3.9.13rc6 (2007/11/19)
 ===========================================================================
 
-This is just a maintenance release. It adds support for recent readers from
-Reiner SCT.
+Added missing files for tool kvkcard.
 
 
 ===========================================================================
-                 Libchipcard3 3.0.3 (2007-05-02 r391)
+                 Libchipcard 3.9.12rc5 (2007/11/19)
 ===========================================================================
 
-This version includes several new features that have been back-ported
-from the (soon to become) libchipcard4 branch. In particular, newly
-supported readers are CardMedic 2, SCR 331, SCM 3320, Omnikey Cardman
-4040, and also for the card type eGK. For the Celetronic CardStar2 the
-second slot of this readers is supported now as well. Some build
-problems have been fixed.
+This release obsoletes the KVK service for German medical cards with the
+tool kvkread in daemon mode.
+
+
+===========================================================================
+                 Libchipcard 3.9.11rc4 (2007/11/17)
+===========================================================================
+
+This release simplifies WIN32 installations.
+
+
+===========================================================================
+                 Libchipcard 3.9.10rc3 (2007/11/16)
+===========================================================================
+
+This release fixes SSL secured connections and thus allows for remote
+card servers (e.g. slave mode on thin clients works again).
+
+
+===========================================================================
+                 Libchipcard 3.9.9rc2 (2007/11/11)
+===========================================================================
+
+This release just adds a search folder for the free CCID driver.
+
+
+===========================================================================
+                 Libchipcard 3.9.8rc1 (2007/11/10)
+===========================================================================
+
+This is a release candidate for the next stable release of Libchipcard4.
+It fixes a minor bug on WIN32 platforms.
+
+
+===========================================================================
+                 Libchipcard 3.9.7beta (2007/11/07)
+===========================================================================
+
+This is a bugfix release.
+
+
+===========================================================================
+                 Libchipcard 3.9.6beta (2007/11/03)
+===========================================================================
+
+This release is now licensed under the LGPL. The CryptToken plugin for
+DDV cards now implementes more virtual functions. Some bugs have been
+fixed.
+
+
+===========================================================================
+                 Libchipcard 3.9.5beta (2007/11/02)
+===========================================================================
+
+This release adds some internal features which allow Kobil Kaan Advanced
+readers to really read German medical cards. Support for win32 platforms
+has been improved.
+
+
+===========================================================================
+                 Libchipcard 3.9.4beta (2007/10/27)
+===========================================================================
+
+This release adds support for the SCM SCR3311 reader. Libchipcard can now
+be installed locally (in this case it searches for all its file relative to
+the location of the executable).
+
+
+===========================================================================
+                 Libchipcard 3.9.3beta (2007/10/24)
+===========================================================================
+
+This is the first release of the new generation which works nicely on
+Windows platforms as well. It is now also able to adapt to the different
+reader types when using Windows' SCard service (for now only Reiner SCT
+readers have been tested on win32 so far).
+This version now also supports German medical cards with some more readers
+by trying multiple protocols before giving up. This now allows to read those
+cards e.g. with the Kobil Kaan Advanced.
+
+
+===========================================================================
+                 Libchipcard 3.9.2beta (2007/09/11)
+===========================================================================
+
+This release has been adapted to the latest version of Gwenhywfar. It now 
+only uses libsysfs to scan for USB devices and therefore no longer depends
+on libusb. This fixes a problem with the USB suspend feature of recent
+Linux kernels. This release needs Gwenhywfar 2.9.2beta.
+
+
+===========================================================================
+                 Libchipcard 3.9.1beta (2007/05/14)
+===========================================================================
+
+This release adds support for the latest Cyberjack device. All refrences to
+Libchipcard3 have been renamed to simply Libchipcard (without a number). This
+also affects the configuration files and paths, so you will have to move your
+configuration files!
+
+
+===========================================================================
+                 Libchipcard 3.9.0beta (2007/05/03)
+===========================================================================
+
+This release fixes the problems with some IFD drivers which results from
+incorrect definitions of DWORD in libpcsclite. IFD drivers are now also
+found on SuSE systems. The driver description file for O2Micro has been fixed.
+WARNING: This version uses different paths for configuation files!!
+As of 3.9.0 Libchipcard no longer bears the major version number in its name
+or configuration files and paths.
+
+
+===========================================================================
+                 Libchipcard3 3.1.0beta (2007/04/03)
+===========================================================================
+
+This release adapts to the latest changes in Gwenhywfar. It now needs
+Gwenhywfar3. Some bugs have been fixed and two additional readers are now
+supported.
 
 
 ===========================================================================

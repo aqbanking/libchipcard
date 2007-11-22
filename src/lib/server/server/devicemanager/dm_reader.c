@@ -16,7 +16,7 @@
 
 
 #include "dm_reader_p.h"
-#include "common/driverinfo.h"
+#include <chipcard/sharedstuff/driverinfo.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
@@ -26,7 +26,7 @@
 #include <string.h>
 
 
-static GWEN_TYPE_UINT32 LCDM_Reader_LastId=0;
+static uint32_t LCDM_Reader_LastId=0;
 
 GWEN_INHERIT(LCCO_READER, LCDM_READER)
 
@@ -101,7 +101,7 @@ void GWENHYWFAR_CB LCDM_Reader_FreeData(void *bp, void *p) {
 
 
 
-GWEN_TYPE_UINT32 LCDM_Reader_GetUsageCount(const LCCO_READER *r){
+uint32_t LCDM_Reader_GetUsageCount(const LCCO_READER *r){
   LCDM_READER *xr;
 
   assert(r);
@@ -207,7 +207,7 @@ int LCDM_Reader_CheckTimeout(const LCCO_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 LCDM_Reader_GetCurrentRequestId(const LCCO_READER *r) {
+uint32_t LCDM_Reader_GetCurrentRequestId(const LCCO_READER *r) {
   LCDM_READER *xr;
 
   assert(r);
@@ -218,7 +218,7 @@ GWEN_TYPE_UINT32 LCDM_Reader_GetCurrentRequestId(const LCCO_READER *r) {
 
 
 
-void LCDM_Reader_SetCurrentRequestId(LCCO_READER *r, GWEN_TYPE_UINT32 rid) {
+void LCDM_Reader_SetCurrentRequestId(LCCO_READER *r, uint32_t rid) {
   LCDM_READER *xr;
 
   assert(r);
@@ -247,11 +247,11 @@ LCS_LOCKMANAGER *LCDM_Reader_GetLockManager(const LCCO_READER *r, int slot) {
 
 
 
-GWEN_TYPE_UINT32 LCDM_Reader_LockReader(LCCO_READER *r,
-                                        GWEN_TYPE_UINT32 clid,
+uint32_t LCDM_Reader_LockReader(LCCO_READER *r,
+                                        uint32_t clid,
                                         int maxLockTime,
                                         int maxLockCount) {
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LCDM_SLOT *sl;
   LCDM_READER *xr;
 
@@ -282,7 +282,7 @@ GWEN_TYPE_UINT32 LCDM_Reader_LockReader(LCCO_READER *r,
 
 
 int LCDM_Reader_CheckLockRequest(LCCO_READER *r,
-                                 GWEN_TYPE_UINT32 rqid) {
+                                 uint32_t rqid) {
   LCDM_SLOT *sl;
   LCDM_READER *xr;
 
@@ -316,7 +316,7 @@ int LCDM_Reader_CheckLockRequest(LCCO_READER *r,
 
 
 int LCDM_Reader_RemoveLockRequest(LCCO_READER *r,
-                                  GWEN_TYPE_UINT32 rqid) {
+                                  uint32_t rqid) {
   LCDM_SLOT *sl;
   LCDM_READER *xr;
 
@@ -344,7 +344,7 @@ int LCDM_Reader_RemoveLockRequest(LCCO_READER *r,
 
 
 int LCDM_Reader_CheckLockAccess(LCCO_READER *r,
-                                GWEN_TYPE_UINT32 rqid) {
+                                uint32_t rqid) {
   LCDM_SLOT *sl;
   LCDM_READER *xr;
 
@@ -373,7 +373,7 @@ int LCDM_Reader_CheckLockAccess(LCCO_READER *r,
 
 
 
-int LCDM_Reader_Unlock(LCCO_READER *r, GWEN_TYPE_UINT32 rqid) {
+int LCDM_Reader_Unlock(LCCO_READER *r, uint32_t rqid) {
   LCDM_SLOT *sl;
   LCDM_READER *xr;
 

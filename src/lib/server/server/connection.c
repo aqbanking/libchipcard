@@ -20,35 +20,35 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/inherit.h>
-
+#include <gwenhywfar/iolayer_be.h>
 
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
 
-GWEN_INHERIT(GWEN_NETLAYER, LCS_CONNECTION)
+GWEN_INHERIT(GWEN_IO_LAYER, LCS_CONNECTION)
 
 
 
-void LCS_Connection_TakeOver(GWEN_NETLAYER *conn){
+void LCS_Connection_TakeOver(GWEN_IO_LAYER *conn){
   LCS_CONNECTION *sc;
 
   GWEN_NEW_OBJECT(LCS_CONNECTION, sc);
   DBG_MEM_INC("LCS_CONNECTION", 0);
-  GWEN_INHERIT_SETDATA(GWEN_NETLAYER, LCS_CONNECTION,
+  GWEN_INHERIT_SETDATA(GWEN_IO_LAYER, LCS_CONNECTION,
                        conn, sc,
                        LCS_Connection_FreeData);
 }
 
 
 
-void LCS_Connection_SetType(GWEN_NETLAYER *conn,
+void LCS_Connection_SetType(GWEN_IO_LAYER *conn,
                             LCS_CONNECTION_TYPE t){
   LCS_CONNECTION *sc;
 
   assert(conn);
-  sc=GWEN_INHERIT_GETDATA(GWEN_NETLAYER, LCS_CONNECTION, conn);
+  sc=GWEN_INHERIT_GETDATA(GWEN_IO_LAYER, LCS_CONNECTION, conn);
   assert(sc);
 
   sc->type=t;
@@ -56,11 +56,11 @@ void LCS_Connection_SetType(GWEN_NETLAYER *conn,
 
 
 
-LCS_CONNECTION_TYPE LCS_Connection_GetType(const GWEN_NETLAYER *conn) {
+LCS_CONNECTION_TYPE LCS_Connection_GetType(const GWEN_IO_LAYER *conn) {
   LCS_CONNECTION *sc;
 
   assert(conn);
-  sc=GWEN_INHERIT_GETDATA(GWEN_NETLAYER, LCS_CONNECTION, conn);
+  sc=GWEN_INHERIT_GETDATA(GWEN_IO_LAYER, LCS_CONNECTION, conn);
   assert(sc);
 
   return sc->type;
@@ -68,18 +68,18 @@ LCS_CONNECTION_TYPE LCS_Connection_GetType(const GWEN_NETLAYER *conn) {
 
 
 
-int LCS_Connection_IsOfType(GWEN_NETLAYER *conn) {
-  return GWEN_INHERIT_ISOFTYPE(GWEN_NETLAYER, LCS_CONNECTION, conn);
+int LCS_Connection_IsOfType(GWEN_IO_LAYER *conn) {
+  return GWEN_INHERIT_ISOFTYPE(GWEN_IO_LAYER, LCS_CONNECTION, conn);
 }
 
 
 
-void LCS_Connection_SetServer(GWEN_NETLAYER *conn,
+void LCS_Connection_SetServer(GWEN_IO_LAYER *conn,
                               LCS_SERVER *cs){
   LCS_CONNECTION *sc;
 
   assert(conn);
-  sc=GWEN_INHERIT_GETDATA(GWEN_NETLAYER, LCS_CONNECTION, conn);
+  sc=GWEN_INHERIT_GETDATA(GWEN_IO_LAYER, LCS_CONNECTION, conn);
   assert(sc);
 
   sc->server=cs;
@@ -87,11 +87,11 @@ void LCS_Connection_SetServer(GWEN_NETLAYER *conn,
 
 
 
-LCS_SERVER *LCS_Connection_GetServer(const GWEN_NETLAYER *conn) {
+LCS_SERVER *LCS_Connection_GetServer(const GWEN_IO_LAYER *conn) {
   LCS_CONNECTION *sc;
 
   assert(conn);
-  sc=GWEN_INHERIT_GETDATA(GWEN_NETLAYER, LCS_CONNECTION, conn);
+  sc=GWEN_INHERIT_GETDATA(GWEN_IO_LAYER, LCS_CONNECTION, conn);
   assert(sc);
 
   return sc->server;

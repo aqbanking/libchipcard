@@ -23,6 +23,7 @@
 #include "global.h"
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
+#include <gwenhywfar/cgui.h>
 
 #define I18N(msg) msg
 
@@ -39,7 +40,7 @@
 const GWEN_ARGS prg_args[]={
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "logtype",                    /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -50,7 +51,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "loglevel",                   /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -61,7 +62,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "logfile",                    /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -72,7 +73,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   0,                            /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "verbosity",                  /* name */
   0,                            /* minnum */
   10,                           /* maxnum */
@@ -83,7 +84,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   0,                            /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "verify",                     /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -94,7 +95,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "offset",                     /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -105,7 +106,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "size",                       /* name */
   1,                            /* minnum */
   1,                            /* maxnum */
@@ -116,7 +117,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "filename",                   /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -127,7 +128,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "pin",                        /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -138,7 +139,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "help",                       /* name */
   0,                            /* minnum */
   0,                            /* maxnum */
@@ -731,6 +732,10 @@ int main(int argc, char **argv) {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   LC_CLIENT_RESULT res;
+  GWEN_GUI *gui;
+
+  gui=GWEN_Gui_CGui_new();
+  GWEN_Gui_SetGui(gui);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -741,7 +746,7 @@ int main(int argc, char **argv) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);
-    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutTypeTXT)) {
+    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
       fprintf(stderr, "Could not generate usage string.\n");
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
@@ -758,13 +763,13 @@ int main(int argc, char **argv) {
   /* setup logging */
   s=GWEN_DB_GetCharValue(db, "loglevel", 0, "warning");
   logLevel=GWEN_Logger_Name2Level(s);
-  if (logLevel==GWEN_LoggerLevelUnknown) {
+  if (logLevel==GWEN_LoggerLevel_Unknown) {
     fprintf(stderr, "ERROR: Unknown log level (%s)\n", s);
     return RETURNVALUE_PARAM;
   }
   s=GWEN_DB_GetCharValue(db, "logtype", 0, "console");
   logType=GWEN_Logger_Name2Logtype(s);
-  if (logType==GWEN_LoggerTypeUnknown) {
+  if (logType==GWEN_LoggerType_Unknown) {
     fprintf(stderr, "ERROR: Unknown log type (%s)\n", s);
     return RETURNVALUE_PARAM;
   }
@@ -772,7 +777,7 @@ int main(int argc, char **argv) {
                       "memcard3",
 		      GWEN_DB_GetCharValue(db, "logfile", 0, "memcard3.log"),
 		      logType,
-		      GWEN_LoggerFacilityUser);
+		      GWEN_LoggerFacility_User);
   if (rv) {
     fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
     return RETURNVALUE_SETUP;
@@ -787,7 +792,7 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  cl=LC_Client_new("memcard3", PROGRAM_VERSION);
+  cl=LC_Client_new("memcard", PROGRAM_VERSION);
   res=LC_Client_Init(cl);
   if (res!=LC_Client_ResultOk) {
     showError(0, res, "Init");

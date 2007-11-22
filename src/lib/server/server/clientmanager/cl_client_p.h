@@ -23,9 +23,9 @@ struct LCCL_CLIENT {
   GWEN_LIST_ELEMENT(LCCL_CLIENT);
   GWEN_IDLIST *openServices;
   GWEN_IDLIST *usedReaders;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 waitRequestCount;
-  GWEN_TYPE_UINT32 lastWaitRequestId;
+  uint32_t clientId;
+  uint32_t waitRequestCount;
+  uint32_t lastWaitRequestId;
 
   int maxClientLockTime;
   int maxClientLocks;
@@ -33,10 +33,10 @@ struct LCCL_CLIENT {
   char *appName;
   char *userName;
 
-  GWEN_TYPE_UINT32 notifyFlags;
-  GWEN_TYPE_UINT32 notifyMask;
+  uint32_t notifyFlags;
+  uint32_t notifyMask;
 
-  GWEN_TYPE_UINT32 usage;
+  uint32_t usage;
 
   int destroy;
 };

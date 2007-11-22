@@ -1,0 +1,29 @@
+# $RCSfile$
+#                             -------------------
+#    cvs         : $Id$
+#    begin       : Mon Mar 01 2004
+#    copyright   : (C) 2004 by Martin Preuss
+#    email       : martin@libchipcard.de
+#
+# ***************************************************************************
+# *          Please see toplevel file COPYING for license details           *
+# ***************************************************************************/
+#
+#
+# This file is used by chipcard client programs.
+# Please modify it to your needs and copy it to 
+#              $PREFIX/etc/chipcard3/client/chipcardc.conf
+#
+
+#char resmgr="lcc"
+
+
+#
+# Settings used for the Libchipcard ressource manager
+#
+server {
+  char typ="local"
+  char addr="/var/run/chipcard.comm"
+} # service
+
+

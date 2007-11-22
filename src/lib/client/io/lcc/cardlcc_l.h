@@ -15,19 +15,19 @@
 #define CHIPCARD_CLIENT_CARDLCC_L_H
 
 #define LC_CARD_EXTEND_CLIENT
-#include <chipcard3/client/card_imp.h>
+#include <chipcard/client/card_imp.h>
 
 
 LC_CARD *LC_CardLcc_new(LC_CLIENT *cl,
-                        GWEN_TYPE_UINT32 cardId,
-                        GWEN_TYPE_UINT32 serverId,
+                        uint32_t cardId,
+                        uint32_t serverId,
                         const char *cardType,
-                        GWEN_TYPE_UINT32 rflags,
+                        uint32_t rflags,
                         const unsigned char *atrBuf,
                         unsigned int atrLen);
 
 
-GWEN_TYPE_UINT32 LC_CardLcc_GetServerId(const LC_CARD *card);
+uint32_t LC_CardLcc_GetServerId(const LC_CARD *card);
 
 int LC_CardLcc_IsConnected(const LC_CARD *card);
 void LC_CardLcc_SetConnected(LC_CARD *card, int b);

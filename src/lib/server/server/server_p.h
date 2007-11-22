@@ -35,10 +35,6 @@ struct LCS_SERVER {
   LCSV_SERVICEMANAGER *serviceManager;
   LCSL_SLAVEMANAGER *slaveManager;
 
-  LCS_SERVER_ASKADDCERT_FN askAddCertFn;
-
-
-
   /* runtime vars */
   GWEN_PLUGIN_MANAGER *driverPluginManager;
   GWEN_PLUGIN_MANAGER *servicePluginManager;
@@ -56,12 +52,12 @@ int LCS_Server__InitPaths(LCS_SERVER *cs, GWEN_DB_NODE *gr);
 
 
 /**
- * GWEN_NetConnection callbacks.
+ * GWEN_IpcManager callbacks.
  */
 /*@{*/
-static
-void LCS_Server__CallbackStatusChg(GWEN_NETLAYER *nl,
-                                   GWEN_NETLAYER_STATUS st);
+
+static void LCS_Server_ClientDown(GWEN_IPCMANAGER *mgr, uint32_t id, GWEN_IO_LAYER *io, void *user_data);
+
 /*@}*/
 
 
@@ -79,7 +75,7 @@ int LCS_Server_HandleNextCommand(LCS_SERVER *cs);
 
 static
 int LCS_Server_HandleRequest(LCS_SERVER *cs,
-                             GWEN_TYPE_UINT32 rid,
+                             uint32_t rid,
                              const char *name,
                              GWEN_DB_NODE *dbReq);
 

@@ -28,6 +28,7 @@ LC_PININFO_LIST *LC_PinInfo_List_dup(const LC_PININFO_LIST *stl);
 
 
 
+
 #ifdef __cplusplus
 } /* __cplusplus */
 #endif

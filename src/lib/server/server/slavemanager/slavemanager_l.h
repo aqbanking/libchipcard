@@ -25,7 +25,7 @@ LCSL_SLAVEMANAGER *LCSL_SlaveManager_new(LCS_SERVER *server);
 void LCSL_SlaveManager_free(LCSL_SLAVEMANAGER *slm);
 
 int LCSL_SlaveManager_HandleRequest(LCSL_SLAVEMANAGER *slm,
-                                    GWEN_TYPE_UINT32 rid,
+                                    uint32_t rid,
                                     const char *name,
                                     GWEN_DB_NODE *dbReq);
 
@@ -38,7 +38,7 @@ int LCSL_SlaveManager_Fini(LCSL_SLAVEMANAGER *slm, GWEN_DB_NODE *db);
 void LCSL_SlaveManager_DumpState(const LCSL_SLAVEMANAGER *slm);
 
 void LCSL_SlaveManager_ReaderChg(LCSL_SLAVEMANAGER *slm,
-                                 GWEN_TYPE_UINT32 did,
+                                 uint32_t did,
                                  LCCO_READER *r,
                                  LC_READER_STATUS newSt,
                                  const char *reason);
@@ -51,8 +51,7 @@ void LCSL_SlaveManager_NewCard(LCSL_SLAVEMANAGER *slm, LCCO_CARD *card);
 void LCSL_SlaveManager_CardRemoved(LCSL_SLAVEMANAGER *slm, LCCO_CARD *card);
 
 
-void LCSL_SlaveManager_ConnectionDown(LCSL_SLAVEMANAGER *slm,
-                                      GWEN_NETLAYER *nl);
+void LCSL_SlaveManager_ConnectionDown(LCSL_SLAVEMANAGER *slm, GWEN_IO_LAYER *nl);
 
 
 

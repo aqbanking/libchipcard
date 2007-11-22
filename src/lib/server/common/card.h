@@ -34,7 +34,7 @@ GWEN_LIST2_FUNCTION_DEFS(LCCO_CARD, LCCO_Card)
 GWEN_INHERIT_FUNCTION_DEFS(LCCO_CARD)
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 LCCO_CARD *LCCO_Card_new();
@@ -44,31 +44,31 @@ void LCCO_Card_free(LCCO_CARD *cd);
 void LCCO_Card_List2_freeAll(LCCO_CARD_LIST2 *cl);
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetCardId(const LCCO_CARD *cd);
-void LCCO_Card_SetCardId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Card_GetCardId(const LCCO_CARD *cd);
+void LCCO_Card_SetCardId(LCCO_CARD *cd, uint32_t id);
 
 LC_CARD_TYPE LCCO_Card_GetCardType(const LCCO_CARD *cd);
 void LCCO_Card_SetCardType(LCCO_CARD *cd, LC_CARD_TYPE ct);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReaderId(const LCCO_CARD *cd);
-void LCCO_Card_SetReaderId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Card_GetReaderId(const LCCO_CARD *cd);
+void LCCO_Card_SetReaderId(LCCO_CARD *cd, uint32_t id);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetDriversReaderId(const LCCO_CARD *cd);
-void LCCO_Card_SetDriversReaderId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Card_GetDriversReaderId(const LCCO_CARD *cd);
+void LCCO_Card_SetDriversReaderId(LCCO_CARD *cd, uint32_t id);
 
 int LCCO_Card_GetSlotNum(const LCCO_CARD *cd);
 void LCCO_Card_SetSlotNum(LCCO_CARD *cd, int i);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetCardNum(const LCCO_CARD *cd);
-void LCCO_Card_SetCardNum(LCCO_CARD *cd, GWEN_TYPE_UINT32 i);
+uint32_t LCCO_Card_GetCardNum(const LCCO_CARD *cd);
+void LCCO_Card_SetCardNum(LCCO_CARD *cd, uint32_t i);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReadersCardId(const LCCO_CARD *cd);
-void LCCO_Card_SetReadersCardId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Card_GetReadersCardId(const LCCO_CARD *cd);
+void LCCO_Card_SetReadersCardId(LCCO_CARD *cd, uint32_t id);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReaderFlags(const LCCO_CARD *cd);
-void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
-void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
-void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl);
+uint32_t LCCO_Card_GetReaderFlags(const LCCO_CARD *cd);
+void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, uint32_t fl);
+void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, uint32_t fl);
+void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, uint32_t fl);
 
 LC_CARD_STATUS LCCO_Card_GetStatus(const LCCO_CARD *cd);
 void LCCO_Card_SetStatus(LCCO_CARD *cd, LC_CARD_STATUS st);
@@ -86,8 +86,8 @@ void LCCO_Card_SetDriverTypeName(LCCO_CARD *cd, const char *s);
 const char *LCCO_Card_GetReaderTypeName(const LCCO_CARD *cd);
 void LCCO_Card_SetReaderTypeName(LCCO_CARD *cd, const char *s);
 
-GWEN_TYPE_UINT32 LCCO_Card_GetLockId(const LCCO_CARD *cd);
-void LCCO_Card_SetLockId(LCCO_CARD *cd, GWEN_TYPE_UINT32 lid);
+uint32_t LCCO_Card_GetLockId(const LCCO_CARD *cd);
+void LCCO_Card_SetLockId(LCCO_CARD *cd, uint32_t lid);
 
 
 void LCCO_Card_Dump(const LCCO_CARD *cd, FILE *f, int indent);

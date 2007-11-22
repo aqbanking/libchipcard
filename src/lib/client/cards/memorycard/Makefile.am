@@ -15,7 +15,7 @@ noinst_HEADERS=\
   memorycard_p.h
 
 
-iheaderdir=${includedir}/chipcard3/client/cards
+iheaderdir=${includedir}/chipcard/client/cards
 iheader_HEADERS=\
   memorycard.h
 

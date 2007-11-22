@@ -27,12 +27,12 @@
 #include <gwenhywfar/misc.h>
 #include <time.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 typedef struct LCD_SLOT LCD_SLOT;
 GWEN_LIST_FUNCTION_LIB_DEFS(LCD_SLOT, LCD_Slot, CHIPCARD_API);
 
-#include <chipcard3/server/driver/reader.h>
+#include <chipcard/server/driver/reader.h>
 
 
 
@@ -44,36 +44,36 @@ void LCD_Slot_free(LCD_SLOT *sl);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Slot_GetStatus(const LCD_SLOT *sl);
+uint32_t LCD_Slot_GetStatus(const LCD_SLOT *sl);
 
 CHIPCARD_API
-void LCD_Slot_SetStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
+void LCD_Slot_SetStatus(LCD_SLOT *sl, uint32_t s);
 
 CHIPCARD_API
-void LCD_Slot_AddStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
+void LCD_Slot_AddStatus(LCD_SLOT *sl, uint32_t s);
 
 CHIPCARD_API
-void LCD_Slot_SubStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
-
-
-CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Slot_GetFlags(const LCD_SLOT *sl);
-
-CHIPCARD_API
-void LCD_Slot_SetFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
-
-CHIPCARD_API
-void LCD_Slot_AddFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
-
-CHIPCARD_API
-void LCD_Slot_SubFlags(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
+void LCD_Slot_SubStatus(LCD_SLOT *sl, uint32_t s);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Slot_GetLastStatus(const LCD_SLOT *sl);
+uint32_t LCD_Slot_GetFlags(const LCD_SLOT *sl);
 
 CHIPCARD_API
-void LCD_Slot_SetLastStatus(LCD_SLOT *sl, GWEN_TYPE_UINT32 s);
+void LCD_Slot_SetFlags(LCD_SLOT *sl, uint32_t s);
+
+CHIPCARD_API
+void LCD_Slot_AddFlags(LCD_SLOT *sl, uint32_t s);
+
+CHIPCARD_API
+void LCD_Slot_SubFlags(LCD_SLOT *sl, uint32_t s);
+
+
+CHIPCARD_API
+uint32_t LCD_Slot_GetLastStatus(const LCD_SLOT *sl);
+
+CHIPCARD_API
+void LCD_Slot_SetLastStatus(LCD_SLOT *sl, uint32_t s);
 
 
 CHIPCARD_API
@@ -88,10 +88,10 @@ unsigned int LCD_Slot_GetSlotNum(const LCD_SLOT *sl);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Slot_GetCardNum(const LCD_SLOT *sl);
+uint32_t LCD_Slot_GetCardNum(const LCD_SLOT *sl);
 
 CHIPCARD_API
-void LCD_Slot_SetCardNum(LCD_SLOT *sl, GWEN_TYPE_UINT32 i);
+void LCD_Slot_SetCardNum(LCD_SLOT *sl, uint32_t i);
 
 
 CHIPCARD_API
@@ -102,10 +102,10 @@ void LCD_Slot_SetAtr(LCD_SLOT *sl, GWEN_BUFFER *atr);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Slot_GetProtocolInfo(const LCD_SLOT *sl);
+uint32_t LCD_Slot_GetProtocolInfo(const LCD_SLOT *sl);
 
 CHIPCARD_API
-void LCD_Slot_SetProtocolInfo(LCD_SLOT *sl, GWEN_TYPE_UINT32 i);
+void LCD_Slot_SetProtocolInfo(LCD_SLOT *sl, uint32_t i);
 
 
 

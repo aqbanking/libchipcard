@@ -216,7 +216,7 @@ struct LC_CLIENT_PCSC {
   LC_READER_PCSC_LIST *readers;
   LC_READER_PCSC *lastUsedReader;
 
-  GWEN_TYPE_UINT32 lastCardId;
+  uint32_t lastCardId;
 
   LC_CLIENT_INIT_FN initFn;
   LC_CLIENT_FINI_FN finiFn;
@@ -251,9 +251,11 @@ static LC_CLIENT_RESULT CHIPCARD_CB
                            int timeout);
 
 
-LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
-                                             LC_READER_PCSC *r);
-LC_READER_PCSC *LC_ClientPcsc_FindReader(LC_CLIENT *cl, const char *rname);
+static LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
+						    LC_READER_PCSC *r);
+static LC_READER_PCSC *LC_ClientPcsc_FindReader(LC_CLIENT *cl,
+						const char *rname);
+static LC_CLIENT_RESULT LC_ClientPcsc_ScanReaders(LC_CLIENT *cl);
 
 
 #endif /* CHIPCARD_CLIENT_CLIENTPCSC_P_H */

@@ -18,7 +18,7 @@ typedef struct DRIVER_SKEL2 DRIVER_SKEL2;
 
 
 #include <gwenhywfar/libloader.h>
-#include <chipcard3/server/driver/driver.h>
+#include <chipcard/server/driver/driver.h>
 
 LCD_DRIVER *DriverSKEL3_new(int argc, char **argv);
 int DriverSKEL3_Start(LCD_DRIVER *d);

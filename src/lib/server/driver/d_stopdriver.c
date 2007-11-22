@@ -16,7 +16,7 @@
 
 
 int LCD_Driver_HandleStopDriver(LCD_DRIVER *d,
-                               GWEN_TYPE_UINT32 rid,
+                               uint32_t rid,
                                GWEN_DB_NODE *dbReq){
   LCD_READER_LIST *rl;
   LCD_READER *r;

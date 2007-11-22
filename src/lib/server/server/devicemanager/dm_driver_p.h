@@ -33,10 +33,10 @@ struct LCDM_DRIVER {
   GWEN_DB_NODE *driverVars;
 
   /* runtime variables */
-  GWEN_TYPE_UINT32 driverId;
+  uint32_t driverId;
   GWEN_PROCESS *process;
   LC_DRIVER_STATUS status;
-  GWEN_TYPE_UINT32 driverFlags;
+  uint32_t driverFlags;
   time_t lastStatusChangeTime;
   time_t idleSince;
   time_t pingTime;
@@ -44,13 +44,13 @@ struct LCDM_DRIVER {
 
   time_t timeout;
 
-  GWEN_TYPE_UINT32 ipcId;
+  uint32_t ipcId;
 
   /* total number of readers assigned to this driver (including inactive
    * ones) */
   int assignedReaders;
   /* number of active readers only */
-  GWEN_TYPE_UINT32 activeReadersCount;
+  uint32_t activeReadersCount;
 };
 
 

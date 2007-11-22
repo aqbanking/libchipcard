@@ -21,9 +21,10 @@
 
 #include "client.h"
 
-#include <chipcard3/client/notifications.h>
+#include <chipcard/client/notifications.h>
 
 #include <gwenhywfar/db.h>
+#include <gwenhywfar/buffer.h>
 
 
 typedef
@@ -37,7 +38,7 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB (*LC_CLIENT_STOP_FN)(LC_CLIENT *cl);
 typedef
   LC_CLIENT_RESULT CHIPCARD_CB
   (*LC_CLIENT_SETNOTIFY_FN)(LC_CLIENT *cl,
-                            GWEN_TYPE_UINT32 flags);
+                            uint32_t flags);
 
 typedef
   LC_CLIENT_RESULT CHIPCARD_CB (*LC_CLIENT_GETNEXTCARD_FN)(LC_CLIENT *cl,
@@ -62,6 +63,14 @@ LC_CLIENT *LC_BaseClient_new(const char *ioTypeName,
 
 CHIPCARD_API
 GWEN_DB_NODE *LC_Client_GetConfig(const LC_CLIENT *cl);
+
+CHIPCARD_API
+int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
+				     const char *readerName,
+				     GWEN_BUFFER *driverType,
+				     GWEN_BUFFER *readerType,
+				     uint32_t *pReaderFlags);
+
 
 CHIPCARD_API
 int LC_Client_HandleNotification(LC_CLIENT *cl, const LC_NOTIFICATION *n);

@@ -1,13 +1,10 @@
 INCLUDES=-I.. -I$(srcdir)/.. @all_includes@
 
-DEFS=@DEFS@ -DLC_LOWLEVELDRIVER_PATH=\"@lc_server_lowlevel_driver_dir@\"
-
 noinst_LTLIBRARIES=libcommon.la
 
 noinst_HEADERS=\
   card_p.h \
   devmonitor_p.h \
-  driverinfo_p.h \
   pciscanner_p.h \
   pciscanner_l.h \
   pcmciascanner_p.h \
@@ -19,16 +16,14 @@ noinst_HEADERS=\
   usbttyscanner_l.h
 
 
-iheaderdir=${includedir}/chipcard3/server/common
+iheaderdir=${includedir}/chipcard/server/common
 iheader_HEADERS=\
   card.h \
-  driverinfo.h \
   devmonitor.h \
   reader.h
 
 libcommon_la_SOURCES=\
   card.c \
-  driverinfo.c \
   devmonitor.c \
   pciscanner.c \
   pcmciascanner.c \

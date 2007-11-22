@@ -22,9 +22,9 @@
 
 
 
-GWEN_TYPE_UINT32 LCCL_ClientManager_GetNotificationMask(const char *ntype,
+uint32_t LCCL_ClientManager_GetNotificationMask(const char *ntype,
                                                         const char *ncode) {
-  GWEN_TYPE_UINT32 res;
+  uint32_t res;
 
   assert(ntype);
   assert(ncode);
@@ -96,7 +96,7 @@ int LCCL_ClientManager__SendNotification(LCCL_CLIENTMANAGER *clm,
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
 
   assert(ntype);
   assert(ncode);
@@ -124,12 +124,13 @@ int LCCL_ClientManager__SendNotification(LCCL_CLIENTMANAGER *clm,
   }
 
   /* send request (fire and forget) */
-  rid=GWEN_IpcManager_SendRequest(clm->ipcManager,
-                                  LCCL_Client_GetClientId(cl),
-                                  dbReq);
-  if (rid==0) {
-    DBG_INFO(0, "here");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(clm->ipcManager,
+				 LCCL_Client_GetClientId(cl),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return rv;
   }
   GWEN_IpcManager_RemoveRequest(clm->ipcManager, rid, 1);
 
@@ -145,7 +146,7 @@ int LCCL_ClientManager_SendNotification(LCCL_CLIENTMANAGER *clm,
                                         const char *ncode,
                                         GWEN_DB_NODE *dbData){
   int rv;
-  GWEN_TYPE_UINT32 mask;
+  uint32_t mask;
   int err;
   int clients;
 
@@ -222,7 +223,7 @@ int LCCL_ClientManager_SendNotification(LCCL_CLIENTMANAGER *clm,
 
 int LCCL_ClientManager_SendDriverNotification(LCCL_CLIENTMANAGER *clm,
                                               const LCCL_CLIENT *cl,
-                                              GWEN_TYPE_UINT32 did,
+                                              uint32_t did,
                                               const char *driverType,
                                               const char *driverName,
                                               const char *libraryFile,
@@ -293,7 +294,7 @@ int LCCL_ClientManager_SendDriverNotification(LCCL_CLIENTMANAGER *clm,
 
 int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
                                               const LCCL_CLIENT *cl,
-                                              GWEN_TYPE_UINT32 did,
+                                              uint32_t did,
                                               LCCO_READER *r,
                                               LC_READER_STATUS rst,
                                               const char *reason) {
@@ -367,7 +368,7 @@ int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
 
 int LCCL_ClientManager_SendServiceNotification(LCCL_CLIENTMANAGER *clm,
                                                const LCCL_CLIENT *cl,
-                                               GWEN_TYPE_UINT32 did,
+                                               uint32_t did,
                                                const char *serviceType,
                                                const char *serviceName,
                                                LC_SERVICE_STATUS st,
@@ -435,9 +436,9 @@ int LCCL_ClientManager_SendServiceNotification(LCCL_CLIENTMANAGER *clm,
 
 int LCCL_ClientManager_SendCardNotification(LCCL_CLIENTMANAGER *clm,
                                             const LCCL_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 rid,
+                                            uint32_t rid,
                                             int slotNum,
-                                            GWEN_TYPE_UINT32 cardNum,
+                                            uint32_t cardNum,
                                             LC_CARD_STATUS status,
                                             const char *reason){
   const char *s;
@@ -493,14 +494,14 @@ int LCCL_ClientManager_SendCardNotification(LCCL_CLIENTMANAGER *clm,
 
 
 int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 oldFlags;
-  GWEN_TYPE_UINT32 flags=0;
+  uint32_t oldFlags;
+  uint32_t flags=0;
   LCDM_DEVICEMANAGER *dm;
   int err=0;
   int i;
@@ -554,7 +555,7 @@ int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
       if (p) {
         char ntype[32];
         int len;
-        GWEN_TYPE_UINT32 lflags;
+        uint32_t lflags;
 
         len=p-s;
         if (len>=sizeof(ntype)) {

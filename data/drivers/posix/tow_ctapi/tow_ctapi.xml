@@ -1,0 +1,74 @@
+
+<driver name="tow_ctapi" type="ctapi">
+  <short>Driver for the Towitoko Chipdrive Micro</short>
+  <manufacturer>
+    <name>Towitoko AG</name>
+    <url>http://www.towitoko.de/</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libtowitoko.so</name>
+      <name>libtowitoko.so.2</name>
+    </names>
+    
+    <locations>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/lib64</loc>
+      <loc>/usr/lib64</loc>
+      <loc>/usr/local/lib64</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://http://www.geocities.com/cprados/</url>
+      <filename>towitoko-2.0.7.tar.gz</filename>
+    </downloads>
+  </lib>
+
+  <readers>
+    <reader name="tow_cdm" busType="serial" >
+      <short>Towitoko Chipdrive Micro (Serial)</short>
+      <ports>
+        <port value="0">COM1</port>
+        <port value="1">COM2</port>
+        <port value="2">COM3</port>
+        <port value="3">COM4</port>
+        <port value="0x8000">USB0</port>
+        <port value="0x8001">USB1</port>
+        <port value="0x8002">USB2</port>
+        <port value="0x8003">USB3</port>
+      </ports>
+      <flags>
+        <!-- Use this flag with older drivers (before 2.0.8)
+        <flag>lowWriteBoundary</flag>
+        -->
+      </flags>
+      <image>tow_cdm.jpg</image>
+    </reader>
+
+    <reader name="tow_usb" busType="UsbTty" 
+            vendor="0x067b" product="0x2303">
+      <short>Towitoko Chipdrive Micro (USB)</short>
+
+      <autoport>
+        <mode>deviceId</mode>
+        <offset>32768</offset>
+      </autoport>
+      
+      <ports>
+        <port value="0x8000">USB0</port>
+        <port value="0x8001">USB1</port>
+        <port value="0x8002">USB2</port>
+        <port value="0x8003">USB3</port>
+      </ports>
+      <flags>
+      </flags>
+      <image>tow_cdm.jpg</image>
+    </reader>
+  </readers>
+
+
+</driver>
+

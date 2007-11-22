@@ -29,11 +29,11 @@ struct LCDM_READER {
   time_t timeout;
   time_t idleSince;
 
-  GWEN_TYPE_UINT32 currentRequestId;
+  uint32_t currentRequestId;
 
   /** increment when attached to user or to ACTIVE cards (not when attached
    * to inactive cards!) */
-  GWEN_TYPE_UINT32 usageCount;
+  uint32_t usageCount;
 
   LCDM_SLOT_LIST *slotList;
 };

@@ -21,8 +21,8 @@ typedef struct LC_SERVICE LC_SERVICE;
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/types.h>
 
-#include <chipcard3/client/service/serviceclient.h>
-#include <chipcard3/client/client.h>
+#include <chipcard/client/service/serviceclient.h>
+#include <chipcard/client/client.h>
 
 
 typedef enum {
@@ -33,15 +33,15 @@ typedef enum {
 } LC_SERVICE_CHECKARGS_RESULT;
 
 
-typedef GWEN_TYPE_UINT32 (*LC_SERVICE_OPEN_FN)(LC_CLIENT *cl,
+typedef uint32_t (*LC_SERVICE_OPEN_FN)(LC_CLIENT *cl,
                                                LC_SERVICECLIENT *scl,
                                                GWEN_DB_NODE *dbData);
 
-typedef GWEN_TYPE_UINT32 (*LC_SERVICE_CLOSE_FN)(LC_CLIENT *cl,
+typedef uint32_t (*LC_SERVICE_CLOSE_FN)(LC_CLIENT *cl,
                                                 LC_SERVICECLIENT *scl,
                                                 GWEN_DB_NODE *dbData);
 
-typedef GWEN_TYPE_UINT32 (*LC_SERVICE_COMMAND_FN)(LC_CLIENT *cl,
+typedef uint32_t (*LC_SERVICE_COMMAND_FN)(LC_CLIENT *cl,
                                                   LC_SERVICECLIENT *scl,
                                                   GWEN_DB_NODE *dbRequest,
                                                   GWEN_DB_NODE *dbResponse);
@@ -49,7 +49,7 @@ typedef GWEN_TYPE_UINT32 (*LC_SERVICE_COMMAND_FN)(LC_CLIENT *cl,
 typedef int (*LC_SERVICE_WORK_FN)(LC_CLIENT *cl);
 
 typedef const char* (*LC_SERVICE_GETERRORTEXT_FN)(LC_CLIENT *cl,
-                                                  GWEN_TYPE_UINT32 err);
+                                                  uint32_t err);
 
 
 CHIPCARD_API
@@ -67,6 +67,9 @@ CHIPCARD_API
 const char *LC_Service_GetServiceDataDir(const LC_CLIENT *d);
 
 CHIPCARD_API
+const char *LC_Service_GetServiceConfigDir(const LC_CLIENT *d);
+
+CHIPCARD_API
 const char *LC_Service_GetLibraryFile(const LC_CLIENT *d);
 
 CHIPCARD_API
@@ -75,7 +78,6 @@ const char *LC_Service_GetServiceId(const LC_CLIENT *d);
 
 CHIPCARD_API
 LC_SERVICECLIENT_LIST *LC_Service_GetClients(const LC_CLIENT *d);
-
 
 
 CHIPCARD_API
@@ -87,27 +89,27 @@ int LC_Service_Work(LC_CLIENT *d);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_Service_Open(LC_CLIENT *d,
-                                 LC_SERVICECLIENT *scl,
-                                 GWEN_DB_NODE *dbData);
+uint32_t LC_Service_Open(LC_CLIENT *d,
+			 LC_SERVICECLIENT *scl,
+			 GWEN_DB_NODE *dbData);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_Service_Close(LC_CLIENT *d,
-                                  LC_SERVICECLIENT *scl,
-                                  GWEN_DB_NODE *dbData);
+uint32_t LC_Service_Close(LC_CLIENT *d,
+			  LC_SERVICECLIENT *scl,
+			  GWEN_DB_NODE *dbData);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_Service_Command(LC_CLIENT *d,
-                                    LC_SERVICECLIENT *scl,
-                                    GWEN_DB_NODE *dbRequest,
-                                    GWEN_DB_NODE *dbResponse);
+uint32_t LC_Service_Command(LC_CLIENT *d,
+			    LC_SERVICECLIENT *scl,
+			    GWEN_DB_NODE *dbRequest,
+			    GWEN_DB_NODE *dbResponse);
 
 
 CHIPCARD_API
 const char *LC_Service_GetErrorText(LC_CLIENT *d,
-                                    GWEN_TYPE_UINT32 err);
+				    uint32_t err);
 
 
 
@@ -132,7 +134,7 @@ void LC_Service_SetWorkFn(LC_CLIENT *d, LC_SERVICE_WORK_FN fn);
 
 CHIPCARD_API
 LC_SERVICECLIENT *LC_Service_FindClientById(const LC_CLIENT *d,
-                                            GWEN_TYPE_UINT32 id);
+                                            uint32_t id);
 
 CHIPCARD_API
 void LC_Service_AddClient(LC_CLIENT *d, LC_SERVICECLIENT *cl);

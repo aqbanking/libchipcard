@@ -56,7 +56,7 @@ void LCSV_ServiceManager_AbandonService(LCSV_SERVICEMANAGER *svm,
                                         const char *reason);
 
 static
-GWEN_TYPE_UINT32 LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
+uint32_t LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
                                                      const LCSV_SERVICE *sv);
 
 static
@@ -73,7 +73,7 @@ int LCSV_ServiceManager_CheckServices(LCSV_SERVICEMANAGER *sv);
 
 static
 int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
-                                           GWEN_TYPE_UINT32 rid,
+                                           uint32_t rid,
                                            GWEN_DB_NODE *dbReq);
 
 

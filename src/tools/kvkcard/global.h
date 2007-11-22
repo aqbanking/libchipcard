@@ -15,11 +15,12 @@
 #define RSACARD_GLOBAL_H
 
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
-#include <chipcard3/client/cards/kvkcard.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
+#include <chipcard/client/cards/kvkcard.h>
 
 #include <gwenhywfar/logger.h>
+#include <gwenhywfar/process.h>
 
 
 #define RETURNVALUE_PARAM   1
@@ -28,7 +29,15 @@
 #define RETURNVALUE_DEINIT  4
 
 
+void usage(const char *name, const char *ustr);
 void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
+
+void okBeep();
+void errorBeep();
+
+
+int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
+int kvkDaemon(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
 

@@ -1,17 +1,17 @@
 
 clientconfdir=@lc_client_config_dir@
 clientconf_DATA=\
-  chipcardc3.conf.example \
-  chipcardc3.conf.default
+  chipcardc.conf.example \
+  chipcardc.conf.default
 
 serverconfdir=@lc_server_config_dir@
 serverconf_DATA=\
- chipcardd3 \
- chipcardd3.conf.example \
- chipcardd3.conf.default
+ chipcardd.conf.example \
+ chipcardd.conf.default \
+ chipcardd.conf.slave
 
 
 initscriptdir=/etc/init.d
-initscript_DATA=chipcardd3
+initscript_DATA=chipcardd
 
 EXTRA_DIST=$(clientconf_DATA) $(serverconf_DATA) $(initscript_DATA)

@@ -23,8 +23,8 @@ struct LCCL_REQUEST {
   LCCO_CARD *card;
   LCCL_CLIENTMANAGER *clientManager;
   LCCL_CLIENT *client;
-  GWEN_TYPE_UINT32 uint32Data1;
-  GWEN_TYPE_UINT32 uint32Data2;
+  uint32_t uint32Data1;
+  uint32_t uint32Data2;
 };
 
 void GWENHYWFAR_CB LCCL_Request_FreeData(void *bp, void *p);

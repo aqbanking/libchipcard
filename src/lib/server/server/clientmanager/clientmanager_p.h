@@ -40,12 +40,12 @@ struct LCCL_CLIENTMANAGER {
 
 static
 int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          const char *name,
                                          GWEN_DB_NODE *dbReq);
 
 static
-GWEN_TYPE_UINT32 LCCL_ClientManager_GetNotificationMask(const char *ntype,
+uint32_t LCCL_ClientManager_GetNotificationMask(const char *ntype,
                                                         const char *ncode);
 
 static
@@ -65,7 +65,7 @@ int LCCL_ClientManager_SendNotification(LCCL_CLIENTMANAGER *clm,
 static
 int LCCL_ClientManager_SendDriverNotification(LCCL_CLIENTMANAGER *clm,
                                               const LCCL_CLIENT *cl,
-                                              GWEN_TYPE_UINT32 did,
+                                              uint32_t did,
                                               const char *driverType,
                                               const char *driverName,
                                               const char *libraryFile,
@@ -75,7 +75,7 @@ int LCCL_ClientManager_SendDriverNotification(LCCL_CLIENTMANAGER *clm,
 static
 int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
                                               const LCCL_CLIENT *cl,
-                                              GWEN_TYPE_UINT32 did,
+                                              uint32_t did,
                                               LCCO_READER *r,
                                               LC_READER_STATUS rst,
                                               const char *reason);
@@ -83,7 +83,7 @@ int LCCL_ClientManager_SendReaderNotification(LCCL_CLIENTMANAGER *clm,
 static
 int LCCL_ClientManager_SendServiceNotification(LCCL_CLIENTMANAGER *clm,
                                                const LCCL_CLIENT *cl,
-                                               GWEN_TYPE_UINT32 did,
+                                               uint32_t did,
                                                const char *serviceType,
                                                const char *serviceName,
                                                LC_SERVICE_STATUS st,
@@ -92,22 +92,22 @@ int LCCL_ClientManager_SendServiceNotification(LCCL_CLIENTMANAGER *clm,
 static
 int LCCL_ClientManager_SendCardNotification(LCCL_CLIENTMANAGER *clm,
                                             const LCCL_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 rid,
+                                            uint32_t rid,
                                             int slotNum,
-                                            GWEN_TYPE_UINT32 cardNum,
+                                            uint32_t cardNum,
                                             LC_CARD_STATUS status,
                                             const char *reason);
 
 
 static
 int LCCL_ClientManager_HandleSetNotify(LCCL_CLIENTMANAGER *clm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq);
 
 static
 int LCCL_ClientManager_HandleStartWait(LCCL_CLIENTMANAGER *clm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq);
 
@@ -122,13 +122,13 @@ int LCCL_ClientManager__SendInitialCards(LCCL_CLIENTMANAGER *clm,
 
 static
 int LCCL_ClientManager_HandleStopWait(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq);
 
 static
 int LCCL_ClientManager_HandleTakeCard(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq);
 
@@ -138,14 +138,14 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *st);
 
 static
 int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          const char *name,
                                          GWEN_DB_NODE *dbReq);
 
 
 static
 int LCCL_ClientManager_HandleExecApdu(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq);
 
@@ -157,18 +157,18 @@ int LCCL_ClientManager_WorkCardCommand(GWEN_IPC_REQUEST *req);
 
 
 static
-GWEN_TYPE_UINT32 LCCL_ClientManager_SendResetCard(LCCL_CLIENTMANAGER *clm,
+uint32_t LCCL_ClientManager_SendResetCard(LCCL_CLIENTMANAGER *clm,
                                                   LCCO_CARD *card);
 
 static
 int LCCL_ClientManager_HandleGetDriverVar(LCCL_CLIENTMANAGER *clm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq);
 
 static
 int LCCL_ClientManager_HandleLockReader(LCCL_CLIENTMANAGER *clm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq);
 
@@ -178,14 +178,14 @@ int LCCL_ClientManager_WorkLockReader(GWEN_IPC_REQUEST *req);
 
 static
 int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq);
 
 
 static
 int LCCL_ClientManager_HandleReaderCmd(LCCL_CLIENTMANAGER *clm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq);
 static

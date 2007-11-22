@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -33,7 +33,7 @@ GWEN_LIST_FUNCTIONS(LCM_READER, LCM_Reader)
 GWEN_LIST2_FUNCTIONS(LCM_READER, LCM_Reader)
 
 
-LCM_READER *LCM_Reader_new(GWEN_TYPE_UINT32 serverId){
+LCM_READER *LCM_Reader_new(uint32_t serverId){
   LCM_READER *mr;
 
   GWEN_NEW_OBJECT(LCM_READER, mr);
@@ -61,7 +61,7 @@ void LCM_Reader_free(LCM_READER *mr){
 
 
 
-GWEN_TYPE_UINT32 LCM_Reader_GetServerId(const LCM_READER *mr){
+uint32_t LCM_Reader_GetServerId(const LCM_READER *mr){
   assert(mr);
   return mr->serverId;
 }
@@ -202,14 +202,14 @@ void LCM_Reader_SetReaderPort(LCM_READER *mr, int i){
 
 
 
-GWEN_TYPE_UINT32 LCM_Reader_GetReaderFlags(const LCM_READER *mr){
+uint32_t LCM_Reader_GetReaderFlags(const LCM_READER *mr){
   assert(mr);
   return mr->readerFlags;
 }
 
 
 
-void LCM_Reader_SetReaderFlags(LCM_READER *mr, GWEN_TYPE_UINT32 i){
+void LCM_Reader_SetReaderFlags(LCM_READER *mr, uint32_t i){
   assert(mr);
   mr->readerFlags=i;
   mr->lastChangeTime=time(0);

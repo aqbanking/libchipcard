@@ -20,7 +20,7 @@
 struct LC_NOTIFICATION {
   GWEN_INHERIT_ELEMENT(LC_NOTIFICATION)
   GWEN_LIST_ELEMENT(LC_NOTIFICATION)
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   char *clientId;
   char *ntype;
   char *ncode;

@@ -21,7 +21,7 @@
 
 typedef struct READER_IFD READER_IFD;
 struct READER_IFD {
-  GWEN_TYPE_UINT32 featureCode[READER_IFD_MAX_FEATURES];
+  uint32_t featureCode[READER_IFD_MAX_FEATURES];
 };
 void GWENHYWFAR_CB ReaderIFD_FreeData(void *bp, void *p);
 

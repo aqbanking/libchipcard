@@ -19,7 +19,7 @@
 #include "server_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -32,7 +32,7 @@ GWEN_LIST_FUNCTIONS(LC_SERVER, LC_Server);
 
 
 
-LC_SERVER *LC_Server_new(GWEN_TYPE_UINT32 nid){
+LC_SERVER *LC_Server_new(uint32_t nid){
   LC_SERVER *sv;
 
   GWEN_NEW_OBJECT(LC_SERVER, sv);
@@ -66,14 +66,14 @@ void LC_Server_SetStatus(LC_SERVER *sv, LC_SERVER_STATUS st){
 
 
 
-GWEN_TYPE_UINT32 LC_Server_GetServerId(const LC_SERVER *sv){
+uint32_t LC_Server_GetServerId(const LC_SERVER *sv){
   assert(sv);
   return sv->serverId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Server_GetCurrentCommand(const LC_SERVER *sv){
+uint32_t LC_Server_GetCurrentCommand(const LC_SERVER *sv){
   assert(sv);
   return sv->currentCommand;
 }
@@ -81,7 +81,7 @@ GWEN_TYPE_UINT32 LC_Server_GetCurrentCommand(const LC_SERVER *sv){
 
 
 void LC_Server_SetCurrentCommand(LC_SERVER *sv,
-                                 GWEN_TYPE_UINT32 rid){
+                                 uint32_t rid){
   assert(sv);
   sv->currentCommand=rid;
 }

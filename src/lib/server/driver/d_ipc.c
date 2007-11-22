@@ -14,28 +14,34 @@
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_SendCommand(LCD_DRIVER *d,
-                                        GWEN_DB_NODE *dbCommand) {
+uint32_t LCD_Driver_SendCommand(LCD_DRIVER *d, GWEN_DB_NODE *dbCommand) {
+  uint32_t rid;
+  int rv;
+
   GWEN_DB_SetCharValue(dbCommand, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driverId", LCD_Driver_GetDriverId(d));
 
-  return GWEN_IpcManager_SendRequest(d->ipcManager,
-                                     d->ipcId, dbCommand);
+  rv=GWEN_IpcManager_SendRequest(d->ipcManager, d->ipcId, dbCommand, &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
 
 int LCD_Driver_SendResponse(LCD_DRIVER *d,
-                           GWEN_TYPE_UINT32 rid,
-                           GWEN_DB_NODE *dbCommand) {
-  return GWEN_IpcManager_SendResponse(d->ipcManager,
-                                      rid, dbCommand);
+			    uint32_t rid,
+			    GWEN_DB_NODE *dbCommand) {
+  return GWEN_IpcManager_SendResponse(d->ipcManager, rid, dbCommand);
 }
 
 
 
 int LCD_Driver_SendResult(LCD_DRIVER *d,
-                          GWEN_TYPE_UINT32 rid,
+                          uint32_t rid,
                           const char *name,
                           int code,
                           const char *text){
@@ -52,7 +58,7 @@ int LCD_Driver_SendResult(LCD_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
+uint32_t LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
   assert(d);
   return GWEN_IpcManager_GetNextInRequest(d->ipcManager,
                                           LCD_DRIVER_MARK_DRIVER);
@@ -61,10 +67,11 @@ GWEN_TYPE_UINT32 LCD_Driver_GetNextInRequest(LCD_DRIVER *d) {
 
 
 GWEN_DB_NODE *LCD_Driver_GetInRequestData(LCD_DRIVER *d,
-                                         GWEN_TYPE_UINT32 rid) {
+                                         uint32_t rid) {
   assert(d);
   return GWEN_IpcManager_GetInRequestData(d->ipcManager, rid);
 }
+
 
 
 int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
@@ -104,12 +111,13 @@ int LCD_Driver_CheckResponses(GWEN_DB_NODE *db) {
 
 int LCD_Driver_Connect(LCD_DRIVER *d,
                        int code, const char *text,
-                       GWEN_TYPE_UINT32 dflagsValue,
-                       GWEN_TYPE_UINT32 dflagsMask) {
+                       uint32_t dflagsValue,
+                       uint32_t dflagsMask) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   time_t startt;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
+  int rv;
 
   assert(d);
 
@@ -150,7 +158,7 @@ int LCD_Driver_Connect(LCD_DRIVER *d,
     r=LCD_Reader_List_First(d->readers);
     while(r) {
       GWEN_DB_NODE *dbReader;
-      GWEN_TYPE_UINT32 flags;
+      uint32_t flags;
 
       dbReader=GWEN_DB_GetGroup(dbReaders, GWEN_DB_FLAGS_OVERWRITE_GROUPS,
                                 "reader");
@@ -181,38 +189,26 @@ int LCD_Driver_Connect(LCD_DRIVER *d,
     GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "text", text);
 
-  rid=GWEN_IpcManager_SendRequest(d->ipcManager,
-                                  d->ipcId,
-                                  dbReq);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send command");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(d->ipcManager,
+				 d->ipcId,
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send command (%d)", rv);
+    return rv;
   }
 
   /* this sends the message and hopefully receives an answer */
   DBG_INFO(0, "Sending Ready Report");
   dbRsp=0;
-  while (1) {
-    dbRsp=GWEN_IpcManager_GetResponseData(d->ipcManager, rid);
-    if (dbRsp) {
-      DBG_DEBUG(0, "Command answered");
-      break;
-    }
-    DBG_VERBOUS(0, "Working...");
-    if (LCD_Driver__Work(d, 1000)) {
-      DBG_ERROR(0, "Error at work");
-      GWEN_IpcManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
-      return -1;
-    }
+  rv=LCD_Driver_WaitForNextResponse(d, rid, &dbRsp, 10000);
+  if (rv!=0) {
+    DBG_ERROR(0, "Error at work");
+    GWEN_IpcManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
+    return -1;
+  }
 
-    if (difftime(time(0), startt)>=LCD_DRIVER_STARTTIMEOUT) {
-      DBG_ERROR(0, "Timeout");
-      GWEN_IpcManager_RemoveRequest(d->ipcManager, d->ipcId, 1);
-      return -1;
-    }
-  } /* while */
-
-  DBG_DEBUG(0, "Answer received");
+  DBG_INFO(0, "Answer received");
   if (LCD_Driver_CheckResponses(dbRsp)) {
     DBG_ERROR(0, "Error returned by server, aborting");
     GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, 1);
@@ -250,7 +246,7 @@ int LCD_Driver_SendStatusChangeNotification(LCD_DRIVER *d,
   GWEN_BUFFER *atr;
   int isInserted;
   LCD_READER *r;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
 
   r=LCD_Slot_GetReader(sl);
   slot=LCD_Slot_GetSlotNum(sl);
@@ -315,7 +311,7 @@ int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
 
   assert(d);
   dbReq=GWEN_DB_Group_new("Driver_ReaderError");
@@ -351,7 +347,7 @@ int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
 
 
 int LCD_Driver_RemoveCommand(LCD_DRIVER *d,
-                            GWEN_TYPE_UINT32 rid,
+                            uint32_t rid,
                             int outbound){
   assert(d);
   return GWEN_IpcManager_RemoveRequest(d->ipcManager, rid, outbound);

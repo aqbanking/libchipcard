@@ -1,2 +1,0 @@
-#!/bin/sh
-openssl dhparam -2 -outform PEM -out "@libchipcard2s_config@/@LC_DEFAULT_DHFILE@" 1024

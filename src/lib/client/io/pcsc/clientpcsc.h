@@ -15,7 +15,7 @@
 #define CHIPCARD_CLIENT_CLIENTPCSC_H
 
 
-#include <chipcard3/client/client_imp.h>
+#include <chipcard/client/client_imp.h>
 
 
 #define LC_CLIENT_PCSC_NAME "pcsc"

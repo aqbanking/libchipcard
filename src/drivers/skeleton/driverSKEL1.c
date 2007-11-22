@@ -31,7 +31,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <unistd.h>
 #include <ctype.h>
@@ -100,7 +100,7 @@ int DriverSKEL3_Start(LCD_DRIVER *d) {
 
 
 
-const char *DriverSKEL3_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverSKEL3_GetErrorText(LCD_DRIVER *d, uint32_t err) {
   DRIVER_SKEL2 *dct;
   static char ebuf[256];
 
@@ -116,7 +116,7 @@ const char *DriverSKEL3_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_SendAPDU(LCD_DRIVER *d,
+uint32_t DriverSKEL3_SendAPDU(LCD_DRIVER *d,
                                       int toReader,
                                       LCD_READER *r,
                                       LCD_SLOT *slot,
@@ -140,21 +140,21 @@ GWEN_TYPE_UINT32 DriverSKEL3_SendAPDU(LCD_DRIVER *d,
 
   DBG_INFO(lg,
            "Sending command:");
-  GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+  GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevel_Info);
 
   /* TODO: actually send the command */
 
   DBG_INFO(lg,
            "Received response:");
   GWEN_Text_LogString((const char*)buffer, *bufferlen,
-                      lg, GWEN_LoggerLevelInfo);
+                      lg, GWEN_LoggerLevel_Info);
 
   return 0;
 }
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverSKEL3_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   DRIVER_SKEL2 *dct;
   LCD_READER *r;
 
@@ -185,7 +185,7 @@ GWEN_TYPE_UINT32 DriverSKEL3_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverSKEL3_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   DRIVER_SKEL2 *dct;
 
   assert(d);
@@ -204,8 +204,8 @@ GWEN_TYPE_UINT32 DriverSKEL3_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
-  GWEN_TYPE_UINT32 currStatus;
+uint32_t DriverSKEL3_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+  uint32_t currStatus;
   int rv;
   DRIVER_SKEL2 *dct;
 
@@ -234,7 +234,7 @@ GWEN_TYPE_UINT32 DriverSKEL3_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverSKEL3_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   DRIVER_SKEL2 *dct;
 
@@ -254,7 +254,7 @@ GWEN_TYPE_UINT32 DriverSKEL3_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+uint32_t DriverSKEL3_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf) {
   DRIVER_SKEL2 *dct;
 
@@ -289,7 +289,7 @@ int DriverSKEL3_ExtendReader(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverSKEL3_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
   DRIVER_SKEL2 *dct;
 
   assert(d);
@@ -309,7 +309,7 @@ GWEN_TYPE_UINT32 DriverSKEL3_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverSKEL3_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slotList;
   unsigned int oks;

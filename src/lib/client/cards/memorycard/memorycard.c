@@ -17,7 +17,7 @@
 
 
 #include "memorycard_p.h"
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
@@ -105,7 +105,6 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_MEMORYCARD *mc;
   int i;
-  GWEN_DB_NODE *dbReader;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening memory card");
 
@@ -121,10 +120,8 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
   }
 
   i=LC_MEMORYCARD_DEFAULT_WRITEBOUNDARY;
-  dbReader=LC_Client_GetReaderConfig(LC_Card_GetClient(card),
-                                     LC_Card_GetReaderType(card));
-  if (dbReader)
-    i=GWEN_DB_GetIntValue(dbReader, "WriteBoundary", 0, i);
+  if (LC_Card_GetReaderFlags(card) & LC_READER_FLAGS_LOW_WRITE_BOUNDARY)
+    i=32;
   mc->writeBoundary=i;
 
   return LC_Client_ResultOk;

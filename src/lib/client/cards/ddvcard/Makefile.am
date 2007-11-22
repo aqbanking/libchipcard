@@ -17,7 +17,7 @@ noinst_HEADERS=\
   ddvcard_p.h
 
 
-iheaderdir=${includedir}/chipcard3/client/cards
+iheaderdir=${includedir}/chipcard/client/cards
 iheader_HEADERS=\
   ddvcard.h
 

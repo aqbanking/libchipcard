@@ -38,7 +38,7 @@ struct KVKS_CARD {
 
   GWEN_BUFFER *dataBuffer;
   KVKS_STATUS status;
-  GWEN_TYPE_UINT32 currentRequest;
+  uint32_t currentRequest;
 
   GWEN_DB_NODE *dbCardData;
   int checkSumOk;

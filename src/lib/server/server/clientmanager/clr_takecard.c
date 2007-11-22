@@ -30,12 +30,12 @@
 
 
 int LCCL_ClientManager_HandleTakeCard(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t clientId;
+  uint32_t cardId;
   int cmdVer;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
@@ -176,8 +176,8 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
   LCCM_CARDMANAGER *cm;
   LCDM_DEVICEMANAGER *dm;
   int rv;
-  GWEN_TYPE_UINT32 rid;
-  GWEN_TYPE_UINT32 step;
+  uint32_t rid;
+  uint32_t step;
 
   rid=GWEN_IpcRequest_GetId(req);
   assert(rid);
@@ -234,7 +234,7 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
     else {
       if (rv==0) {
         LCS_LOCKMANAGER *lm;
-        GWEN_TYPE_UINT32 lrId;
+        uint32_t lrId;
 
         DBG_INFO(0, "Card lock acquired, now locking slot (%08x)", rid);
         LCCL_Request_SetUint32Data(req, LCCL_REQ_TAKECARD_STEP2);
@@ -270,7 +270,7 @@ int LCCL_ClientManager_WorkTakeCard(GWEN_IPC_REQUEST *req) {
   } /* if step one */
   else if (step==LCCL_REQ_TAKECARD_STEP2) {
     LCS_LOCKMANAGER *lm;
-    GWEN_TYPE_UINT32 lrId;
+    uint32_t lrId;
 
     DBG_INFO(0, "Step 2 (%08x)", rid);
     lm=LCDM_DeviceManager_GetLockManager(dm,

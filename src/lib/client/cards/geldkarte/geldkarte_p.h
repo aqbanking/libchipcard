@@ -15,8 +15,8 @@
 #define CHIPCARD_CARD_GELDKARTE_P_H
 
 
-#include <chipcard3/client/card_imp.h>
-#include <chipcard3/client/cards/geldkarte.h>
+#include <chipcard/client/card_imp.h>
+#include <chipcard/client/cards/geldkarte.h>
 
 
 typedef struct LC_GELDKARTE LC_GELDKARTE;

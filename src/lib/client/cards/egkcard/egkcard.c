@@ -22,8 +22,8 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_EGKCARD)
@@ -141,7 +141,7 @@ LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card){
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMF(card);
+  res=LC_Card_SelectMf(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;

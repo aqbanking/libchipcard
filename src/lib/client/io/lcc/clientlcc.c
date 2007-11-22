@@ -16,21 +16,30 @@
 
 #include "clientlcc_p.h"
 #include "cardlcc_l.h"
-#include <chipcard3/client/card.h>
-#include <chipcard3/client/mon/monitor.h>
+#include <chipcard/client/card.h>
+#include <chipcard/client/mon/monitor.h>
 
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/version.h>
 #include <gwenhywfar/directory.h>
-#include <gwenhywfar/net2.h>
-#include <gwenhywfar/waitcallback.h>
+#include <gwenhywfar/gui.h>
 #include <gwenhywfar/inetsocket.h>
+#include <gwenhywfar/iolayer.h>
+#include <gwenhywfar/io_socket.h>
+#include <gwenhywfar/io_buffered.h>
+#include <gwenhywfar/io_http.h>
+#include <gwenhywfar/io_tls.h>
+#include <gwenhywfar/iomanager.h>
+#include <gwenhywfar/url.h>
 
 #include <unistd.h>
 
 #define I18N(msg) msg
+
+/* to make it easier to fing it later in the code */
+#define DEFAULT_GUI_ID 0
 
 
 GWEN_INHERIT(LC_CLIENT, LC_CLIENT_LCC)
@@ -55,7 +64,6 @@ LC_CLIENT *LC_ClientLcc_new(const char *programName,
   xcl->workingRequests=LC_Request_List_new();
   xcl->cards=LC_Card_List_new();
   xcl->ipcManager=GWEN_IpcManager_new();
-  xcl->askAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_Incoming;
 
   xcl->initFn=LC_Client_SetInitFn(cl, LC_ClientLcc_V_Init);
   xcl->finiFn=LC_Client_SetFiniFn(cl, LC_ClientLcc_V_Fini);
@@ -65,6 +73,8 @@ LC_CLIENT *LC_ClientLcc_new(const char *programName,
   LC_Client_SetReleaseCardFn(cl, LC_ClientLcc_V_ReleaseCard);
   LC_Client_SetExecApduFn(cl, LC_ClientLcc_V_ExecApdu);
   LC_Client_SetSetNotifyFn(cl, LC_ClientLcc_V_SetNotify);
+
+  GWEN_IpcManager_SetClientDownFn(xcl->ipcManager, LC_Client_IpcClientDown, cl);
 
   return cl;
 }
@@ -104,8 +114,6 @@ LC_ClientLcc_SetHandleRequestFn(LC_CLIENT *cl,
 LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_Init(LC_CLIENT *cl, GWEN_DB_NODE *db) {
   LC_CLIENT_LCC *xcl;
   GWEN_DB_NODE *gr;
-  const char *globalOwnCertFile;
-  GWEN_BUFFER *cfbuf;
 
   assert(cl);
   assert(db);
@@ -121,59 +129,21 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_Init(LC_CLIENT *cl, GWEN_DB_NODE *db
       return res;
   }
 
-  cfbuf=0;
-  globalOwnCertFile=GWEN_DB_GetCharValue(db, "certfile", 0, 0);
-  if (!globalOwnCertFile) {
-    const char *s;
-    FILE *f;
-
-    cfbuf=GWEN_Buffer_new(0, 256, 0, 1);
-    s=LC_CLIENT_DEF_CERT_FILE;
-    if (*s=='~') {
-      char hbuf[256];
-
-      s++;
-      if (*s=='/' || *s=='\\')
-        s++;
-      if (GWEN_Directory_GetHomeDirectory(hbuf, sizeof(hbuf))) {
-        DBG_ERROR(LC_LOGDOMAIN, "Could not get home folder");
-        GWEN_Buffer_free(cfbuf);
-        return LC_Client_ResultCfgError;
-      }
-      GWEN_Buffer_AppendString(cfbuf, hbuf);
-      GWEN_Buffer_AppendString(cfbuf, s);
-    }
-    else
-      GWEN_Buffer_AppendString(cfbuf, s);
-
-    f=fopen(GWEN_Buffer_GetStart(cfbuf), "r");
-    if (f) {
-      fclose(f);
-      DBG_INFO(LC_LOGDOMAIN, "Default certificate is \"%s\"",
-               GWEN_Buffer_GetStart(cfbuf));
-      globalOwnCertFile=GWEN_Buffer_GetStart(cfbuf);
-    }
-  }
-
   /* read servers */
   gr=GWEN_DB_GetFirstGroup(db);
-  while(gr) {
+  if (gr) {
     int rv;
 
     if (strcasecmp(GWEN_DB_GroupName(gr), "server")==0) {
-      rv=LC_ClientLcc__CreateServer(cl, gr, globalOwnCertFile);
+      rv=LC_ClientLcc__CreateServer(cl, gr);
       if (rv) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error in server group");
-        GWEN_DB_Dump(gr, stderr, 2);
-        GWEN_Buffer_free(cfbuf);
+	DBG_ERROR(LC_LOGDOMAIN, "Error in server group");
+	GWEN_DB_Dump(gr, stderr, 2);
         return LC_Client_ResultCfgError;
       }
     } /* if "server" */
-
-    gr=GWEN_DB_GetNextGroup(gr);
   } /* while */
 
-  GWEN_Buffer_free(cfbuf);
   return LC_Client_ResultOk;
 }
 
@@ -237,61 +207,9 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_Stop(LC_CLIENT *cl) {
 
 
 
-LC_CLIENT_RESULT LC_ClientLcc__GetNextCard(LC_CLIENT *cl,
-                                           LC_CARD **pCard,
-                                           int timeout) {
-  LC_CLIENT_LCC *xcl;
-  LC_CARD *card;
-  LC_CLIENT_RESULT res;
-
-  assert(cl);
-  xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
-  assert(xcl);
-
-  /* get the next available card */
-  if (timeout==LC_CLIENT_TIMEOUT_NONE) {
-    /* return next card if there is any */
-    card=LC_ClientLcc_GetNextCard(cl);
-    if (card) {
-      *pCard=card;
-      return LC_Client_ResultOk;
-    }
-   
-    /* work on current IPC requests/notifications */
-    if (LC_ClientLcc_Work(cl, 0)==-1) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-      GWEN_WaitCallback_Leave();
-      return LC_Client_ResultIpcError;
-    }
-
-    /* return next card if there is one now */
-    card=LC_ClientLcc_GetNextCard(cl);
-    if (card) {
-      *pCard=card;
-      res=LC_Client_ResultOk;
-    }
-    else
-      res=LC_Client_ResultWait;
-  }
-  else if (timeout==LC_CLIENT_TIMEOUT_FOREVER) {
-    res=LC_ClientLcc_WaitForNextCard(cl, &card,
-                                     GWEN_NET2_TIMEOUT_FOREVER);
-  }
-  else
-    res=LC_ClientLcc_WaitForNextCard(cl, &card, timeout);
-
-  if (res!=LC_Client_ResultOk)
-    return res;
-
-  *pCard=card;
-  return LC_Client_ResultOk;
-}
-
-
-
 LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_GetNextCard(LC_CLIENT *cl,
-                                            LC_CARD **pCard,
-                                            int timeout) {
+							LC_CARD **pCard,
+							int timeout) {
   LC_CLIENT_LCC *xcl;
   LC_CARD *card;
   LC_CLIENT_RESULT res;
@@ -300,7 +218,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_GetNextCard(LC_CLIENT *cl,
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
   assert(xcl);
 
-  res=LC_ClientLcc__GetNextCard(cl, &card, timeout);
+  res=LC_ClientLcc_WaitForNextCard(cl, &card, timeout);
   if (res!=LC_Client_ResultOk)
     return res;
   DBG_INFO(LC_LOGDOMAIN, "Got a card, taking it");
@@ -367,7 +285,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_ExecApdu(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT CHIPCARD_CB LC_ClientLcc_V_SetNotify(LC_CLIENT *cl,
-                                          GWEN_TYPE_UINT32 flags) {
+                                          uint32_t flags) {
   LC_CLIENT_LCC *xcl;
   LC_CLIENT_RESULT res;
 
@@ -429,7 +347,7 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckForError(GWEN_DB_NODE *db) {
 
     numCode=GWEN_DB_GetIntValue(db, "code", 0, LC_ERROR_GENERIC);
     txt=GWEN_DB_GetCharValue(db, "text", 0, "<empty>");
-    DBG_ERROR(0, "Error %d: %s", numCode, txt);
+    DBG_INFO(LC_LOGDOMAIN, "Error %d: %s", numCode, txt);
     return LC_ClientLcc_ErrorToResult(numCode);
   }
 
@@ -442,7 +360,7 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckForError(GWEN_DB_NODE *db) {
     code=GWEN_DB_GetIntValue(db, "data/code", 0, 0);
     text=GWEN_DB_GetCharValue(db, "data/text", 0, "(empty)");
     if (code) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error %d: %s", code, text);
+      DBG_INFO(LC_LOGDOMAIN, "Error %d: %s", code, text);
     }
     else {
       if (text) {
@@ -460,8 +378,9 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckForError(GWEN_DB_NODE *db) {
 int LC_ClientLcc_StartConnect(LC_CLIENT *cl, LC_SERVER *sv) {
   LC_CLIENT_LCC *xcl;
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LC_SERVER_STATUS st;
+  int rv;
 
   assert(cl);
   assert(sv);
@@ -472,7 +391,7 @@ int LC_ClientLcc_StartConnect(LC_CLIENT *cl, LC_SERVER *sv) {
   st=LC_Server_GetStatus(sv);
   if (st!=LC_ServerStatusUnconnected) {
     DBG_ERROR(LC_LOGDOMAIN, "Bad server status (%d)", st);
-    return -1;
+    return GWEN_ERROR_INVALID;
   }
 
   /* tell the server about our status */
@@ -491,12 +410,13 @@ int LC_ClientLcc_StartConnect(LC_CLIENT *cl, LC_SERVER *sv) {
                        "System", ""); /* TODO: Get system string */
 
   /* bypass request list, send directly */
-  rid=GWEN_IpcManager_SendRequest(xcl->ipcManager,
-                                  LC_Server_GetServerId(sv),
-                                  dbReq);
-  if (rid==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "Could not send command");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(xcl->ipcManager,
+				 LC_Server_GetServerId(sv),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not send command (%d)", rv);
+    return rv;
   }
 
   LC_Server_SetCurrentCommand(sv, rid);
@@ -507,19 +427,19 @@ int LC_ClientLcc_StartConnect(LC_CLIENT *cl, LC_SERVER *sv) {
 
 
 
-int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
-                               const char *globalOwnCertFile) {
+int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr) {
   LC_CLIENT_LCC *xcl;
   const char *typ;
   const char *address;
   int port;
   GWEN_SOCKET *sk;
   GWEN_INETADDRESS *addr;
-  GWEN_TYPE_UINT32 sid;
-  GWEN_NETLAYER *nl;
-  GWEN_NETLAYER *nlBase;
+  uint32_t sid;
+  GWEN_IO_LAYER *ioBase;
+  GWEN_IO_LAYER *io;
   GWEN_URL *url;
   LC_SERVER *sv;
+  GWEN_DB_NODE *db;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
@@ -527,8 +447,8 @@ int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
 
   typ=GWEN_DB_GetCharValue(gr, "typ", 0, "local");
   address=GWEN_DB_GetCharValue(gr,
-                               "addr", 0,
-                               "0.0.0.0");
+			       "addr", 0,
+			       "0.0.0.0");
   url=GWEN_Url_fromString(address);
   port=GWEN_DB_GetIntValue(gr,
                            "port", 0,
@@ -539,118 +459,52 @@ int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
     sk=GWEN_Socket_new(GWEN_SocketTypeUnix);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyUnix);
     GWEN_InetAddr_SetAddress(addr, address);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+    ioBase=GWEN_Io_LayerSocket_new(sk);
+    GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
   }
   else if (strcasecmp(typ, "public")==0) {
-    /* HTTP over TCP */
-    sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-    addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
-    GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
-    GWEN_InetAddr_SetPort(addr, port);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+    DBG_ERROR(LC_LOGDOMAIN, "Public mode not supported for security reasons.");
+    return GWEN_ERROR_BAD_DATA;
   }
   else {
-    const char *certDir;
-    const char *newCertDir;
     const char *ownCertFile;
-    const char *ciphers;
-    GWEN_BUFFER *tmpbuf1;
-    GWEN_BUFFER *tmpbuf2;
-    const char *s;
+    const char *ownKeyFile;
+    const char *caFile;
 
-    /* get valid cert folder */
-    tmpbuf1=GWEN_Buffer_new(0, 256, 0, 1);
-    s=LC_CLIENT_DEF_CERT_DIR;
-    if (*s=='~') {
-      char hbuf[256];
-
-      s++;
-      if (*s=='/' || *s=='\\')
-        s++;
-      if (GWEN_Directory_GetHomeDirectory(hbuf, sizeof(hbuf))) {
-        DBG_ERROR(LC_LOGDOMAIN, "Could not get home folder");
-        GWEN_Buffer_free(tmpbuf1);
-        return -1;
-      }
-      GWEN_Buffer_AppendString(tmpbuf1, hbuf);
-      GWEN_Buffer_AppendString(tmpbuf1, s);
-    }
-    else
-      GWEN_Buffer_AppendString(tmpbuf1, s);
-
-    /* get new cert folder */
-    tmpbuf2=GWEN_Buffer_new(0, 256, 0, 1);
-    s=LC_CLIENT_DEF_NEWCERT_DIR;
-    if (*s=='~') {
-      char hbuf[256];
-
-      s++;
-      if (*s=='/' || *s=='\\')
-        s++;
-      if (GWEN_Directory_GetHomeDirectory(hbuf, sizeof(hbuf))) {
-        DBG_ERROR(LC_LOGDOMAIN, "Could not get home folder");
-        GWEN_Buffer_free(tmpbuf2);
-        GWEN_Buffer_free(tmpbuf1);
-        return -1;
-      }
-      GWEN_Buffer_AppendString(tmpbuf2, hbuf);
-      GWEN_Buffer_AppendString(tmpbuf2, s);
-    }
-    else
-      GWEN_Buffer_AppendString(tmpbuf2, s);
-
-    certDir=GWEN_DB_GetCharValue(gr, "certdir", 0,
-                                 GWEN_Buffer_GetStart(tmpbuf1));
-    newCertDir=GWEN_DB_GetCharValue(gr, "newCertdir", 0,
-                                    GWEN_Buffer_GetStart(tmpbuf2));
-    /* create path if necessary */
-    if (GWEN_Directory_GetPath(certDir,
-                               GWEN_PATH_FLAGS_CHECKROOT)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Could not access path \"%s\"",
-                certDir);
-      GWEN_Buffer_free(tmpbuf2);
-      GWEN_Buffer_free(tmpbuf1);
-      return -1;
-    }
-  
-    ownCertFile=GWEN_DB_GetCharValue(gr, "certfile", 0,
-                                     globalOwnCertFile);
-    ciphers=GWEN_DB_GetCharValue(gr, "ciphers", 0, 0);
+    ownCertFile=GWEN_DB_GetCharValue(gr, "certfile", 0, NULL);
+    ownKeyFile=GWEN_DB_GetCharValue(gr, "keyfile", 0, NULL);
+    caFile=GWEN_DB_GetCharValue(gr, "cafile", 0, NULL);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
     GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
     GWEN_InetAddr_SetPort(addr, port);
     sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+
+    ioBase=GWEN_Io_LayerSocket_new(sk);
+    GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
+
+    io=GWEN_Io_LayerTls_new(ioBase);
+    ioBase=io;
+    GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_FORCE_SSL_V3);
+
+    if (ownCertFile) {
+      GWEN_Io_LayerTls_SetLocalCertFile(ioBase, ownCertFile);
+    }
+    if (ownKeyFile) {
+      GWEN_Io_LayerTls_SetLocalKeyFile(ioBase, ownKeyFile);
+    }
+    if (caFile) {
+      GWEN_Io_LayerTls_SetLocalTrustFile(ioBase, caFile);
+    }
 
     if (strcasecmp(typ, "private")==0) {
       /* HTTP over SSL */
-      nl=GWEN_NetLayerSsl_new(nlBase,
-                              certDir,
-                              newCertDir,
-                              ownCertFile,
-                              0,
-                              0);
-      GWEN_NetLayer_free(nlBase);
-      GWEN_NetLayerSsl_SetAskAddCertFn(nl, LC_ClientLcc_AskAddCert,
-                                       (void*)cl);
-      nlBase=nl;
     }
     else if (strcasecmp(typ, "secure")==0) {
-      /* HTTP over SSL with certificates */
-      nl=GWEN_NetLayerSsl_new(nlBase,
-                              certDir,
-                              newCertDir,
-                              ownCertFile,
-                              0,
-                              1);
-      GWEN_NetLayer_free(nlBase);
-      nlBase=nl;
+      /* HTTP over SSL with mandatory certificates from both sides */
+      GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_NEED_PEER_CERT);
     }
     else {
-      DBG_ERROR(0, "Unknown mode \"%s\"", typ);
+      DBG_ERROR(LC_LOGDOMAIN, "Unknown ipc mode \"%s\"", typ);
       GWEN_InetAddr_free(addr);
       GWEN_Url_free(url);
       return -1;
@@ -658,18 +512,31 @@ int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
   }
   GWEN_InetAddr_free(addr);
 
-  nl=GWEN_NetLayerHttp_new(nlBase);
-  GWEN_NetLayer_free(nlBase);
-  GWEN_NetLayerHttp_SetOutCommand(nl, "POST", url);
-  GWEN_Url_free(url);
+  io=GWEN_Io_LayerBuffered_new(ioBase);
+  ioBase=io;
 
-  sid=GWEN_IpcManager_AddClient(xcl->ipcManager,
-                                nl,
-                                LC_CLIENT_MARK);
+  io=GWEN_Io_LayerHttp_new(ioBase);
+  GWEN_Io_Layer_AddFlags(io, GWEN_IO_LAYER_HTTP_FLAGS_IPC);
+
+  db=GWEN_Io_LayerHttp_GetDbCommandOut(io);
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "command", "POST");
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "protocol", "HTTP/1.1");
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "url", GWEN_Url_GetPath(url));
+
+  db=GWEN_Io_LayerHttp_GetDbHeaderOut(io);
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Host", GWEN_Url_GetServer(url));
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Connection", "keep alive");
+
+  ioBase=io;
+
+  /* TODO: shouldn't it be addServer? */
+  sid=GWEN_IpcManager_AddClient(xcl->ipcManager, io, LC_CLIENT_MARK);
   if (sid==0) {
-    DBG_ERROR(0, "Could not add IPC client");
-    return -1;
+    DBG_ERROR(LC_LOGDOMAIN, "Could not add IPC client");
+    return GWEN_ERROR_INVALID;
   }
+
+  GWEN_Url_free(url);
 
   sv=LC_Server_new(sid);
   LC_Server_List_Add(sv, xcl->servers);
@@ -683,7 +550,7 @@ int LC_ClientLcc__CreateServer(LC_CLIENT *cl, GWEN_DB_NODE *gr,
 
 
 LC_REQUEST *LC_ClientLcc_PeekNextRequest(LC_CLIENT *cl,
-                                         GWEN_TYPE_UINT32 serverId){
+                                         uint32_t serverId){
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
 
@@ -704,8 +571,27 @@ LC_REQUEST *LC_ClientLcc_PeekNextRequest(LC_CLIENT *cl,
 
 
 
-LC_REQUEST *LC_ClientLcc_GetNextRequest(LC_CLIENT *cl,
-                                        GWEN_TYPE_UINT32 serverId){
+void LC_ClientLcc_AbortServerRequests(LC_CLIENT *cl, uint32_t serverId, int errorCode){
+  LC_CLIENT_LCC *xcl;
+  LC_REQUEST *rq;
+
+  assert(cl);
+  xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
+  assert(xcl);
+
+  rq=LC_Request_List_First(xcl->waitingRequests);
+  while(rq) {
+    if (serverId==0 || serverId==LC_Request_GetServerId(rq)) {
+      DBG_DEBUG(LC_LOGDOMAIN, "Aborting request %08x", LC_Request_GetRequestId(rq));
+      LC_Request_SetIsAborted(rq, errorCode);
+    }
+    rq=LC_Request_List_Next(rq);
+  } /* while */
+}
+
+
+
+LC_REQUEST *LC_ClientLcc_GetNextRequest(LC_CLIENT *cl, uint32_t serverId){
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
 
@@ -725,68 +611,13 @@ LC_REQUEST *LC_ClientLcc_GetNextRequest(LC_CLIENT *cl,
 
 
 
-
-
-
-
-int LC_ClientLcc_ServerDown(LC_CLIENT *cl, LC_SERVER *sv) {
-  LC_CLIENT_LCC *xcl;
-  LC_CARD *cd;
-  LC_REQUEST *rq;
-
-  assert(cl);
-  assert(sv);
-
-  xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
-  assert(xcl);
-
-  cd=LC_Card_List_First(xcl->cards);
-  while(cd) {
-    LC_CARD *next;
-
-    next=LC_Card_List_Next(cd);
-    if (LC_CardLcc_GetServerId(cd)==LC_Server_GetServerId(sv)) {
-      LC_Card_ResetCardId(cd);
-      LC_Card_List_Del(cd);
-      LC_Card_free(cd);
-    }
-    cd=next;
-  } /* while */
-
-  /* TODO: remove cards from monitor */
-
-  /* check every request in the working list */
-  rq=LC_Request_List_First(xcl->workingRequests);
-  while(rq) {
-    if (!LC_Request_GetIsAborted(rq)) {
-      if (LC_Request_GetRequestId(rq)==LC_Server_GetServerId(sv)) {
-        GWEN_IpcManager_RemoveRequest(xcl->ipcManager,
-                                      LC_Request_GetIpcRequestId(rq),
-                                      1);
-        LC_Request_SetIpcRequestId(rq, 0);
-        /* mark request as aborted */
-        LC_Request_SetIsAborted(rq, 1);
-      } /* if request id matches */
-    }
-    rq=LC_Request_List_Next(rq);
-  } /* while */
-
-  LC_Server_SetStatus(sv, LC_ServerStatusUnconnected);
-  LC_Server_SetCurrentCommand(sv, 0);
-  GWEN_IpcManager_Disconnect(xcl->ipcManager, LC_Server_GetServerId(sv));
-
-  return 0;
-}
-
-
-
 int LC_ClientLcc_HandleCardAvailable(LC_CLIENT *cl, GWEN_DB_NODE *dbReq){
   LC_CLIENT_LCC *xcl;
   LC_CARD *card;
-  GWEN_TYPE_UINT32 cardId;
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t cardId;
+  uint32_t serverId;
   const char *cardType;
-  GWEN_TYPE_UINT32 rflags;
+  uint32_t rflags;
   const void *p;
   unsigned int bsize;
   unsigned int i;
@@ -873,8 +704,9 @@ LC_CLIENT_RESULT LC_ClientLcc_WaitForNextCard(LC_CLIENT *cl,
   LC_CLIENT_LCC *xcl;
   LC_CARD *card;
   time_t startt;
-  int distance;
-  GWEN_NETLAYER_RESULT res;
+  GWEN_IO_LAYER_WORKRESULT res;
+  uint32_t progressId;
+  uint64_t to;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
@@ -883,78 +715,98 @@ LC_CLIENT_RESULT LC_ClientLcc_WaitForNextCard(LC_CLIENT *cl,
   startt=time(0);
   assert(cl);
 
-  if (timeout==GWEN_NET2_TIMEOUT_NONE)
-    distance=GWEN_NET2_TIMEOUT_NONE;
-  else if (timeout==GWEN_NET2_TIMEOUT_FOREVER)
-    distance=GWEN_NET2_TIMEOUT_FOREVER;
-  else {
-    distance=GWEN_WaitCallback_GetDistance(0);
-    if (distance)
-      if ((distance/1000)>timeout)
-        distance=timeout*1000;
-    if (!distance)
-      distance=750;
-  }
+  if (timeout==GWEN_TIMEOUT_NONE ||
+      timeout==GWEN_TIMEOUT_FOREVER)
+    to=0;
+  else
+    to=timeout*1000;
 
-  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_SIMPLE_PROGRESS,
-                                  I18N("Waiting for card to be inserted"),
-                                  0, 0);
-  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
+  progressId=GWEN_Gui_ProgressStart(GWEN_GUI_PROGRESS_DELAY |
+				    GWEN_GUI_PROGRESS_ALLOW_EMBED |
+				    GWEN_GUI_PROGRESS_SHOW_PROGRESS |
+				    GWEN_GUI_PROGRESS_SHOW_ABORT,
+				    I18N("Waiting for card to be inserted"),
+				    NULL,
+				    to,
+				    DEFAULT_GUI_ID);
+
   for (;;) {
-    DBG_VERBOUS(LC_LOGDOMAIN, "Working");
-    if (LC_ClientLcc_Work(cl, 0)==-1) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-      GWEN_WaitCallback_Leave();
+    int err;
+    int rv;
+    int done=0;
+
+    /* let io manager work until there is nothing to do */
+    while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+      done=1;
+    if (res==GWEN_Io_Layer_WorkResultError) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on io layers");
+      GWEN_Gui_ProgressEnd(progressId);
       return LC_Client_ResultIpcError;
     }
 
+    /* let ipc manager work until there is nothing to do */
+    while((rv=GWEN_IpcManager_Work(xcl->ipcManager))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on ipc");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
+    }
+
+    /* let client work until there is nothing to do */
+    while( (rv=LC_ClientLcc_Walk(cl))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
+    }
+
+    /* try to get the next card (if any) */
     card=LC_ClientLcc_GetNextCard(cl);
     if (card) {
       DBG_DEBUG(LC_LOGDOMAIN, "Got a card");
-      GWEN_WaitCallback_Leave();
+      GWEN_Gui_ProgressEnd(progressId);
       *pCard=card;
       return LC_Client_ResultOk;
     }
 
-    for (;;) {
-      if (LC_ClientLcc_Work(cl, 0)==-1) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultIpcError;
-      }
-
-
-      if (GWEN_WaitCallback()==GWEN_WaitCallbackResult_Abort) {
-        DBG_ERROR(LC_LOGDOMAIN, "User aborted via waitcallback");
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultAborted;
-      }
-
-      res=GWEN_Net_HeartBeat(distance);
-      if (res==GWEN_NetLayerResult_Error) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error while working (%d)", res);
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultIpcError;
-      }
-      else if (res==GWEN_NetLayerResult_Changed)
-        break;
-      else if (res!=GWEN_NetLayerResult_WouldBlock)
-        break;
+    if (done==0) {
+      int d;
+      int secs;
 
       /* check timeout */
-      if (timeout!=GWEN_NET2_TIMEOUT_FOREVER) {
-        if (timeout==GWEN_NET2_TIMEOUT_NONE ||
-            difftime(time(0), startt)>timeout) {
-          DBG_INFO(LC_LOGDOMAIN,
-                   "Could not read within %d seconds, giving up",
-                   timeout);
-          GWEN_WaitCallback_Leave();
-          return LC_Client_ResultWait;
-        }
+      d=(int)difftime(time(0), startt);
+      if (timeout!=GWEN_TIMEOUT_FOREVER) {
+	if (timeout==GWEN_TIMEOUT_NONE ||
+	    d>timeout) {
+	  DBG_INFO(GWEN_LOGDOMAIN,
+		   "Timeout (%d) while waiting, giving up",
+		   timeout);
+	  GWEN_Gui_ProgressEnd(progressId);
+	  return LC_Client_ResultWait;
+	}
       }
-    } /* for */
+
+      /* advance progress bar */
+      err=GWEN_Gui_ProgressAdvance(progressId, (uint64_t)(d*1000));
+      if (err==GWEN_ERROR_USER_ABORTED) {
+	DBG_ERROR(GWEN_LOGDOMAIN, "User aborted");
+	GWEN_Gui_ProgressEnd(progressId);
+	return LC_Client_ResultAborted;
+      }
+
+      /* calculate waiting time */
+      if (timeout==GWEN_TIMEOUT_FOREVER)
+	secs=(timeout/1000)-d;
+      else
+	secs=5;
+
+      /* actually wait for changes in io */
+      GWEN_Io_Manager_Wait(secs*1000, 0);
+    }
   } /* for */
-  GWEN_WaitCallback_Leave();
+  GWEN_Gui_ProgressEnd(progressId);
 
   return LC_Client_ResultWait;
 }
@@ -963,10 +815,11 @@ LC_CLIENT_RESULT LC_ClientLcc_WaitForNextCard(LC_CLIENT *cl,
 
 int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
   LC_CLIENT_LCC *xcl;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LC_REQUEST *rq;
   int handled;
   int done;
+  int rv;
 
   assert(cl);
   assert(sv);
@@ -982,9 +835,10 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
     rq=LC_ClientLcc_PeekNextRequest(cl, LC_Server_GetServerId(sv));
     if (rq) {
       DBG_INFO(LC_LOGDOMAIN, "Starting to connect");
-      if (LC_ClientLcc_StartConnect(cl, sv)) {
-        DBG_ERROR(LC_LOGDOMAIN, "Could not start connecting to server");
-        return -1;
+      rv=LC_ClientLcc_StartConnect(cl, sv);
+      if (rv<0) {
+	DBG_ERROR(LC_LOGDOMAIN, "Could not start connecting to server");
+	return rv;
       }
       done++;
     }
@@ -999,7 +853,7 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
     if (rid==0) {
       DBG_ERROR(LC_LOGDOMAIN, "No current command in WaitReady mode?");
       LC_Server_SetStatus(sv, LC_ServerStatusAborted);
-      return -1;
+      return GWEN_ERROR_INVALID;
     }
     else {
       GWEN_DB_NODE *dbReq;
@@ -1019,8 +873,8 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
           LC_Server_SetCurrentCommand(sv, 0);
           GWEN_DB_Group_free(dbReq);
           GWEN_IpcManager_RemoveRequest(xcl->ipcManager, rid, 1);
-          return -1;
-        }
+	  return -1;
+	}
         LC_Server_SetCurrentCommand(sv, 0);
         LC_Server_SetStatus(sv, LC_ServerStatusConnected);
         DBG_INFO(LC_LOGDOMAIN, "Connected");
@@ -1070,7 +924,7 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
         }
         else {
           DBG_NOTICE(LC_LOGDOMAIN, "Unhandled incoming request:");
-          if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelNotice) {
+          if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevel_Notice) {
             GWEN_DB_Dump(dbReq, stderr, 2);
           }
         }
@@ -1083,22 +937,24 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
     rq=LC_ClientLcc_PeekNextRequest(cl, LC_Server_GetServerId(sv));
     if (rq) {
       GWEN_DB_NODE *dbReq;
+      int rv;
 
       /* we have a waiting request */
       dbReq=LC_Request_GetRequestData(rq);
       assert(dbReq);
       DBG_DEBUG(LC_LOGDOMAIN, "Sending waiting request %08x",
                 LC_Request_GetRequestId(rq));
-      if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevelDebug)
+      if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevel_Debug)
         GWEN_DB_Dump(dbReq, stderr, 4);
       done++;
-      rid=GWEN_IpcManager_SendRequest(xcl->ipcManager,
-                                      LC_Server_GetServerId(sv),
-                                      GWEN_DB_Group_dup(dbReq));
-      if (rid==0) {
-        DBG_ERROR(LC_LOGDOMAIN, "Could not send request");
-        LC_Server_SetStatus(sv, LC_ServerStatusAborted);
-        return -1;
+      rv=GWEN_IpcManager_SendRequest(xcl->ipcManager,
+				     LC_Server_GetServerId(sv),
+				     GWEN_DB_Group_dup(dbReq),
+				     &rid);
+      if (rv<0) {
+	DBG_ERROR(LC_LOGDOMAIN, "Could not send request (%d)", rv);
+	LC_Server_SetStatus(sv, LC_ServerStatusAborted);
+	return rv;
       }
       LC_Request_SetIpcRequestId(rq, rid);
       /* above we only called the peek function, now we remove the
@@ -1122,26 +978,6 @@ int LC_ClientLcc_CheckServer(LC_CLIENT *cl, LC_SERVER *sv) {
 
 
 
-GWEN_NL_SSL_ASKADDCERT_RESULT
-LC_ClientLcc_AskAddCert(GWEN_NETLAYER *nl,
-                        const GWEN_SSLCERTDESCR *cert,
-                        void *user_data) {
-  LC_CLIENT *cl;
-  LC_CLIENT_LCC *xcl;
-
-  cl=(LC_CLIENT*)user_data;
-  if (!cl) {
-    DBG_ERROR(0, "No user data in AskAddCert function");
-    return GWEN_NetLayerSsl_AskAddCertResult_No;
-  }
-  xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
-  assert(xcl);
-
-  return xcl->askAddCertResult;
-}
-
-
-
 int LC_ClientLcc_Walk(LC_CLIENT *cl) {
   LC_CLIENT_LCC *xcl;
   LC_SERVER *sv;
@@ -1157,18 +993,26 @@ int LC_ClientLcc_Walk(LC_CLIENT *cl) {
   done=0;
   okCount=0;
   sv=LC_Server_List_First(xcl->servers);
-  while(sv) {
-    rv=LC_ClientLcc_CheckServer(cl, sv);
-    if (rv==-1) {
-      DBG_INFO(LC_LOGDOMAIN, "Error checking server");
-    }
-    else {
-      if (rv==0)
-        done++;
-      okCount++;
-    }
-    sv=LC_Server_List_Next(sv);
-  } /* while */
+  if (sv==NULL) {
+    DBG_ERROR(0, "No servers");
+  }
+  else {
+    while(sv) {
+      rv=LC_ClientLcc_CheckServer(cl, sv);
+      if (rv==0) {
+	okCount++;
+	done++;
+      }
+      else if (rv<0) {
+	DBG_INFO(LC_LOGDOMAIN, "Error checking server (%d)", rv);
+      }
+      else if (rv==1) {
+	/* blocking but ok */
+	okCount++;
+      }
+      sv=LC_Server_List_Next(sv);
+    } /* while */
+  }
 
   /* TODO: Check requests for timeouts */
 
@@ -1259,97 +1103,104 @@ int LC_ClientLcc_Work(LC_CLIENT *cl, int maxmsg){
 LC_CLIENT_RESULT LC_ClientLcc_Work_Wait(LC_CLIENT *cl, int timeout) {
   LC_CLIENT_LCC *xcl;
   time_t startt;
-  int distance;
-  GWEN_NETLAYER_RESULT res;
+  GWEN_IO_LAYER_WORKRESULT res;
+  uint32_t progressId;
+  uint64_t to;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
   assert(xcl);
 
-
   startt=time(0);
   assert(cl);
 
-  /* check every request with the given id in the working list */
-  if (timeout==GWEN_NET2_TIMEOUT_NONE)
-    distance=GWEN_NET2_TIMEOUT_NONE;
-  else if (timeout==GWEN_NET2_TIMEOUT_FOREVER)
-    distance=GWEN_NET2_TIMEOUT_FOREVER;
-  else {
-    distance=GWEN_WaitCallback_GetDistance(0);
-    if (distance)
-      if ((distance/1000)>timeout)
-        distance=timeout*1000;
-    if (!distance)
-      distance=750;
-  }
+  if (timeout==GWEN_TIMEOUT_NONE || timeout==GWEN_TIMEOUT_FOREVER)
+    to=0;
+  else
+    to=timeout*1000;
 
-  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
-                                  I18N("Libchipcard is working..."),
-                                  0, 0);
-  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
+  progressId=GWEN_Gui_ProgressStart(GWEN_GUI_PROGRESS_DELAY |
+				    GWEN_GUI_PROGRESS_ALLOW_EMBED |
+				    GWEN_GUI_PROGRESS_SHOW_PROGRESS |
+				    GWEN_GUI_PROGRESS_SHOW_ABORT,
+				    I18N("Libchipcard is working..."),
+				    NULL,
+				    to,
+				    DEFAULT_GUI_ID);
+
   for (;;) {
-    int didSomething;
+    int err;
+    int rv;
+    int done=0;
+    int lcDone=0;
 
-    didSomething=0;
-    while(1) {
-      int rv;
-
-      rv=LC_ClientLcc__Work(cl, 0);
-      if (rv==-1) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultGeneric;
-      }
-      else if (rv==1) {
-        DBG_VERBOUS(0, "Nothing done");
-        break;
-      }
-      else if (rv==0) {
-        DBG_VERBOUS(0, "Something done");
-        didSomething=1;
-        break;
-      }
+    /* let io manager work until there is nothing to do */
+    while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+      done=1;
+    if (res==GWEN_Io_Layer_WorkResultError) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on io layers");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
     }
-    if (didSomething) {
-      GWEN_WaitCallback_Leave();
+
+    /* let ipc manager work until there is nothing to do */
+    while((rv=GWEN_IpcManager_Work(xcl->ipcManager))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on ipc");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
+    }
+
+    /* let client work until there is nothing more to do */
+    while( (rv=LC_ClientLcc_Walk(cl)==0))
+      lcDone=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
+    }
+    if (lcDone) {
+      /* client did something, return */
+      GWEN_Gui_ProgressEnd(progressId);
       return LC_Client_ResultOk;
     }
 
-    for (;;) {
-      if (GWEN_WaitCallback()==GWEN_WaitCallbackResult_Abort) {
-        DBG_ERROR(LC_LOGDOMAIN, "User aborted via waitcallback");
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultAborted;
-      }
-
-      res=GWEN_Net_HeartBeat(distance);
-      if (res==GWEN_NetLayerResult_Error) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error while working (%d)", res);
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultIpcError;
-      }
-      else if (res==GWEN_NetLayerResult_Changed) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Changed");
-        break;
-      }
+    if (done==0) {
+      int d;
+      int secs;
 
       /* check timeout */
-      if (timeout!=GWEN_NET2_TIMEOUT_FOREVER) {
-        if (timeout==GWEN_NET2_TIMEOUT_NONE ||
-            difftime(time(0), startt)>timeout) {
-          DBG_INFO(LC_LOGDOMAIN,
-                   "Could not read within %d seconds, giving up",
-                   timeout);
-          GWEN_WaitCallback_Leave();
-          return LC_Client_ResultWait;
-        }
+      d=(int)difftime(time(0), startt);
+      if (timeout!=GWEN_TIMEOUT_FOREVER) {
+	if (timeout==GWEN_TIMEOUT_NONE ||
+	    d>timeout) {
+	  DBG_INFO(GWEN_LOGDOMAIN,
+		   "Timeout (%d) while waiting, giving up",
+		   timeout);
+	  GWEN_Gui_ProgressEnd(progressId);
+	  return LC_Client_ResultWait;
+	}
       }
-    } /* for */
-  } /* for */
-  GWEN_WaitCallback_Leave();
 
-  return LC_Client_ResultOk;
+      /* advance progress bar */
+      err=GWEN_Gui_ProgressAdvance(progressId, (uint64_t)(d*1000));
+      if (err==GWEN_ERROR_USER_ABORTED) {
+	DBG_ERROR(GWEN_LOGDOMAIN, "User aborted");
+	GWEN_Gui_ProgressEnd(progressId);
+	return LC_Client_ResultAborted;
+      }
+
+      /* calculate waiting time */
+      if (timeout==GWEN_TIMEOUT_FOREVER)
+	secs=(timeout/1000)-d;
+      else
+	secs=5;
+
+      /* actually wait for changes in io */
+      GWEN_Io_Manager_Wait(secs*1000, 0);
+    }
+  } /* for */
 }
 
 
@@ -1362,12 +1213,12 @@ LC_CLIENT_RESULT LC_ClientLcc_Work_Wait(LC_CLIENT *cl, int timeout) {
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendRequest(LC_CLIENT *cl,
-                                          LC_CARD *card,
-                                          GWEN_TYPE_UINT32 serverId,
-                                          GWEN_DB_NODE *dbReq){
+uint32_t LC_ClientLcc_SendRequest(LC_CLIENT *cl,
+				  LC_CARD *card,
+				  uint32_t serverId,
+				  GWEN_DB_NODE *dbReq){
   LC_CLIENT_LCC *xcl;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LC_REQUEST *rq;
 
   assert(cl);
@@ -1407,8 +1258,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendRequest(LC_CLIENT *cl,
 
 
 
-GWEN_DB_NODE *LC_ClientLcc_GetNextResponse(LC_CLIENT *cl,
-                                           GWEN_TYPE_UINT32 rqid) {
+GWEN_DB_NODE *LC_ClientLcc_GetNextResponse(LC_CLIENT *cl, uint32_t rqid) {
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
 
@@ -1438,13 +1288,15 @@ GWEN_DB_NODE *LC_ClientLcc_GetNextResponse(LC_CLIENT *cl,
 
 
 
-GWEN_DB_NODE *LC_ClientLcc_WaitForNextResponse(LC_CLIENT *cl,
-                                               GWEN_TYPE_UINT32 rqid,
-                                               int timeout) {
+LC_CLIENT_RESULT LC_ClientLcc_WaitForNextResponse(LC_CLIENT *cl,
+						  uint32_t rqid,
+						  GWEN_DB_NODE **pDbRsp,
+						  int timeout) {
   LC_CLIENT_LCC *xcl;
   time_t startt;
-  int distance;
-  GWEN_NETLAYER_RESULT res;
+  GWEN_IO_LAYER_WORKRESULT res;
+  uint32_t progressId;
+  uint64_t to;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
@@ -1452,89 +1304,119 @@ GWEN_DB_NODE *LC_ClientLcc_WaitForNextResponse(LC_CLIENT *cl,
 
   startt=time(0);
 
-  /* check every request with the given id in the working list */
-  if (timeout==GWEN_NET2_TIMEOUT_NONE)
-    distance=GWEN_NET2_TIMEOUT_NONE;
-  else if (timeout==GWEN_NET2_TIMEOUT_FOREVER)
-    distance=GWEN_NET2_TIMEOUT_FOREVER;
-  else {
-    distance=GWEN_WaitCallback_GetDistance(0);
-    if (distance)
-      if ((distance/1000)>timeout)
-        distance=timeout*1000;
-    if (!distance)
-      distance=750;
-  }
+  if (timeout==GWEN_TIMEOUT_NONE ||
+      timeout==GWEN_TIMEOUT_FOREVER)
+    to=0;
+  else
+    to=timeout*1000;
 
-  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
-                                  I18N("Waiting for server response..."),
-                                  0, 0);
-  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
+  progressId=GWEN_Gui_ProgressStart(GWEN_GUI_PROGRESS_DELAY |
+				    GWEN_GUI_PROGRESS_ALLOW_EMBED |
+				    GWEN_GUI_PROGRESS_SHOW_PROGRESS |
+				    GWEN_GUI_PROGRESS_SHOW_ABORT,
+				    I18N("Waiting for server response..."),
+				    NULL,
+				    to,
+				    DEFAULT_GUI_ID);
+
   for (;;) {
+    int err;
+    int rv;
+    int done=0;
     GWEN_DB_NODE *dbRsp;
 
-    while(1) {
-      int rv;
-
-      rv=LC_ClientLcc_Work(cl, 0);
-      if (rv==-1) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-        GWEN_WaitCallback_Leave();
-        return 0;
-      }
-      else if (rv==1)
-        break;
+    /* let io manager work until there is nothing to do */
+    while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+      done=1;
+    if (res==GWEN_Io_Layer_WorkResultError) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on io layers");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
     }
 
-    dbRsp=LC_ClientLcc_GetNextResponse(cl, rqid);
-    if (dbRsp) {
-      DBG_VERBOUS(LC_LOGDOMAIN, "Got a response to request \"%08x\"", rqid);
-      GWEN_WaitCallback_Leave();
-      return dbRsp;
+    /* let ipc manager work until there is nothing to do */
+    while((rv=GWEN_IpcManager_Work(xcl->ipcManager))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on ipc");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
     }
 
-    for (;;) {
-      if (GWEN_WaitCallback()==GWEN_WaitCallbackResult_Abort) {
-        DBG_ERROR(LC_LOGDOMAIN, "User aborted via waitcallback");
-        GWEN_WaitCallback_Leave();
-        return 0;
-      }
+    /* let client work until there is nothing to do */
+    while( (rv=LC_ClientLcc_Walk(cl))==0)
+      done=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultIpcError;
+    }
 
-      res=GWEN_Net_HeartBeat(distance);
-      if (res==GWEN_NetLayerResult_Error) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error while working (%d)", res);
-        GWEN_WaitCallback_Leave();
-        return 0;
+    /* try to get the next response (if any) */
+    if (pDbRsp==NULL) {
+      LC_CLIENT_RESULT res;
+
+      res=LC_ClientLcc_CheckResponse(cl, rqid);
+      if (res!=LC_Client_ResultOk && res!=LC_Client_ResultWait) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error checking response");
+	GWEN_Gui_ProgressEnd(progressId);
+	return res;
       }
-      else if (res==GWEN_NetLayerResult_Changed) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Changed");
-        break;
+      if (res!=LC_Client_ResultWait) {
+	GWEN_Gui_ProgressEnd(progressId);
+	return res;
       }
-      else if (res==GWEN_NetLayerResult_Idle) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Nothing to do");
-        break;
+    }
+    else {
+      dbRsp=LC_ClientLcc_GetNextResponse(cl, rqid);
+      if (dbRsp) {
+	DBG_VERBOUS(LC_LOGDOMAIN, "Got a response to request \"%08x\"", rqid);
+	GWEN_Gui_ProgressEnd(progressId);
+	*pDbRsp=dbRsp;
+	return LC_Client_ResultOk;
       }
+    }
+
+    if (done==0) {
+      int d;
+      int secs;
 
       /* check timeout */
-      if (timeout!=GWEN_NET2_TIMEOUT_FOREVER) {
-        if (timeout==GWEN_NET2_TIMEOUT_NONE ||
-            difftime(time(0), startt)>timeout) {
-          DBG_INFO(LC_LOGDOMAIN, "Could not read within %d seconds, giving up",
-                   timeout);
-          GWEN_WaitCallback_Leave();
-          return 0;
-        }
+      d=(int)difftime(time(0), startt);
+      if (timeout!=GWEN_TIMEOUT_FOREVER) {
+	if (timeout==GWEN_TIMEOUT_NONE ||
+	    d>timeout) {
+	  DBG_INFO(GWEN_LOGDOMAIN,
+		   "Timeout (%d) while waiting, giving up",
+		   timeout);
+	  GWEN_Gui_ProgressEnd(progressId);
+	  return LC_Client_ResultWait;
+	}
       }
-    } /* for */
-  } /* for */
-  GWEN_WaitCallback_Leave();
 
-  return 0;
+      /* advance progress bar */
+      err=GWEN_Gui_ProgressAdvance(progressId, (uint64_t)(d*1000));
+      if (err==GWEN_ERROR_USER_ABORTED) {
+	DBG_ERROR(GWEN_LOGDOMAIN, "User aborted");
+	GWEN_Gui_ProgressEnd(progressId);
+	return LC_Client_ResultAborted;
+      }
+
+      /* calculate waiting time */
+      if (timeout==GWEN_TIMEOUT_FOREVER)
+	secs=(timeout/1000)-d;
+      else
+	secs=5;
+
+      /* actually wait for changes in io */
+      GWEN_Io_Manager_Wait(secs*1000, 0);
+    }
+  } /* for */
 }
 
 
 
-int LC_ClientLcc_DeleteRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rqid) {
+int LC_ClientLcc_DeleteRequest(LC_CLIENT *cl, uint32_t rqid) {
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
   int rqs;
@@ -1580,7 +1462,7 @@ int LC_ClientLcc_DeleteRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rqid) {
 
 
 
-int LC_ClientLcc_DeleteInRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid) {
+int LC_ClientLcc_DeleteInRequest(LC_CLIENT *cl, uint32_t rid) {
   LC_CLIENT_LCC *xcl;
 
   assert(cl);
@@ -1593,7 +1475,7 @@ int LC_ClientLcc_DeleteInRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid) {
 
 
 int LC_ClientLcc_SendResponse(LC_CLIENT *cl,
-                              GWEN_TYPE_UINT32 rid,
+                              uint32_t rid,
                               GWEN_DB_NODE *rsp) {
   LC_CLIENT_LCC *xcl;
 
@@ -1607,7 +1489,7 @@ int LC_ClientLcc_SendResponse(LC_CLIENT *cl,
 
 
 LC_REQUEST *LC_ClientLcc_FindWaitingRequest(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 requestId){
+                                            uint32_t requestId){
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
 
@@ -1629,7 +1511,7 @@ LC_REQUEST *LC_ClientLcc_FindWaitingRequest(LC_CLIENT *cl,
 
 
 LC_REQUEST *LC_ClientLcc_FindWorkingRequest(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 requestId){
+                                            uint32_t requestId){
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
 
@@ -1651,7 +1533,7 @@ LC_REQUEST *LC_ClientLcc_FindWorkingRequest(LC_CLIENT *cl,
 
 
 LC_REQUEST *LC_ClientLcc_FindRequest(LC_CLIENT *cl,
-                                     GWEN_TYPE_UINT32 requestId){
+                                     uint32_t requestId){
   LC_REQUEST *rq;
 
   assert(cl);
@@ -1665,10 +1547,10 @@ LC_REQUEST *LC_ClientLcc_FindRequest(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT
-LC_ClientLcc_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
+LC_ClientLcc_CheckResponse(LC_CLIENT *cl, uint32_t rid){
   LC_CLIENT_LCC *xcl;
   LC_REQUEST *rq;
-  GWEN_TYPE_UINT32 count;
+  uint32_t count;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
@@ -1686,14 +1568,14 @@ LC_ClientLcc_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
         GWEN_IpcManager_PeekResponseData(xcl->ipcManager,
                                          LC_Request_GetIpcRequestId(rq));
       if (dbRsp) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Got a response to request %08x", rid);
+	DBG_DEBUG(LC_LOGDOMAIN, "Got a response to request %08x", rid);
         return LC_Client_ResultOk;
       }
       else {
-        if (LC_Request_GetIsAborted(rq)) {
-          DBG_ERROR(LC_LOGDOMAIN, "Request was aborted (server down?)");
-          return LC_Client_ResultIpcError;
-        }
+	if (LC_Request_GetIsAborted(rq)) {
+	  DBG_ERROR(LC_LOGDOMAIN, "Request was aborted (server down?)");
+	  return LC_Request_GetIsAborted(rq);
+	}
       }
     } /* if request id matches */
     rq=LC_Request_List_Next(rq);
@@ -1701,9 +1583,19 @@ LC_ClientLcc_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
 
   if (!count) {
     /* request not found, check whether it exists at all */
-    if (!LC_ClientLcc_FindWaitingRequest(cl, rid)) {
+    rq=LC_ClientLcc_FindWaitingRequest(cl, rid);
+    if (rq==NULL) {
       DBG_ERROR(LC_LOGDOMAIN, "Request not found");
       return LC_Client_ResultIpcError;
+    }
+    else {
+      LC_CLIENT_RESULT res;
+
+      res=LC_Request_GetIsAborted(rq);
+      if (res) {
+	DBG_ERROR(LC_LOGDOMAIN, "Request was aborted (server down?) [%d]", res);
+	return res;
+      }
     }
   }
   return LC_Client_ResultWait;
@@ -1711,101 +1603,36 @@ LC_ClientLcc_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid){
 
 
 
-LC_CLIENT_RESULT
-LC_ClientLcc_CheckResponse_Wait(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid,
-                                int timeout){
+void LC_Client_IpcClientDown(GWEN_IPCMANAGER *mgr,
+			     uint32_t id,
+			     GWEN_IO_LAYER *io,
+			     void *user_data) {
+  LC_CLIENT *cl;
   LC_CLIENT_LCC *xcl;
-  time_t startt;
-  int distance;
+  LC_SERVER *sv;
+
+  cl=(LC_CLIENT*) user_data;
 
   assert(cl);
   xcl=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_CLIENT_LCC, cl);
   assert(xcl);
 
-  startt=time(0);
-  assert(cl);
-
-  /* check every request with the given id in the working list */
-  if (timeout==GWEN_NET2_TIMEOUT_NONE)
-    distance=GWEN_NET2_TIMEOUT_NONE;
-  else if (timeout==GWEN_NET2_TIMEOUT_FOREVER)
-    distance=GWEN_NET2_TIMEOUT_FOREVER;
-  else {
-    distance=GWEN_WaitCallback_GetDistance(0);
-    if (distance)
-      if ((distance/1000)>timeout)
-        distance=timeout*1000;
-    if (!distance)
-      distance=750;
+  /* check all servers */
+  sv=LC_Server_List_First(xcl->servers);
+  while(sv) {
+    if (LC_Server_GetServerId(sv)==id)
+      break;
+    sv=LC_Server_List_Next(sv);
+  } /* while */
+  if (sv==NULL) {
+    DBG_WARN(LC_LOGDOMAIN, "IPC client %08x is not mine", id);
   }
-
-  GWEN_WaitCallback_EnterWithText(GWEN_WAITCALLBACK_ID_FAST,
-                                  I18N("Waiting for server response..."),
-                                  0, 0);
-  GWEN_WaitCallback_SetProgressTotal(GWEN_WAITCALLBACK_PROGRESS_NONE);
-  for (;;) {
-    GWEN_NETLAYER_RESULT nres;
-    LC_CLIENT_RESULT cres;
-
-    if (LC_ClientLcc_Work(cl, 0)==-1) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error working on client");
-      GWEN_WaitCallback_Leave();
-      return LC_Client_ResultIpcError;
-    }
-
-    cres=LC_ClientLcc_CheckResponse(cl, rid);
-    if (cres==LC_Client_ResultOk) {
-      DBG_VERBOUS(LC_LOGDOMAIN, "Got a response to request \"%08x\"", rid);
-      GWEN_WaitCallback_Leave();
-      return cres;
-    }
-    if (cres!=LC_Client_ResultWait){
-      DBG_DEBUG(LC_LOGDOMAIN, "Leaving due to result %d", cres);
-      GWEN_WaitCallback_Leave();
-      return cres;
-    }
-
-    for (;;) {
-      if (GWEN_WaitCallback()==GWEN_WaitCallbackResult_Abort) {
-        DBG_ERROR(LC_LOGDOMAIN, "User aborted via waitcallback");
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultAborted;
-      }
-
-      nres=GWEN_Net_HeartBeat(distance);
-      if (nres==GWEN_NetLayerResult_Error) {
-        DBG_ERROR(LC_LOGDOMAIN, "Error while working (%d)", nres);
-        GWEN_WaitCallback_Leave();
-        return LC_Client_ResultIpcError;
-      }
-      else if (nres==GWEN_NetLayerResult_Changed) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Changed");
-        break;
-      }
-      else if (nres!=GWEN_NetLayerResult_WouldBlock) {
-        DBG_VERBOUS(LC_LOGDOMAIN, "Not wouldBlock");
-        break;
-      }
-
-      /* check timeout */
-      if (timeout!=GWEN_NET2_TIMEOUT_FOREVER) {
-        if (timeout==GWEN_NET2_TIMEOUT_NONE ||
-            difftime(time(0), startt)>timeout) {
-          DBG_INFO(LC_LOGDOMAIN, "Could not read within %d seconds, giving up",
-                   timeout);
-          GWEN_WaitCallback_Leave();
-          return LC_Client_ResultWait;
-        }
-      }
-    } /* for */
-  } /* for */
-  GWEN_WaitCallback_Leave();
-
-  return LC_Client_ResultIpcError;
+  else {
+    DBG_INFO(LC_LOGDOMAIN, "Server %08x is down", id);
+    LC_ClientLcc_AbortServerRequests(cl, id, LC_Client_ResultIoError);
+    LC_Server_SetStatus(sv, LC_ServerStatusAborted);
+  }
 }
-
-
-
 
 
 

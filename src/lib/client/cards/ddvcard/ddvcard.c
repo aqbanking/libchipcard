@@ -22,8 +22,8 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/cards/processorcard.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_DDVCARD)
@@ -158,7 +158,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMF(card);
+  res=LC_Card_SelectMf(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -319,23 +319,20 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card){
 
 LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card, const char *pin){
   LC_DDVCARD *ddv;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
+  LC_PININFO *pi;
+  int triesLeft=-1;
 
   assert(card);
   ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
   assert(ddv);
 
-  dbReq=GWEN_DB_Group_new("VerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  if (pin)
-    GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                         "pin", pin);
-  res=LC_Card_ExecCommand(card, "VerifyPin", dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
+  pi=LC_Card_GetPinInfoByName(card, "ch_pin");
+  assert(pi);
+  res=LC_Card_IsoVerifyPin(card, 0, pi,
+			   (const unsigned char*)pin, strlen(pin),
+			   &triesLeft);
+  LC_PinInfo_free(pi);
   return res;
 }
 
@@ -343,20 +340,18 @@ LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card, const char *pin){
 
 LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card){
   LC_DDVCARD *ddv;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
+  LC_PININFO *pi;
+  int triesLeft=-1;
 
   assert(card);
   ddv=GWEN_INHERIT_GETDATA(LC_CARD, LC_DDVCARD, card);
   assert(ddv);
 
-  dbReq=GWEN_DB_Group_new("SecureVerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, "SecureVerifyPin", dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
+  pi=LC_Card_GetPinInfoByName(card, "ch_pin");
+  assert(pi);
+  res=LC_Card_IsoPerformVerification(card, 0, pi, &triesLeft);
+  LC_PinInfo_free(pi);
   return res;
 }
 

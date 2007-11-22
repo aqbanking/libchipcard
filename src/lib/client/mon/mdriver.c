@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -35,7 +35,7 @@ GWEN_LIST2_FUNCTIONS(LCM_DRIVER, LCM_Driver)
 
 
 
-LCM_DRIVER *LCM_Driver_new(GWEN_TYPE_UINT32 serverId){
+LCM_DRIVER *LCM_Driver_new(uint32_t serverId){
   LCM_DRIVER *md;
 
   GWEN_NEW_OBJECT(LCM_DRIVER, md);
@@ -61,7 +61,7 @@ void LCM_Driver_free(LCM_DRIVER *md){
 
 
 
-GWEN_TYPE_UINT32 LCM_Driver_GetServerId(const LCM_DRIVER *md){
+uint32_t LCM_Driver_GetServerId(const LCM_DRIVER *md){
   assert(md);
   return md->serverId;
 }

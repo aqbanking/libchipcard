@@ -29,7 +29,7 @@
 GWEN_LIST_FUNCTIONS(LCSV_SERVICE, LCSV_Service)
 
 
-static GWEN_TYPE_UINT32 LCSV_Service__LastId=0;
+static uint32_t LCSV_Service__LastId=0;
 
 
 LCSV_SERVICE *LCSV_Service_new() {
@@ -198,35 +198,35 @@ void LCSV_Service_SetDataDir(LCSV_SERVICE *sv, const char *s) {
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetServiceId(const LCSV_SERVICE *sv) {
+uint32_t LCSV_Service_GetServiceId(const LCSV_SERVICE *sv) {
   assert(sv);
   return sv->serviceId;
 }
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetFlags(const LCSV_SERVICE *sv) {
+uint32_t LCSV_Service_GetFlags(const LCSV_SERVICE *sv) {
   assert(sv);
   return sv->flags;
 }
 
 
 
-void LCSV_Service_SetFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl) {
+void LCSV_Service_SetFlags(LCSV_SERVICE *sv, uint32_t fl) {
   assert(sv);
   sv->flags=fl;
 }
 
 
 
-void LCSV_Service_AddFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl) {
+void LCSV_Service_AddFlags(LCSV_SERVICE *sv, uint32_t fl) {
   assert(sv);
   sv->flags|=fl;
 }
 
 
 
-void LCSV_Service_SubFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl) {
+void LCSV_Service_SubFlags(LCSV_SERVICE *sv, uint32_t fl) {
   assert(sv);
   sv->flags&=~fl;
 }
@@ -266,21 +266,21 @@ void LCSV_Service_SetStatus(LCSV_SERVICE *sv, LC_SERVICE_STATUS st) {
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetIpcId(const LCSV_SERVICE *sv) {
+uint32_t LCSV_Service_GetIpcId(const LCSV_SERVICE *sv) {
   assert(sv);
   return sv->ipcId;
 }
 
 
 
-void LCSV_Service_SetIpcId(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 id) {
+void LCSV_Service_SetIpcId(LCSV_SERVICE *sv, uint32_t id) {
   assert(sv);
   sv->ipcId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetInterestedClients(const LCSV_SERVICE *sv) {
+uint32_t LCSV_Service_GetInterestedClients(const LCSV_SERVICE *sv) {
   assert(sv);
   return sv->interestedClients;
 }
@@ -305,7 +305,7 @@ void LCSV_Service_DecInterestedClients(LCSV_SERVICE *sv) {
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetActiveClients(const LCSV_SERVICE *sv) {
+uint32_t LCSV_Service_GetActiveClients(const LCSV_SERVICE *sv) {
   assert(sv);
   return sv->activeClients;
 }
@@ -341,14 +341,14 @@ time_t LCSV_Service_GetIdleSince(const LCSV_SERVICE *sv){
 
 
 
-GWEN_TYPE_UINT32 LCSV_Service_GetCurrentRequestId(const LCSV_SERVICE *sv){
+uint32_t LCSV_Service_GetCurrentRequestId(const LCSV_SERVICE *sv){
   assert(sv);
   return sv->currentRequestId;
 }
 
 
 
-void LCSV_Service_SetCurrentRequestId(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 rid){
+void LCSV_Service_SetCurrentRequestId(LCSV_SERVICE *sv, uint32_t rid){
   assert(sv);
   sv->currentRequestId=rid;
 }

@@ -29,19 +29,19 @@ struct LCSV_SERVICE {
   char *dataDir;
 
   /* runtime variables */
-  GWEN_TYPE_UINT32 serviceId;
-  GWEN_TYPE_UINT32 flags;
+  uint32_t serviceId;
+  uint32_t flags;
   GWEN_PROCESS *process;
   LC_SERVICE_STATUS status;
   time_t lastStatusChangeTime;
   time_t idleSince;
 
-  GWEN_TYPE_UINT32 currentRequestId;
+  uint32_t currentRequestId;
 
-  GWEN_TYPE_UINT32 ipcId;
+  uint32_t ipcId;
 
-  GWEN_TYPE_UINT32 interestedClients;
-  GWEN_TYPE_UINT32 activeClients;
+  uint32_t interestedClients;
+  uint32_t activeClients;
 
   time_t timeout;
 

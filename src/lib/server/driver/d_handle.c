@@ -18,7 +18,7 @@
 
 
 int LCD_Driver_HandleRequest(LCD_DRIVER *d,
-                             GWEN_TYPE_UINT32 rid,
+                             uint32_t rid,
                              const char *name,
                              GWEN_DB_NODE *dbReq){
   int rv;

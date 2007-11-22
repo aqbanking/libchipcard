@@ -28,8 +28,8 @@
 #define I18NT(m) m
 
 #include "chipcardd_p.h"
+#include <chipcard/sharedstuff/driverinfo.h>
 #include <gwenhywfar/directory.h>
-#include "common/driverinfo.h"
 
 
 int addReader(ARGUMENTS *args) {
@@ -75,7 +75,8 @@ int addReader(ARGUMENTS *args) {
     if (GWEN_DB_ReadFile(dbConfig,
                          GWEN_Buffer_GetStart(nbuf),
                          GWEN_DB_FLAGS_DEFAULT |
-                         GWEN_PATH_FLAGS_CREATE_GROUP)) {
+			 GWEN_PATH_FLAGS_CREATE_GROUP,
+			 0, 2000)) {
       fprintf(stderr,
               I18N("ERROR: Bad configuration file \"%s\"\n"),
               GWEN_Buffer_GetStart(nbuf));
@@ -96,7 +97,7 @@ int addReader(ARGUMENTS *args) {
   GWEN_Buffer_AppendString(dbuf, args->dataDir);
   GWEN_Buffer_AppendString(dbuf, "/drivers");
   if (LC_DriverInfo_ReadDrivers(GWEN_Buffer_GetStart(dbuf),
-                                dbKnownDrivers, 0)){
+				dbKnownDrivers, 0, 0)){
     fprintf(stderr,
             I18N("Could not read the driver list\n"
                  "(tried \"%s\")\n"
@@ -470,8 +471,9 @@ int addReader(ARGUMENTS *args) {
   }
 
   if (GWEN_DB_WriteFile(dbConfig,
-                        GWEN_Buffer_GetStart(nbuf),
-                        GWEN_DB_FLAGS_DEFAULT)) {
+			GWEN_Buffer_GetStart(nbuf),
+			GWEN_DB_FLAGS_DEFAULT,
+			0, 5000)) {
     fprintf(stderr,
             I18N("ERROR: Could not save configuration file \"%s\".\n"),
             args->configFile);

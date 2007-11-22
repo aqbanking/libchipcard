@@ -1,10 +1,10 @@
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendLockReader(LC_CLIENT *cl,
-                                             GWEN_TYPE_UINT32 serverId,
-                                             GWEN_TYPE_UINT32 readerId){
+uint32_t LC_ClientLcc_SendLockReader(LC_CLIENT *cl,
+                                             uint32_t serverId,
+                                             uint32_t readerId){
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
 
   dbReq=GWEN_DB_Group_new("Client_LockReader");
@@ -26,8 +26,8 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendLockReader(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_CheckLockReader(LC_CLIENT *cl,
-                                              GWEN_TYPE_UINT32 rid,
-                                              GWEN_TYPE_UINT32 *lockId){
+                                              uint32_t rid,
+                                              uint32_t *lockId){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
   int err;
@@ -84,10 +84,10 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckLockReader(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_LockReader(LC_CLIENT *cl,
-                                         GWEN_TYPE_UINT32 serverId,
-                                         GWEN_TYPE_UINT32 readerId,
-                                         GWEN_TYPE_UINT32 *lockId) {
-  GWEN_TYPE_UINT32 rqid;
+                                         uint32_t serverId,
+                                         uint32_t readerId,
+                                         uint32_t *lockId) {
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendLockReader(cl, serverId, readerId);
@@ -95,8 +95,7 @@ LC_CLIENT_RESULT LC_ClientLcc_LockReader(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"lockReader\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetVeryLongTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetVeryLongTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -123,12 +122,12 @@ LC_CLIENT_RESULT LC_ClientLcc_LockReader(LC_CLIENT *cl,
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendUnlockReader(LC_CLIENT *cl,
-                                               GWEN_TYPE_UINT32 serverId,
-                                               GWEN_TYPE_UINT32 readerId,
-                                               GWEN_TYPE_UINT32 lockId){
+uint32_t LC_ClientLcc_SendUnlockReader(LC_CLIENT *cl,
+				       uint32_t serverId,
+				       uint32_t readerId,
+				       uint32_t lockId){
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
 
   dbReq=GWEN_DB_Group_new("Client_UnlockReader");
@@ -154,7 +153,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendUnlockReader(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_CheckUnlockReader(LC_CLIENT *cl,
-                                                GWEN_TYPE_UINT32 rid){
+                                                uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
   int err;
@@ -199,10 +198,10 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckUnlockReader(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
-                                        GWEN_TYPE_UINT32 serverId,
-                                        GWEN_TYPE_UINT32 readerId,
-                                        GWEN_TYPE_UINT32 lockId){
-  GWEN_TYPE_UINT32 rqid;
+                                        uint32_t serverId,
+                                        uint32_t readerId,
+                                        uint32_t lockId){
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendUnlockReader(cl, serverId, readerId, lockId);
@@ -210,8 +209,7 @@ LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"UnlockReader\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetShortTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetShortTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -240,13 +238,13 @@ LC_CLIENT_RESULT LC_Client_UnlockReader(LC_CLIENT *cl,
 
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendReaderCommand(LC_CLIENT *cl,
-                                                GWEN_TYPE_UINT32 serverId,
-                                                GWEN_TYPE_UINT32 readerId,
-                                                GWEN_TYPE_UINT32 lockId,
-                                                GWEN_DB_NODE *dbData){
+uint32_t LC_ClientLcc_SendReaderCommand(LC_CLIENT *cl,
+					uint32_t serverId,
+					uint32_t readerId,
+					uint32_t lockId,
+					GWEN_DB_NODE *dbData){
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   char numbuf[16];
 
   assert(cl);
@@ -284,7 +282,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendReaderCommand(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_CheckReaderCommand(LC_CLIENT *cl,
-                                                 GWEN_TYPE_UINT32 rid,
+                                                 uint32_t rid,
                                                  GWEN_DB_NODE *dbCmdResp){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
@@ -328,12 +326,12 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckReaderCommand(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_ReaderCommand(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 serverId,
-                                            GWEN_TYPE_UINT32 readerId,
-                                            GWEN_TYPE_UINT32 lockId,
+                                            uint32_t serverId,
+                                            uint32_t readerId,
+                                            uint32_t lockId,
                                             GWEN_DB_NODE *dbData,
                                             GWEN_DB_NODE *dbCmdResp) {
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   assert(cl);
@@ -345,7 +343,7 @@ LC_CLIENT_RESULT LC_ClientLcc_ReaderCommand(LC_CLIENT *cl,
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"ReaderCommand\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid, LC_Client_GetLongTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetLongTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");

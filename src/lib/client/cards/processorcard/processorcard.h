@@ -14,7 +14,7 @@
 #ifndef CHIPCARD_CARD_PROCESSORCARD_H
 #define CHIPCARD_CARD_PROCESSORCARD_H
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 
 #ifdef __cplusplus
 extern "C" {

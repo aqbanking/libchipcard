@@ -28,7 +28,7 @@ typedef struct LCDM_DRIVER LCDM_DRIVER;
 GWEN_LIST_FUNCTION_DEFS(LCDM_DRIVER, LCDM_Driver);
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "devicemanager_l.h"
 
 
@@ -59,7 +59,7 @@ void LCDM_Driver_SetLibraryFile(LCDM_DRIVER *d, const char *s);
 const char *LCDM_Driver_GetLogFile(const LCDM_DRIVER *d);
 void LCDM_Driver_SetLogFile(LCDM_DRIVER *d, const char *s);
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetDriverId(const LCDM_DRIVER *d);
+uint32_t LCDM_Driver_GetDriverId(const LCDM_DRIVER *d);
 
 GWEN_PROCESS *LCDM_Driver_GetProcess(const LCDM_DRIVER *d);
 void LCDM_Driver_SetProcess(LCDM_DRIVER *d, GWEN_PROCESS *p);
@@ -70,23 +70,23 @@ void LCDM_Driver_SetStatus(LCDM_DRIVER *d, LC_DRIVER_STATUS st);
 time_t LCDM_Driver_GetLastStatusChangeTime(const LCDM_DRIVER *d);
 time_t LCDM_Driver_GetIdleSince(const LCDM_DRIVER *d);
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetActiveReadersCount(const LCDM_DRIVER *d);
+uint32_t LCDM_Driver_GetActiveReadersCount(const LCDM_DRIVER *d);
 void LCDM_Driver_ResetActiveReadersCount(LCDM_DRIVER *d);
 void LCDM_Driver_IncActiveReadersCount(LCDM_DRIVER *d, int count);
 void LCDM_Driver_DecActiveReadersCount(LCDM_DRIVER *d, int count);
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetAssignedReadersCount(const LCDM_DRIVER *d);
+uint32_t LCDM_Driver_GetAssignedReadersCount(const LCDM_DRIVER *d);
 void LCDM_Driver_ResetAssignedReadersCount(LCDM_DRIVER *d);
 void LCDM_Driver_IncAssignedReadersCount(LCDM_DRIVER *d);
 void LCDM_Driver_DecAssignedReadersCount(LCDM_DRIVER *d);
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetDriverFlags(const LCDM_DRIVER *d);
-void LCDM_Driver_SetDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl);
-void LCDM_Driver_AddDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl);
-void LCDM_Driver_SubDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl);
+uint32_t LCDM_Driver_GetDriverFlags(const LCDM_DRIVER *d);
+void LCDM_Driver_SetDriverFlags(LCDM_DRIVER *d, uint32_t fl);
+void LCDM_Driver_AddDriverFlags(LCDM_DRIVER *d, uint32_t fl);
+void LCDM_Driver_SubDriverFlags(LCDM_DRIVER *d, uint32_t fl);
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetIpcId(const LCDM_DRIVER *d);
-void LCDM_Driver_SetIpcId(LCDM_DRIVER *d, GWEN_TYPE_UINT32 id);
+uint32_t LCDM_Driver_GetIpcId(const LCDM_DRIVER *d);
+void LCDM_Driver_SetIpcId(LCDM_DRIVER *d, uint32_t id);
 
 time_t LCDM_Driver_GetPingTime(const LCDM_DRIVER *d);
 void LCDM_Driver_SetPingTime(LCDM_DRIVER *d, time_t t);

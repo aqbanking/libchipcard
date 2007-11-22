@@ -16,7 +16,6 @@
 #define CHIPCARD_SERVER2_SERVER_L_H
 
 #include <gwenhywfar/plugin.h>
-#include <gwenhywfar/nl_ssl.h>
 
 #define LCS_MARK_SERVER 1
 #define LCS_MARK_DRIVER 2
@@ -73,7 +72,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/buffer.h>
-#include <gwenhywfar/netlayer.h>
+#include <gwenhywfar/iolayer.h>
 
 
 typedef struct LCS_SERVER LCS_SERVER;
@@ -86,7 +85,7 @@ typedef enum {
 } LCS_SERVER_ROLE;
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "common/card.h"
 #include "common/reader.h"
 #include "connection_l.h"
@@ -96,12 +95,6 @@ typedef enum {
 #include "servicemanager/servicemanager_l.h"
 #include "slavemanager/slavemanager_l.h"
 
-
-
-typedef GWEN_NL_SSL_ASKADDCERT_RESULT
-  (*LCS_SERVER_ASKADDCERT_FN)(LCS_SERVER *cs,
-                              GWEN_NETLAYER *nl,
-                              const GWEN_SSLCERTDESCR *cert);
 
 
 LCS_SERVER *LCS_Server_new();
@@ -122,20 +115,15 @@ void LCS_Server_EndUseReaders(LCS_SERVER *cs, int count);
 
 
 
-LCS_SERVER_ASKADDCERT_FN
-  LCS_Server_SetAskAddCertFn(LCS_SERVER *cs,
-                             LCS_SERVER_ASKADDCERT_FN fn);
-
-
 /**
  * This tells the server to use this connection. Basically this just sets
  * the connectionUp callback to call an internal server function which in
  * turn calls LCS_Server_ConnectionDown.
  */
 void LCS_Server_UseConnectionFor(LCS_SERVER *cs,
-                                 GWEN_NETLAYER *conn,
+				 GWEN_IO_LAYER *conn,
                                  LCS_CONNECTION_TYPE t,
-                                 GWEN_TYPE_UINT32 ipcId);
+                                 uint32_t ipcId);
 
 
 /** @name Functions Called by other managers
@@ -143,7 +131,7 @@ void LCS_Server_UseConnectionFor(LCS_SERVER *cs,
  */
 /*@{*/
 void LCS_Server_DriverChg(LCS_SERVER *cs,
-                          GWEN_TYPE_UINT32 did,
+                          uint32_t did,
                           const char *driverType,
                           const char *driverName,
                           const char *libraryFile,
@@ -151,7 +139,7 @@ void LCS_Server_DriverChg(LCS_SERVER *cs,
                           const char *reason);
 
 void LCS_Server_ReaderChg(LCS_SERVER *cs,
-                          GWEN_TYPE_UINT32 did,
+                          uint32_t did,
                           LCCO_READER *r,
                           LC_READER_STATUS newSt,
                           const char *reason);
@@ -171,11 +159,10 @@ void LCS_Server_NewCard(LCS_SERVER *cs, LCCO_CARD *card);
 
 void LCS_Server_CardRemoved(LCS_SERVER *cs, LCCO_CARD *card);
 
-void LCS_Server_ConnectionDown(LCS_SERVER *cs,
-                               GWEN_NETLAYER *conn);
+void LCS_Server_ConnectionDown(LCS_SERVER *cs, uint32_t id, GWEN_IO_LAYER *conn);
 
 void LCS_Server_ServiceChg(LCS_SERVER *cs,
-                           GWEN_TYPE_UINT32 sid,
+                           uint32_t sid,
                            const char *serviceType,
                            const char *serviceName,
                            LC_SERVICE_STATUS newSt,
@@ -204,7 +191,7 @@ int LCS_Server_ReplaceVar(const char *path,
 
 
 int LCS_Server_SendErrorResponse(LCS_SERVER *cs,
-                                 GWEN_TYPE_UINT32 rid,
+                                 uint32_t rid,
                                  int code,
                                  const char *text);
 
@@ -212,12 +199,6 @@ int LCS_Server_CheckIpcResponse(GWEN_DB_NODE *db);
 
 
 LCS_SERVER_ROLE LCS_Server_GetRole(const LCS_SERVER *cs);
-
-GWEN_NL_SSL_ASKADDCERT_RESULT
-LCS_Server_AskAddCert(GWEN_NETLAYER *nl,
-                      const GWEN_SSLCERTDESCR *cert,
-                      void *user_data);
-
 
 void LCS_Server_DumpState(const LCS_SERVER *cs);
 

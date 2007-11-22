@@ -567,10 +567,10 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
 
 
 
-int LC_Client__BuildApdu(LC_CLIENT *cl,
-                         GWEN_XMLNODE *node,
-                         GWEN_DB_NODE *cmdData,
-                         GWEN_BUFFER *gbuf) {
+LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
+				      GWEN_XMLNODE *node,
+				      GWEN_DB_NODE *cmdData,
+				      GWEN_BUFFER *gbuf) {
   GWEN_XMLNODE *sendNode;
   GWEN_XMLNODE *dataNode;
   GWEN_XMLNODE *apduNode;
@@ -582,8 +582,9 @@ int LC_Client__BuildApdu(LC_CLIENT *cl,
 
   sendNode=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "send");
   if (!sendNode) {
-    DBG_ERROR(LC_LOGDOMAIN, "No <send> tag in command definition");
-    abort();
+    DBG_INFO(LC_LOGDOMAIN,
+	     "No <send> tag in command definition, do not execute");
+    return LC_Client_ResultDontExecute;
   }
 
   apduNode=GWEN_XMLNode_FindNode(sendNode,
@@ -808,6 +809,7 @@ LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
                                      GWEN_DB_NODE *cmdData,
                                      GWEN_BUFFER *buf) {
   GWEN_XMLNODE *node;
+  LC_CLIENT_RESULT res;
 
   DBG_INFO(LC_LOGDOMAIN, "Building APDU for command \"%s\"", command);
   /* lookup card command */
@@ -821,11 +823,12 @@ LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
 
   /* build APDU */
   DBG_INFO(LC_LOGDOMAIN, "- building APDU");
-  if (LC_Client__BuildApdu(cl, node, cmdData, buf)) {
+  res=LC_Client__BuildApdu(cl, node, cmdData, buf);
+  if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
-             "Error building APDU for command \"%s\" (bad data?)",
-             command);
-    return LC_Client_ResultGeneric;
+	     "Error building APDU for command \"%s\" (%d)",
+	     command, res);
+    return res;
   }
 
   return LC_Client_ResultOk;
@@ -877,12 +880,13 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
   /* build APDU */
   DBG_INFO(LC_LOGDOMAIN, "- building APDU");
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  if (LC_Client__BuildApdu(cl, node, cmdData, buf)) {
+  res=LC_Client__BuildApdu(cl, node, cmdData, buf);
+  if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
-             "Error building APDU for command \"%s\" (bad data?)",
-             commandName);
+	     "Error building APDU for command \"%s\" (%d)",
+	     commandName, res);
     GWEN_Buffer_free(buf);
-    return LC_Client_ResultGeneric;
+    return res;
   }
 
   /* send APDU */

@@ -22,33 +22,33 @@
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/inherit.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 typedef struct LCD_READER LCD_READER;
 GWEN_LIST_FUNCTION_LIB_DEFS(LCD_READER, LCD_Reader, CHIPCARD_API);
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LCD_READER, CHIPCARD_API);
 
-#include <chipcard3/server/driver/slot.h>
+#include <chipcard/server/driver/slot.h>
 
 
 
 CHIPCARD_API
-LCD_READER *LCD_Reader_new(GWEN_TYPE_UINT32 readerId,
+LCD_READER *LCD_Reader_new(uint32_t readerId,
                            const char *name,
                            int port,
                            unsigned int slots,
-                           GWEN_TYPE_UINT32 flags);
+                           uint32_t flags);
 
 CHIPCARD_API
 void LCD_Reader_free(LCD_READER *r);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderId(const LCD_READER *r);
+uint32_t LCD_Reader_GetReaderId(const LCD_READER *r);
 
 CHIPCARD_API
-void LCD_Reader_SetReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id);
+void LCD_Reader_SetReaderId(LCD_READER *r, uint32_t id);
 
 
 CHIPCARD_API
@@ -73,54 +73,54 @@ void LCD_Reader_SetReaderType(LCD_READER *r, const char *s);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetDriversReaderId(const LCD_READER *r);
+uint32_t LCD_Reader_GetDriversReaderId(const LCD_READER *r);
 
 CHIPCARD_API
-void LCD_Reader_SetDriversReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id);
-
-
-CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetStatus(const LCD_READER *r);
-
-CHIPCARD_API
-void LCD_Reader_SetStatus(LCD_READER *r, GWEN_TYPE_UINT32 s);
-
-CHIPCARD_API
-void LCD_Reader_AddStatus(LCD_READER *r, GWEN_TYPE_UINT32 s);
-
-CHIPCARD_API
-void LCD_Reader_SubStatus(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SetDriversReaderId(LCD_READER *r, uint32_t id);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r);
+uint32_t LCD_Reader_GetStatus(const LCD_READER *r);
+
+CHIPCARD_API
+void LCD_Reader_SetStatus(LCD_READER *r, uint32_t s);
+
+CHIPCARD_API
+void LCD_Reader_AddStatus(LCD_READER *r, uint32_t s);
+
+CHIPCARD_API
+void LCD_Reader_SubStatus(LCD_READER *r, uint32_t s);
+
+
+CHIPCARD_API
+uint32_t LCD_Reader_GetReaderFlags(const LCD_READER *r);
 
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetDriverFlags(const LCD_READER *r);
+uint32_t LCD_Reader_GetDriverFlags(const LCD_READER *r);
 
 CHIPCARD_API
-void LCD_Reader_SetDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SetDriverFlags(LCD_READER *r, uint32_t s);
 
 CHIPCARD_API
-void LCD_Reader_AddDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_AddDriverFlags(LCD_READER *r, uint32_t s);
 
 CHIPCARD_API
-void LCD_Reader_SubDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SubDriverFlags(LCD_READER *r, uint32_t s);
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r);
+uint32_t LCD_Reader_GetReaderFlags(const LCD_READER *r);
 
 CHIPCARD_API
-void LCD_Reader_SetReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SetReaderFlags(LCD_READER *r, uint32_t s);
 
 CHIPCARD_API
-void LCD_Reader_AddReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_AddReaderFlags(LCD_READER *r, uint32_t s);
 
 CHIPCARD_API
-void LCD_Reader_SubReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s);
+void LCD_Reader_SubReaderFlags(LCD_READER *r, uint32_t s);
 
 CHIPCARD_API
 LCD_SLOT_LIST *LCD_Reader_GetSlots(const LCD_READER *r);
@@ -133,6 +133,16 @@ const char *LCD_Reader_GetLogger(const LCD_READER *r);
 
 CHIPCARD_API
 void LCD_Reader_SetLogger(LCD_READER *r, const char *logDomain);
+
+
+CHIPCARD_API
+uint32_t LCD_Reader_GetErrorCount(const LCD_READER *r);
+
+CHIPCARD_API
+uint32_t LCD_Reader_IncErrorCount(LCD_READER *r);
+
+CHIPCARD_API
+void LCD_Reader_ResetErrorCount(LCD_READER *r);
 
 #endif /* CHIPCARD_DRIVER_READER_H */
 

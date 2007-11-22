@@ -1,9 +1,9 @@
 
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendSetNotify(LC_CLIENT *cl,
-                                            GWEN_TYPE_UINT32 flags){
+uint32_t LC_ClientLcc_SendSetNotify(LC_CLIENT *cl,
+                                            uint32_t flags){
   GWEN_DB_NODE *db;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
 
   db=GWEN_DB_Group_new("Client_SetNotify");
 
@@ -113,7 +113,7 @@ GWEN_TYPE_UINT32 LC_ClientLcc_SendSetNotify(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_ClientLcc_CheckSetNotify(LC_CLIENT *cl,
-                                             GWEN_TYPE_UINT32 rid){
+                                             uint32_t rid){
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRsp;
   int err;
@@ -145,8 +145,8 @@ LC_CLIENT_RESULT LC_ClientLcc_CheckSetNotify(LC_CLIENT *cl,
 
 
 
-LC_CLIENT_RESULT LC_ClientLcc_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags){
-  GWEN_TYPE_UINT32 rqid;
+LC_CLIENT_RESULT LC_ClientLcc_SetNotify(LC_CLIENT *cl, uint32_t flags){
+  uint32_t rqid;
   LC_CLIENT_RESULT res;
 
   rqid=LC_ClientLcc_SendSetNotify(cl, flags);
@@ -154,8 +154,7 @@ LC_CLIENT_RESULT LC_ClientLcc_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags){
     DBG_ERROR(LC_LOGDOMAIN, "Could not send request \"setNotify\"");
     return LC_Client_ResultIpcError;
   }
-  res=LC_ClientLcc_CheckResponse_Wait(cl, rqid,
-                                      LC_Client_GetShortTimeout(cl));
+  res=LC_ClientLcc_WaitForNextResponse(cl, rqid, NULL, LC_Client_GetShortTimeout(cl));
   if (res!=LC_Client_ResultOk) {
     if (res==LC_Client_ResultAborted) {
       DBG_ERROR(LC_LOGDOMAIN, "User aborted");
@@ -181,7 +180,7 @@ LC_CLIENT_RESULT LC_ClientLcc_SetNotify(LC_CLIENT *cl, GWEN_TYPE_UINT32 flags){
 
 
 int LC_ClientLcc_HandleNotification(LC_CLIENT *cl, GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   const char *clientId;
   const char *ntype;
   const char *ncode;

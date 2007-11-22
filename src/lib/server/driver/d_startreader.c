@@ -17,18 +17,18 @@
 
 
 int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
-                                 GWEN_TYPE_UINT32 rid,
+                                 uint32_t rid,
                                  GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 driversReaderId;
+  uint32_t readerId;
+  uint32_t driversReaderId;
   const char *name;
   int port;
   int slots;
   const char *devicePath;
-  GWEN_TYPE_UINT32 flags;
+  uint32_t flags;
   LCD_READER *r;
   char numbuf[16];
-  GWEN_TYPE_UINT32 retval;
+  uint32_t retval;
   GWEN_DB_NODE *dbRsp;
 
   assert(d);
@@ -75,6 +75,7 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
     DBG_WARN(0, "A reader with id \"%08x\" already exists", readerId);
 
     DBG_NOTICE(LCD_Reader_GetLogger(r), "Restarting reader");
+
     retval=LCD_Driver_DisconnectReader(d, r);
     if (retval==0)
       retval=LCD_Driver_ConnectReader(d, r);
@@ -88,12 +89,13 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
                            LCD_Driver_GetErrorText(d, retval));
     }
     else {
+      LCD_Reader_ResetErrorCount(r);
       if (LCD_Reader_GetReaderFlags(r) & LC_READER_FLAGS_NOINFO) {
         DBG_WARN(0, "ReaderInfo disabled");
       }
       else {
         GWEN_BUFFER *ibuf;
-        GWEN_TYPE_UINT32 rv;
+        uint32_t rv;
 
         ibuf=GWEN_Buffer_new(0, 256, 0, 1);
         rv=LCD_Driver_ReaderInfo(d, r, ibuf);
@@ -175,6 +177,7 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
                                 devicePath,
                                 slots, flags);
       assert(r);
+      LCD_Reader_ResetErrorCount(r);
       LCD_Driver_AddReader(d, r);
     }
 
@@ -192,8 +195,8 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
         if (GWEN_Logger_Open(name,
                              name,
                              GWEN_Buffer_GetStart(mbuf),
-                             GWEN_LoggerTypeFile,
-                             GWEN_LoggerFacilityDaemon)) {
+			     GWEN_LoggerType_File,
+                             GWEN_LoggerFacility_Daemon)) {
           DBG_ERROR(0, "Could not open logger for reader \"%s\"", name);
         }
         else {
@@ -208,8 +211,8 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
       if (GWEN_Logger_Open(name,
                            name,
                            0,
-                           GWEN_LoggerTypeConsole,
-                           GWEN_LoggerFacilityDaemon)) {
+                           GWEN_LoggerType_Console,
+                           GWEN_LoggerFacility_Daemon)) {
         DBG_ERROR(0, "Could not open logger for reader \"%s\"", name);
       }
     }
@@ -233,7 +236,7 @@ int LCD_Driver_HandleStartReader(LCD_DRIVER *d,
     }
     else {
       GWEN_BUFFER *ibuf;
-      GWEN_TYPE_UINT32 rv;
+      uint32_t rv;
 
       ibuf=GWEN_Buffer_new(0, 256, 0, 1);
       rv=LCD_Driver_ReaderInfo(d, r, ibuf);

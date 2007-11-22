@@ -25,12 +25,12 @@
 
 
 int LCCL_ClientManager_HandleExecApdu(LCCL_CLIENTMANAGER *clm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t clientId;
+  uint32_t cardId;
   int cmdVer;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
@@ -38,7 +38,7 @@ int LCCL_ClientManager_HandleExecApdu(LCCL_CLIENTMANAGER *clm,
   GWEN_IPC_REQUEST *dreq;
   GWEN_TIME *ti;
   int rv;
-  GWEN_TYPE_UINT32 outRid;
+  uint32_t outRid;
   GWEN_DB_NODE *dbOutReq;
   const void *p;
   unsigned int bs;
@@ -238,8 +238,8 @@ int LCCL_ClientManager_WorkExecApdu(GWEN_IPC_REQUEST *req) {
   LCCL_CLIENTMANAGER *clm;
   LCCL_CLIENT *cl;
   LCCO_CARD *card;
-  GWEN_TYPE_UINT32 rid;
-  GWEN_TYPE_UINT32 drid;
+  uint32_t rid;
+  uint32_t drid;
   GWEN_IPC_REQUEST *dreq;
   GWEN_DB_NODE *dbDriverResponse;
 

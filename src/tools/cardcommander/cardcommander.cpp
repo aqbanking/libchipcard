@@ -40,9 +40,10 @@
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
+#include <gwenhywfar/cgui.h>
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
 
 using namespace std;
 
@@ -56,7 +57,7 @@ using namespace std;
 const GWEN_ARGS prg_args[]={
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "logtype",                    /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -67,7 +68,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "loglevel",                   /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -78,7 +79,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "logfile",                    /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -89,7 +90,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   0,                            /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "verbosity",                  /* name */
   0,                            /* minnum */
   10,                           /* maxnum */
@@ -100,7 +101,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "help",                       /* name */
   0,                            /* minnum */
   0,                            /* maxnum */
@@ -383,7 +384,8 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     LC_Card_Dump(*card, stderr, 2);
   }
   else if (strcasecmp(cm.c_str(), "quit")==0 ||
-           strcasecmp(cm.c_str(), "exit")==0) {
+	   strcasecmp(cm.c_str(), "exit")==0 ||
+	   strcasecmp(cm.c_str(), "q")==0) {
     if (*card) {
       fprintf(stdout,I18N("Closing card before exiting...\n"));
       res=LC_Card_Close(*card);
@@ -440,6 +442,10 @@ int main(int argc, char **argv) {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   LC_CLIENT_RESULT res;
+  GWEN_GUI *gui;
+
+  gui=GWEN_Gui_CGui_new();
+  GWEN_Gui_SetGui(gui);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -450,7 +456,7 @@ int main(int argc, char **argv) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);
-    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutTypeTXT)) {
+    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
       fprintf(stderr, "Could not generate usage string.\n");
       GWEN_Buffer_free(ubuf);
       return 1;
@@ -467,29 +473,29 @@ int main(int argc, char **argv) {
   /* setup logging */
   s=GWEN_DB_GetCharValue(db, "loglevel", 0, "warning");
   logLevel=GWEN_Logger_Name2Level(s);
-  if (logLevel==GWEN_LoggerLevelUnknown) {
+  if (logLevel==GWEN_LoggerLevel_Unknown) {
     fprintf(stderr, "ERROR: Unknown log level (%s)\n", s);
     return 1;
   }
   s=GWEN_DB_GetCharValue(db, "logtype", 0, "console");
   logType=GWEN_Logger_Name2Logtype(s);
-  if (logType==GWEN_LoggerTypeUnknown) {
+  if (logType==GWEN_LoggerType_Unknown) {
     fprintf(stderr, "ERROR: Unknown log type (%s)\n", s);
     return 1;
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-		      "cardcommander3",
+		      "cardcommander",
 		      GWEN_DB_GetCharValue(db, "logfile", 0,
-					   "cardcommander3.log"),
+					   "cardcommander.log"),
 		      logType,
-		      GWEN_LoggerFacilityUser);
+		      GWEN_LoggerFacility_User);
   if (rv) {
     fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
     return 2;
   }
   GWEN_Logger_SetLevel(LC_LOGDOMAIN, logLevel);
 
-  cl=LC_Client_new("cardcommander3", "0");
+  cl=LC_Client_new("cardcommander", "0");
   res=LC_Client_Init(cl);
   if (res!=LC_Client_ResultOk) {
     showError(0, res, "Init");

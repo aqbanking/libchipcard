@@ -40,11 +40,11 @@ void LCCL_Request_SetClientManager(GWEN_IPC_REQUEST *rq,
 LCCL_CLIENT *LCCL_Request_GetClient(const GWEN_IPC_REQUEST *rq);
 void LCCL_Request_SetClient(GWEN_IPC_REQUEST *rq, LCCL_CLIENT *cl);
 
-GWEN_TYPE_UINT32 LCCL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq);
-void LCCL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i);
+uint32_t LCCL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq);
+void LCCL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, uint32_t i);
 
-GWEN_TYPE_UINT32 LCCL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq);
-void LCCL_Request_SetUint32Data2(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i);
+uint32_t LCCL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq);
+void LCCL_Request_SetUint32Data2(GWEN_IPC_REQUEST *rq, uint32_t i);
 
 
 

@@ -19,7 +19,8 @@
 #include "client_p.h"
 #include "card_l.h"
 #include "mon/monitor_l.h"
-#include <chipcard3/sharedstuff/msgengine.h>
+#include <chipcard/sharedstuff/msgengine.h>
+#include <chipcard/sharedstuff/driverinfo.h>
 
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/misc.h>
@@ -28,6 +29,7 @@
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/xml.h>
 #include <gwenhywfar/stringlist.h>
+#include <gwenhywfar/pathmanager.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -46,9 +48,10 @@
 
 
 static int lc_client__initcounter=0;
-static GWEN_XMLNODE *lc_client__card_nodes=0;
-static GWEN_XMLNODE *lc_client__app_nodes=0;
-static GWEN_DB_NODE *lc_client__config=0;
+static GWEN_XMLNODE *lc_client__card_nodes=NULL;
+static GWEN_XMLNODE *lc_client__app_nodes=NULL;
+static GWEN_DB_NODE *lc_client__driver_db=NULL;
+static GWEN_DB_NODE *lc_client__config=NULL;
 
 
 GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
@@ -63,103 +66,231 @@ GWEN_DB_NODE *LC_Client_GetCommonConfig() {
 
 int LC_Client_InitCommon() {
   if (lc_client__initcounter==0) {
-    GWEN_ERRORCODE err;
-    GWEN_XMLNODE *n;
-    GWEN_DB_NODE *db;
-    GWEN_BUFFER *fbuf;
-    FILE *f;
+    int rv;
+    GWEN_STRINGLIST *paths;
 
-    err=GWEN_Init();
-    if (!GWEN_Error_IsOk(err)) {
-      DBG_ERROR_ERR(LC_LOGDOMAIN, err);
-      return -1;
+    rv=GWEN_Init();
+    if (rv) {
+      DBG_ERROR_ERR(LC_LOGDOMAIN, rv);
+      return rv;
     }
 
-    if (!GWEN_Logger_Exists(LC_LOGDOMAIN)) {
+    if (!GWEN_Logger_IsOpen(LC_LOGDOMAIN)) {
       const char *s;
 
       /* only set our logger if it not already has been */
       GWEN_Logger_Open(LC_LOGDOMAIN, "chipcard3-client", 0,
-                       GWEN_LoggerTypeConsole,
-                       GWEN_LoggerFacilityUser);
-      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelWarning);
+		       GWEN_LoggerType_Console,
+                       GWEN_LoggerFacility_User);
+      GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevel_Warning);
 
       s=getenv("LC_LOGLEVEL");
       if (s) {
         GWEN_LOGGER_LEVEL ll;
 
         ll=GWEN_Logger_Name2Level(s);
-        if (ll!=GWEN_LoggerLevelUnknown) {
+        if (ll!=GWEN_LoggerLevel_Unknown) {
           GWEN_Logger_SetLevel(LC_LOGDOMAIN, ll);
-          DBG_WARN(0,
-                   "Overriding loglevel for Lichipcard-Client with \"%s\"",
+	  DBG_WARN(LC_LOGDOMAIN,
+                   "Overriding loglevel for Libchipcard-Client with \"%s\"",
                    s);
         }
         else {
-          DBG_ERROR(0, "Unknown loglevel \"%s\"",
-                    s);
+	  DBG_ERROR(0, "Unknown loglevel \"%s\"", s);
         }
       }
       else {
-        GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevelWarning);
+        GWEN_Logger_SetLevel(LC_LOGDOMAIN, GWEN_LoggerLevel_Warning);
       }
     }
+
+    /* define sysconf path */
+    GWEN_PathManager_DefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+    GWEN_PathManager_AddPathFromWinReg(LCC_PM_LIBNAME,
+				       LCC_PM_LIBNAME,
+				       LCC_PM_SYSCONFDIR,
+				       LCC_REGKEY_PATHS,
+				       LCC_REGKEY_SYSCONFDIR);
+#if defined(OS_WIN32) || defined(ENABLE_LOCAL_INSTALL)
+    /* add folder relative to EXE */
+    GWEN_PathManager_AddRelPath(LCC_PM_LIBNAME,
+				LCC_PM_LIBNAME,
+				LCC_PM_SYSCONFDIR,
+				LC_CLIENT_CONFIG_DIR,
+				GWEN_PathManager_RelModeExe);
+#else
+    /* add absolute folder */
+    GWEN_PathManager_AddPath(LCC_PM_LIBNAME,
+			     LCC_PM_LIBNAME,
+			     LCC_PM_SYSCONFDIR,
+			     LC_CLIENT_CONFIG_DIR);
+#endif
+
+    /* define data path */
+    GWEN_PathManager_DefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+    GWEN_PathManager_AddPathFromWinReg(LCC_PM_LIBNAME,
+				       LCC_PM_LIBNAME,
+				       LCC_PM_DATADIR,
+				       LCC_REGKEY_PATHS,
+				       LCC_REGKEY_DATADIR);
+#if defined(OS_WIN32) || defined(ENABLE_LOCAL_INSTALL)
+    /* add folder relative to EXE */
+    GWEN_PathManager_AddRelPath(LCC_PM_LIBNAME,
+				LCC_PM_LIBNAME,
+				LCC_PM_DATADIR,
+				LC_CLIENT_XML_DIR,
+				GWEN_PathManager_RelModeExe);
+#else
+    /* add absolute folder */
+    GWEN_PathManager_AddPath(LCC_PM_LIBNAME,
+			     LCC_PM_LIBNAME,
+			     LCC_PM_DATADIR,
+			     LC_CLIENT_XML_DIR);
+#endif
 
     /* load configuration file */
-    db=GWEN_DB_Group_new("config");
-    fbuf=GWEN_Buffer_new(0, 256, 0, 1);
-    GWEN_Buffer_AppendString(fbuf, LC_CLIENT_CONFIG_DIR DIRSEP);
-    GWEN_Buffer_AppendString(fbuf, LC_CLIENT_CONFIG_FILE);
-    DBG_INFO(LC_LOGDOMAIN,
-             "Trying config file \"%s\"",
-             GWEN_Buffer_GetStart(fbuf));
-    f=fopen(GWEN_Buffer_GetStart(fbuf), "r");
-    if (f==0) {
-      GWEN_Buffer_AppendString(fbuf, ".default");
-      DBG_INFO(LC_LOGDOMAIN,
-               "Trying config file \"%s\"",
-               GWEN_Buffer_GetStart(fbuf));
-      f=fopen(GWEN_Buffer_GetStart(fbuf), "r");
-    }
-    if (f) {
-      fclose(f);
-      if (GWEN_DB_ReadFile(db, GWEN_Buffer_GetStart(fbuf),
-			   GWEN_DB_FLAGS_DEFAULT |
-			   GWEN_PATH_FLAGS_CREATE_GROUP)) {
-	DBG_ERROR(LC_LOGDOMAIN,
-		  "Error in configuration file \"%s\"",
-		  GWEN_Buffer_GetStart(fbuf));
-	GWEN_Buffer_free(fbuf);
-	return -1;
+    paths=GWEN_PathManager_GetPaths(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+    if (paths) {
+      GWEN_DB_NODE *db;
+      GWEN_BUFFER *fbuf;
+
+      db=GWEN_DB_Group_new("config");
+      fbuf=GWEN_Buffer_new(0, 256, 0, 1);
+      rv=GWEN_Directory_FindFileInPaths(paths,
+					LC_CLIENT_CONFIG_FILE,
+					fbuf);
+      if (rv) {
+	DBG_INFO(LC_LOGDOMAIN,
+		 "Trying config file with suffix \".default\"");
+	rv=GWEN_Directory_FindFileInPaths(paths,
+					  LC_CLIENT_CONFIG_FILE".default",
+					  fbuf);
       }
+      GWEN_StringList_free(paths);
+      if (rv) {
+	DBG_WARN(LC_LOGDOMAIN,
+		 "No configuration file found, using defaults");
+      }
+      else {
+	rv=GWEN_DB_ReadFile(db, GWEN_Buffer_GetStart(fbuf),
+			    GWEN_DB_FLAGS_DEFAULT |
+			    GWEN_PATH_FLAGS_CREATE_GROUP,
+			    0, 5000);
+	if (rv<0) {
+	  DBG_ERROR(LC_LOGDOMAIN,
+		    "Error in configuration file \"%s\" (%d)",
+		    GWEN_Buffer_GetStart(fbuf), rv);
+	  GWEN_Buffer_free(fbuf);
+	  /* undo all init stuff so far */
+	  GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+	  GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+	  return rv;
+	}
+      }
+      GWEN_Buffer_free(fbuf);
+      lc_client__config=db;
     }
     else {
-      DBG_ERROR(LC_LOGDOMAIN,
-		"Client configuration file not found, "
-		"using defaults");
+      DBG_ERROR(LC_LOGDOMAIN, "Internal error: Paths not found");
+      return GWEN_ERROR_INTERNAL;
     }
-    GWEN_Buffer_free(fbuf);
-    lc_client__config=db;
 
-    /* load card XML files */
-    n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "cards");
-    if (LC_Client_ReadXmlFiles(n, "cards", "card")) {
-      DBG_ERROR(LC_LOGDOMAIN, "Could not read card files");
-      GWEN_XMLNode_free(n);
-      return -1;
-    }
-    lc_client__card_nodes=n;
-    /*GWEN_XMLNode_WriteFile(n, "/tmp/cards", GWEN_XML_FLAGS_DEFAULT);*/
+    /* load XML files */
+    paths=GWEN_PathManager_GetPaths(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+    if (paths) {
+      GWEN_XMLNODE *n;
+      GWEN_DB_NODE *db;
+      GWEN_BUFFER *fbuf;
+      uint32_t bpos;
 
-    /* load app XML files */
-    n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "apps");
-    if (LC_Client_ReadXmlFiles(n, "apps", "app")) {
-      DBG_ERROR(LC_LOGDOMAIN, "Could not read app files");
-      GWEN_XMLNode_free(n);
-      return -1;
+      fbuf=GWEN_Buffer_new(0, 256, 0, 1);
+      rv=GWEN_Directory_FindPathForFile(paths,
+					"cards/README",
+					fbuf);
+      GWEN_StringList_free(paths);
+      if (rv) {
+	DBG_ERROR(LC_LOGDOMAIN, "Data files not found (%d)", rv);
+        /* undo all init stuff so far */
+	GWEN_Buffer_free(fbuf);
+	GWEN_DB_Group_free(lc_client__config);
+        lc_client__config=NULL;
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+        return rv;
+      }
+
+      /* load card files */
+      n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "cards");
+      if (LC_Client_ReadXmlFiles(n,
+				 GWEN_Buffer_GetStart(fbuf),
+				 "cards", "card")) {
+	DBG_ERROR(LC_LOGDOMAIN, "Could not read card files");
+	GWEN_XMLNode_free(n);
+	/* undo all init stuff so far */
+	GWEN_Buffer_free(fbuf);
+	GWEN_DB_Group_free(lc_client__config);
+        lc_client__config=NULL;
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+	return GWEN_ERROR_GENERIC;
+      }
+      lc_client__card_nodes=n;
+
+      /* load app files */
+      n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "apps");
+      if (LC_Client_ReadXmlFiles(n,
+				 GWEN_Buffer_GetStart(fbuf),
+				 "apps", "app")) {
+	DBG_ERROR(LC_LOGDOMAIN, "Could not read app files");
+	GWEN_XMLNode_free(n);
+	/* undo all init stuff so far */
+	GWEN_XMLNode_free(lc_client__card_nodes);
+	lc_client__card_nodes=NULL;
+	GWEN_Buffer_free(fbuf);
+	GWEN_DB_Group_free(lc_client__config);
+        lc_client__config=NULL;
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+	return GWEN_ERROR_GENERIC;
+      }
+      lc_client__app_nodes=n;
+      /*GWEN_XMLNode_WriteFile(n, "/tmp/apps", GWEN_XML_FLAGS_DEFAULT);*/
+
+      /* load driver files (if any) */
+      bpos=GWEN_Buffer_GetPos(fbuf);
+      GWEN_Buffer_AppendString(fbuf, DIRSEP "drivers");
+      db=GWEN_DB_Group_new("drivers");
+      rv=LC_DriverInfo_ReadDrivers(GWEN_Buffer_GetStart(fbuf), db, 0, 1);
+      if (rv) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        GWEN_DB_Group_free(db);
+	/* undo all init stuff so far */
+	GWEN_XMLNode_free(lc_client__app_nodes);
+	lc_client__app_nodes=NULL;
+	GWEN_XMLNode_free(lc_client__card_nodes);
+	lc_client__card_nodes=NULL;
+	GWEN_Buffer_free(fbuf);
+	GWEN_DB_Group_free(lc_client__config);
+	lc_client__config=NULL;
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+	GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+	return rv;
+      }
+      lc_client__driver_db=db;
+      GWEN_Buffer_Crop(fbuf, 0, bpos);
+
+      /* insert more loading here */
+      GWEN_Buffer_free(fbuf);
     }
-    lc_client__app_nodes=n;
-    /*GWEN_XMLNode_WriteFile(n, "/tmp/apps", GWEN_XML_FLAGS_DEFAULT);*/
+    else {
+      DBG_ERROR(LC_LOGDOMAIN, "No data files found.");
+      /* undo all init stuff so far */
+      GWEN_DB_Group_free(lc_client__config);
+      lc_client__config=NULL;
+      GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+      GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+      return GWEN_ERROR_GENERIC;
+    }
   }
 
   lc_client__initcounter++;
@@ -170,12 +301,18 @@ int LC_Client_InitCommon() {
 
 void LC_Client_FiniCommon() {
   if (lc_client__initcounter==1) {
+    GWEN_DB_Group_free(lc_client__driver_db);
+    lc_client__driver_db=NULL;
     GWEN_DB_Group_free(lc_client__config);
     lc_client__config=0;
     GWEN_XMLNode_free(lc_client__app_nodes);
     lc_client__app_nodes=0;
     GWEN_XMLNode_free(lc_client__card_nodes);
     lc_client__card_nodes=0;
+
+    GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
+    GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
+
     GWEN_Logger_Close(LC_LOGDOMAIN);
     GWEN_Fini();
   }
@@ -196,7 +333,7 @@ LC_CLIENT *LC_BaseClient_new(const char *ioTypeName,
 
   if (LC_Client_InitCommon()) {
     DBG_ERROR(0, "Unable to initialize, aborting");
-    return 0;
+    return NULL;
   }
 
   GWEN_NEW_OBJECT(LC_CLIENT, cl);
@@ -405,7 +542,7 @@ LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl) {
 
 
 LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl,
-                                     GWEN_TYPE_UINT32 flags) {
+                                     uint32_t flags) {
   LC_CLIENT_RESULT res;
 
   assert(cl);
@@ -504,7 +641,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
 
   DBG_INFO(LC_LOGDOMAIN, "Sending:");
   GWEN_Text_LogString(apdu, len, LC_LOGDOMAIN,
-                      GWEN_LoggerLevelInfo);
+                      GWEN_LoggerLevel_Info);
 
   if (cl->execApduFn)
     res=cl->execApduFn(cl, card, apdu, len, rbuf, t, timeout);
@@ -515,7 +652,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
     GWEN_Text_LogString(GWEN_Buffer_GetStart(rbuf),
                         GWEN_Buffer_GetUsedBytes(rbuf),
                         LC_LOGDOMAIN,
-                        GWEN_LoggerLevelInfo);
+                        GWEN_LoggerLevel_Info);
   }
   return res;
 }
@@ -588,28 +725,56 @@ GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl) {
 
 
 
-GWEN_DB_NODE *LC_Client_GetReaderConfig(const LC_CLIENT *cl,
-                                        const char *reader) {
-  GWEN_DB_NODE *db;
+int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
+				     const char *readerName,
+				     GWEN_BUFFER *driverType,
+				     GWEN_BUFFER *readerType,
+				     uint32_t *pReaderFlags) {
+  GWEN_DB_NODE *dbDriver;
 
-  assert(cl);
-  db=cl->dbConfig;
-  if (!db)
-    return 0;
-  db=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "readerTypes");
-  if (!db)
-    return 0;
-  db=GWEN_DB_FindFirstGroup(db, "readerType");
-  while(db) {
-    const char *s;
+  dbDriver=GWEN_DB_FindFirstGroup(lc_client__driver_db, "driver");
+  while(dbDriver) {
+    const char *sDriverName;
 
-    s=GWEN_DB_GetCharValue(db, "readerType", 0, 0);
-    if (s && strcasecmp(s, reader)==0)
-      break;
-    db=GWEN_DB_FindNextGroup(db, "readerType");
+    sDriverName=GWEN_DB_GetCharValue(dbDriver, "driverName", 0, NULL);
+    if (sDriverName) {
+      GWEN_DB_NODE *dbReader;
+
+      dbReader=GWEN_DB_FindFirstGroup(dbDriver, "reader");
+      while(dbReader) {
+	const char *sReaderName;
+	const char *sTmpl;
+
+	sReaderName=GWEN_DB_GetCharValue(dbReader, "readerType", 0, NULL);
+	sTmpl=GWEN_DB_GetCharValue(dbReader, "devicePathTmpl", 0, NULL);
+	if (sReaderName && sTmpl) {
+	  if (-1!=GWEN_Text_ComparePattern(readerName, sTmpl, 1)) {
+	    /* reader found */
+	    GWEN_Buffer_AppendString(driverType, sDriverName);
+	    GWEN_Buffer_AppendString(readerType, sReaderName);
+	    *pReaderFlags=LC_ReaderFlags_fromDb(dbReader, "flags");
+	    DBG_INFO(LC_LOGDOMAIN,
+		     "Reader [%s] is [%s]/[%s], %08x",
+		     readerName,
+		     sDriverName, sReaderName, *pReaderFlags);
+	    return 0;
+	  }
+	}
+	else {
+	  DBG_INFO(LC_LOGDOMAIN,
+                   "Either reader name or template missing");
+	}
+	dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");
+      }
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN,
+	       "Driver name is missing");
+    }
+    dbDriver=GWEN_DB_FindNextGroup(dbDriver, "driver");
   }
 
-  return db;
+  return GWEN_ERROR_NOT_FOUND;
 }
 
 

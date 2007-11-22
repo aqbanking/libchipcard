@@ -1,4 +1,5 @@
-SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard starcos egkcard
+SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard
+DIST_SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
 
 DEFS += \
   -DBUILDING_CHIPCARD
@@ -19,8 +20,7 @@ libcards_la_LIBADD=\
   geldkarte/libcards-geldkarte.la \
   kvkcard/libcards-kvk.la \
   memorycard/libcards-memorycard.la \
-  processorcard/libcards-processorcard.la \
-  starcos/libcards-starcos.la
+  processorcard/libcards-processorcard.la
 
 appdatadir=@lc_client_xml_dir@/apps
 carddatadir=@lc_client_xml_dir@/cards

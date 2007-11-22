@@ -22,28 +22,8 @@
 #include <gwenhywfar/directory.h>
 
 
-void LCS_Server__CallbackStatusChg(GWEN_NETLAYER *nl,
-                                   GWEN_NETLAYER_STATUS nst) {
-  if (LCS_Connection_IsOfType(nl)) {
-    LCS_SERVER *server;
-
-    if (nst==GWEN_NetLayerStatus_Disconnected) {
-      DBG_NOTICE(0,
-                 "One of my connections is down. "
-                 "Don't worry just yet, this might be ok...");
-      server=LCS_Connection_GetServer(nl);
-      LCS_Server_ConnectionDown(server, nl);
-    }
-  }
-  else {
-    DBG_ERROR(0, "Hmm, not my connection...");
-  }
-}
-
-
-
 void LCS_Server_DriverChg(LCS_SERVER *cs,
-                          GWEN_TYPE_UINT32 did,
+                          uint32_t did,
                           const char *driverType,
                           const char *driverName,
                           const char *libraryFile,
@@ -64,7 +44,7 @@ void LCS_Server_DriverChg(LCS_SERVER *cs,
 
 
 void LCS_Server_ReaderChg(LCS_SERVER *cs,
-                          GWEN_TYPE_UINT32 did,
+                          uint32_t did,
                           LCCO_READER *r,
                           LC_READER_STATUS newSt,
                           const char *reason) {
@@ -93,7 +73,7 @@ void LCS_Server_ReaderChg(LCS_SERVER *cs,
 
 
 void LCS_Server_ServiceChg(LCS_SERVER *cs,
-                               GWEN_TYPE_UINT32 sid,
+                               uint32_t sid,
                                const char *serviceType,
                                const char *serviceName,
                                LC_SERVICE_STATUS newSt,
@@ -150,82 +130,49 @@ void LCS_Server_CardRemoved(LCS_SERVER *cs, LCCO_CARD *card) {
 
 
 
-void LCS_Server_ConnectionDown(LCS_SERVER *cs, GWEN_NETLAYER *conn) {
+void LCS_Server_ClientDown(GWEN_IPCMANAGER *mgr,
+			   uint32_t id,
+			   GWEN_IO_LAYER *io,
+			   void *user_data) {
+  LCS_SERVER *cs;
+
+  cs=(LCS_SERVER*) user_data;
+  LCS_Server_ConnectionDown(cs, id, io);
+  //GWEN_IpcManager_RemoveClient(cs->ipcManager, id);
+}
+
+
+
+void LCS_Server_ConnectionDown(LCS_SERVER *cs, uint32_t id, GWEN_IO_LAYER *conn) {
   assert(cs);
 
   if (LCS_Connection_IsOfType(conn)) {
     /* check for driver connection */
     if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Driver) {
-      GWEN_TYPE_UINT32 ipcId;
-
-      ipcId=GWEN_IpcManager_GetClientForNetLayer(cs->ipcManager, conn);
-      if (ipcId==0) {
-        DBG_ERROR(0, "IPC id for broken connection not found");
-        return;
-      }
-      LCDM_DeviceManager_DriverIpcDown(cs->deviceManager, ipcId);
+      LCDM_DeviceManager_DriverIpcDown(cs->deviceManager, id);
     }
     else {
       if (cs->role==LCS_Server_RoleSlave) {
         if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Master) {
-          LCSL_SlaveManager_ConnectionDown(cs->slaveManager, conn);
+	  LCSL_SlaveManager_ConnectionDown(cs->slaveManager, conn);
         }
       }
       else {
         /* check for service connection */
 	if (LCS_Connection_GetType(conn)==LCS_Connection_Type_Service ||
 	    LCS_Connection_GetType(conn)==LCS_Connection_Type_Client) {
-	  GWEN_TYPE_UINT32 clientId;
-
-	  /* client is down, tell this to card manager and client manager */
-	  clientId=
-	    GWEN_IpcManager_GetClientForNetLayer(cs->ipcManager,
-						 conn);
-	  if (clientId==0) {
-	    DBG_WARN(0, "Client for connection not found");
-	    return;
-	  }
-
 	  /* we must notify the service because it is basically just a client,
 	   * and maybe it is exactly this client here that pulled down a
 	   * service, too
 	   */
-	  LCSV_ServiceManager_ConnectionDown(cs->serviceManager, clientId);
-	  LCCL_ClientManager_ClientDown(cs->clientManager, clientId);
-	  LCDM_DeviceManager_ClientDown(cs->deviceManager, clientId);
+	  LCSV_ServiceManager_ConnectionDown(cs->serviceManager, id);
+	  LCCL_ClientManager_ClientDown(cs->clientManager, id);
+	  LCDM_DeviceManager_ClientDown(cs->deviceManager, id);
 	}
       }
     }
   }
 }
-
-
-
-GWEN_NL_SSL_ASKADDCERT_RESULT
-LCS_Server_AskAddCert(GWEN_NETLAYER *nl,
-                      const GWEN_SSLCERTDESCR *cert,
-                      void *user_data) {
-  LCS_SERVER *cs;
-
-  cs=(LCS_SERVER*)user_data;
-  assert(cs);
-  if (cs->askAddCertFn)
-    return cs->askAddCertFn(cs, nl, cert);
-  return GWEN_NetLayerSsl_AskAddCertResult_No;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

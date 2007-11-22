@@ -3,6 +3,9 @@ INCLUDES= \
   -I$(srcdir)/.. -I$(srcdir)/../.. -I$(srcdir)/../../common \
   @all_includes@
 
+DEFS+=-DLC_DEFAULT_CONFDIR=\"@lc_server_config_dir@\"
+
+
 noinst_LTLIBRARIES=libservicemgr.la
 
 noinst_HEADERS=\

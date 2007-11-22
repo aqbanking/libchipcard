@@ -15,18 +15,18 @@
 #define CHIPCARD_CLIENT_CARDPCSC_L_H
 
 #define LC_CARD_EXTEND_CLIENT
-#include <chipcard3/client/card_imp.h>
+#include <chipcard/client/card_imp.h>
 
 #include "clientpcsc_l.h"
 
 
 LC_CARD *LC_CardPcsc_new(LC_CLIENT *cl,
-                         GWEN_TYPE_UINT32 cardId,
+                         uint32_t cardId,
                          SCARDHANDLE scardHandle,
                          const char *readerName,
                          DWORD protocol,
                          const char *cardType,
-                         GWEN_TYPE_UINT32 rflags,
+                         uint32_t rflags,
                          const unsigned char *atrBuf,
                          unsigned int atrLen);
 

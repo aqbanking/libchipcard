@@ -20,13 +20,17 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inherit.h>
-#include <gwenhywfar/nl_socket.h>
-#include <gwenhywfar/nl_ssl.h>
-#include <gwenhywfar/nl_http.h>
-#include <gwenhywfar/net2.h>
 #include <gwenhywfar/directory.h>
 
-#include <chipcard3/chipcard3.h>
+#include <gwenhywfar/iolayer.h>
+#include <gwenhywfar/io_socket.h>
+#include <gwenhywfar/io_buffered.h>
+#include <gwenhywfar/io_http.h>
+#include <gwenhywfar/io_tls.h>
+#include <gwenhywfar/iomanager.h>
+#include <gwenhywfar/url.h>
+
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -36,7 +40,7 @@
 
 #include <time.h>
 
-static GWEN_TYPE_UINT32 LCD_Driver__LastCardNum=0;
+static uint32_t LCD_Driver__LastCardNum=0;
 
 
 GWEN_INHERIT_FUNCTIONS(LCD_DRIVER)
@@ -110,9 +114,9 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
   d->rname=0;
   d->rtype=0;
   d->dtype=0;
-  d->logType=GWEN_LoggerTypeConsole;
+  d->logType=GWEN_LoggerType_Console;
   d->logFile=strdup("driver.log");
-  d->logLevel=GWEN_LoggerLevelNotice;
+  d->logLevel=GWEN_LoggerLevel_Notice;
   d->serverPort=LC_DEFAULT_PORT;
   d->typ="local";
   d->certFile=0;
@@ -135,7 +139,7 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
       if (i>=argc)
         return LCD_DriverCheckArgsResultError;
       d->logType=GWEN_Logger_Name2Logtype(argv[i]);
-      if (d->logType==GWEN_LoggerTypeUnknown) {
+      if (d->logType==GWEN_LoggerType_Unknown) {
         DBG_ERROR(0, "Unknown log type \"%s\"\n", argv[i]);
         return LCD_DriverCheckArgsResultError;
       }
@@ -145,7 +149,7 @@ LCD_DRIVER_CHECKARGS_RESULT LCD_Driver_CheckArgs(LCD_DRIVER *d,
       if (i>=argc)
         return LCD_DriverCheckArgsResultError;
       d->logLevel=GWEN_Logger_Name2Level(argv[i]);
-      if (d->logLevel==GWEN_LoggerLevelUnknown) {
+      if (d->logLevel==GWEN_LoggerLevel_Unknown) {
         DBG_ERROR(0, "Unknown log level \"%s\"\n", argv[i]);
         return LCD_DriverCheckArgsResultError;
       }
@@ -316,12 +320,13 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
   }
 
   if (!d->testMode) {
-    GWEN_NETLAYER *nl;
-    GWEN_NETLAYER *nlBase;
     GWEN_SOCKET *sk;
     GWEN_INETADDRESS *addr;
-    GWEN_TYPE_UINT32 sid;
+    uint32_t sid;
+    GWEN_IO_LAYER *ioBase;
+    GWEN_IO_LAYER *io;
     GWEN_URL *url;
+    GWEN_DB_NODE *db;
 
     url=GWEN_Url_fromString(d->serverAddr);
     if (!url) {
@@ -334,14 +339,14 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
       DBG_ERROR(0, "Could not create log file for driver ");
       GWEN_Logger_Open(0, "driver",
                        0,
-                       GWEN_LoggerTypeConsole,
-                       GWEN_LoggerFacilityUser);
+		       GWEN_LoggerType_Console,
+                       GWEN_LoggerFacility_User);
     }
     else {
       GWEN_Logger_Open(0, "driver",
                        d->logFile,
                        d->logType,
-                       GWEN_LoggerFacilityUser);
+                       GWEN_LoggerFacility_User);
     }
     GWEN_Logger_SetLevel(0, d->logLevel);
     DBG_NOTICE(0, "Starting driver \"%s\" with lowlevel \"%s\"",
@@ -353,54 +358,41 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
     }
 
     d->ipcManager=GWEN_IpcManager_new();
+    GWEN_IpcManager_SetClientDownFn(d->ipcManager, LCD_Driver_ServerDown, (void*) d);
 
     if (strcasecmp(d->typ, "local")==0) {
       /* HTTP over UDS */
       sk=GWEN_Socket_new(GWEN_SocketTypeUnix);
       addr=GWEN_InetAddr_new(GWEN_AddressFamilyUnix);
       GWEN_InetAddr_SetAddress(addr, d->serverAddr);
-      nlBase=GWEN_NetLayerSocket_new(sk, 1);
-      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+      ioBase=GWEN_Io_LayerSocket_new(sk);
+      GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
     }
     else if (strcasecmp(d->typ, "public")==0) {
       /* HTTP over TCP */
-      sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-      addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
-      GWEN_InetAddr_SetAddress(addr, d->serverAddr);
-      GWEN_InetAddr_SetPort(addr, d->serverPort);
-      nlBase=GWEN_NetLayerSocket_new(sk, 1);
-      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+      DBG_ERROR(0, "Public IPC mode not supported for security reasons");
+      return -1;
     }
     else {
       sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
       addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
       GWEN_InetAddr_SetAddress(addr, d->serverAddr);
       GWEN_InetAddr_SetPort(addr, d->serverPort);
-      nlBase=GWEN_NetLayerSocket_new(sk, 1);
-      GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+
+      ioBase=GWEN_Io_LayerSocket_new(sk);
+      GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
+
+      io=GWEN_Io_LayerTls_new(ioBase);
+      ioBase=io;
+      GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_FORCE_SSL_V3);
 
       if (strcasecmp(d->typ, "private")==0) {
 	/* HTTP over SSL */
-        nl=GWEN_NetLayerSsl_new(nlBase,
-                                d->certDir,
-                                0,
-                                d->certFile,
-                                0,
-                                0);
-        GWEN_NetLayer_free(nlBase);
-        GWEN_NetLayerSsl_SetAskAddCertFn(nl, LCD_Driver_AskAddCert, (void*)d);
-        nlBase=nl;
       }
       else if (strcasecmp(d->typ, "secure")==0) {
 	/* HTTP over SSL with certificates */
-        nl=GWEN_NetLayerSsl_new(nlBase,
-                                d->certDir,
-                                0,
-                                d->certFile,
-                                0,
-                                1);
-        GWEN_NetLayer_free(nlBase);
-        nlBase=nl;
+	GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_NEED_PEER_CERT);
+	/* TODO: add a flag which makes the io layer require and check the cert */
       }
       else {
 	DBG_ERROR(0, "Unknown mode \"%s\"", d->typ);
@@ -411,14 +403,26 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv) {
     }
     GWEN_InetAddr_free(addr);
 
-    nl=GWEN_NetLayerHttp_new(nlBase);
-    GWEN_NetLayer_free(nlBase);
-    GWEN_NetLayerHttp_SetOutCommand(nl, "POST", url);
+    io=GWEN_Io_LayerBuffered_new(ioBase);
+    ioBase=io;
+
+    io=GWEN_Io_LayerHttp_new(ioBase);
+    GWEN_Io_Layer_AddFlags(io, GWEN_IO_LAYER_HTTP_FLAGS_IPC);
+
+    db=GWEN_Io_LayerHttp_GetDbCommandOut(io);
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "command", "POST");
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "protocol", "HTTP/1.1");
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "url", GWEN_Url_GetPath(url));
+
+    db=GWEN_Io_LayerHttp_GetDbHeaderOut(io);
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Host", GWEN_Url_GetServer(url));
+    GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Connection", "keep alive");
+
+    ioBase=io;
+
     GWEN_Url_free(url);
 
-    sid=GWEN_IpcManager_AddClient(d->ipcManager,
-                                  nl,
-                                  LCD_DRIVER_MARK_DRIVER);
+    sid=GWEN_IpcManager_AddClient(d->ipcManager, ioBase, LCD_DRIVER_MARK_DRIVER);
     if (sid==0) {
       DBG_ERROR(0, "Could not add IPC client");
       return -1;
@@ -442,7 +446,7 @@ int LCD_Driver_IsTestMode(const LCD_DRIVER *d) {
 
 int LCD_Driver_Test(LCD_DRIVER *d) {
   LCD_READER *r;
-  GWEN_TYPE_UINT32 res;
+  uint32_t res;
 
   assert(d);
   if (!d->testMode) {
@@ -536,7 +540,7 @@ LCD_READER *LCD_Driver_FindReaderByPort(const LCD_DRIVER *d, int port) {
 
 
 
-LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, GWEN_TYPE_UINT32 id){
+LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, uint32_t id){
   LCD_READER *r;
 
   assert(d);
@@ -552,7 +556,7 @@ LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, GWEN_TYPE_UINT32 id){
 
 
 LCD_READER *LCD_Driver_FindReaderByDriversId(const LCD_DRIVER *d,
-                                             GWEN_TYPE_UINT32 id){
+                                             uint32_t id){
   LCD_READER *r;
 
   assert(d);
@@ -625,27 +629,17 @@ int LCD_Driver_ReplaceVar(const char *path,
 
 
 
-GWEN_NL_SSL_ASKADDCERT_RESULT
-LCD_Driver_AskAddCert(GWEN_NETLAYER *nl,
-                      const GWEN_SSLCERTDESCR *cert,
-                      void *user_data) {
+void LCD_Driver_ServerDown(GWEN_IPCMANAGER *mgr,
+			   uint32_t id,
+			   GWEN_IO_LAYER *io,
+			   void *user_data) {
   LCD_DRIVER *d;
 
-  d=(LCD_DRIVER*)user_data;
-  if (!d) {
-    DBG_ERROR(0, "No user data in AskAddCert function");
-    return GWEN_NetLayerSsl_AskAddCertResult_No;
-  }
+  d=(LCD_DRIVER*) user_data;
 
-  if (d->acceptAllCerts)
-    return GWEN_NetLayerSsl_AskAddCertResult_Tmp;
-  return GWEN_NetLayerSsl_AskAddCertResult_No;
+  d->stopDriver=1;
+  DBG_ERROR(0, "Lost connection to server, going down as well");
 }
-
-
-
-
-
 
 
 #include "d_handle.c"

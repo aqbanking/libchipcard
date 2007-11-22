@@ -12,8 +12,8 @@ struct LCS_LOCKREQUEST {
   int _usage;
   int _modified;
 
-  GWEN_TYPE_UINT32 requestId;
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t requestId;
+  uint32_t clientId;
   GWEN_TIME *lockTime;
   int duration;
   GWEN_TIME *lockUntil;

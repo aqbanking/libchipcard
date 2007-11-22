@@ -17,7 +17,7 @@
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/list2.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LC_NOTIFICATION, LC_Notification, CHIPCARD_API)
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_NOTIFICATION, CHIPCARD_API)
 
 CHIPCARD_API
-LC_NOTIFICATION *LC_Notification_new(GWEN_TYPE_UINT32 serverId,
+LC_NOTIFICATION *LC_Notification_new(uint32_t serverId,
                                      const char *clientId,
                                      const char *ntype,
                                      const char *ncode,
@@ -40,7 +40,7 @@ CHIPCARD_API
 void LC_Notification_free(LC_NOTIFICATION *n);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LC_Notification_GetServerId(const LC_NOTIFICATION *n);
+uint32_t LC_Notification_GetServerId(const LC_NOTIFICATION *n);
 CHIPCARD_API
 const char *LC_Notification_GetClientId(const LC_NOTIFICATION *n);
 CHIPCARD_API

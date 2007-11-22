@@ -15,7 +15,7 @@
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_SendAPDU(LCD_DRIVER *d,
+uint32_t LCD_Driver_SendAPDU(LCD_DRIVER *d,
                                      int toReader,
                                      LCD_READER *r,
                                      LCD_SLOT *slot,
@@ -31,7 +31,7 @@ GWEN_TYPE_UINT32 LCD_Driver_SendAPDU(LCD_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
+uint32_t LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->connectSlotFn);
   return d->connectSlotFn(d, sl);
@@ -39,8 +39,8 @@ GWEN_TYPE_UINT32 LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r){
-  GWEN_TYPE_UINT32 rv;
+uint32_t LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r){
+  uint32_t rv;
 
   assert(d);
   assert(d->connectReaderFn);
@@ -52,7 +52,7 @@ GWEN_TYPE_UINT32 LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
+uint32_t LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->disconnectSlotFn);
   return d->disconnectSlotFn(d, sl);
@@ -60,8 +60,8 @@ GWEN_TYPE_UINT32 LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r){
-  GWEN_TYPE_UINT32 rv;
+uint32_t LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r){
+  uint32_t rv;
 
   assert(d);
   assert(d->disconnectReaderFn);
@@ -72,7 +72,7 @@ GWEN_TYPE_UINT32 LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl){
+uint32_t LCD_Driver_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl){
   assert(d);
   assert(d->resetSlotFn);
   return d->resetSlotFn(d, sl);
@@ -80,7 +80,7 @@ GWEN_TYPE_UINT32 LCD_Driver_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_ReaderStatus(LCD_DRIVER *d, LCD_READER *r){
+uint32_t LCD_Driver_ReaderStatus(LCD_DRIVER *d, LCD_READER *r){
   assert(d);
   assert(d->readerStatusFn);
   return d->readerStatusFn(d, r);
@@ -88,7 +88,7 @@ GWEN_TYPE_UINT32 LCD_Driver_ReaderStatus(LCD_DRIVER *d, LCD_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LCD_Driver_ReaderInfo(LCD_DRIVER *d,
+uint32_t LCD_Driver_ReaderInfo(LCD_DRIVER *d,
                                       LCD_READER *r,
                                       GWEN_BUFFER *buf){
   assert(d);
@@ -99,12 +99,12 @@ GWEN_TYPE_UINT32 LCD_Driver_ReaderInfo(LCD_DRIVER *d,
 
 
 LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
-                                    GWEN_TYPE_UINT32 readerId,
+                                    uint32_t readerId,
                                     const char *name,
                                     int port,
                                     const char *devicePath,
                                     unsigned int slots,
-                                    GWEN_TYPE_UINT32 flags){
+                                    uint32_t flags){
   LCD_READER *r;
 
   assert(d);
@@ -131,7 +131,7 @@ LCD_READER *LCD_Driver_CreateReader(LCD_DRIVER *d,
 
 
 
-const char *LCD_Driver_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err){
+const char *LCD_Driver_GetErrorText(LCD_DRIVER *d, uint32_t err){
   assert(d);
   if (err>=0x80000000)
     return LC_Error_toString(err & 0x7fffffff);

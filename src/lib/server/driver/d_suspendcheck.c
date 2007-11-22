@@ -16,9 +16,9 @@
 
 
 int LCD_Driver_HandleSuspendCheck(LCD_DRIVER *d,
-                                  GWEN_TYPE_UINT32 rid,
+                                  uint32_t rid,
                                   GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   LCD_READER *r;
 
   assert(d);

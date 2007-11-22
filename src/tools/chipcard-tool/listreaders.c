@@ -20,8 +20,8 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
-#include <chipcard3/client/mon/monitor.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
+#include <chipcard/client/mon/monitor.h>
 #include <gwenhywfar/debug.h>
 
 
@@ -81,7 +81,7 @@ void _listReaders_show(LCM_MONITOR *mon, GWEN_DB_NODE *dbArgs) {
       fprintf(stdout, "  Readers:\n");
       while(mr) {
         const char *ds;
-        GWEN_TYPE_UINT32 rflags;
+        uint32_t rflags;
 
         ds=LCM_Reader_GetShortDescr(mr);
         if (!ds)

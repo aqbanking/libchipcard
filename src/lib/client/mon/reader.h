@@ -23,7 +23,7 @@
 
 typedef struct LCM_READER LCM_READER;
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>
@@ -35,14 +35,14 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_READER, LCM_Reader, CHIPCARD_API)
 
 
 CHIPCARD_API
-LCM_READER *LCM_Reader_new(GWEN_TYPE_UINT32 serverId);
+LCM_READER *LCM_Reader_new(uint32_t serverId);
 CHIPCARD_API
 void LCM_Reader_free(LCM_READER *mr);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Reader_GetServerId(const LCM_READER *mr);
+uint32_t LCM_Reader_GetServerId(const LCM_READER *mr);
 CHIPCARD_API
-void LCM_Reader_SetServerId(LCM_READER *mr, GWEN_TYPE_UINT32 i);
+void LCM_Reader_SetServerId(LCM_READER *mr, uint32_t i);
 
 
 CHIPCARD_API
@@ -86,9 +86,9 @@ CHIPCARD_API
 void LCM_Reader_SetReaderPort(LCM_READER *mr, int i);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Reader_GetReaderFlags(const LCM_READER *mr);
+uint32_t LCM_Reader_GetReaderFlags(const LCM_READER *mr);
 CHIPCARD_API
-void LCM_Reader_SetReaderFlags(LCM_READER *mr, GWEN_TYPE_UINT32 i);
+void LCM_Reader_SetReaderFlags(LCM_READER *mr, uint32_t i);
 
 CHIPCARD_API
 GWEN_BUFFER *LCM_Reader_GetLogBuffer(const LCM_READER *mr);

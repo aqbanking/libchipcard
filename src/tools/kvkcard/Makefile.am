@@ -1,18 +1,20 @@
-bin_PROGRAMS=kvkcard3
+bin_PROGRAMS=kvkcard
 
 INCLUDES=@all_includes@
 
+EXTRA_DIST=README daemon.c read.c
+
 noinst_HEADERS=global.h
 
-# if IS_WINDOWS
+kvkcard_SOURCES=\
+  main.c
+kvkcard_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
+kvkcard_LDFLAGS=@STRIPALL@
+
 if IS_WINDOWS
- mingw_ldflags=-L/mingw/lib
+kvkcard_LDFLAGS+=-mconsole
 endif
 
-kvkcard3_SOURCES=\
-  main.c
-kvkcard3_LDADD=../../lib/client/libchipcard3c.la $(mingw_ldflags) @gwenhywfar_libs@
-kvkcard3_LDFLAGS=@STRIPALL@
 
 MAINTAINERCLEANFILES=Makefile.in
 

@@ -16,7 +16,7 @@
 
 #include "clientlcc.h"
 #define LC_CARD_EXTEND_CLIENT
-#include <chipcard3/client/client_imp.h>
+#include <chipcard/client/client_imp.h>
 
 
 
@@ -24,26 +24,30 @@ LC_CLIENTLCC_HANDLE_REQUEST_FN
 LC_ClientLcc_SetHandleRequestFn(LC_CLIENT *cl,
                                 LC_CLIENTLCC_HANDLE_REQUEST_FN fn);
 
-int LC_ClientLcc_DeleteInRequest(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid);
+int LC_ClientLcc_DeleteInRequest(LC_CLIENT *cl, uint32_t rid);
 
 int LC_ClientLcc_SendResponse(LC_CLIENT *cl,
-                              GWEN_TYPE_UINT32 rid,
+                              uint32_t rid,
                               GWEN_DB_NODE *rsp);
 
-GWEN_TYPE_UINT32 LC_ClientLcc_SendRequest(LC_CLIENT *cl,
-                                          LC_CARD *card,
-                                          GWEN_TYPE_UINT32 serverId,
-                                          GWEN_DB_NODE *dbReq);
+uint32_t LC_ClientLcc_SendRequest(LC_CLIENT *cl,
+				  LC_CARD *card,
+				  uint32_t serverId,
+				  GWEN_DB_NODE *dbReq);
 
 GWEN_DB_NODE *LC_ClientLcc_GetNextResponse(LC_CLIENT *cl,
-                                           GWEN_TYPE_UINT32 rqid);
+                                           uint32_t rqid);
 
-GWEN_DB_NODE *LC_ClientLcc_WaitForNextResponse(LC_CLIENT *cl,
-                                               GWEN_TYPE_UINT32 rqid,
-                                               int timeout);
+/* if pDbRsp is NULL then this function only waits for a next response without pulling it
+ * from the ipc manager.
+ */
+LC_CLIENT_RESULT LC_ClientLcc_WaitForNextResponse(LC_CLIENT *cl,
+						  uint32_t rqid,
+						  GWEN_DB_NODE **pDbRsp,
+						  int timeout);
 
 LC_CLIENT_RESULT
-LC_ClientLcc_CheckResponse(LC_CLIENT *cl, GWEN_TYPE_UINT32 rid);
+LC_ClientLcc_CheckResponse(LC_CLIENT *cl, uint32_t rid);
 
 LC_CLIENT_RESULT LC_ClientLcc_CheckForError(GWEN_DB_NODE *db);
 

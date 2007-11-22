@@ -23,7 +23,7 @@
 
 typedef struct LCM_SERVICE LCM_SERVICE;
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/list2.h>
 #include <gwenhywfar/buffer.h>
@@ -37,8 +37,8 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_SERVICE, LCM_Service, CHIPCARD_API)
 
 
 CHIPCARD_API
-LCM_SERVICE *LCM_Service_new(GWEN_TYPE_UINT32 serverId,
-                             GWEN_TYPE_UINT32 serviceId,
+LCM_SERVICE *LCM_Service_new(uint32_t serverId,
+                             uint32_t serviceId,
                              const char *serviceName);
 CHIPCARD_API
 void LCM_Service_free(LCM_SERVICE *ms);
@@ -46,10 +46,10 @@ void LCM_Service_free(LCM_SERVICE *ms);
 /**
  */
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Service_GetServiceId(const LCM_SERVICE *ms);
+uint32_t LCM_Service_GetServiceId(const LCM_SERVICE *ms);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Service_GetServerId(const LCM_SERVICE *ms);
+uint32_t LCM_Service_GetServerId(const LCM_SERVICE *ms);
 
 CHIPCARD_API
 const char *LCM_Service_GetServiceName(const LCM_SERVICE *ms);

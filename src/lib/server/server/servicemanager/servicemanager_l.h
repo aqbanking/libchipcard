@@ -37,15 +37,15 @@ int LCSV_ServiceManager_Work(LCSV_SERVICEMANAGER *svm);
 int LCSV_ServiceManager_ListServices(LCSV_SERVICEMANAGER *svm);
 
 int LCSV_ServiceManager_HandleRequest(LCSV_SERVICEMANAGER *svm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq);
 
 void LCSV_ServiceManager_ConnectionDown(LCSV_SERVICEMANAGER *svm,
-                                        GWEN_TYPE_UINT32 ipcId);
+                                        uint32_t ipcId);
 
-GWEN_TYPE_UINT32 LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
-                                                 GWEN_TYPE_UINT32 serviceId,
+uint32_t LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
+                                                 uint32_t serviceId,
                                                  GWEN_DB_NODE *dbCmd);
 
 /**

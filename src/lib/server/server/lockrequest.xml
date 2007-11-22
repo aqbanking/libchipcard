@@ -9,7 +9,7 @@
     </functions>
   </type>
 
-  <type id="GWEN_TYPE_UINT32" dbtype="int" />
+  <type id="uint32_t" dbtype="int" />
 
 </typedefs>
 
@@ -26,8 +26,8 @@
       <header type="sys" >gwenhywfar/gwentime.h</header>
     </headers>
     
-    <elem name="requestId" type="GWEN_TYPE_UINT32" />
-    <elem name="clientId" type="GWEN_TYPE_UINT32" />
+    <elem name="requestId" type="uint32_t" />
+    <elem name="clientId" type="uint32_t" />
     <elem name="lockTime" type="GWEN_TIME" ptr="1" />
     <elem name="duration" type="int" />
     <elem name="lockUntil" type="GWEN_TIME" ptr="1" />

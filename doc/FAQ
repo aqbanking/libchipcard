@@ -19,4 +19,4 @@ A: If the tool cjgeldkarte (which comes with the driver) shows an error on
    Just plug the reader into another USB port. For me that fixed this problem.
 
 Q: What driver should I use for my device ?
-A: You should use driver 2.0.9 or later.
+A: You should use driver 2.0.14 or later.

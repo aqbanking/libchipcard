@@ -4,7 +4,7 @@
 void LC_Client__SampleXmlFiles(const char *where,
                                GWEN_STRINGLIST *sl) {
   GWEN_BUFFER *buf;
-  GWEN_DIRECTORYDATA *d;
+  GWEN_DIRECTORY *d;
   unsigned int dpos;
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -160,6 +160,7 @@ int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
 
 
 int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
+			   const char *basedir,
                            const char *tPlural,
                            const char *tSingular) {
   GWEN_STRINGLIST *sl;
@@ -170,7 +171,7 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
   /* prepare path */
   sl=GWEN_StringList_new();
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  GWEN_Buffer_AppendString(buf, LC_CLIENT_XML_DIR);
+  GWEN_Buffer_AppendString(buf, basedir);
   GWEN_Buffer_AppendString(buf, DIRSEP);
   GWEN_Buffer_AppendString(buf, tPlural);
 

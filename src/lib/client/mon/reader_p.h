@@ -20,7 +20,7 @@
 
 struct LCM_READER {
   GWEN_LIST_ELEMENT(LCM_READER)
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   char *readerId;
   char *driverId;
   char *readerType;
@@ -28,7 +28,7 @@ struct LCM_READER {
   char *readerInfo;
   char *shortDescr;
   int readerPort;
-  GWEN_TYPE_UINT32 readerFlags;
+  uint32_t readerFlags;
 
   char *status;
   time_t lastChangeTime;

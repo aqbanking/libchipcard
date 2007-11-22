@@ -13,9 +13,13 @@
 #include <stdlib.h>
 #include <strings.h>
 
+#include <gwenhywfar/types.h>
+#include <gwenhywfar/gwentime.h>
 
 
 GWEN_LIST_FUNCTIONS(LCS_LOCKREQUEST, LCS_LockRequest)
+
+
 
 
 LCS_LOCKREQUEST *LCS_LockRequest_new() {
@@ -79,38 +83,56 @@ int LCS_LockRequest_toDb(const LCS_LOCKREQUEST *st, GWEN_DB_NODE *db) {
 }
 
 
-LCS_LOCKREQUEST *LCS_LockRequest_fromDb(GWEN_DB_NODE *db) {
-LCS_LOCKREQUEST *st;
-
+int LCS_LockRequest_ReadDb(LCS_LOCKREQUEST *st, GWEN_DB_NODE *db) {
+  assert(st);
   assert(db);
-  st=LCS_LockRequest_new();
   LCS_LockRequest_SetRequestId(st, GWEN_DB_GetIntValue(db, "requestId", 0, 0));
   LCS_LockRequest_SetClientId(st, GWEN_DB_GetIntValue(db, "clientId", 0, 0));
-  if (1) {
+  if (1) { /* for local vars */
     GWEN_DB_NODE *dbT;
 
     dbT=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "lockTime");
-    if (dbT) st->lockTime=GWEN_Time_fromDb(dbT);
+    if (dbT) {
+  if (st->lockTime)
+    GWEN_Time_free(st->lockTime);
+  st->lockTime=GWEN_Time_fromDb(dbT);
+}
   }
   LCS_LockRequest_SetDuration(st, GWEN_DB_GetIntValue(db, "duration", 0, 0));
-  if (1) {
+  if (1) { /* for local vars */
     GWEN_DB_NODE *dbT;
 
     dbT=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "lockUntil");
-    if (dbT) st->lockUntil=GWEN_Time_fromDb(dbT);
+    if (dbT) {
+  if (st->lockUntil)
+    GWEN_Time_free(st->lockUntil);
+  st->lockUntil=GWEN_Time_fromDb(dbT);
+}
   }
+  return 0;
+}
+
+
+LCS_LOCKREQUEST *LCS_LockRequest_fromDb(GWEN_DB_NODE *db) {
+  LCS_LOCKREQUEST *st;
+
+  assert(db);
+  st=LCS_LockRequest_new();
+  LCS_LockRequest_ReadDb(st, db);
   st->_modified=0;
   return st;
 }
 
 
-GWEN_TYPE_UINT32 LCS_LockRequest_GetRequestId(const LCS_LOCKREQUEST *st) {
+
+
+uint32_t LCS_LockRequest_GetRequestId(const LCS_LOCKREQUEST *st) {
   assert(st);
   return st->requestId;
 }
 
 
-void LCS_LockRequest_SetRequestId(LCS_LOCKREQUEST *st, GWEN_TYPE_UINT32 d) {
+void LCS_LockRequest_SetRequestId(LCS_LOCKREQUEST *st, uint32_t d) {
   assert(st);
   st->requestId=d;
   st->_modified=1;
@@ -119,13 +141,13 @@ void LCS_LockRequest_SetRequestId(LCS_LOCKREQUEST *st, GWEN_TYPE_UINT32 d) {
 
 
 
-GWEN_TYPE_UINT32 LCS_LockRequest_GetClientId(const LCS_LOCKREQUEST *st) {
+uint32_t LCS_LockRequest_GetClientId(const LCS_LOCKREQUEST *st) {
   assert(st);
   return st->clientId;
 }
 
 
-void LCS_LockRequest_SetClientId(LCS_LOCKREQUEST *st, GWEN_TYPE_UINT32 d) {
+void LCS_LockRequest_SetClientId(LCS_LOCKREQUEST *st, uint32_t d) {
   assert(st);
   st->clientId=d;
   st->_modified=1;
@@ -168,11 +190,11 @@ void LCS_LockRequest_SetDuration(LCS_LOCKREQUEST *st, int d) {
 
 
 
+
 const GWEN_TIME *LCS_LockRequest_GetLockUntil(const LCS_LOCKREQUEST *st) {
   assert(st);
   return st->lockUntil;
 }
-
 
 
 void LCS_LockRequest_SetLockUntil(LCS_LOCKREQUEST *st, const GWEN_TIME *d) {
@@ -225,6 +247,7 @@ LCS_LOCKREQUEST_LIST *LCS_LockRequest_List_dup(const LCS_LOCKREQUEST_LIST *stl) 
   else
     return 0;
 }
+
 
 
 

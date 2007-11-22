@@ -26,7 +26,7 @@
 int LCS_Server_HandleNextCommand(LCS_SERVER *cs) {
   const char *name;
   int rv;
-  GWEN_TYPE_UINT32 ridNext;
+  uint32_t ridNext;
   GWEN_DB_NODE *dbReq;
 
   assert(cs);
@@ -165,7 +165,7 @@ int LCS_Server_Work(LCS_SERVER *cs) {
   }
 
   if (done)
-    return 1;
+    return LCS_WORKRESULT_UNCHANGED;
 
   return 0;
 }
@@ -173,7 +173,7 @@ int LCS_Server_Work(LCS_SERVER *cs) {
 
 
 int LCS_Server_HandleRequest(LCS_SERVER *cs,
-                             GWEN_TYPE_UINT32 rid,
+                             uint32_t rid,
                              const char *name,
                              GWEN_DB_NODE *dbReq) {
   int rv;
@@ -246,14 +246,12 @@ void LCS_Server_EndUseReaders(LCS_SERVER *cs, int count) {
 
 
 void LCS_Server_UseConnectionFor(LCS_SERVER *cs,
-                                 GWEN_NETLAYER *conn,
+				 GWEN_IO_LAYER *conn,
                                  LCS_CONNECTION_TYPE t,
-                                 GWEN_TYPE_UINT32 ipcId) {
+                                 uint32_t ipcId) {
   LCS_Connection_TakeOver(conn);
   LCS_Connection_SetType(conn, t);
   LCS_Connection_SetServer(conn, cs);
-
-  GWEN_NetLayer_SetStatusChangeFn(conn, LCS_Server__CallbackStatusChg);
 }
 
 

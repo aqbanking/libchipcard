@@ -15,17 +15,17 @@
 
 
 int LCSL_SlaveManager_HandleCardReset(LCSL_SLAVEMANAGER *slm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq) {
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   const char *s;
   unsigned int x;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t cardId;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
-  GWEN_TYPE_UINT32 outRid;
+  uint32_t outRid;
   GWEN_DB_NODE *dbOutReq;
   LCCO_READER_LIST2_ITERATOR *it;
   LCCO_READER *sr=0;

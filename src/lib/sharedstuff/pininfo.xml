@@ -1,5 +1,5 @@
 <typedefs>
-  <type id="GWEN_TYPE_UINT32" dbtype="int" />
+  <type id="uint32_t" dbtype="int" />
 </typedefs>
 
 
@@ -13,46 +13,15 @@
         list="lib"
         list2="public" >
 
-    <subtypes>
-      <type id="ENCODING" prefix="Encoding" mode="enum" access="public" >
-        <values>
-          <value value="0">none
-            <descr>
-              No encoding given.
-            </descr>
-          </value>
-          <value>bin
-            <descr>
-              Binary encoding.
-            </descr>
-          </value>
-          <value>bcd
-            <descr>
-              BCD encoding.
-            </descr>
-          </value>
-          <value>ascii
-            <descr>
-              ASCII encoding
-            </descr>
-          </value>
-          <value>fpin2
-            <descr>
-              FPIN2 encoding
-            </descr>
-          </value>
-        </values>
-      </type>
-    </subtypes>
-
     <headers>
       <header type="sys" >gwenhywfar/types.h</header>
-      <header type="sys" >chipcard2/chipcard2.h</header>
+      <header type="sys" >gwenhywfar/cryptdefs.h</header>
+      <header type="sys" >chipcard3/chipcard3.h</header>
     </headers>
     
     <elem name="name" type="char" ptr="1" />
-    <elem name="id" type="GWEN_TYPE_UINT32" />
-    <elem name="encoding" type="ENCODING" />
+    <elem name="id" type="uint32_t" />
+    <elem name="encoding" type="GWEN_CRYPT_PINENCODING" />
     <elem name="minLength" type="int" />
     <elem name="maxLength" type="int" />
     <elem name="allowChange" type="int" />

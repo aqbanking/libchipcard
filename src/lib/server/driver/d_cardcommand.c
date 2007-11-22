@@ -16,9 +16,9 @@
 
 
 int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
-                                GWEN_TYPE_UINT32 rid,
+                                uint32_t rid,
                                 GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   GWEN_DB_NODE *dbRsp;
   LCD_READER *r;
   char numbuf[16];
@@ -144,7 +144,7 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
   }
 
   DBG_DEBUG(LCD_Reader_GetLogger(r), "Executing command");
-  GWEN_Text_LogString((const char*)apdu, apdulen, 0, GWEN_LoggerLevelDebug);
+  GWEN_Text_LogString((const char*)apdu, apdulen, 0, GWEN_LoggerLevel_Debug);
   dbRsp=GWEN_DB_Group_new("Driver_CardCommandResponse");
   rsplen=sizeof(rspbuffer)-1;
   retval=LCD_Driver_SendAPDU(d, toReader, r, slot, apdu, apdulen,
@@ -168,7 +168,8 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
     else {
       /* init ok */
       DBG_DEBUG(LCD_Reader_GetLogger(r), "Command succeeded");
-      GWEN_Text_LogString((const char*)rspbuffer, rsplen, 0, GWEN_LoggerLevelDebug);
+      GWEN_Text_LogString((const char*)rspbuffer, rsplen, 0,
+			  GWEN_LoggerLevel_Debug);
 
       GWEN_DB_SetIntValue(dbRsp, GWEN_DB_FLAGS_OVERWRITE_VARS,
                           "code", 0);
@@ -199,15 +200,19 @@ int LCD_Driver_HandleCardCommand(LCD_DRIVER *d,
   DBG_DEBUG(0, "Response send");
 
   if (readerError) {
-    DBG_NOTICE(LCD_Reader_GetLogger(r),
-               "Reader \"%s\" had an error, shutting down",
-               LCD_Reader_GetName(r));
-    LCD_Driver_SendReaderErrorNotification(d, r,
-                                           LCD_Driver_GetErrorText(d,
-                                                                   readerError));
-    LCD_Reader_List_Del(r);
-    LCD_Reader_free(r);
+    if (LCD_Reader_IncErrorCount(r)>LCD_DRIVER_MAX_READER_ERROR_COUNT) {
+      DBG_NOTICE(LCD_Reader_GetLogger(r),
+		 "Reader \"%s\" had an error, shutting down",
+		 LCD_Reader_GetName(r));
+      LCD_Driver_SendReaderErrorNotification(d, r,
+					     LCD_Driver_GetErrorText(d,
+								     readerError));
+      LCD_Reader_List_Del(r);
+      LCD_Reader_free(r);
+    }
   }
+  else
+    LCD_Reader_ResetErrorCount(r);
 
   return 0;
 }

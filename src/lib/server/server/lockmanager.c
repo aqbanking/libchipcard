@@ -21,7 +21,7 @@
 
 
 
-static GWEN_TYPE_UINT32 lcs_lockmanager__next_request_id=0;
+static uint32_t lcs_lockmanager__next_request_id=0;
 
 
 
@@ -54,7 +54,7 @@ const char *LCS_LockManager_GetObjectTypeName(const LCS_LOCKMANAGER *lm) {
 
 
 
-GWEN_TYPE_UINT32 LCS_LockManager_GetNextRequestId() {
+uint32_t LCS_LockManager_GetNextRequestId() {
   if (lcs_lockmanager__next_request_id==0)
     lcs_lockmanager__next_request_id=time(0);
   return lcs_lockmanager__next_request_id++;
@@ -63,8 +63,8 @@ GWEN_TYPE_UINT32 LCS_LockManager_GetNextRequestId() {
 
 
 int LCS_LockManager_RequestLockWithId(LCS_LOCKMANAGER *lm,
-                                      GWEN_TYPE_UINT32 lockid,
-                                      GWEN_TYPE_UINT32 clid,
+                                      uint32_t lockid,
+                                      uint32_t clid,
                                       int duration,
                                       int maxLocks) {
   LCS_LOCKREQUEST *rq;
@@ -90,12 +90,12 @@ int LCS_LockManager_RequestLockWithId(LCS_LOCKMANAGER *lm,
 
 
 
-GWEN_TYPE_UINT32 LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
-                                             GWEN_TYPE_UINT32 clid,
+uint32_t LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
+                                             uint32_t clid,
                                              int duration,
                                              int maxLocks) {
   int rv;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
 
   rqid=LCS_LockManager_GetNextRequestId();
   rv=LCS_LockManager_RequestLockWithId(lm, rqid, clid, duration, maxLocks);
@@ -109,7 +109,7 @@ GWEN_TYPE_UINT32 LCS_LockManager_RequestLock(LCS_LOCKMANAGER *lm,
 
 LCS_LOCKREQUEST*
 LCS_LockManager_FindRequestByRequestId(LCS_LOCKMANAGER *lm,
-                                       GWEN_TYPE_UINT32 rqid){
+                                       uint32_t rqid){
   LCS_LOCKREQUEST *rq;
 
   assert(lm);
@@ -130,7 +130,7 @@ LCS_LockManager_FindRequestByRequestId(LCS_LOCKMANAGER *lm,
 
 
 int LCS_LockManager_CountClientRequests(const LCS_LOCKMANAGER *lm,
-                                        GWEN_TYPE_UINT32 clid){
+                                        uint32_t clid){
   LCS_LOCKREQUEST *rq;
   int count=0;
 
@@ -152,7 +152,7 @@ int LCS_LockManager_CountClientRequests(const LCS_LOCKMANAGER *lm,
 
 
 
-int LCS_LockManager_CheckRequest(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid){
+int LCS_LockManager_CheckRequest(LCS_LOCKMANAGER *lm, uint32_t rqid){
   LCS_LOCKREQUEST *rq;
 
   assert(lm);
@@ -183,7 +183,7 @@ int LCS_LockManager_CheckRequest(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid){
 
 
 
-int LCS_LockManager_RemoveRequest(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid){
+int LCS_LockManager_RemoveRequest(LCS_LOCKMANAGER *lm, uint32_t rqid){
   LCS_LOCKREQUEST *rq;
 
   assert(lm);
@@ -204,7 +204,7 @@ int LCS_LockManager_RemoveRequest(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid){
 
 
 void LCS_LockManager_RemoveAllClientRequests(LCS_LOCKMANAGER *lm,
-                                             GWEN_TYPE_UINT32 clid){
+                                             uint32_t clid){
   LCS_LOCKREQUEST *rq;
   int prevCount;
 
@@ -242,7 +242,7 @@ void LCS_LockManager_RemoveAllClientRequests(LCS_LOCKMANAGER *lm,
 
 
 
-int LCS_LockManager_Unlock(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid) {
+int LCS_LockManager_Unlock(LCS_LOCKMANAGER *lm, uint32_t rqid) {
   assert(lm);
 
   if (lm->currentRequest &&
@@ -274,7 +274,7 @@ int LCS_LockManager_HasLockRequests(const LCS_LOCKMANAGER *lm) {
 
 
 
-int LCS_LockManager_CheckAccess(LCS_LOCKMANAGER *lm, GWEN_TYPE_UINT32 rqid) {
+int LCS_LockManager_CheckAccess(LCS_LOCKMANAGER *lm, uint32_t rqid) {
   assert(lm);
 
   if (lm->currentRequest) {

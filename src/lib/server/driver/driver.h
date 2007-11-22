@@ -18,13 +18,13 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/types.h>
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 typedef struct LCD_DRIVER LCD_DRIVER;
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LCD_DRIVER, CHIPCARD_API);
 
-#include <chipcard3/server/driver/reader.h>
-#include <chipcard3/sharedstuff/pininfo.h>
+#include <chipcard/server/driver/reader.h>
+#include <chipcard/sharedstuff/pininfo.h>
 
 
 #define LCD_DRIVER_IPC_MAXWORK 256
@@ -36,7 +36,7 @@ GWEN_INHERIT_FUNCTION_LIB_DEFS(LCD_DRIVER, CHIPCARD_API);
  *
  */
 /*@{*/
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_SENDAPDU_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_SENDAPDU_FN)(LCD_DRIVER *d,
                                                   int toReader,
                                                   LCD_READER *r,
                                                   LCD_SLOT *slot,
@@ -44,20 +44,20 @@ typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_SENDAPDU_FN)(LCD_DRIVER *d,
                                                   unsigned int apdulen,
                                                   unsigned char *buffer,
                                                   int *bufferlen);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_CONNECTSLOT_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_CONNECTSLOT_FN)(LCD_DRIVER *d,
                                                      LCD_SLOT *sl);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_CONNECTREADER_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_CONNECTREADER_FN)(LCD_DRIVER *d,
                                                        LCD_READER *r);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_DISCONNECTSLOT_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_DISCONNECTSLOT_FN)(LCD_DRIVER *d,
                                                         LCD_SLOT *sl);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_DISCONNECTREADER_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_DISCONNECTREADER_FN)(LCD_DRIVER *d,
                                                           LCD_READER *r);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_RESETSLOT_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_RESETSLOT_FN)(LCD_DRIVER *d,
                                                    LCD_SLOT *sl);
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_READERSTATUS_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_READERSTATUS_FN)(LCD_DRIVER *d,
                                                       LCD_READER *r);
 
-typedef GWEN_TYPE_UINT32 (*LCD_DRIVER_READERINFO_FN)(LCD_DRIVER *d,
+typedef uint32_t (*LCD_DRIVER_READERINFO_FN)(LCD_DRIVER *d,
                                                     LCD_READER *r,
                                                     GWEN_BUFFER *buf);
 
@@ -65,22 +65,22 @@ typedef int (*LCD_DRIVER_EXTENDREADER_FN)(LCD_DRIVER *d, LCD_READER *r);
 
 
 typedef const char* (*LCD_DRIVER_GETERRORTEXT_FN)(LCD_DRIVER *d,
-                                                  GWEN_TYPE_UINT32 err);
+                                                  uint32_t err);
 
 
 typedef int (*LCD_DRIVER_HANDLEREQUEST_FN)(LCD_DRIVER *d,
-                                           GWEN_TYPE_UINT32 rid,
+                                           uint32_t rid,
                                            const char *name,
                                            GWEN_DB_NODE *dbReq);
 
-typedef GWEN_TYPE_UINT32
+typedef uint32_t
   (*LCD_DRIVER_PERFORMVERIFICATION_FN)(LCD_DRIVER *d,
                                        LCD_READER *r,
                                        LCD_SLOT *slot,
                                        const LC_PININFO *pi,
                                        int *triesLeft);
 
-typedef GWEN_TYPE_UINT32
+typedef uint32_t
   (*LCD_DRIVER_PERFORMMODIFICATION_FN)(LCD_DRIVER *d,
                                        LCD_READER *r,
                                        LCD_SLOT *slot,
@@ -163,8 +163,8 @@ int LCD_Driver_Init(LCD_DRIVER *d, int argc, char **argv);
 CHIPCARD_API
 int LCD_Driver_Connect(LCD_DRIVER *d,
                        int code, const char *text,
-                       GWEN_TYPE_UINT32 dflagsValue,
-                       GWEN_TYPE_UINT32 dflagsMask);
+                       uint32_t dflagsValue,
+                       uint32_t dflagsMask);
 
 CHIPCARD_API
 void LCD_Driver_Disconnect(LCD_DRIVER *d);
@@ -221,11 +221,11 @@ CHIPCARD_API
 LCD_READER *LCD_Driver_FindReaderByPort(const LCD_DRIVER *d, int port);
 
 CHIPCARD_API
-LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, GWEN_TYPE_UINT32 id);
+LCD_READER *LCD_Driver_FindReaderById(const LCD_DRIVER *d, uint32_t id);
 
 CHIPCARD_API
 LCD_READER *LCD_Driver_FindReaderByDriversId(const LCD_DRIVER *d,
-                                           GWEN_TYPE_UINT32 id);
+                                           uint32_t id);
 
 CHIPCARD_API
 void LCD_Driver_AddReader(LCD_DRIVER *d, LCD_READER *r);
@@ -256,7 +256,7 @@ int LCD_Driver_SendReaderErrorNotification(LCD_DRIVER *d,
 
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Driver_SendAPDU(LCD_DRIVER *d,
+uint32_t LCD_Driver_SendAPDU(LCD_DRIVER *d,
                                     int toReader,
                                     LCD_READER *r,
                                     LCD_SLOT *slot,
@@ -266,16 +266,16 @@ GWEN_TYPE_UINT32 LCD_Driver_SendAPDU(LCD_DRIVER *d,
                                     int *bufferlen);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t LCD_Driver_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t LCD_Driver_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t LCD_Driver_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t LCD_Driver_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
 
 

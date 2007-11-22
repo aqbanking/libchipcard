@@ -19,7 +19,7 @@
 #include "notifications_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -33,7 +33,7 @@ GWEN_LIST2_FUNCTIONS(LC_NOTIFICATION, LC_Notification)
 GWEN_INHERIT_FUNCTIONS(LC_NOTIFICATION)
 
 
-LC_NOTIFICATION *LC_Notification_new(GWEN_TYPE_UINT32 serverId,
+LC_NOTIFICATION *LC_Notification_new(uint32_t serverId,
                                      const char *clientId,
                                      const char *ntype,
                                      const char *ncode,
@@ -69,7 +69,7 @@ void LC_Notification_free(LC_NOTIFICATION *n){
 
 
 
-GWEN_TYPE_UINT32 LC_Notification_GetServerId(const LC_NOTIFICATION *n){
+uint32_t LC_Notification_GetServerId(const LC_NOTIFICATION *n){
   assert(n);
   return n->serverId;
 }

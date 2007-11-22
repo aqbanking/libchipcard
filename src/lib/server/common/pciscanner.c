@@ -47,9 +47,9 @@ LC_DEVSCANNER *LC_PciScanner_new() {
 
 
 int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
-  GWEN_DIRECTORYDATA *dDir;
+  GWEN_DIRECTORY *dDir;
   GWEN_BUFFER *nbuf;
-  GWEN_TYPE_UINT32 pos;
+  uint32_t pos;
   int count=0;
 
   nbuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -70,7 +70,7 @@ int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
           struct stat st;
   
 	  /* found name, add it to the buffer */
-	  DBG_VERBOUS(0, "Scanning bus "GWEN_TYPE_TMPL_UINT32, busId);
+	  DBG_VERBOUS(0, "Scanning bus %u", busId);
           GWEN_Buffer_Crop(nbuf, 0, pos);
           GWEN_Buffer_SetPos(nbuf, pos);
           GWEN_Buffer_AppendString(nbuf, nameBuf);
@@ -83,8 +83,8 @@ int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
           else {
 	    /* check for folder */
 	    if (S_ISDIR(st.st_mode)) {
-	      GWEN_DIRECTORYDATA *dBus;
-	      GWEN_TYPE_UINT32 dpos;
+	      GWEN_DIRECTORY *dBus;
+	      uint32_t dpos;
 
 	      /* check devices */
 	      GWEN_Buffer_AppendString(nbuf, "/");
@@ -125,8 +125,8 @@ int LC_PciScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 
 			    rv=read(fd, &devinfo, sizeof(devinfo));
 			    if (rv==sizeof(devinfo)) {
-			      GWEN_TYPE_UINT32 vendorId;
-                              GWEN_TYPE_UINT32 productId;
+			      uint32_t vendorId;
+                              uint32_t productId;
                               LC_DEVICE *dev;
 
                               vendorId=(devinfo[1]<<8)+devinfo[0];

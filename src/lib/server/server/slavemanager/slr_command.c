@@ -14,20 +14,20 @@
 
 
 int LCSL_SlaveManager_HandleCardCommand(LCSL_SLAVEMANAGER *slm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq) {
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   const char *s;
   unsigned int x;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t cardId;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
   GWEN_IPC_REQUEST *req;
   GWEN_IPC_REQUEST *dreq;
   GWEN_TIME *ti;
-  GWEN_TYPE_UINT32 outRid;
+  uint32_t outRid;
   GWEN_DB_NODE *dbOutReq;
   const void *p;
   unsigned int bs;
@@ -262,12 +262,12 @@ int LCSL_SlaveManager_HandleCardCommand(LCSL_SLAVEMANAGER *slm,
 int LCSL_SlaveManager_WorkCardCommand(GWEN_IPC_REQUEST *req) {
   LCSL_SLAVEMANAGER *slm;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LCCO_CARD *card;
-  GWEN_TYPE_UINT32 drid;
+  uint32_t drid;
   GWEN_IPC_REQUEST *dreq;
   GWEN_DB_NODE *dbDriverResponse;
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
 
   rid=GWEN_IpcRequest_GetId(req);
   assert(rid);

@@ -25,7 +25,7 @@ typedef struct LCSV_SERVICE LCSV_SERVICE;
 
 GWEN_LIST_FUNCTION_DEFS(LCSV_SERVICE, LCSV_Service)
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 LCSV_SERVICE *LCSV_Service_new();
@@ -46,12 +46,12 @@ void LCSV_Service_SetLogFile(LCSV_SERVICE *sv, const char *s);
 const char *LCSV_Service_GetDataDir(const LCSV_SERVICE *sv);
 void LCSV_Service_SetDataDir(LCSV_SERVICE *sv, const char *s);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetServiceId(const LCSV_SERVICE *sv);
+uint32_t LCSV_Service_GetServiceId(const LCSV_SERVICE *sv);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetFlags(const LCSV_SERVICE *sv);
-void LCSV_Service_SetFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl);
-void LCSV_Service_AddFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl);
-void LCSV_Service_SubFlags(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 fl);
+uint32_t LCSV_Service_GetFlags(const LCSV_SERVICE *sv);
+void LCSV_Service_SetFlags(LCSV_SERVICE *sv, uint32_t fl);
+void LCSV_Service_AddFlags(LCSV_SERVICE *sv, uint32_t fl);
+void LCSV_Service_SubFlags(LCSV_SERVICE *sv, uint32_t fl);
 
 GWEN_PROCESS *LCSV_Service_GetProcess(const LCSV_SERVICE *sv);
 void LCSV_Service_SetProcess(LCSV_SERVICE *sv, GWEN_PROCESS *p);
@@ -59,22 +59,22 @@ void LCSV_Service_SetProcess(LCSV_SERVICE *sv, GWEN_PROCESS *p);
 LC_SERVICE_STATUS LCSV_Service_GetStatus(const LCSV_SERVICE *sv);
 void LCSV_Service_SetStatus(LCSV_SERVICE *sv, LC_SERVICE_STATUS st);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetIpcId(const LCSV_SERVICE *sv);
-void LCSV_Service_SetIpcId(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 id);
+uint32_t LCSV_Service_GetIpcId(const LCSV_SERVICE *sv);
+void LCSV_Service_SetIpcId(LCSV_SERVICE *sv, uint32_t id);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetInterestedClients(const LCSV_SERVICE *sv);
+uint32_t LCSV_Service_GetInterestedClients(const LCSV_SERVICE *sv);
 void LCSV_Service_IncInterestedClients(LCSV_SERVICE *sv);
 void LCSV_Service_DecInterestedClients(LCSV_SERVICE *sv);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetActiveClients(const LCSV_SERVICE *sv);
+uint32_t LCSV_Service_GetActiveClients(const LCSV_SERVICE *sv);
 void LCSV_Service_IncActiveClients(LCSV_SERVICE *sv);
 void LCSV_Service_DecActiveClients(LCSV_SERVICE *sv);
 
 time_t LCSV_Service_GetLastStatusChangeTime(const LCSV_SERVICE *sv);
 time_t LCSV_Service_GetIdleSince(const LCSV_SERVICE *sv);
 
-GWEN_TYPE_UINT32 LCSV_Service_GetCurrentRequestId(const LCSV_SERVICE *sv);
-void LCSV_Service_SetCurrentRequestId(LCSV_SERVICE *sv, GWEN_TYPE_UINT32 rid);
+uint32_t LCSV_Service_GetCurrentRequestId(const LCSV_SERVICE *sv);
+void LCSV_Service_SetCurrentRequestId(LCSV_SERVICE *sv, uint32_t rid);
 
 void LCSV_Service_SetTimeout(LCSV_SERVICE *sv, int secs);
 int LCSV_Service_CheckTimeout(const LCSV_SERVICE *sv);

@@ -27,7 +27,7 @@
 GWEN_LIST_FUNCTIONS(LCDM_DRIVER, LCDM_Driver)
 
 
-static GWEN_TYPE_UINT32 LCDM_Driver_LastId=0;
+static uint32_t LCDM_Driver_LastId=0;
 
 
 
@@ -286,7 +286,7 @@ void LCDM_Driver_SetLogFile(LCDM_DRIVER *d, const char *s){
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetDriverId(const LCDM_DRIVER *d){
+uint32_t LCDM_Driver_GetDriverId(const LCDM_DRIVER *d){
   assert(d);
   return d->driverId;
 }
@@ -342,7 +342,7 @@ time_t LCDM_Driver_GetIdleSince(const LCDM_DRIVER *d){
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetActiveReadersCount(const LCDM_DRIVER *d){
+uint32_t LCDM_Driver_GetActiveReadersCount(const LCDM_DRIVER *d){
   assert(d);
   return d->activeReadersCount;
 }
@@ -385,7 +385,7 @@ void LCDM_Driver_DecActiveReadersCount(LCDM_DRIVER *d, int count){
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetAssignedReadersCount(const LCDM_DRIVER *d){
+uint32_t LCDM_Driver_GetAssignedReadersCount(const LCDM_DRIVER *d){
   assert(d);
   return d->assignedReaders;
 }
@@ -414,14 +414,14 @@ void LCDM_Driver_DecAssignedReadersCount(LCDM_DRIVER *d){
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetIpcId(const LCDM_DRIVER *d){
+uint32_t LCDM_Driver_GetIpcId(const LCDM_DRIVER *d){
   assert(d);
   return d->ipcId;
 }
 
 
 
-void LCDM_Driver_SetIpcId(LCDM_DRIVER *d, GWEN_TYPE_UINT32 id){
+void LCDM_Driver_SetIpcId(LCDM_DRIVER *d, uint32_t id){
   assert(d);
   d->ipcId=id;
 }
@@ -470,28 +470,28 @@ GWEN_DB_NODE *LCDM_Driver_GetDriverVars(const LCDM_DRIVER *d){
 
 
 
-GWEN_TYPE_UINT32 LCDM_Driver_GetDriverFlags(const LCDM_DRIVER *d){
+uint32_t LCDM_Driver_GetDriverFlags(const LCDM_DRIVER *d){
   assert(d);
   return d->driverFlags;
 }
 
 
 
-void LCDM_Driver_SetDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl){
+void LCDM_Driver_SetDriverFlags(LCDM_DRIVER *d, uint32_t fl){
   assert(d);
   d->driverFlags=fl;
 }
 
 
 
-void LCDM_Driver_AddDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl){
+void LCDM_Driver_AddDriverFlags(LCDM_DRIVER *d, uint32_t fl){
   assert(d);
   d->driverFlags|=fl;
 }
 
 
 
-void LCDM_Driver_SubDriverFlags(LCDM_DRIVER *d, GWEN_TYPE_UINT32 fl){
+void LCDM_Driver_SubDriverFlags(LCDM_DRIVER *d, uint32_t fl){
   assert(d);
   d->driverFlags&=~fl;
 }

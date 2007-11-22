@@ -25,21 +25,21 @@
 
 
 int LCCL_ClientManager_HandleReleaseCard(LCCL_CLIENTMANAGER *clm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          const char *name,
                                          GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 cardId;
+  uint32_t clientId;
+  uint32_t cardId;
   int cmdVer;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
   int rv;
   GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 trid;
+  uint32_t trid;
   LCDM_DEVICEMANAGER *dm;
   LCS_LOCKMANAGER *lm;
-  GWEN_TYPE_UINT32 lrId;
+  uint32_t lrId;
 
   assert(dbReq);
   clientId=GWEN_DB_GetIntValue(dbReq, "ipc/nodeid", 0, 0);

@@ -19,7 +19,7 @@
 
 struct LCM_SERVER {
   GWEN_LIST_ELEMENT(LCM_SERVER)
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   char *clientId;
   LCM_DRIVER_LIST *drivers;
   LCM_READER_LIST *readers;

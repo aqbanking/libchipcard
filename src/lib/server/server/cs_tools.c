@@ -57,7 +57,7 @@ int LCS_Server_ReplaceVar(const char *path,
 
 
 int LCS_Server_SendErrorResponse(LCS_SERVER *cs,
-                                 GWEN_TYPE_UINT32 rid,
+                                 uint32_t rid,
                                  int code,
                                  const char *text) {
   GWEN_DB_NODE *gr;

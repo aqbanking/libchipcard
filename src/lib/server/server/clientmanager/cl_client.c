@@ -16,7 +16,7 @@
 
 
 #include "cl_client_p.h"
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
@@ -30,7 +30,7 @@
 GWEN_LIST_FUNCTIONS(LCCL_CLIENT, LCCL_Client);
 
 
-LCCL_CLIENT *LCCL_Client_new(GWEN_TYPE_UINT32 id){
+LCCL_CLIENT *LCCL_Client_new(uint32_t id){
   LCCL_CLIENT *cl;
 
   GWEN_NEW_OBJECT(LCCL_CLIENT, cl);
@@ -96,63 +96,63 @@ void LCCL_Client_SetUserName(LCCL_CLIENT *cl, const char *s){
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetClientId(const LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetClientId(const LCCL_CLIENT *cl){
   assert(cl);
   return cl->clientId;
 }
 
 
 
-int LCCL_Client_HasService(const LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+int LCCL_Client_HasService(const LCCL_CLIENT *cl, uint32_t id){
   assert(cl);
   return GWEN_IdList_HasId(cl->openServices, id);
 }
 
 
 
-int LCCL_Client_AddService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+int LCCL_Client_AddService(LCCL_CLIENT *cl, uint32_t id){
   assert(cl);
   return GWEN_IdList_AddId(cl->openServices, id);
 }
 
 
 
-int LCCL_Client_DelService(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+int LCCL_Client_DelService(LCCL_CLIENT *cl, uint32_t id){
   assert(cl);
   return GWEN_IdList_DelId(cl->openServices, id);
 }
 
 
 
-int LCCL_Client_AddReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+int LCCL_Client_AddReader(LCCL_CLIENT *cl, uint32_t id){
   assert(cl);
   return GWEN_IdList_AddId(cl->usedReaders, id);
 }
 
 
 
-int LCCL_Client_DelReader(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 id){
+int LCCL_Client_DelReader(LCCL_CLIENT *cl, uint32_t id){
   assert(cl);
   return GWEN_IdList_DelId(cl->usedReaders, id);
 }
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetFirstReader(LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetFirstReader(LCCL_CLIENT *cl){
   assert(cl);
   return GWEN_IdList_GetFirstId(cl->usedReaders);
 }
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetNextReader(LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetNextReader(LCCL_CLIENT *cl){
   assert(cl);
   return GWEN_IdList_GetNextId(cl->usedReaders);
 }
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetWaitRequestCount(const LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetWaitRequestCount(const LCCL_CLIENT *cl){
   assert(cl);
   return cl->waitRequestCount;
 }
@@ -199,56 +199,56 @@ void LCCL_Client_SetApplicationName(LCCL_CLIENT *cl, const char *s){
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetNotifyFlags(const LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetNotifyFlags(const LCCL_CLIENT *cl){
   assert(cl);
   return cl->notifyFlags;
 }
 
 
 
-void LCCL_Client_SetNotifyFlags(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 flags){
+void LCCL_Client_SetNotifyFlags(LCCL_CLIENT *cl, uint32_t flags){
   assert(cl);
   cl->notifyFlags=flags;
 }
 
 
 
-void LCCL_Client_AddNotifyFlags(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 flags){
+void LCCL_Client_AddNotifyFlags(LCCL_CLIENT *cl, uint32_t flags){
   assert(cl);
   cl->notifyFlags|=flags;
 }
 
 
 
-void LCCL_Client_DelNotifyFlags(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 flags){
+void LCCL_Client_DelNotifyFlags(LCCL_CLIENT *cl, uint32_t flags){
   assert(cl);
   cl->notifyFlags&=~flags;
 }
 
 
 
-GWEN_TYPE_UINT32 LCCL_Client_GetNotifyMask(const LCCL_CLIENT *cl){
+uint32_t LCCL_Client_GetNotifyMask(const LCCL_CLIENT *cl){
   assert(cl);
   return cl->notifyMask;
 }
 
 
 
-void LCCL_Client_SetNotifyMask(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 mask){
+void LCCL_Client_SetNotifyMask(LCCL_CLIENT *cl, uint32_t mask){
   assert(cl);
   cl->notifyMask=mask;
 }
 
 
 
-void LCCL_Client_AddNotifyMask(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 mask){
+void LCCL_Client_AddNotifyMask(LCCL_CLIENT *cl, uint32_t mask){
   assert(cl);
   cl->notifyMask|=mask;
 }
 
 
 
-void LCCL_Client_DelNotifyMask(LCCL_CLIENT *cl, GWEN_TYPE_UINT32 mask){
+void LCCL_Client_DelNotifyMask(LCCL_CLIENT *cl, uint32_t mask){
   assert(cl);
   cl->notifyMask&=~mask;
 }

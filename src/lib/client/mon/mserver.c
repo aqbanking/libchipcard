@@ -21,7 +21,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 #include <stdlib.h>
@@ -34,7 +34,7 @@ GWEN_LIST2_FUNCTIONS(LCM_SERVER, LCM_Server)
 
 
 
-LCM_SERVER *LCM_Server_new(GWEN_TYPE_UINT32 serverId){
+LCM_SERVER *LCM_Server_new(uint32_t serverId){
   LCM_SERVER *ms;
 
   GWEN_NEW_OBJECT(LCM_SERVER, ms);
@@ -61,7 +61,7 @@ void LCM_Server_free(LCM_SERVER *ms){
 
 
 
-GWEN_TYPE_UINT32 LCM_Server_GetServerId(const LCM_SERVER *ms){
+uint32_t LCM_Server_GetServerId(const LCM_SERVER *ms){
   assert(ms);
   return ms->serverId;
 }

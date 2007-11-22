@@ -26,10 +26,10 @@ GWEN_INHERIT(LC_CARD, LC_CARD_LCC)
 
 
 LC_CARD *LC_CardLcc_new(LC_CLIENT *cl,
-                        GWEN_TYPE_UINT32 cardId,
-                        GWEN_TYPE_UINT32 serverId,
+                        uint32_t cardId,
+                        uint32_t serverId,
                         const char *cardType,
-                        GWEN_TYPE_UINT32 rflags,
+                        uint32_t rflags,
                         const unsigned char *atrBuf,
                         unsigned int atrLen) {
   LC_CARD *card;
@@ -57,7 +57,7 @@ void GWENHYWFAR_CB LC_CardLcc_FreeData(void *bp, void *p) {
 
 
 
-GWEN_TYPE_UINT32 LC_CardLcc_GetServerId(const LC_CARD *card) {
+uint32_t LC_CardLcc_GetServerId(const LC_CARD *card) {
   LC_CARD_LCC *xcard;
 
   assert(card);

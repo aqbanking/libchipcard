@@ -24,9 +24,9 @@ typedef struct LCSL_READER LCSL_READER;
 struct LCSL_READER {
   LCCO_CARD_LIST2 *insertedCards;
   LCCO_CARD_LIST2 *removedCards;
-  GWEN_TYPE_UINT32 masterReaderId;
-  GWEN_TYPE_UINT32 slaveReaderId;
-  GWEN_TYPE_UINT32 flags;
+  uint32_t masterReaderId;
+  uint32_t slaveReaderId;
+  uint32_t flags;
 };
 
 static void GWENHYWFAR_CB LCSL_Reader_FreeData(void *bp, void *p);

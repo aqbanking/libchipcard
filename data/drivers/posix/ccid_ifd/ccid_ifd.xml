@@ -1,0 +1,297 @@
+
+<driver name="ccid_ifd" type="ifd">
+  <short>Generic Driver for CCID Devices</short>
+  <manufacturer>
+    <name>Ludovic Rousseau</name>
+    <url>http://pcsclite.alioth.debian.org/ccid.html</url>
+  </manufacturer>
+
+  <lib>
+    <names>
+      <name>libccid.so.1.*</name>
+      <name>libccid.so</name>
+      <name>libccid.so.0.9.*</name>
+      <name>libccid.so.*</name>
+    </names>
+    
+    <locations>
+      <loc>/usr/local/lib/chipcard/server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/lib/chipcard/server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/lib</loc>
+      <loc>/usr/lib</loc>
+      <loc>/usr/local/lib</loc>
+      <loc>/usr/lib/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/local/lib/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/local/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+
+      <loc>/usr/local/lib64/chipcard2-server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/lib64/chipcard3/server/lowlevel/ifd/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/lib64</loc>
+      <loc>/usr/lib64</loc>
+      <loc>/usr/local/lib64</loc>
+      <loc>/usr/lib64/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+      <loc>/usr/local/lib64/pcsc/drivers/ifd-ccid.bundle/Contents/Linux</loc>
+
+      <loc>/usr/lib/readers/usb/ifd-ccid.bundle/Contents/Linux/</loc>
+      <loc>/usr/lib/readers/ifd-ccid.bundle/Contents/Linux/</loc>
+      <loc>/usr/lib64/readers/usb/ifd-ccid.bundle/Contents/Linux/</loc>
+      <loc>/usr/lib64/readers/ifd-ccid.bundle/Contents/Linux/</loc>
+    </locations>
+    
+    <downloads>
+      <url>http://alioth.debian.org/project/showfiles.php?group_id=1225&release_id=303</url>
+      <filename></filename>
+    </downloads>
+  </lib>
+
+  <readers>
+  
+    <reader name="ccid_gempc_twin" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x08e6" product="0x3437" >
+      <short>GemPC Twin</short>
+      
+    </reader>
+
+    <reader name="ccid_gempc_key" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x08e6" product="0x3438" >
+      <short>GemPC Key</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_gempc_card" busType="Pcmcia"
+            addressType="devicePath"
+            devicePathTmpl="$(path)"
+            vendor="0x0157" product="0x100" >
+      <short>GemPC Card</short>
+    </reader>
+
+    <reader name="ccid_gempc_433" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x08e6" product="0x4433" >
+      <short>GemPC433 SL </short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_scm_331" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0xe001" >
+      <short>SCM 331 DI </short>
+    </reader>
+    
+    <reader name="ccid_scm_331di" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x5111" >
+      <short>SCM 331 DI </short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_scm_3320" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x5117" >
+      <short>SCM 3320</short>
+    </reader>
+    
+    <reader name="ccid_scm_333" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x5113" >
+      <short>SCM 333</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_scm_335" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x5115" >
+      <short>SCM 335</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+
+    <reader name="ccid_scm_3310" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x5116" >
+      <short>SCM 3310</short>
+    </reader>
+
+    <reader name="ccid_scm_3311" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x04e6" product="0x511d" >
+      <short>SCM 3310</short>
+    </reader>
+
+
+    <reader name="ccid_cardman" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x076b" product="0x3021" >
+      <short>Omnikey CardMan 3121</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_ltc31" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0783" product="0x0003" >
+      <short>C3PO LTC31</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_activcard" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x09c3" product="0x0008" >
+      <short>ActivCard</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_sk3105" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x047b" product="0x020b" >
+      <short>Silitek SK-3105</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_dell_sk3106" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x413c" product="0x2100" >
+      <short>Dell Keyboard SK-3106</short>
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+    </reader>
+
+    <reader name="ccid_dell_scrk" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x413c" product="0x2101" >
+      <short>Dell Smard Card Reader Keyboard</short>
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+    </reader>
+
+    <reader name="ccid_cherry_xx33" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x046a" product="0x0005" >
+      <short>Cherry XX33</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+
+    <reader name="ccid_cherry_st1044u" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x046a" product="0x002d" >
+      <short>Cherry ST-1044u</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ccid_acr38" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x072f" product="0x90cc" >
+      <short>Advanced Card Systems ACR 38</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
+    <reader name="ko_kaan_base_usb" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0d46" product="0x3001" >
+      <short>Kaan Advanced (USB)</short>
+
+      <flags>
+      </flags>
+    </reader>
+
+    <reader name="ko_kaan_advanced_usb" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0d46" product="0x3002" >
+      <short>Kobil Kaan Advanced (USB)</short>
+
+      <flags>
+        <flag>keypad</flag>
+        <flag>noMemorySw</flag>
+      </flags>
+    </reader>
+
+    <reader name="ok_cardman_3621" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x076b" product="0x3621" >
+      <short>Omnikey Cardman 3621 (USB)</short>
+
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+    </reader>
+
+  </readers>
+
+
+</driver>
+

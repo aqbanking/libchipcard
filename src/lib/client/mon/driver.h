@@ -34,12 +34,12 @@ GWEN_LIST2_FUNCTION_LIB_DEFS(LCM_DRIVER, LCM_Driver, CHIPCARD_API)
 
 
 CHIPCARD_API
-LCM_DRIVER *LCM_Driver_new(GWEN_TYPE_UINT32 serverId);
+LCM_DRIVER *LCM_Driver_new(uint32_t serverId);
 CHIPCARD_API
 void LCM_Driver_free(LCM_DRIVER *md);
 
 CHIPCARD_API
-GWEN_TYPE_UINT32 LCM_Driver_GetServerId(const LCM_DRIVER *md);
+uint32_t LCM_Driver_GetServerId(const LCM_DRIVER *md);
 CHIPCARD_API
 const char *LCM_Driver_GetDriverId(const LCM_DRIVER *md);
 CHIPCARD_API

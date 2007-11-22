@@ -17,13 +17,13 @@
 
 
 int LCD_Driver_HandleStopReader(LCD_DRIVER *d,
-                               GWEN_TYPE_UINT32 rid,
+                               uint32_t rid,
                                GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   GWEN_DB_NODE *dbRsp;
   LCD_READER *r;
   char numbuf[16];
-  GWEN_TYPE_UINT32 retval;
+  uint32_t retval;
 
   assert(d);
   assert(dbReq);

@@ -33,9 +33,9 @@ struct LCCM_CARD {
 void GWENHYWFAR_CB LCCM_Card_FreeData(void *bp, void *p);
 
 LCS_LOCKREQUEST *LCCM_Card_FindRequestByClientId(LCCO_CARD *cd,
-                                                 GWEN_TYPE_UINT32 clid);
+                                                 uint32_t clid);
 
-int LCCM_Card_CountClientRequests(const LCCO_CARD *cd, GWEN_TYPE_UINT32 clid);
+int LCCM_Card_CountClientRequests(const LCCO_CARD *cd, uint32_t clid);
 
 
 #endif /* CHIPCARD_SERVER2_CM_CARD_H */

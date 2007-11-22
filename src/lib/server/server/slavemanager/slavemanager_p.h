@@ -27,13 +27,13 @@
 struct LCSL_SLAVEMANAGER {
   LCS_SERVER *server;
   GWEN_IPCMANAGER *ipcManager;
-  GWEN_TYPE_UINT32 ipcId;
+  uint32_t ipcId;
 
   LCCO_READER_LIST2 *slaveReaders;
   int disconnected;
 
   int commandTimeout;
-  GWEN_TYPE_UINT32 lastReaderId;
+  uint32_t lastReaderId;
 };
 
 
@@ -46,36 +46,36 @@ int LCSL_SlaveManager__Work(LCSL_SLAVEMANAGER *slm, int timeout);
 
 
 int LCSL_SlaveManager_HandleStartReader(LCSL_SLAVEMANAGER *slm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq);
 int LCSL_SlaveManager_WorkStartReader(GWEN_IPC_REQUEST *req);
 
 
 int LCSL_SlaveManager_HandleStopReader(LCSL_SLAVEMANAGER *slm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        const char *name,
                                        GWEN_DB_NODE *dbReq);
 
 
 int LCSL_SlaveManager_HandleCardCommand(LCSL_SLAVEMANAGER *slm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq);
 int LCSL_SlaveManager_WorkCardCommand(GWEN_IPC_REQUEST *req);
 
 
 int LCSL_SlaveManager_HandleCardReset(LCSL_SLAVEMANAGER *slm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq);
 
 int LCSL_SlaveManager_HandleSuspendCheck(LCSL_SLAVEMANAGER *slm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          const char *name,
                                          GWEN_DB_NODE *dbReq);
 int LCSL_SlaveManager_HandleResumeCheck(LCSL_SLAVEMANAGER *slm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq);
 

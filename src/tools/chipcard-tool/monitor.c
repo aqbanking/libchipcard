@@ -19,15 +19,15 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
-#include <chipcard3/client/mon/monitor.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
+#include <chipcard/client/mon/monitor.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
 #include <gwenhywfar/buffer.h>
 
 
 
-void printPrelude(GWEN_TYPE_UINT32 serverId) {
+void printPrelude(uint32_t serverId) {
   GWEN_TIME *ti;
   GWEN_BUFFER *dbuf;
   char numbuf[32];
@@ -164,9 +164,9 @@ void handleCardN(LC_CLIENT *cl, const LC_NOTIFICATION *n) {
   ncode=LC_Notification_GetCode(n);
   dbData=LC_Notification_GetData(n);
   if (ncode && dbData) {
-    GWEN_TYPE_UINT32 rid=0;
+    uint32_t rid=0;
     int slotNum=0;
-    GWEN_TYPE_UINT32 cardNum=0;
+    uint32_t cardNum=0;
     const char *s;
     const char *info=0;
 
@@ -232,6 +232,18 @@ void recvNotification(LC_CLIENT *cl, const LC_NOTIFICATION *n) {
 int monitor(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   LC_CLIENT_RESULT res;
   int verbosity;
+  const char *s;
+
+  s=LC_Client_GetIoTypeName(cl);
+  assert(s);
+  if (strcasecmp(s, LC_CLIENT_LCC_NAME)!=0) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "This command only works with the "
+              "libchipcard3 ressource manager (%s), but "
+              "you are using \"%s\"",
+              LC_CLIENT_LCC_NAME, s);
+    return 2;
+  }
 
   LC_Client_SetRecvNotificationFn(cl, recvNotification);
   verbosity=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);

@@ -13,12 +13,10 @@
 #ifndef CHIPCARDD2_P_H
 #define CHIPCARDD2_P_H
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 #include "server_l.h"
 #include <gwenhywfar/gwenhywfar.h>
 #include <gwenhywfar/logger.h>
-#include <gwenhywfar/net2.h>
-#include <gwenhywfar/nl_ssl.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/buffer.h>
 
@@ -69,8 +67,6 @@ struct _S_ARGS {
 };
 
 
-int init(ARGUMENTS *args);
-int mkCert(ARGUMENTS *args);
 int addReader(ARGUMENTS *args);
 int delReader(ARGUMENTS *args);
 int testReader(ARGUMENTS *args);

@@ -20,20 +20,21 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/misc.h>
 
-#include <gwenhywfar/nl_ssl.h>
+#include <gwenhywfar/iolayer.h>
+#include <gwenhywfar/io_tls.h>
 #include <gwenhywfar/version.h>
 
 
 
 int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          const char *name,
                                          GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   GWEN_DB_NODE *dbRsp;
-  GWEN_NETLAYER *conn;
-  GWEN_NETLAYER *nlSSL;
+  GWEN_IO_LAYER *conn;
+  GWEN_IO_LAYER *nlSSL;
   const char *p;
 
   assert(dbReq);
@@ -68,22 +69,22 @@ int LCCL_ClientManager_HandleClientReady(LCCL_CLIENTMANAGER *clm,
   LCCL_Client_SetMaxClientLocks(cl, clm->maxClientLocks);
   LCCL_Client_List_Add(cl, clm->clients);
 
-  conn=GWEN_IpcManager_GetNetLayer(clm->ipcManager, clientId);
+  conn=GWEN_IpcManager_GetIoLayer(clm->ipcManager, clientId);
   assert(conn);
   LCS_Server_UseConnectionFor(clm->server, conn,
-                              LCS_Connection_Type_Client,
+			      LCS_Connection_Type_Client,
                               clientId);
 
   LCCL_Client_SetUserName(cl, "nobody");
 
-  nlSSL=GWEN_NetLayer_FindBaseLayer(conn, GWEN_NL_SSL_NAME);
+  nlSSL=GWEN_Io_Layer_FindBaseLayerByType(conn, GWEN_IO_LAYER_TLS_TYPE);
   if (nlSSL){
     DBG_INFO(0, "Got an SSL connection, checking...");
-    if (GWEN_NetLayerSsl_GetIsSecure(nlSSL)) {
+    if (GWEN_Io_Layer_GetFlags(nlSSL) & GWEN_IO_LAYER_TLS_FLAGS_SECURE) {
       const GWEN_SSLCERTDESCR *cert;
 
       DBG_INFO(0, "Got a secure SSL connection");
-      cert=GWEN_NetLayerSsl_GetPeerCertificate(nlSSL);
+      cert=GWEN_Io_LayerTls_GetPeerCertDescr(nlSSL);
       if (cert) {
         const char *p;
 

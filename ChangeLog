@@ -2,13 +2,216 @@
 $Rev$
 
 ===========================================================================
-MARK: released Libchipcard3 3.0.4  (2007-11-08)
+MARK: released Libchipcard 3.9.13rc6 (2007/11/19)
+===========================================================================
+
+2007/11/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added missing files for tool kvkcard
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.12rc5 (2007/11/19)
 ===========================================================================
 
 
-2007/11/08: Martin Preuss<martin@libchipcard.de>
+2007/11/19: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
-- added reader description for new Cyberjack readers
+- added daemon mode to the tool "kvkcard". It replaces the now obsolete
+  service "kvks".
+  Some ideas of Karsten Hilbert (GnuMed) and Hayen Iggena have been
+  implemented.
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.11rc4 (2007/11/17)
+===========================================================================
+
+
+2007/11/17: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in usbrawscanner.c
+- simplified default settings for local installation mode (and WIN32)
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.10rc3 (2007/11/16)
+===========================================================================
+
+
+2007/11/16: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed IPC modes private and secure (those modes now work as expected)
+- removed some possibly misleading warnings
+- fixed slave mode
+- added example file for slave mode
+- added scripts to simplify creating certs and keys for client, master and
+  slave
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.9rc2 (2007/11/11)
+===========================================================================
+
+
+2007/11/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added yet another search folder for CCID driver
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.8rc1 (2007/11/10)
+===========================================================================
+
+2007/11/09: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a prototype for WIN32
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.7beta (2007/11/07)
+===========================================================================
+
+
+2007/11/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- CryptToken DDVCard: only read signseq for key 1
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.6beta (2007/11/03)
+===========================================================================
+
+
+2007/11/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- changed license to LGPL
+- implemented CryptToken virtual function SetKeyInfo()
+- fixed a bug in CryptToken virtual function GetKeyInfo()
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.5beta (2007/11/02)
+===========================================================================
+
+
+2007/11/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- LC_ClientPcsc_V_GetNextCard() no longer bails out if there is no
+  reader, it just keeps on scanning for readers (in case a reader is
+  plugged in after this function is called)
+
+
+2007/11/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added reader flag LC_READER_FLAGS_NO_MEMORY_SW.
+  This is used with Kobil Advanced USB readers because these devices
+  return neither SW1 nor SW2 for memory cards (such as KVK)
+- driverifd: If the flag LC_READER_FLAGS_NO_MEMORY_SW is given and the
+  currently inserted card is a memory card then SW1 and SW2 will be
+  manufactured
+- card commands: now empty card commands are allowed. Those commands
+  provoke the new error code LC_Client_ResultDontExecute which means
+  that this special command is not to be executed for the given reader
+  or driver. This is needed for the Kobil Kaan Advanced (and possibly
+  others) to ignore the command SELECT_MF.
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.4beta (2007/10/27)
+===========================================================================
+
+
+2007/10/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added reader entry for SCR3311 (with generic CCID driver)
+- introduced local installation mode:
+  This can be used on Linux (on Windows this mode is always used since we
+  need relocatable files there).
+  Normally on Linux this project is installed to a well defined prefix and
+  in respect to the FHS.
+  However, it might sometimes be interesting to be able to have a relocatable
+  version of Libchipcard, too. That is Libchipcard looks for its data files 
+  and plugins in folders below the location of the called executable (using
+  binreloc).
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.3beta (2007/10/24)
+===========================================================================
+
+
+2007/10/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- libchipcard client now also looks for driver description files in the
+  client's data folder. On posix systems there is none, since there
+  libchipcard's own ressource manager is used. On Windows however these files
+  contain information which is needed to determine the driver and reader type
+  from a given PC/SC reader name. This in turn is needed to adapt APDUs
+  on Windows the same way we do it on POSIX systems.
+- split driver description files folder of this package: One for posix
+  (contains the same as before) and one for Windows, where we use other ways
+  to determine the driver and reader type (see above)
+  On posix systems these files are installed to the server's data folder,
+  on Windows they are installed to the client's data folder.
+- removed the need for a <var> section in driver description files. This was
+  deprecated anyway and only used by the memcard class to see whether we have
+  a buggy driver for Towitoko CDM (serial) which has a very low write 
+  boundary. This is now expressed by the new reader flag 
+  LC_READER_FLAGS_LOW_WRITE_BOUNDARY
+
+
+2007/10/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- install README files to appdatadir and carddatadir to make it easier to
+  find those folders when using the path manager (especially under WIN32)
+- use GWEN_PathManager to retrieve client configuration and data files
+- libchipcard now cross-compiles for WIN32 using mingw32 on Debian.
+  The resulting binaries work on Windows XP :-)
+
+
+2007/10/12: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- removed old crypt token stuff
+
+
+2007/09/28: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- driver_ifd now tries to select the protocol if the reader's default
+  protocol doesn't work (this allows reading KVK cards with the Kobil Kaan
+  Advanced)
+
+
+2007/09/18: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- some fixes for DDVCard CryptToken, adapted to changes in the CryptToken API
+
+
+2007/09/13: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a typo (spotted by Marcel Naziri)
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.2beta (2007/09/11)
+===========================================================================
+
+
+2007/09/07: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- many fixes
+- added plugin for Gwenhywfar's new CryptToken framework supporting
+  DDV cards
+- dropped dependency on LibUSB (it is no longer needed, since we now use
+  libsysfs for scanning of USB devices as well)
+
+
+2007/07/24: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- USB scanner now uses Libsysfs instead of LibUSB to scan for devices.
+  This is needed for kernels since about 2.6.20 because these kernels
+  have an autosuspend feature and checking for readers using Libusb
+  makes the readers wake up and suspend continuously
 
 
 2007-06-17  Andreas Koehler  <andi5.py@gmx.net>
@@ -23,9 +226,52 @@ MARK: released Libchipcard3 3.0.4  (2007-11-08)
 	* configure.ac: Use AC_CANONICAL_BUILD and _HOST, but not _TARGET
 
 
+2007/06/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to latest SVN version of Gwenhywfar
+
+
+2007/06/03: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- install chipcard daemon as "chipcardd4" to make it distinguishable from
+  old daemon of Libchipcard1
+
+
 ===========================================================================
-MARK: released Libchipcard3 3.0.3  (2007-05-02 r391)
+MARK: released Libchipcard 3.9.1beta (2007/05/14)
 ===========================================================================
+
+
+2007/05/07: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for new Cyberjack readers (0x400 and 0x401)
+- don't set key callback for cyberjacks (let the cyberjack beep)
+
+
+2007/05/04: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- now use path instead of port number for Cyberjack driver
+
+
+2007/05/02: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- renamed LC_Card_SelectMF() to LC_Card_SelectMf() for a consistent API
+- improved API doc
+- started renaming all Libchipcard3 names to simply Libchipcard. This will
+  simplify future releases.
+- changed all headers and #include directives to no longer include the "3"
+  (as in "#include <chipcard3/chipcard3.h>")
+  NOTE: The paths and names of the configuration files therefore changes!!
+  The default configuration file is no longer 
+    /usr/etc/chipcard3/server/chipcard3.conf
+  but rather
+    /usr/etc/chipcard/server/chipcard.conf
+
+
+===========================================================================
+MARK: released Libchipcard 3.9.0beta (2007/05/03)
+===========================================================================
+
 
 2007/04/30: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
@@ -44,15 +290,30 @@ MARK: released Libchipcard3 3.0.3  (2007-05-02 r391)
 - added special path for PC/SC drivers under SuSE
 
 
+2007/04/19: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted driver for IFD handlers for 64 bit archs: unfortunately PC/SC
+  defines DWORD as "unsigned long" on any architecture, even on 64 bit.
+  As a result DWORD is 32 bits wide on 32 bit archs and 64 bits wide on
+  64 bit archs. The drivers seem to be expecting this behaviour so we have to
+  use the same albeit incorrect definitions here
+
+
 2007/04/11: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed reader description for O2Micro
 - fixed compile bug in src/lib/sharedstuff
 
 
+===========================================================================
+MARK: released Libchipcard3 3.1.0beta  (2007/04/03)
+===========================================================================
+
+
 2007/04/03: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added description for SCM 3320
+- prepared release of 3.1.0beta
 
 
 2007/03/11: Martin Preuss<martin@libchipcard.de>
@@ -81,7 +342,13 @@ MARK: released Libchipcard3 3.0.3  (2007-05-02 r391)
 
 2007/01/24: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
+- adapted PC/SC stuff to Gwenhywfar3
 - added SCR 331 to ccid_ifd.xml (it reportedly works with this driver)
+
+
+2007/01/14: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- adapted to Gwenhywfar3
 
 
 2007/01/11: Martin Preuss<martin@libchipcard.de>

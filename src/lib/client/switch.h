@@ -15,8 +15,8 @@
 #define CHIPCARD_CLIENT_SWITCH_H
 
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -24,7 +24,7 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <unistd.h>
 #include <ctype.h>
@@ -98,7 +98,7 @@ void GWENHYWFAR_CB DriverCTAPI_freeData(void *bp, void *p) {
 
 
 int DriverCTAPI_Start(LCD_DRIVER *d) {
-  GWEN_ERRORCODE err;
+  int err;
   DRIVER_CTAPI *dct;
 
   assert(d);
@@ -109,7 +109,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   dct->libLoader=GWEN_LibLoader_new();
   err=GWEN_LibLoader_OpenLibrary(dct->libLoader,
                                  LCD_Driver_GetLibraryFile(d));
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Loading library", 0, 0)) {
@@ -123,7 +123,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "CT_init",
                              (void*)&dct->initFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -137,7 +137,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "CT_data",
                              (void*)&dct->dataFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -151,7 +151,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
                              "CT_close",
                              (void*)&dct->closeFn);
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     GWEN_LibLoader_CloseLibrary(dct->libLoader);
     if (LCD_Driver_Connect(d, LC_ERROR_GENERIC, "Resolving symbols", 0, 0)) {
@@ -166,7 +166,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
 			     "rsct_version",
 			     (void*)&dct->rsctVersionFn);
-  if (GWEN_Error_IsOk(err)) {
+  if (!err) {
     unsigned char vmajor, vminor, vpatchlevel;
     unsigned short vbuild;
 
@@ -177,11 +177,11 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
     err=GWEN_LibLoader_Resolve(dct->libLoader,
 			       "rsct_init_name",
 			       (void*)&dct->rsctInitNameFn);
-    if (GWEN_Error_IsOk(err))
+    if (!err)
       err=GWEN_LibLoader_Resolve(dct->libLoader,
 				 "rsct_setkeycb",
 				 (void*)&dct->rsctSetKeyCb1Fn);
-    if (!GWEN_Error_IsOk(err)) {
+    if (err) {
       DBG_ERROR_ERR(0, err);
       GWEN_LibLoader_CloseLibrary(dct->libLoader);
       if (LCD_Driver_Connect(d, LC_ERROR_GENERIC,
@@ -198,7 +198,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
   err=GWEN_LibLoader_Resolve(dct->libLoader,
 			     "CT_init_name",
 			     (void*)&dct->kobilInitNameFn);
-  if (GWEN_Error_IsOk(err)) {
+  if (!err) {
     DBG_INFO(0,
 	     "Function CT_init_name available "
 	     "(most likely Kobil or Celectronic driver)");
@@ -216,7 +216,7 @@ int DriverCTAPI_Start(LCD_DRIVER *d) {
 
 
 
-const char *DriverCTAPI_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err) {
+const char *DriverCTAPI_GetErrorText(LCD_DRIVER *d, uint32_t err) {
   const char *s;
   DRIVER_CTAPI *dct;
 
@@ -313,7 +313,7 @@ int DriverCTAPI_KeyCallback1(unsigned short ctn, void *user_data) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
+uint32_t DriverCTAPI_SendAPDU(LCD_DRIVER *d,
 			      int toReader,
 			      LCD_READER *r,
 			      LCD_SLOT *slot,
@@ -353,7 +353,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
 
   DBG_INFO(lg,
            "Sending command:");
-  GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevelInfo);
+  GWEN_Text_LogString((const char*)apdu, apdulen, lg, GWEN_LoggerLevel_Info);
   DBG_DEBUG(lg,
             "CTN=%d, SAD=%d, DAD=%d, "
             "CLA=%02x, INS=%02x, P1=%02x, P2=%02x (%d bytes)",
@@ -386,7 +386,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
 
   DBG_INFO(lg,
            "Received response:");
-  GWEN_Text_LogString((const char*)buffer, lr, lg, GWEN_LoggerLevelInfo);
+  GWEN_Text_LogString((const char*)buffer, lr, lg, GWEN_LoggerLevel_Info);
 
   if (lr>1) {
     if ((unsigned char)buffer[lr-2]!=0x90) {
@@ -415,7 +415,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_SendAPDU(LCD_DRIVER *d,
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   unsigned char apdu[]={0x20, 0x12, 0x01, 0x01, 0x00};
   unsigned char responseBuffer[300];
   int lr;
@@ -476,7 +476,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   /*unsigned char apdu[]={0x20, 0x14, 0x01, 0x00, 0x00};*/
   unsigned char apdu[]={0x20, 0x15, 0x01, 0x03};
   unsigned char responseBuffer[300];
@@ -513,8 +513,8 @@ GWEN_TYPE_UINT32 DriverCTAPI_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
-  GWEN_TYPE_UINT32 currStatus;
+uint32_t DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+  uint32_t currStatus;
   int rv;
   DRIVER_CTAPI *dct;
 
@@ -538,7 +538,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x80, 0x00};
   unsigned char responseBuffer[300];
   int lr;
@@ -618,7 +618,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReaderStatus(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+uint32_t DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                             GWEN_BUFFER *buf) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x46, 0x00};
   unsigned char responseBuffer[300];
@@ -648,7 +648,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
               "Too short response when requesting reader information");
     GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LCD_Reader_GetLogger(r),
-                        GWEN_LoggerLevelError);
+			GWEN_LoggerLevel_Error);
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
   }
 
@@ -660,7 +660,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
              responseBuffer[0]);
     GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LCD_Reader_GetLogger(r),
-                        GWEN_LoggerLevelError);
+                        GWEN_LoggerLevel_Error);
     p=responseBuffer;
   }
   else
@@ -731,7 +731,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderInfo(LCD_DRIVER *d, LCD_READER *r,
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
+uint32_t DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
                                              GWEN_BUFFER *buf) {
   unsigned char apdu[]={0x20, 0x13, 0x00, 0x81, 0x00};
   unsigned char responseBuffer[300];
@@ -762,7 +762,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
               "Too short response when requesting reader unit list");
     GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LCD_Reader_GetLogger(r),
-                        GWEN_LoggerLevelError);
+			GWEN_LoggerLevel_Error);
     return DRIVER_CTAPI_ERROR_BAD_RESPONSE;
   }
 
@@ -773,7 +773,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
              responseBuffer[0]);
     GWEN_Text_LogString((const char*)responseBuffer, lr,
                         LCD_Reader_GetLogger(r),
-                        GWEN_LoggerLevelError);
+			GWEN_LoggerLevel_Error);
     p=responseBuffer;
     len=lr-2;
   }
@@ -820,9 +820,9 @@ GWEN_TYPE_UINT32 DriverCTAPI_ReadReaderUnits(LCD_DRIVER *d, LCD_READER *r,
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+uint32_t DriverCTAPI_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf) {
-  GWEN_TYPE_UINT32 res1, res2;
+  uint32_t res1, res2;
 
   res1=DriverCTAPI_ReadReaderInfo(d, r, buf);
   res2=DriverCTAPI_ReadReaderUnits(d, r, buf);
@@ -852,7 +852,7 @@ int DriverCTAPI_ExtendReader(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
 #if 0
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slotList;
@@ -903,8 +903,10 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
     return rvd;
   }
   LCD_Reader_AddStatus(r, LCD_READER_STATUS_UP);
+#if 0
   if (dct->rsctSetKeyCb1Fn)
     dct->rsctSetKeyCb1Fn(ReaderCTAPI_GetCtn(r), DriverCTAPI_KeyCallback1, r);
+#endif
 
 #if 0
   slotList=LCD_Reader_GetSlots(r);
@@ -927,7 +929,7 @@ GWEN_TYPE_UINT32 DriverCTAPI_ConnectReader(LCD_DRIVER *d, LCD_READER *r) {
 
 
 
-GWEN_TYPE_UINT32 DriverCTAPI_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
+uint32_t DriverCTAPI_DisconnectReader(LCD_DRIVER *d, LCD_READER *r) {
   LCD_SLOT *sl;
   LCD_SLOT_LIST *slotList;
   unsigned int oks;

@@ -14,13 +14,13 @@
 
 
 int LCSL_SlaveManager_HandleStartReader(LCSL_SLAVEMANAGER *slm,
-                                        GWEN_TYPE_UINT32 rid,
+                                        uint32_t rid,
                                         const char *name,
                                         GWEN_DB_NODE *dbReq) {
   GWEN_IPC_REQUEST *req;
   GWEN_TIME *ti;
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 masterReaderId;
+  uint32_t readerId;
+  uint32_t masterReaderId;
   const char *s;
   unsigned int x;
   LCDM_DEVICEMANAGER *dm;
@@ -141,9 +141,9 @@ int LCSL_SlaveManager_HandleStartReader(LCSL_SLAVEMANAGER *slm,
 int LCSL_SlaveManager_WorkStartReader(GWEN_IPC_REQUEST *req) {
   LCSL_SLAVEMANAGER *slm;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LC_READER_STATUS rst;
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   LCCO_READER *sr;
 
   rid=GWEN_IpcRequest_GetId(req);

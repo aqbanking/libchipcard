@@ -16,8 +16,8 @@
 
 #include "switch.h"
 #include "base/client_l.h"
-#include <chipcard3/client/io/lcc/clientlcc.h>
-#include <chipcard3/client/io/pcsc/clientpcsc.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
+#include <chipcard/client/io/pcsc/clientpcsc.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/db.h>
@@ -32,11 +32,17 @@ LC_CLIENT *LC_Client_new(const char *programName,
 
   if (LC_Client_InitCommon()) {
     DBG_ERROR(0, "Unable to initialize, aborting");
-    return 0;
+    return NULL;
   }
 
   db=LC_Client_GetCommonConfig();
-  s=GWEN_DB_GetCharValue(db, "resmgr", 0, LC_CLIENT_LCC_NAME);
+  s=GWEN_DB_GetCharValue(db, "resmgr", 0,
+#ifdef OS_WIN32
+			 LC_CLIENT_PCSC_NAME
+#else
+			 LC_CLIENT_LCC_NAME
+#endif
+			);
   assert(s);
   cl=LC_Client_Factory(s, programName, programVersion);
 
@@ -62,7 +68,7 @@ LC_CLIENT *LC_Client_Factory(const char *resmgr,
     cl=LC_ClientPcsc_new(programName, programVersion);
 #else
     DBG_ERROR(LC_LOGDOMAIN, "No support for PC/SC");
-    return 0;
+    return NULL;
 #endif
   }
   else if (strcasecmp(resmgr, LC_CLIENT_LCC_NAME)==0)
@@ -70,7 +76,7 @@ LC_CLIENT *LC_Client_Factory(const char *resmgr,
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Ressource manager backend \"%s\" not found",
               resmgr);
-    return 0;
+    return NULL;
   }
 
   return cl;

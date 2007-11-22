@@ -27,7 +27,7 @@ LCCL_CLIENTMANAGER *LCCL_ClientManager_new(LCS_SERVER *server);
 void LCCL_ClientManager_free(LCCL_CLIENTMANAGER *clm);
 
 int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
-                                     GWEN_TYPE_UINT32 rid,
+                                     uint32_t rid,
                                      const char *name,
                                      GWEN_DB_NODE *dbReq);
 
@@ -35,7 +35,7 @@ int LCCL_ClientManager_Init(LCCL_CLIENTMANAGER *clm, GWEN_DB_NODE *db);
 int LCCL_ClientManager_Fini(LCCL_CLIENTMANAGER *clm, GWEN_DB_NODE *db);
 
 void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
-                                   GWEN_TYPE_UINT32 clid);
+                                   uint32_t clid);
 
 int LCCL_ClientManager_Work(LCCL_CLIENTMANAGER *clm);
 
@@ -45,7 +45,7 @@ int LCCL_ClientManager_Work(LCCL_CLIENTMANAGER *clm);
  */
 /*@{*/
 void LCCL_ClientManager_DriverChg(LCCL_CLIENTMANAGER *clm,
-                                  GWEN_TYPE_UINT32 did,
+                                  uint32_t did,
                                   const char *driverType,
                                   const char *driverName,
                                   const char *libraryFile,
@@ -53,7 +53,7 @@ void LCCL_ClientManager_DriverChg(LCCL_CLIENTMANAGER *clm,
                                   const char *reason);
 
 void LCCL_ClientManager_ReaderChg(LCCL_CLIENTMANAGER *clm,
-                                  GWEN_TYPE_UINT32 did,
+                                  uint32_t did,
                                   LCCO_READER *r,
                                   LC_READER_STATUS newSt,
                                   const char *reason);
@@ -63,7 +63,7 @@ void LCCL_ClientManager_NewCard(LCCL_CLIENTMANAGER *clm, LCCO_CARD *card);
 void LCCL_ClientManager_CardRemoved(LCCL_CLIENTMANAGER *clm, LCCO_CARD *card);
 
 void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
-                                   GWEN_TYPE_UINT32 sid,
+                                   uint32_t sid,
                                    const char *serviceType,
                                    const char *serviceName,
                                    LC_SERVICE_STATUS newSt,

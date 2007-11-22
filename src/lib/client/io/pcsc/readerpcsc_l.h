@@ -16,7 +16,7 @@
 
 #include <gwenhywfar/misc.h>
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 
 
 #define LC_READER_PCSC_MAX_FEATURES 32
@@ -40,12 +40,12 @@ void LC_ReaderPcsc_SetReaderType(LC_READER_PCSC *r,
 LC_CARD *LC_ReaderPcsc_GetCurrentCard(const LC_READER_PCSC *r);
 void LC_ReaderPcsc_SetCurrentCard(LC_READER_PCSC *r, LC_CARD *card);
 
-GWEN_TYPE_UINT32 LC_ReaderPcsc_GetFeatureCode(const LC_READER_PCSC *r,
+uint32_t LC_ReaderPcsc_GetFeatureCode(const LC_READER_PCSC *r,
                                               int idx);
 
 void LC_ReaderPcsc_SetFeatureCode(LC_READER_PCSC *r,
                                   int idx,
-                                  GWEN_TYPE_UINT32 code);
+                                  uint32_t code);
 
 
 #endif /* CHIPCARD_CLIENT_READERPCSC_L_H */

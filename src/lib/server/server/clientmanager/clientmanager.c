@@ -92,7 +92,7 @@ int LCCL_ClientManager_Work(LCCL_CLIENTMANAGER *clm) {
 
 
 int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
-                                     GWEN_TYPE_UINT32 rid,
+                                     uint32_t rid,
                                      const char *name,
                                      GWEN_DB_NODE *dbReq) {
   int rv;
@@ -145,7 +145,7 @@ int LCCL_ClientManager_HandleRequest(LCCL_CLIENTMANAGER *clm,
 
 
 void LCCL_ClientManager_DriverChg(LCCL_CLIENTMANAGER *clm,
-                                  GWEN_TYPE_UINT32 did,
+                                  uint32_t did,
                                   const char *driverType,
                                   const char *driverName,
                                   const char *libraryFile,
@@ -170,7 +170,7 @@ void LCCL_ClientManager_DriverChg(LCCL_CLIENTMANAGER *clm,
 
 
 void LCCL_ClientManager_ReaderChg(LCCL_CLIENTMANAGER *clm,
-                                  GWEN_TYPE_UINT32 did,
+                                  uint32_t did,
                                   LCCO_READER *r,
                                   LC_READER_STATUS newSt,
                                   const char *reason) {
@@ -243,7 +243,7 @@ void LCCL_ClientManager_RemoveClientRequests(LCCL_CLIENTMANAGER *clm,
       rqNext=GWEN_IpcRequest_List_Next(rq);
       if (LCCL_Request_IsofThisType(rq)) {
 	if (cl==NULL || cl==LCCL_Request_GetClient(rq)) {
-	  GWEN_TYPE_UINT32 rid;
+	  uint32_t rid;
 	  GWEN_IPC_REQUEST_LIST *subrql;
 
 	  /* first remove all sub requests */
@@ -272,12 +272,12 @@ void LCCL_ClientManager_RemoveClientRequests(LCCL_CLIENTMANAGER *clm,
 
 
 void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
-                                   GWEN_TYPE_UINT32 clid) {
+                                   uint32_t clid) {
   LCCL_CLIENT *cl;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   GWEN_IPC_REQUEST_MANAGER *rm;
   GWEN_IPC_REQUEST_LIST *rql;
 
@@ -300,7 +300,7 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
   card=LCCM_CardManager_GetFirstCard(cm);
   while(card) {
     if (!LCCM_CardManager_CheckAccess(cm, card, LCCL_Client_GetClientId(cl))){
-      GWEN_TYPE_UINT32 rid;
+      uint32_t rid;
       int rv;
 
       /* we own this card, so unlock it */
@@ -361,7 +361,7 @@ void LCCL_ClientManager_ClientDown(LCCL_CLIENTMANAGER *clm,
 
 
 void LCCL_ClientManager_ServiceChg(LCCL_CLIENTMANAGER *clm,
-                                   GWEN_TYPE_UINT32 sid,
+                                   uint32_t sid,
                                    const char *serviceType,
                                    const char *serviceName,
                                    LC_SERVICE_STATUS newSt,
@@ -473,11 +473,11 @@ void LCCL_ClientManager_DumpState(const LCCL_CLIENTMANAGER *clm) {
 
 
 
-GWEN_TYPE_UINT32 LCCL_ClientManager_SendResetCard(LCCL_CLIENTMANAGER *clm,
+uint32_t LCCL_ClientManager_SendResetCard(LCCL_CLIENTMANAGER *clm,
                                                   LCCO_CARD *card) {
   GWEN_DB_NODE *dbOutReq;
   LCDM_DEVICEMANAGER *dm;
-  GWEN_TYPE_UINT32 outRid;
+  uint32_t outRid;
 
   assert(clm);
 

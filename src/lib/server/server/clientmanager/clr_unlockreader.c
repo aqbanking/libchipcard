@@ -25,13 +25,13 @@
 
 
 int LCCL_ClientManager_HandleUnlockReader(LCCL_CLIENTMANAGER *clm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           const char *name,
                                           GWEN_DB_NODE *dbReq) {
   LCCL_CLIENT *cl;
-  GWEN_TYPE_UINT32 clientId;
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 lrId;
+  uint32_t clientId;
+  uint32_t readerId;
+  uint32_t lrId;
   int cmdVer;
   int rv;
   GWEN_DB_NODE *dbRsp;

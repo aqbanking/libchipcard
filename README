@@ -10,15 +10,16 @@
                4. Starting The Daemon
                5. Server Environment Variables
                6. Client Setup
-               7. Using Libchipcard3 in your own Projects
-               8. Using Libchipcard3 With MacOS
+               7. Using Libchipcard in your own Projects
+               8. Using Libchipcard With MacOS
                9. Special Drivers and Readers
                9.1. Generic CCID Driver
                9.2. Reiner SCT Cyberjack
                9.3. Omnikey CardMan 4000
                9.4. SCM SPR 532
               10. Distribution Specific Notes
-              11. Projects Using Libchipcard3
+              11. Updating from Versions before 3.9.1
+              12. Projects Using Libchipcard
               -------------------------------------------------------
 
 
@@ -26,36 +27,38 @@
 1. Introduction
 ===============
 
-Libchipcard3 is a library for generic access to chipcard readers. It contains
+Libchipcard is a library for generic access to chipcard readers. It contains
 a complete ressource manager and uses the hardware drivers provided by
 manufacturers of card readers. The number of readers to be used in parallel
 is unbound.
 
-Libchipcard3 has some advantages over existing card reader ressource managers:
+Libchipcard has some advantages over existing card reader ressource managers:
  - autodetection of readers at multiple buses
  - readers are only allocated upon request by a client (while no client needs
-   access to a given reader this reader is not accessed by Libchipcard3)
+   access to a given reader this reader is not accessed by Libchipcard)
  - it provides a fake CTAPI which can be used by any CTAPI-aware program
-   to use Libchipcard3 via CTAPI
+   to use Libchipcard via CTAPI
 
-Libchipcard3 autodetects and automatically configures readers at the following
+Libchipcard autodetects and automatically configures readers at the following
 buses:
  - raw USB
  - USB serial
  - PCI
  - PCMCIA
 
-Libchipcard3 has been tested by myself with the following readers:
+Libchipcard has been tested by myself with the following readers:
 - Kobil Kaan Advanced USB (works)
 - Towitoko Chipdrive Micro (serial, works)
 - old Reiner SCT Cyberjack (0x100, works)
 - new Reiner SCT Cyberjack (0x300, works)
-- Reiner SCT Cyberjack ECom (works)
+- old Reiner SCT Cyberjack ECom (works)
+- new Reiner SCT Cyberjack ECom (works)
 - Omnikey CardMan 3621 (USB, works)
 - Omnikey CardMan 4000 (PCMCIA, works)
 - Cherry G80-1501 (mode 2, works)
 - Cherry G80-1502 (mode 2, works)
 - SCM SCR 3310 (works)
+- SCM SCR 3311 (works)
 - SCM SPR 532 (works with original driver, see 9.4)
 
 
@@ -63,23 +66,14 @@ Libchipcard3 has been tested by myself with the following readers:
 2. Needed Components
 ====================
 
-Libchipcard3 needs the following packages:
+Libchipcard needs the following packages:
 - Gwenhywfar http://gwenhywfar.sf.net/          [required]
-- LibUSB     http://libusb.sf.net/              [strongly recommended]
 - LibSysFS   http://linux-diag.sf.net/          [strongly recommended]
 
-If LibUSB is available at compile time it will be used to scan the USB bus
-for new devices. Fortunately LibUSB is ported to the major *nix-alike 
-systems ;-)
-If LibUSB is missing autoconfiguration of USB devices is not possible.
-
-For devices which use a /dev/ttyUSBx device the procfs file 
-"/proc/tty/driver/usb-serial" or "/proc/tty/driver/usbserial" is used.
-However, revent kernels (2.6.x) only allow root to view these files, so
-for these systems LibSysFS (part of sysfsutils) is needed.
-
 If LibSysFS is available then the PCMCIA scanner code is built. This allows to
-detect PCMCIA-based card readers.
+detect PCMCIA-based card readers. This library is also needed to scan for
+USB devices.
+If LibSysFS is missing autoconfiguration of USB devices is not possible.
 
 
 
@@ -87,13 +81,13 @@ detect PCMCIA-based card readers.
 ===============
 
 The chipcard daemon uses the configuration file 
-    $PREFIX/etc/chipcard3/server/chipcardd3.conf
+    $PREFIX/etc/chipcard/server/chipcardd.conf
 
 This file contains a description of which drivers to load and a list of
 configured readers.
 
 You can copy one of the example files installed to 
-"$PREFIX/etc/chipcard3/server/". For USB-only readers the minimal example
+"$PREFIX/etc/chipcard/server/". For USB-only readers the minimal example
 can be used. For serial devices the file "chipcardd3.conf.example" can be used
 as a starting point.
 
@@ -131,7 +125,7 @@ of security modes:
 For security modes "private" and "secure" some additional setup is to be done.
 You can do most of that additional setup with the following command:
 
-#>chipcardd3 init
+#>chipcardd init
 
 This will create all files necessary for "private" or "secure" mode (such as
 Diffie-Hellman-parameters, a self-signed certificate etc).
@@ -163,18 +157,18 @@ card reader (normally he isn't).
 4. Starting The Daemon
 ======================
 
-"chipcardd3 --help" lists all possible command line arguments.
+"chipcardd4 --help" lists all possible command line arguments.
 
 However, in most cases the following does suffice:
 
-#>chipcardd3 --pidfile PIDFILENAME
+#>chipcardd4 --pidfile PIDFILENAME
 where PIDFILENAME is the name of the PID file (used to store the process id
 of the server which can be used to send signals to it).
 
 
 For debugging purposes the following is more usefull:
 
-#>chipcardd3 --pidfile PIDFILENAME -f --logtype console --loglevel notice
+#>chipcardd4 --pidfile PIDFILENAME -f --logtype console --loglevel notice
 
 For "loglevel" you can use "--loglevel info" to increase the verbosity even
 more. 
@@ -213,25 +207,25 @@ Loglevel to be used by the fake CTAPI.
 6. Client Setup
 ===============
 
-Clients for libchipcard3 use the configuration file 
-    $PREFIX/etc/chipcard3/client/chipcardc3.conf
+Clients for libchipcard use the configuration file 
+    $PREFIX/etc/chipcard/client/chipcardc.conf
 
-This file contains a description of the chipcard3 servers to connect to.
+This file contains a description of the chipcard servers to connect to.
 
 
 
-7. Using Libchipcard3 in your own Projects
+7. Using Libchipcard in your own Projects
 ==========================================
 
 Please have a look at the file in tutorials/. They pretty much explain how
-Libchipcard3 can be used.
+Libchipcard can be used.
 
 
 
-8. Using Libchipcard3 With MacOS
+8. Using Libchipcard With MacOS
 ================================
 
-The following commands will compile Libchipcard3 on MacOS:
+The following commands will compile Libchipcard on MacOS:
 
 --------------------------------------------------------------------------------------
 ./configure --prefix=/sw LDFLAGS=-L/sw/lib CFLAGS=-I/sw/include CPPFLAGS=-I/sw/include
@@ -239,7 +233,7 @@ make
 sudo make install
 --------------------------------------------------------------------------------------
 
-The configuration files are then expected in /sw/chipcard3/server.
+The configuration files are then expected in /sw/chipcard/server.
 
 
 
@@ -261,7 +255,7 @@ the correct values for "idVendor" and "idProduct".
 9.1. Generic CCID Driver
 -------------------------
 
-Libchipcard3 has improved support for this GPL licensed driver. It can use 
+Libchipcard has improved support for this GPL licensed driver. It can use 
 this driver as installed by your distribution (tested with Debian's binary
 packages).
 
@@ -278,7 +272,7 @@ but not at runtime. So please do this:
 It is safe to leave the package libpcsclite on Debian installed, but the
 package containing the PC/SC daemon (pcscd) MUST NOT be installed, because
 that daemon grabs all readers it can find so other daemons (like the quite
-cooperative daemon of Libchipcard3) are unable to use them.
+cooperative daemon of Libchipcard) are unable to use them.
 
 
 9.2. Reiner SCT Cyberjack
@@ -321,7 +315,7 @@ plugged-in.
 9.4. SCM SPR 532
 ----------------
 
-Libchipcard3 no longer uses the generic CCID driver for this reader because
+Libchipcard no longer uses the generic CCID driver for this reader because
 with that driver it is impossible to perform secure verification or
 modification. Therefore we fallback to the driver of the manufacturer.
 However, this needs the reader to have the old firmware 4.15 installed, newer
@@ -343,12 +337,24 @@ different drivers.
 
 
 
+11. Updating from Versions before 3.9.1
+=======================================
 
-11. Projects Using Libchipcard3
+Starting with Libchipcard 3.9.1beta all references to the major version have
+been removed. This means that the server configuration is no longer searched
+for in $PREFIX/etc/chipcard3/server but in $PREFIX/etc/chipcard/server
+instead. Also the name of the file has been changed from chipcardd3.conf to
+chipcardd.conf.
+
+This is also true for client configuration files.
+
+
+
+12. Projects Using Libchipcard
 ===============================
 
-The following is a list of projects which use Libchipcard3. This list
-is rather incomplete, please contact the author of you want your project
+The following is a list of projects which use Libchipcard. This list
+is rather incomplete, please contact the author if you want your project
 listed here as well.
 
  - AqBanking
@@ -359,7 +365,7 @@ listed here as well.
  - Gnumed
 
 
-Martin Preuss, Hamburg/Germany, 2006/12/25
+Martin Preuss, Hamburg/Germany, 2007/10/27
 
 
 

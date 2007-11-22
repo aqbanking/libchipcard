@@ -14,8 +14,8 @@ struct LC_PININFO {
   int _modified;
 
   char *name;
-  GWEN_TYPE_UINT32 id;
-  LC_PININFO_ENCODING encoding;
+  uint32_t id;
+  GWEN_CRYPT_PINENCODING encoding;
   int minLength;
   int maxLength;
   int allowChange;

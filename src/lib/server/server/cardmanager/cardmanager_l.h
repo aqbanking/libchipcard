@@ -32,14 +32,14 @@ int LCCM_CardManager_Fini(LCCM_CARDMANAGER *cm, GWEN_DB_NODE *dbConfig);
 
 void LCCM_CardManager_NewCard(LCCM_CARDMANAGER *cm, LCCO_CARD *card);
 
-void LCCM_CardManager_ReaderDown(LCCM_CARDMANAGER *cm, GWEN_TYPE_UINT32 rid);
-void LCCM_CardManager_ClientDown(LCCM_CARDMANAGER *cm, GWEN_TYPE_UINT32 clid);
+void LCCM_CardManager_ReaderDown(LCCM_CARDMANAGER *cm, uint32_t rid);
+void LCCM_CardManager_ClientDown(LCCM_CARDMANAGER *cm, uint32_t clid);
 
 
 void LCCM_CardManager_CardRemoved(LCCM_CARDMANAGER *cm, LCCO_CARD *card);
 
 LCCO_CARD *LCCM_CardManager_FindCard(LCCM_CARDMANAGER *cm,
-                                     GWEN_TYPE_UINT32 cid);
+                                     uint32_t cid);
 
 LCCO_CARD *LCCM_CardManager_GetFirstCard(LCCM_CARDMANAGER *cm);
 LCCO_CARD *LCCM_CardManager_GetNextCard(LCCM_CARDMANAGER *cm,
@@ -48,17 +48,17 @@ LCCO_CARD *LCCM_CardManager_GetNextCard(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_RequestLockCard(LCCM_CARDMANAGER *cm,
                                      LCCO_CARD *card,
-                                     GWEN_TYPE_UINT32 clid,
+                                     uint32_t clid,
                                      int duration,
                                      int maxLocks);
 
 int LCCM_CardManager_CheckLockCardRequest(LCCM_CARDMANAGER *cm,
                                           LCCO_CARD *card,
-                                          GWEN_TYPE_UINT32 clid);
+                                          uint32_t clid);
 
 int LCCM_CardManager_UnlockCard(LCCM_CARDMANAGER *cm,
                                 LCCO_CARD *card,
-                                GWEN_TYPE_UINT32 clid);
+                                uint32_t clid);
 
 int LCCM_CardManager_SetCardAdTime(LCCM_CARDMANAGER *cm,
                                    LCCO_CARD *card,
@@ -66,7 +66,7 @@ int LCCM_CardManager_SetCardAdTime(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_CheckAccess(LCCM_CARDMANAGER *cm,
                                  LCCO_CARD *card,
-                                 GWEN_TYPE_UINT32 clid);
+                                 uint32_t clid);
 
 /**
  * @return 1 if something could be done, 0 otherwise

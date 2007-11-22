@@ -32,6 +32,8 @@
 
 #include <gwenhywfar/inetsocket.h>
 #include <gwenhywfar/directory.h>
+#include <gwenhywfar/gui_be.h>
+#include <gwenhywfar/iomanager.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -77,9 +79,6 @@ static int ChipcardWatcherResume=0;
 static time_t LastFailedTime=0;
 static int ShortFailCounter=0;
 #endif
-static GWEN_NL_SSL_ASKADDCERT_RESULT
-  Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_No;
-
 static LCS_SERVER *cardServer=0;
 
 
@@ -124,13 +123,13 @@ ARGUMENTS *Arguments_new() {
 #endif
   ar->dataDir=LC_DEFAULT_DATADIR;
   ar->configFile=0;
-  ar->pidFile=LC_DEFAULT_PIDDIR "/chipcardd3.pid";
-  ar->logFile=LC_DEFAULT_LOGDIR "/chipcardd3.log";
-  ar->logLevel=GWEN_LoggerLevelNotice;
+  ar->pidFile=LC_DEFAULT_PIDDIR "/chipcardd.pid";
+  ar->logFile=LC_DEFAULT_LOGDIR "/chipcardd.log";
+  ar->logLevel=GWEN_LoggerLevel_Notice;
 #ifdef HAVE_SYSLOG_H
-  ar->logType=GWEN_LoggerTypeSyslog;
+  ar->logType=GWEN_LoggerType_Syslog;
 #else
-  ar->logType=GWEN_LoggerTypeFile;
+  ar->logType=GWEN_LoggerType_File;
 #endif
   ar->exitOnSetupError=0;
   ar->runOnce=0;
@@ -308,7 +307,7 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
       if (i>=argc)
         return RETURNVALUE_PARAM;
       args->logType=GWEN_Logger_Name2Logtype(argv[i]);
-      if (args->logType==GWEN_LoggerTypeUnknown) {
+      if (args->logType==GWEN_LoggerType_Unknown) {
         fprintf(stderr,
 		I18N("Unknown log type \"%s\"\n"),
 		argv[i]);
@@ -320,7 +319,7 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
       if (i>=argc)
 	return RETURNVALUE_PARAM;
       args->logLevel=GWEN_Logger_Name2Level(argv[i]);
-      if (args->logLevel==GWEN_LoggerLevelUnknown) {
+      if (args->logLevel==GWEN_LoggerLevel_Unknown) {
         fprintf(stderr,
                 I18N("Unknown log level \"%s\"\n"),
                 argv[i]);
@@ -337,12 +336,6 @@ int checkArgs(ARGUMENTS *args, int argc, char **argv) {
       args->runOnce=atoi(argv[i]);
     }
 
-    else if (strcmp(argv[i],"--accept-all-certs")==0) {
-      Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_Tmp;
-    }
-    else if (strcmp(argv[i],"--store-all-certs")==0) {
-      Chipcard_AskAddCertResult=GWEN_NetLayerSsl_AskAddCertResult_Incoming;
-    }
     /* options for mkcert, init */
     else if (strcmp(argv[i],"--certfile")==0) {
       i++;
@@ -456,7 +449,7 @@ int getConfigFile(ARGUMENTS *args, GWEN_BUFFER *nbuf) {
     /* try system configuration file */
     GWEN_Buffer_Reset(nbuf);
     GWEN_Directory_OsifyPath(LC_DEFAULT_CONFDIR, nbuf, 1);
-    GWEN_Buffer_AppendString(nbuf, DIRSEP "chipcardd3.conf");
+    GWEN_Buffer_AppendString(nbuf, DIRSEP "chipcardd.conf");
     DBG_INFO(0, "Trying \"%s\"", GWEN_Buffer_GetStart(nbuf));
     f=fopen(GWEN_Buffer_GetStart(nbuf), "r");
     if (f) {
@@ -690,24 +683,6 @@ int setSignalHandler(int child) {
 
 
 
-GWEN_NL_SSL_ASKADDCERT_RESULT
-askAddCert(LCS_SERVER *cs,
-           GWEN_NETLAYER *nl,
-           const GWEN_SSLCERTDESCR *cert) {
-  return Chipcard_AskAddCertResult;
-}
-
-
-
-/* TODO */
-int getPassword(GWEN_NETLAYER *nl,
-                char *buffer, int num,
-                int rwflag){
-  return 0;
-}
-
-
-
 int createPidFile(const char *pidfile) {
   FILE *f;
   int pidfd;
@@ -772,17 +747,12 @@ int server(ARGUMENTS *args) {
   pidfile=args->pidFile;
 
   DBG_NOTICE(0, "Chipcardd v"CHIPCARD_VERSION_FULL_STRING" started.");
-#ifdef USE_LIBUSB
-  DBG_NOTICE(0, "LibUSB supported.");
-#endif
 #ifdef USE_LIBSYSFS
   DBG_NOTICE(0, "LibSYSFS supported.");
-#endif
-
-#if !defined(USE_LIBUSB) && !defined(USE_LIBSYSFS)
+#else
   DBG_WARN(0,
-           "USB scanning not supported "
-           "(neither LibUSB nor LibSYSFS is available).");
+	   "USB scanning not supported "
+	   "(LibSYSFS is not available).");
 #endif
 
 #ifdef HAVE_FORK
@@ -790,7 +760,7 @@ int server(ARGUMENTS *args) {
     rv=fork();
     if (rv==-1) {
       DBG_ERROR(0, "Error on fork, aborting.");
-      if (args->logType!=GWEN_LoggerTypeConsole)
+      if (args->logType!=GWEN_LoggerType_Console)
         fprintf(stderr,I18N("Error on fork, aborting.\n"));
       remove(pidfile);
       return RETURNVALUE_SETUP;
@@ -825,7 +795,7 @@ int server(ARGUMENTS *args) {
     rv=fork();
     if (rv==-1) {
       DBG_ERROR(0, "Error on fork, aborting.");
-      if (args->logType!=GWEN_LoggerTypeConsole)
+      if (args->logType!=GWEN_LoggerType_Console)
         fprintf(stderr,I18N("Error on fork, aborting.\n"));
       remove(pidfile);
       return RETURNVALUE_SETUP;
@@ -1023,7 +993,8 @@ int server(ARGUMENTS *args) {
   if (GWEN_DB_ReadFile(db,
                        GWEN_Buffer_GetStart(fbuf),
                        GWEN_DB_FLAGS_DEFAULT |
-                       GWEN_PATH_FLAGS_CREATE_GROUP)) {
+		       GWEN_PATH_FLAGS_CREATE_GROUP,
+		       0, 2000)) {
     fprintf(stderr,I18N("Could not read configuration file, aborting.\n"));
     GWEN_DB_Group_free(db);
     GWEN_Buffer_free(fbuf);
@@ -1051,7 +1022,6 @@ int server(ARGUMENTS *args) {
 
   DBG_INFO(0, "Will now initialize server.");
   cardServer=LCS_Server_new();
-  LCS_Server_SetAskAddCertFn(cardServer, askAddCert);
   rv=LCS_Server_Init(cardServer, db);
   if (rv==LCS_INITRESULT_RESTART) {
     LCS_Server_free(cardServer);
@@ -1070,18 +1040,19 @@ int server(ARGUMENTS *args) {
   DBG_INFO(0, "Ready to service requests.");
   loopCount=0;
   while (ChipcardDaemonStop==0 && ChipcardDaemonHangup==0) {
-    GWEN_NETLAYER_RESULT res;
     int rv;
 
     while(1) {
+      GWEN_IO_LAYER_WORKRESULT res;
       int clientsBefore;
+      int done=0;
 
       clientsBefore=LCS_Server_GetClientCount(cardServer);
+
       rv=LCS_Server_Work(cardServer);
       if (rv==LCS_WORKRESULT_ERROR) {
-        DBG_INFO(0,
-                 "ERROR: Error while working on hardware (%d)", rv);
-        break;
+	DBG_INFO(0, "ERROR: Error while working on hardware (%d)", rv);
+	break;
       }
       else if (rv==LCS_WORKRESULT_RESTART) {
         ChipcardDaemonStop=1;
@@ -1091,6 +1062,8 @@ int server(ARGUMENTS *args) {
         GWEN_Socket_Select(0, 0, 0, 2000);
         break;
       }
+      else if (rv==1)
+	done=1;
 
       if (args->runOnce && clientsBefore)
         if (LCS_Server_GetClientCount(cardServer)==0) {
@@ -1108,15 +1081,19 @@ int server(ARGUMENTS *args) {
           }
         }
 
-      if (rv==0)
+      while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+        done=1;
+      if (res==GWEN_Io_Layer_WorkResultError) {
+	DBG_ERROR(0, "Error working on io layers");
+	break;
+      }
+
+      if (done==0)
         break;
     }
-    res=GWEN_Net_HeartBeat(750);
-    if (res==GWEN_NetLayerResult_Error) {
-      DBG_INFO(0, "ERROR: Error while working (%d)", res);
-      break;
-    }
 
+    /* actually wait for changes in io */
+    GWEN_Io_Manager_Wait(750, 0);
   } /* while */
 
   DBG_INFO(0, "Will now deinitialize server.\n");
@@ -1132,19 +1109,60 @@ int server(ARGUMENTS *args) {
 
 
 
+static int checkCert(GWEN_GUI *gui,
+		     const GWEN_SSLCERTDESCR *cert,
+		     GWEN_IO_LAYER *io,
+		     uint32_t guiid) {
+  uint32_t state;
+
+  state=GWEN_SslCertDescr_GetStatusFlags(cert);
+  if (state & GWEN_SSL_CERT_FLAGS_OK) {
+    DBG_INFO(0, "Accepting certificate");
+    return 0;
+  }
+  else {
+    DBG_WARN(0, "Received certificate not accepted");
+    if (state & GWEN_SSL_CERT_FLAGS_SIGNER_NOT_FOUND) {
+      DBG_WARN(0, "Signer not found");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_INVALID) {
+      DBG_WARN(0, "Cert is invalid");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_REVOKED) {
+      DBG_WARN(0, "Cert has been revoked");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_EXPIRED) {
+      DBG_WARN(0, "Cert has expired");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_NOT_ACTIVE) {
+      DBG_WARN(0, "Cert is not yet active");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_BAD_HOSTNAME) {
+      DBG_WARN(0, "Cert is not for this host");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_BAD_DATA) {
+      DBG_WARN(0, "Cert is malformed");
+    }
+    if (state & GWEN_SSL_CERT_FLAGS_SYSTEM) {
+      DBG_WARN(0, "A system error occurred while checking the cert");
+    }
+    return GWEN_ERROR_GENERIC;
+  }
+}
 
 
 
 int main(int argc, char **argv) {
   ARGUMENTS *args;
   int rv;
-  GWEN_ERRORCODE err;
+  int err;
   FREEPARAM *param;
   const char *command;
   GWEN_LOGGER_LEVEL gl;
+  GWEN_GUI *gui;
 
   err=GWEN_Init();
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
     return RETURNVALUE_SETUP;
   }
@@ -1165,7 +1183,7 @@ int main(int argc, char **argv) {
                        "gwenhywfar",
                        args->logFile,
                        args->logType,
-                       GWEN_LoggerFacilityDaemon)) {
+		       GWEN_LoggerFacility_Daemon)) {
     fprintf(stderr,I18N("Could not setup logging, aborting.\n"));
     Arguments_free(args);
     GWEN_Fini();
@@ -1177,7 +1195,7 @@ int main(int argc, char **argv) {
                        "chipcardd",
                        args->logFile,
                        args->logType,
-                       GWEN_LoggerFacilityDaemon)) {
+		       GWEN_LoggerFacility_Daemon)) {
     fprintf(stderr,I18N("Could not setup logging, aborting.\n"));
     Arguments_free(args);
     GWEN_Fini();
@@ -1185,15 +1203,9 @@ int main(int argc, char **argv) {
   }
   GWEN_Logger_SetLevel(0, args->logLevel);
 
-#ifdef HAVE_GETTEXT_ENVIRONMENT
-  setlocale(LC_ALL,"");
-  if (bindtextdomain("chipcardd",  I18N_PATH)==0) {
-    fprintf(stderr," Error bindtextdomain()\n");
-  }
-  if (textdomain("chipcardd")==0) {
-    fprintf(stderr," Error textdomain()\n");
-  }
-#endif
+  gui=GWEN_Gui_new();
+  GWEN_Gui_SetCheckCertFn(gui, checkCert);
+  GWEN_Gui_SetGui(gui);
 
   param=args->params;
   if (!param)
@@ -1203,10 +1215,6 @@ int main(int argc, char **argv) {
 
   if (strcasecmp(command, "server")==0)
     rv=server(args);
-  else if (strcasecmp(command, "init")==0)
-    rv=init(args);
-  else if (strcasecmp(command, "mkcert")==0)
-    rv=mkCert(args);
   else if (strcasecmp(command, "addreader")==0)
     rv=addReader(args);
   else if (strcasecmp(command, "delreader")==0)
@@ -1221,7 +1229,7 @@ int main(int argc, char **argv) {
   }
   GWEN_Logger_Close(0);
   err=GWEN_Fini();
-  if (!GWEN_Error_IsOk(err)) {
+  if (err) {
     DBG_ERROR_ERR(0, err);
   }
   Arguments_free(args);

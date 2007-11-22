@@ -33,7 +33,7 @@ GWEN_INHERIT_FUNCTIONS(LCCO_CARD)
 
 
 
-LCCO_CARD *LCCO_Card_new(GWEN_TYPE_UINT32 cardId){
+LCCO_CARD *LCCO_Card_new(uint32_t cardId){
   LCCO_CARD *cd;
 
   /* create and init */
@@ -100,56 +100,56 @@ void LCCO_Card_List2_freeAll(LCCO_CARD_LIST2 *cl) {
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetCardId(const LCCO_CARD *cd){
+uint32_t LCCO_Card_GetCardId(const LCCO_CARD *cd){
   assert(cd);
   return cd->cardId;
 }
 
 
 
-void LCCO_Card_SetCardId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id) {
+void LCCO_Card_SetCardId(LCCO_CARD *cd, uint32_t id) {
   assert(cd);
   cd->cardId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReaderId(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetReaderId(const LCCO_CARD *cd) {
   assert(cd);
   return cd->readerId;
 }
 
 
 
-void LCCO_Card_SetReaderId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id) {
+void LCCO_Card_SetReaderId(LCCO_CARD *cd, uint32_t id) {
   assert(cd);
   cd->readerId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetDriversReaderId(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetDriversReaderId(const LCCO_CARD *cd) {
   assert(cd);
   return cd->driversReaderId;
 }
 
 
 
-void LCCO_Card_SetDriversReaderId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id) {
+void LCCO_Card_SetDriversReaderId(LCCO_CARD *cd, uint32_t id) {
   assert(cd);
   cd->driversReaderId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReadersCardId(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetReadersCardId(const LCCO_CARD *cd) {
   assert(cd);
   return cd->readersCardId;
 }
 
 
 
-void LCCO_Card_SetReadersCardId(LCCO_CARD *cd, GWEN_TYPE_UINT32 id) {
+void LCCO_Card_SetReadersCardId(LCCO_CARD *cd, uint32_t id) {
   assert(cd);
   cd->readersCardId=id;
 }
@@ -170,14 +170,14 @@ void LCCO_Card_SetSlotNum(LCCO_CARD *cd, int i) {
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetCardNum(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetCardNum(const LCCO_CARD *cd) {
   assert(cd);
   return cd->cardNum;
 }
 
 
 
-void LCCO_Card_SetCardNum(LCCO_CARD *cd, GWEN_TYPE_UINT32 i) {
+void LCCO_Card_SetCardNum(LCCO_CARD *cd, uint32_t i) {
   assert(cd);
   cd->cardNum=i;
 }
@@ -255,28 +255,28 @@ void LCCO_Card_SetReaderTypeName(LCCO_CARD *cd, const char *s) {
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetReaderFlags(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetReaderFlags(const LCCO_CARD *cd) {
   assert(cd);
   return cd->readerFlags;
 }
 
 
 
-void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
+void LCCO_Card_SetReaderFlags(LCCO_CARD *cd, uint32_t fl) {
   assert(cd);
   cd->readerFlags=fl;
 }
 
 
 
-void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
+void LCCO_Card_AddReaderFlags(LCCO_CARD *cd, uint32_t fl) {
   assert(cd);
   cd->readerFlags|=fl;
 }
 
 
 
-void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, GWEN_TYPE_UINT32 fl) {
+void LCCO_Card_SubReaderFlags(LCCO_CARD *cd, uint32_t fl) {
   assert(cd);
   cd->readerFlags&=~fl;
 }
@@ -311,14 +311,14 @@ int LCCO_Card_AddType(LCCO_CARD *cd, const char *s) {
 
 
 
-GWEN_TYPE_UINT32 LCCO_Card_GetLockId(const LCCO_CARD *cd) {
+uint32_t LCCO_Card_GetLockId(const LCCO_CARD *cd) {
   assert(cd);
   return cd->lockId;
 }
 
 
 
-void LCCO_Card_SetLockId(LCCO_CARD *cd, GWEN_TYPE_UINT32 lid) {
+void LCCO_Card_SetLockId(LCCO_CARD *cd, uint32_t lid) {
   assert(cd);
   cd->lockId=lid;
 }

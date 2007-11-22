@@ -1,8 +1,0 @@
-char country="280"
-char bankCode="80007777"
-char userId="mpreuss"
-int  comService="2"
-char comAddress="141.57.8.70"
-char comSuffix=""
-char bankId="bank%2Did"
-char systemId="system%2Did"

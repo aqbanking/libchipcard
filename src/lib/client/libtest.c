@@ -7,8 +7,8 @@
 #include "io/lcc/clientlcc.h"
 #include "io/pcsc/clientpcsc.h"
 
-#include <chipcard3/client/cards/ddvcard.h>
-#include <chipcard3/client/cards/egkcard.h>
+#include <chipcard/client/cards/ddvcard.h>
+#include <chipcard/client/cards/egkcard.h>
 
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/buffer.h>

@@ -25,7 +25,7 @@
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -38,9 +38,9 @@ GWEN_LIST2_FUNCTIONS(LC_CARD, LC_Card)
 
 
 LC_CARD *LC_Card_new(LC_CLIENT *cl,
-                     GWEN_TYPE_UINT32 cardId,
+                     uint32_t cardId,
                      const char *cardType,
-                     GWEN_TYPE_UINT32 rflags,
+                     uint32_t rflags,
                      const unsigned char *atrBuf,
                      unsigned int atrLen) {
   LC_CARD *cd;
@@ -254,14 +254,14 @@ LC_CLIENT *LC_Card_GetClient(const LC_CARD *cd){
 
 
 
-GWEN_TYPE_UINT32 LC_Card_GetCardId(const LC_CARD *cd){
+uint32_t LC_Card_GetCardId(const LC_CARD *cd){
   assert(cd);
   return cd->cardId;
 }
 
 
 
-GWEN_TYPE_UINT32 LC_Card_GetReaderFlags(const LC_CARD *cd){
+uint32_t LC_Card_GetReaderFlags(const LC_CARD *cd){
   assert(cd);
   return cd->readerFlags;
 }
@@ -613,7 +613,7 @@ GWEN_XMLNODE *LC_Card_FindFile(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_SelectMF(LC_CARD *card) {
+LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_CLIENT_RESULT res;
@@ -786,7 +786,7 @@ GWEN_XMLNODE *LC_Card_GetEfNode(const LC_CARD *card) {
 
 
 
-LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, GWEN_TYPE_UINT32 pid) {
+LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, uint32_t pid) {
   GWEN_XMLNODE *n;
 
   n=card->efNode;
@@ -836,7 +836,7 @@ LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, GWEN_TYPE_UINT32 pid) {
                 LC_PinInfo_SetFiller(pi, i);
               s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
               if (s)
-                LC_PinInfo_SetEncoding(pi, LC_PinInfo_Encoding_fromString(s));
+                LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_fromString(s));
               return pi;
             }
           }
@@ -898,7 +898,7 @@ LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name) {
             LC_PININFO *pi;
 
             pi=LC_PinInfo_new();
-            LC_PinInfo_SetId(pi, (GWEN_TYPE_UINT32)i);
+            LC_PinInfo_SetId(pi, (uint32_t)i);
             s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
             LC_PinInfo_SetName(pi, s);
             if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "minLen", "0"),
@@ -915,7 +915,7 @@ LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name) {
               LC_PinInfo_SetFiller(pi, i);
             s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
             if (s)
-              LC_PinInfo_SetEncoding(pi, LC_PinInfo_Encoding_fromString(s));
+              LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_fromString(s));
             return pi;
           }
         }

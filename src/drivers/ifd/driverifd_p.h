@@ -19,7 +19,7 @@
 #include <gwenhywfar/libloader.h>
 #include <inttypes.h>
 
-#include <chipcard3/server/driver/driver.h>
+#include <chipcard/server/driver/driver.h>
 
 
 #define CCID_POWER_UP             500
@@ -59,6 +59,13 @@
 #pragma pack(push, 1)
 #endif
 
+/* The follwoing definition is NOT correct for 64 bit architectures but
+ * unfortunately PC/SC defines them this way. So in order to be able to work
+ * with IFD drivers on 64 bit archs as well we need to propagete this error
+ * here :-(
+ */
+typedef unsigned long DWORD;
+
 /* the structure must be 6-bytes long */
 typedef struct {
   uint8_t tag;
@@ -92,8 +99,8 @@ typedef struct {
 
 
 typedef struct _SCARD_IO_HEADER {
-  GWEN_TYPE_UINT32 protocol;
-  GWEN_TYPE_UINT32 length;
+  DWORD protocol;
+  DWORD length;
 } SCARD_IO_HEADER;
 
 #ifdef __APPLE__
@@ -117,45 +124,51 @@ typedef struct _SCARD_IO_HEADER {
 # define HOST_TO_CCID_32(x) (x)
 #endif
 
-typedef long (*CCIDCREATECHANNEL_PTR)(GWEN_TYPE_UINT32 lun,
-                                      GWEN_TYPE_UINT32 channel);
-typedef long (*CCIDCREATECHANNELBYNAME_PTR)(GWEN_TYPE_UINT32 lun,
+typedef long (*CCIDCREATECHANNEL_PTR)(DWORD lun,
+                                      DWORD channel);
+typedef long (*CCIDCREATECHANNELBYNAME_PTR)(DWORD lun,
                                             const char *name);
-typedef long (*CCIDCLOSECHANNEL_PTR)(GWEN_TYPE_UINT32 lun);
+typedef long (*CCIDCLOSECHANNEL_PTR)(DWORD lun);
 
-typedef long (*CCIDPOWERICC_PTR)(GWEN_TYPE_UINT32 lun,
-                                 GWEN_TYPE_UINT32 action,
+typedef long (*CCIDPOWERICC_PTR)(DWORD lun,
+                                 DWORD action,
                                  unsigned char *atr,
-                                 GWEN_TYPE_UINT32 *atrlen);
+                                 DWORD *atrlen);
 
-typedef long (*CCIDTRANSMIT_PTR)(GWEN_TYPE_UINT32 lun,
+typedef long (*CCIDTRANSMIT_PTR)(DWORD lun,
                                  SCARD_IO_HEADER TxPci,
                                  const unsigned char *TxBuffer,
-                                 GWEN_TYPE_UINT32 TxBufferLen,
+                                 DWORD TxBufferLen,
                                  unsigned char *RxBuffer,
-                                 GWEN_TYPE_UINT32 *RxBufferLen,
+                                 DWORD *RxBufferLen,
                                  SCARD_IO_HEADER *RxPci);
 
-typedef long (*CCIDCONTROL3_PTR)(GWEN_TYPE_UINT32 lun,
-                                 GWEN_TYPE_UINT32 controlCode,
+typedef long (*CCIDCONTROL3_PTR)(DWORD lun,
+                                 DWORD controlCode,
                                  const unsigned char *TxBuffer,
-                                 GWEN_TYPE_UINT32 TxBufferLen,
+                                 DWORD TxBufferLen,
                                  unsigned char *RxBuffer,
-                                 GWEN_TYPE_UINT32 RxBufferLen,
-                                 GWEN_TYPE_UINT32 *pdwBytesReturned);
+                                 DWORD RxBufferLen,
+                                 DWORD *pdwBytesReturned);
 
-typedef long (*CCIDCONTROL2_PTR)(GWEN_TYPE_UINT32 lun,
+typedef long (*CCIDCONTROL2_PTR)(DWORD lun,
                                  const unsigned char *TxBuffer,
-                                 GWEN_TYPE_UINT32 TxBufferLen,
+                                 DWORD TxBufferLen,
                                  unsigned char *RxBuffer,
-                                 GWEN_TYPE_UINT32 *RxBufferLen);
+                                 DWORD *RxBufferLen);
 
-typedef long (*CCIDPRESENCE_PTR)(GWEN_TYPE_UINT32 lun);
+typedef long (*CCIDPRESENCE_PTR)(DWORD lun);
 
-typedef long (*CCIDGETCAPS_PTR)(GWEN_TYPE_UINT32 lun,
-                                GWEN_TYPE_UINT32 tag,
-                                GWEN_TYPE_UINT32 *plen,
+typedef long (*CCIDGETCAPS_PTR)(DWORD lun,
+                                DWORD tag,
+                                DWORD *plen,
                                 unsigned char *pvalue);
+
+typedef long (*CCIDSETPROTO_PTR)(DWORD Lun, DWORD Protocol,
+				 unsigned char Flags,
+				 unsigned char PTS1,
+				 unsigned char PTS2,
+				 unsigned char PTS3);
 
 
 struct DRIVER_IFD {
@@ -172,39 +185,40 @@ struct DRIVER_IFD {
   CCIDCONTROL2_PTR control2Fn;
   CCIDPRESENCE_PTR presenceFn;
   CCIDGETCAPS_PTR getCapsFn;
+  CCIDSETPROTO_PTR setProtoFn;
 };
 
 
 void GWENHYWFAR_CB DriverIFD_freeData(void *bp, void *p);
 
 int DriverIFD_ExtractProtocolInfo(unsigned char *atr,
-                                   unsigned int atrlen);
+				  unsigned int atrlen);
 
 
-GWEN_TYPE_UINT32 DriverIFD_SendAPDU(LCD_DRIVER *d,
-                                     int toReader,
-                                     LCD_READER *r,
-                                     LCD_SLOT *slot,
-                                     const unsigned char *apdu,
-                                     unsigned int apdulen,
-                                     unsigned char *buffer,
-                                     int *bufferlen);
-GWEN_TYPE_UINT32 DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t DriverIFD_SendAPDU(LCD_DRIVER *d,
+			    int toReader,
+			    LCD_READER *r,
+			    LCD_SLOT *slot,
+			    const unsigned char *apdu,
+			    unsigned int apdulen,
+			    unsigned char *buffer,
+			    int *bufferlen);
+uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t DriverIFD_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
-GWEN_TYPE_UINT32 DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t DriverIFD_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t DriverIFD_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
+uint32_t DriverIFD_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32 DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+uint32_t DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                        GWEN_BUFFER *buf);
 
 int DriverIFD_ExtendReader(LCD_DRIVER *d, LCD_READER *r);
 
-const char *DriverIFD_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
+const char *DriverIFD_GetErrorText(LCD_DRIVER *d, uint32_t err);
 
 
 

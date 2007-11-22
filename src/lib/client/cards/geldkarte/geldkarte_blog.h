@@ -112,7 +112,7 @@ typedef struct LC_GELDKARTE_BLOG LC_GELDKARTE_BLOG;
 /* headers */
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #ifdef __cplusplus
 extern "C" {

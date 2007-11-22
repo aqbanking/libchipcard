@@ -14,7 +14,6 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#undef BUILDING_LIBCHIPCARD2_DLL
 
 #include <errno.h>
 #include <string.h>
@@ -22,12 +21,19 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
+
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
+#include <unistd.h>
 
 #include "global.h"
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/db.h>
 #include <gwenhywfar/debug.h>
+#include <gwenhywfar/cgui.h>
 
 #define I18N(msg) msg
 
@@ -43,41 +49,8 @@
 
 const GWEN_ARGS prg_args[]={
 {
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "logtype",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logtype",                    /* long option */
-  "Set the logtype",            /* short description */
-  "Set the logtype (console, file)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "loglevel",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "loglevel",                   /* long option */
-  "Set the log level",          /* short description */
-  "Set the log level (info, notice, warning, error)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
-  "logfile",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logfile",                   /* long option */
-  "Set the log file",          /* short description */
-  "Set the log file (if log type is \"file\")."
-},
-{
   0,                            /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "verbosity",                  /* name */
   0,                            /* minnum */
   10,                           /* maxnum */
@@ -88,7 +61,7 @@ const GWEN_ARGS prg_args[]={
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsTypeChar,            /* type */
+  GWEN_ArgsType_Char,            /* type */
   "filename",                   /* name */
   0,                            /* minnum */
   1,                            /* maxnum */
@@ -98,8 +71,63 @@ const GWEN_ARGS prg_args[]={
   "File to write to. If omitted stdout will be used."
 },
 {
+  GWEN_ARGS_FLAGS_HAS_ARGUMENT, 
+  GWEN_ArgsType_Int,            
+  "cardid",                     
+  0,                            
+  1,                            
+  "c",                          
+  "cardid",                     
+  "Set the ID of the card to read",
+  "Set the ID of the card to read."
+},
+{
+  0,                            /* flags */
+  GWEN_ArgsType_Int,            /* type */
+  "beep",                       /* name */
+  0,                            /* minnum */
+  1,                            /* maxnum */
+  "b",                          /* short option */
+  "beep",                       /* long option */
+  "Beep after reading a card",  /* short description */
+  "Beep after reading a card."
+},
+{
+  0,
+  GWEN_ArgsType_Int,
+  "dosmode",
+  0,
+  1,
+  "d",
+  "dosmode",
+  "Store data in DOS mode",
+  "Store data in DOS mode"
+},
+{
+  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+  GWEN_ArgsType_Char,
+  "program",
+  0,
+  1,
+  "p",
+  "program",
+  "Program to call on found cards",
+  "File to write to. If omitted stdout will be used."
+},
+{
+  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+  GWEN_ArgsType_Char,
+  "args",
+  0,
+  1,
+  "a",
+  "args",
+  "Arguments for the program to be called",
+  "Arguments for the program to be called"
+},
+{
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsTypeInt,             /* type */
+  GWEN_ArgsType_Int,             /* type */
   "help",                       /* name */
   0,                            /* minnum */
   0,                            /* maxnum */
@@ -114,7 +142,7 @@ const GWEN_ARGS prg_args[]={
 void usage(const char *name, const char *ustr) {
   fprintf(stderr,
           I18N("KVKCard3 - A tool to read information from a German medical card.\n"
-               "(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
+               "(c) 2007 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
                "modify it under the terms of the GNU Lesser General Public\n"
                "License as published by the Free Software Foundation; either\n"
@@ -123,7 +151,8 @@ void usage(const char *name, const char *ustr) {
                "Usage: %s COMMAND [OPTIONS]\n"
                "\n"
                "Available commands:\n"
-               "  read  : read data from a German medical card\n"
+               "  read   : read data from a German medical card\n"
+               "  daemon : wait for cards and call a program on them\n"
                "\n"
                "Available options:\n"
                "%s\n"),
@@ -170,7 +199,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
   }
 
   fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (res==LC_Client_ResultCmdError) {
+  if (res==LC_Client_ResultCmdError && card) {
     int sw1;
     int sw2;
 
@@ -190,180 +219,20 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
-int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
-  LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
-  int rv;
-  int v;
-  const char *fname;
-  GWEN_BUFFEREDIO *bio;
-  GWEN_DB_NODE *dbData;
-  GWEN_ERRORCODE err;
-  int fd;
-  int i;
-  const char *s;
-
-  v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
-  if (v>1)
-    fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "StartWait");
-    return RETURNVALUE_WORK;
-  }
-  if (v>1)
-    fprintf(stderr, "Connected.\n");
-
-  for (i=0;;i++) {
-    if (v>0)
-      fprintf(stderr, "Waiting for card...\n");
-    res=LC_Client_GetNextCard(cl, &card, 20);
-    if (res!=LC_Client_ResultOk) {
-      showError(card, res, "GetNextCard");
-      return RETURNVALUE_WORK;
-    }
-    if (v>0)
-      fprintf(stderr, "Found a card.\n");
-
-    s=LC_Card_GetCardType(card);
-    assert(s);
-    if (strcasecmp(s, "memory")==0)
-      break;
-
-    if (v>0)
-      fprintf(stderr, "Not a memory card, releasing.\n");
-    res=LC_Client_ReleaseCard(cl, card);
-    if (res!=LC_Client_ResultOk) {
-      showError(card, res, "ReleaseCard");
-      return RETURNVALUE_WORK;
-    }
-    LC_Card_free(card);
-
-    if (i>15) {
-      fprintf(stderr, "ERROR: No card found.\n");
-      return RETURNVALUE_WORK;
-    }
-  } /* for */
-
-  /* extend card */
-  rv=LC_KVKCard_ExtendCard(card);
-  if (rv) {
-    fprintf(stderr, "Could not extend card as German medical card\n");
-    return RETURNVALUE_WORK;
-  }
-
-  /* stop waiting */
-  if (v>1)
-    fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Stop");
-    return RETURNVALUE_WORK;
-  }
-
-  /* open card */
-  if (v>0)
-    fprintf(stderr, "Opening card.\n");
-  res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card is a German medical card as expected.\n");
-
-  dbData=LC_KVKCard_GetCardData(card);
-  if (!dbData) {
-    fprintf(stderr, "ERROR: No card data available.\n");
-    LC_Card_Close(card);
-    return RETURNVALUE_WORK;
-  }
-
-  /* open file */
-  if (v>0)
-    fprintf(stderr, "Writing data to file\n");
-  fname=GWEN_DB_GetCharValue(dbArgs, "fileName", 0, 0);
-  if (fname==0) {
-    fd=1;
-  }
-  else {
-#ifdef OS_WIN32
-    fd=open(fname,
-            O_RDWR | O_CREAT | O_TRUNC,
-            S_IRUSR|S_IWUSR);
-#else
-    fd=open(fname,
-            O_RDWR | O_CREAT | O_TRUNC,
-            S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
-#endif
-  }
-  if (fd==-1) {
-    fprintf(stderr,
-            I18N("ERROR: Could not open file (%s).\n"),
-            strerror(errno));
-    LC_Card_Close(card);
-    return RETURNVALUE_WORK;
-  }
-  bio=GWEN_BufferedIO_File_new(fd);
-  assert(bio);
-  GWEN_BufferedIO_SetWriteBuffer(bio, 0, 1024);
-  if (fname)
-    GWEN_BufferedIO_AddFlags(bio, GWEN_BUFFEREDIO_FLAGS_CLOSE);
-  else
-    GWEN_BufferedIO_SubFlags(bio, GWEN_BUFFEREDIO_FLAGS_CLOSE);
-
-  /* write to file */
-  if (GWEN_DB_WriteToStream(dbData, bio, GWEN_DB_FLAGS_DEFAULT)) {
-    fprintf(stderr, "ERROR: Could not write to file.\n");
-    GWEN_BufferedIO_Abandon(bio);
-    LC_Card_Close(card);
-    LC_Client_ReleaseCard(cl, card);
-    LC_Card_free(card);
-    return RETURNVALUE_WORK;
-  }
-
-  /* close file */
-  err=GWEN_BufferedIO_Close(bio);
-  GWEN_BufferedIO_free(bio);
-  if (!GWEN_Error_IsOk(err)) {
-    DBG_ERROR_ERR(0, err);
-    LC_Card_Close(card);
-    LC_Client_ReleaseCard(cl, card);
-    LC_Card_free(card);
-    return RETURNVALUE_WORK;
-  }
-  if (v>1)
-    fprintf(stderr, "Data written.\n");
-
-  /* close card */
-  if (v>0)
-    fprintf(stderr, "Closing card.\n");
-  res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "CardClose");
-    LC_Client_ReleaseCard(cl, card);
-    LC_Card_free(card);
-    return RETURNVALUE_WORK;
-  }
-  else
-    if (v>1)
-      fprintf(stderr, "Card closed.\n");
-
-  if (v>0)
-    fprintf(stderr, "Releasing card.\n");
-  res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReleaseCard");
-  }
-  LC_Card_free(card);
-
-  /* finished */
-  if (v>1)
-    fprintf(stderr, "Finished.\n");
-  return 0;
+void errorBeep() {
+  fprintf(stderr, "\007");
+  usleep(250000);
+  fprintf(stderr, "\007");
+  usleep(250000);
+  fprintf(stderr, "\007");
 }
+
+
+
+void okBeep() {
+  fprintf(stderr, "\007");
+}
+
 
 
 
@@ -372,9 +241,12 @@ int main(int argc, char **argv) {
   GWEN_DB_NODE *db;
   const char *s;
   LC_CLIENT *cl;
-  GWEN_LOGGER_LOGTYPE logType;
-  GWEN_LOGGER_LEVEL logLevel;
   LC_CLIENT_RESULT res;
+  GWEN_GUI *gui;
+  int v;
+
+  gui=GWEN_Gui_CGui_new();
+  GWEN_Gui_SetGui(gui);
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
@@ -385,7 +257,7 @@ int main(int argc, char **argv) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);
-    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutTypeTXT)) {
+    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
       fprintf(stderr, "Could not generate usage string.\n");
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
@@ -399,29 +271,8 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  /* setup logging */
-  s=GWEN_DB_GetCharValue(db, "loglevel", 0, "warning");
-  logLevel=GWEN_Logger_Name2Level(s);
-  if (logLevel==GWEN_LoggerLevelUnknown) {
-    fprintf(stderr, "ERROR: Unknown log level (%s)\n", s);
-    return RETURNVALUE_PARAM;
-  }
-  s=GWEN_DB_GetCharValue(db, "logtype", 0, "console");
-  logType=GWEN_Logger_Name2Logtype(s);
-  if (logType==GWEN_LoggerTypeUnknown) {
-    fprintf(stderr, "ERROR: Unknown log type (%s)\n", s);
-    return RETURNVALUE_PARAM;
-  }
-  rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-                      "kvkcard3",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "kvkcard3.log"),
-		      logType,
-		      GWEN_LoggerFacilityUser);
-  if (rv) {
-    fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
-    return RETURNVALUE_SETUP;
-  }
-  GWEN_Logger_SetLevel(LC_LOGDOMAIN, logLevel);
+  v=GWEN_DB_GetIntValue(db, "verbosity", 0, 0);
+  GWEN_Gui_CGui_SetIsNonInteractive(gui, (v<2)?1:0);
 
   /* get command */
   s=GWEN_DB_GetCharValue(db, "params", 0, 0);
@@ -431,7 +282,7 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
 
-  cl=LC_Client_new("kvkcard3", PROGRAM_VERSION);
+  cl=LC_Client_new("kvkcard", PROGRAM_VERSION);
   res=LC_Client_Init(cl);
   if (res!=LC_Client_ResultOk) {
     showError(0, res, "Init");
@@ -441,6 +292,9 @@ int main(int argc, char **argv) {
   /* handle command */
   if (strcasecmp(s, "read")==0) {
     rv=kvkRead(cl, db);
+  }
+  else if (strcasecmp(s, "daemon")==0) {
+    rv=kvkDaemon(cl, db);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);
@@ -456,6 +310,8 @@ int main(int argc, char **argv) {
 
 
 
+#include "read.c"
+#include "daemon.c"
 
 
 

@@ -23,19 +23,21 @@
 struct LCD_READER {
   GWEN_LIST_ELEMENT(LCD_READER)
   GWEN_INHERIT_ELEMENT(LCD_READER)
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 driversReaderId;
+  uint32_t readerId;
+  uint32_t driversReaderId;
   char *name;
   int port;
   char *devicePath;
-  GWEN_TYPE_UINT32 readerFlags;
-  GWEN_TYPE_UINT32 driverFlags;
-  GWEN_TYPE_UINT32 cardNum;
-  GWEN_TYPE_UINT32 status;
+  uint32_t readerFlags;
+  uint32_t driverFlags;
+  uint32_t cardNum;
+  uint32_t status;
   LCD_SLOT_LIST *slots;
   char *logger;
 
   char *readerType;
+
+  uint32_t errorCount;
 };
 
 

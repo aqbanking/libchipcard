@@ -22,14 +22,10 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/inherit.h>
-#include <gwenhywfar/nl_socket.h>
-#include <gwenhywfar/nl_ssl.h>
-#include <gwenhywfar/nl_http.h>
-#include <gwenhywfar/net2.h>
 
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/client.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/client.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -48,6 +44,7 @@ void LC_Service_Usage(const char *prgName) {
           "[--logtype ARG]   log type\n"
           "[--loglevel ARG]  log level\n"
           "[-d ARG]          service data folder\n"
+          "[-C ARG]          service config folder\n"
           "-b ARG            server id\n"
           "[-u ARG]          customer id of this service\n"
           "[-a ARG]          server IP address (or hostname)\n"
@@ -71,14 +68,13 @@ LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
 
   sv->verbous=0;
   sv->secure=0;
-  sv->logType=GWEN_LoggerTypeConsole;
+  sv->logType=GWEN_LoggerType_Console;
   sv->logFile=strdup("service.log");
-  sv->logLevel=GWEN_LoggerLevelNotice; // debug
+  sv->logLevel=GWEN_LoggerLevel_Notice; // debug
   sv->serverPort=LC_DEFAULT_PORT;
   sv->clients=LC_ServiceClient_List_new();
   sv->typ="local";
-  sv->certFile=0;
-  sv->certDir=0;
+  sv->configDir=0;
   sv->serverAddr=0;
 
   i=1;
@@ -95,7 +91,7 @@ LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
       if (i>=argc)
         return LC_ServiceCheckArgsResultError;
       sv->logType=GWEN_Logger_Name2Logtype(argv[i]);
-      if (sv->logType==GWEN_LoggerTypeUnknown) {
+      if (sv->logType==GWEN_LoggerType_Unknown) {
         DBG_ERROR(0, "Unknown log type \"%s\"\n", argv[i]);
         return LC_ServiceCheckArgsResultError;
       }
@@ -105,7 +101,7 @@ LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
       if (i>=argc)
         return LC_ServiceCheckArgsResultError;
       sv->logLevel=GWEN_Logger_Name2Level(argv[i]);
-      if (sv->logLevel==GWEN_LoggerLevelUnknown) {
+      if (sv->logLevel==GWEN_LoggerLevel_Unknown) {
         DBG_ERROR(0, "Unknown log level \"%s\"\n", argv[i]);
         return LC_ServiceCheckArgsResultError;
       }
@@ -140,17 +136,11 @@ LC_SERVICE_CHECKARGS_RESULT LC_Service_CheckArgs(LC_CLIENT *cl,
         return LC_ServiceCheckArgsResultError;
       sv->serverPort=atoi(argv[i]);
     }
-    else if (strcmp(argv[i],"-c")==0) {
-      i++;
-      if (i>=argc)
-        return LC_ServiceCheckArgsResultError;
-      sv->certFile=argv[i];
-    }
     else if (strcmp(argv[i],"-C")==0) {
       i++;
       if (i>=argc)
-        return LC_ServiceCheckArgsResultError;
-      sv->certDir=argv[i];
+	return LC_ServiceCheckArgsResultError;
+      sv->configDir=argv[i];
     }
     else if (strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0) {
       LC_Service_Usage(argv[0]);
@@ -228,7 +218,7 @@ LC_CLIENT *LC_Service_new(int argc, char **argv) {
   GWEN_Logger_Open(0, "service",
                    sv->logFile,
                    sv->logType,
-                   GWEN_LoggerFacilityUser);
+		   GWEN_LoggerFacility_User);
   GWEN_Logger_SetLevel(0, sv->logLevel);
 
   DBG_NOTICE(0, "Starting service \"%s\"", argv[0]);
@@ -241,12 +231,6 @@ LC_CLIENT *LC_Service_new(int argc, char **argv) {
                        "addr", sv->serverAddr);
   GWEN_DB_SetIntValue(dbServer, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "port", sv->serverPort);
-  if (sv->certDir)
-    GWEN_DB_SetCharValue(dbServer, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                         "certDir", sv->certDir);
-  if (sv->certDir)
-    GWEN_DB_SetCharValue(dbServer, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                         "certFile", sv->certFile);
   GWEN_DB_SetIntValue(dbServer, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "secure", sv->secure);
 
@@ -286,6 +270,18 @@ const char *LC_Service_GetServiceDataDir(const LC_CLIENT *cl){
   assert(sv);
 
   return sv->serviceDataDir;
+}
+
+
+
+const char *LC_Service_GetServiceConfigDir(const LC_CLIENT *cl) {
+  LC_SERVICE_CLIENT *sv;
+
+  assert(cl);
+  sv=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_SERVICE_CLIENT, cl);
+  assert(sv);
+
+  return sv->configDir;
 }
 
 
@@ -348,7 +344,7 @@ int LC_Service_CheckResponses(GWEN_DB_NODE *db) {
 
 
 
-LC_SERVICECLIENT *LC_Service_FindClientById(const LC_CLIENT *cl, GWEN_TYPE_UINT32 id){
+LC_SERVICECLIENT *LC_Service_FindClientById(const LC_CLIENT *cl, uint32_t id){
   LC_SERVICECLIENT *scl;
   LC_SERVICE_CLIENT *sv;
 
@@ -403,7 +399,7 @@ LC_SERVICECLIENT_LIST *LC_Service_GetClients(const LC_CLIENT *cl){
 
 
 
-GWEN_TYPE_UINT32 LC_Service_Open(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
+uint32_t LC_Service_Open(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
                                  GWEN_DB_NODE *dbData){
   LC_SERVICE_CLIENT *sv;
 
@@ -417,7 +413,7 @@ GWEN_TYPE_UINT32 LC_Service_Open(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
 
 
 
-GWEN_TYPE_UINT32 LC_Service_Close(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
+uint32_t LC_Service_Close(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
                                   GWEN_DB_NODE *dbData){
   LC_SERVICE_CLIENT *sv;
 
@@ -431,7 +427,7 @@ GWEN_TYPE_UINT32 LC_Service_Close(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
 
 
 
-GWEN_TYPE_UINT32 LC_Service_Command(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
+uint32_t LC_Service_Command(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
                                     GWEN_DB_NODE *dbRequest,
                                     GWEN_DB_NODE *dbResponse){
   LC_SERVICE_CLIENT *sv;
@@ -446,7 +442,7 @@ GWEN_TYPE_UINT32 LC_Service_Command(LC_CLIENT *cl, LC_SERVICECLIENT *scl,
 
 
 
-const char *LC_Service_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err){
+const char *LC_Service_GetErrorText(LC_CLIENT *cl, uint32_t err){
   LC_SERVICE_CLIENT *sv;
 
   assert(cl);
@@ -521,9 +517,9 @@ void LC_Service_SetWorkFn(LC_CLIENT *cl, LC_SERVICE_WORK_FN fn){
 
 
 int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
-                                 GWEN_TYPE_UINT32 rid,
+                                 uint32_t rid,
                                  GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   const char *name;
   char numbuf[16];
   LC_SERVICECLIENT *scl;
@@ -565,7 +561,7 @@ int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
                          "Client already connected");
   }
   else {
-    GWEN_TYPE_UINT32 res;
+    uint32_t res;
 
     scl=LC_ServiceClient_new(clientId);
     res=LC_Service_Open(cl, scl, dbData);
@@ -600,9 +596,9 @@ int LC_Service_HandleServiceOpen(LC_CLIENT *cl,
 
 
 int LC_Service_HandleServiceClose(LC_CLIENT *cl,
-                                  GWEN_TYPE_UINT32 rid,
+                                  uint32_t rid,
                                   GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   const char *name;
   char numbuf[16];
   LC_SERVICECLIENT *scl;
@@ -644,7 +640,7 @@ int LC_Service_HandleServiceClose(LC_CLIENT *cl,
                          "Client not found");
   }
   else {
-    GWEN_TYPE_UINT32 res;
+    uint32_t res;
 
     res=LC_Service_Close(cl, scl, dbData);
     if (res!=0) {
@@ -678,9 +674,9 @@ int LC_Service_HandleServiceClose(LC_CLIENT *cl,
 
 
 int LC_Service_HandleServiceCommand(LC_CLIENT *cl,
-                                    GWEN_TYPE_UINT32 rid,
+                                    uint32_t rid,
                                     GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 clientId;
+  uint32_t clientId;
   const char *name;
   char numbuf[16];
   LC_SERVICECLIENT *scl;
@@ -730,7 +726,7 @@ int LC_Service_HandleServiceCommand(LC_CLIENT *cl,
                            "text", "Bad request: No command data given");
     }
     else {
-      GWEN_TYPE_UINT32 res;
+      uint32_t res;
       GWEN_DB_NODE *dbCommandResponse;
 
       dbCommandResponse=GWEN_DB_GetGroup(dbRsp,
@@ -768,7 +764,7 @@ int LC_Service_HandleServiceCommand(LC_CLIENT *cl,
 
 
 int LC_Service_HandleInRequest(LC_CLIENT *cl,
-                               GWEN_TYPE_UINT32 rid,
+                               uint32_t rid,
                                const char *name,
                                GWEN_DB_NODE *dbReq){
   int rv;
@@ -845,8 +841,9 @@ int LC_Service_Work(LC_CLIENT *cl) {
 int LC_Service_Connect(LC_CLIENT *cl, const char *code, const char *text){
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   LC_SERVICE_CLIENT *sv;
+  LC_CLIENT_RESULT res;
 
   assert(cl);
   sv=GWEN_INHERIT_GETDATA(LC_CLIENT, LC_SERVICE_CLIENT, cl);
@@ -871,23 +868,23 @@ int LC_Service_Connect(LC_CLIENT *cl, const char *code, const char *text){
     return -1;
   }
 
-  dbRsp=LC_ClientLcc_WaitForNextResponse(cl, rid, 10);
-  if (dbRsp) {
-    DBG_DEBUG(0, "Answer received");
-    if (LC_Service_CheckResponses(dbRsp)) {
-      DBG_ERROR(0, "Error returned by server, aborting");
-      LC_ClientLcc_DeleteRequest(cl, rid);
-      return -1;
-    }
-    LC_ClientLcc_DeleteRequest(cl, rid);
-    DBG_NOTICE(0, "Connected to server");
-    return 0;
-  }
-  else {
+  res=LC_ClientLcc_WaitForNextResponse(cl, rid, &dbRsp, 10);
+  if (res!=LC_Client_ResultOk) {
     DBG_ERROR(0, "Could not connect to server");
     LC_ClientLcc_DeleteRequest(cl, rid);
     return -1;
   }
+
+  DBG_DEBUG(0, "Answer received");
+  if (LC_Service_CheckResponses(dbRsp)) {
+    DBG_ERROR(0, "Error returned by server, aborting");
+    LC_ClientLcc_DeleteRequest(cl, rid);
+    return -1;
+  }
+
+  LC_ClientLcc_DeleteRequest(cl, rid);
+  DBG_NOTICE(0, "Connected to server");
+  return 0;
 }
 
 

@@ -21,9 +21,9 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/gwentime.h>
 #include <gwenhywfar/inetsocket.h>
-#include <chipcard3/client/client.h>
-#include <chipcard3/client/tlv.h>
-#include <chipcard3/client/io/lcc/clientlcc.h>
+#include <chipcard/client/client.h>
+#include <chipcard/client/tlv.h>
+#include <chipcard/client/io/lcc/clientlcc.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -94,7 +94,7 @@ int ServiceKVK_Start(LC_CLIENT *cl){
 
 
 
-const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err){
+const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, uint32_t err){
   const char *s;
 
   switch(err) {
@@ -111,7 +111,7 @@ const char *ServiceKVK_GetErrorText(LC_CLIENT *cl, GWEN_TYPE_UINT32 err){
 
 
 
-GWEN_TYPE_UINT32 ServiceKVK_Command(LC_CLIENT *cl,
+uint32_t ServiceKVK_Command(LC_CLIENT *cl,
 			    LC_SERVICECLIENT *scl,
 			    GWEN_DB_NODE *dbRequest,
 			    GWEN_DB_NODE *dbResponse) {
@@ -143,10 +143,10 @@ int ServiceKVK_NewCard(LC_CLIENT *cl, LC_CARD *cd) {
 
 
 
-GWEN_TYPE_UINT32 ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
+uint32_t ServiceKVK_SendReadBinary(LC_CLIENT *cl, LC_CARD *cd,
 				   int offset, int size) {
   GWEN_DB_NODE *dbReq;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   GWEN_BUFFER *cbuf;
   LC_CLIENT_RESULT res;
 
@@ -448,7 +448,7 @@ LC_CLIENT_RESULT ServiceKVK_HandleData(LC_CLIENT *cl, LC_CARD *cd) {
 int ServiceKVK_HandleCard(LC_CLIENT *cl, LC_CARD *cd) {
   SERVICE_KVK *kvks;
   LC_CLIENT_RESULT res;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   unsigned int tagLength;
   int doneSomething=0;
 
@@ -715,7 +715,7 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
   int r;
   char numbuf[32];
   int i;
-  GWEN_TYPE_UINT32 pos;
+  uint32_t pos;
 
   assert(cl);
   kvks=GWEN_INHERIT_GETDATA(LC_CLIENT, SERVICE_KVK, cl);
@@ -785,7 +785,7 @@ int ServiceKVK_StoreCardData(LC_CLIENT *cl, LC_CARD *cd) {
   }
 
   /* header */
-  fprintf(f,"Version:libchipcard2-"CHIPCARD_VERSION_FULL_STRING"\n");
+  fprintf(f,"Version:libchipcard4-"CHIPCARD_VERSION_FULL_STRING"\n");
   dbuf=GWEN_Buffer_new(0, 32, 0, 1);
   GWEN_Time_toString(ti, "DD.MM.YYYY", dbuf);
   fprintf(f, "Datum:%s\n", GWEN_Buffer_GetStart(dbuf));

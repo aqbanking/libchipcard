@@ -29,10 +29,10 @@ struct LCS_LOCKMANAGER {
 static
 LCS_LOCKREQUEST*
 LCS_LockManager_FindRequestByRequestId(LCS_LOCKMANAGER *lm,
-                                       GWEN_TYPE_UINT32 rqid);
+                                       uint32_t rqid);
 
 static
 int LCS_LockManager_CountClientRequests(const LCS_LOCKMANAGER *lm,
-                                        GWEN_TYPE_UINT32 clid);
+                                        uint32_t clid);
 
 #endif

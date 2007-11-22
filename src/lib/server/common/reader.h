@@ -36,7 +36,7 @@ GWEN_LIST2_FUNCTION_DEFS(LCCO_READER, LCCO_Reader)
 GWEN_INHERIT_FUNCTION_DEFS(LCCO_READER)
 
 
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 typedef enum {
@@ -75,11 +75,11 @@ void LCCO_Reader_SetDriverName(LCCO_READER *r, const char *s);
 const char *LCCO_Reader_GetReaderInfo(const LCCO_READER *r);
 void LCCO_Reader_SetReaderInfo(LCCO_READER *r, const char *s);
 
-GWEN_TYPE_UINT32 LCCO_Reader_GetReaderId(const LCCO_READER *r);
-void LCCO_Reader_SetReaderId(LCCO_READER *r, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Reader_GetReaderId(const LCCO_READER *r);
+void LCCO_Reader_SetReaderId(LCCO_READER *r, uint32_t id);
 
-GWEN_TYPE_UINT32 LCCO_Reader_GetDriversReaderId(const LCCO_READER *r);
-void LCCO_Reader_SetDriversReaderId(LCCO_READER *r, GWEN_TYPE_UINT32 id);
+uint32_t LCCO_Reader_GetDriversReaderId(const LCCO_READER *r);
+void LCCO_Reader_SetDriversReaderId(LCCO_READER *r, uint32_t id);
 
 LC_READER_STATUS LCCO_Reader_GetStatus(const LCCO_READER *r);
 void LCCO_Reader_SetStatus(LCCO_READER *r, LC_READER_STATUS st);
@@ -101,21 +101,21 @@ void LCCO_Reader_SetCtn(LCCO_READER *r, unsigned int i);
 const char *LCCO_Reader_GetShortDescr(const LCCO_READER *r);
 void LCCO_Reader_SetShortDescr(LCCO_READER *r, const char *s);
 
-GWEN_TYPE_UINT32 LCCO_Reader_GetFlags(const LCCO_READER *r);
-void LCCO_Reader_SetFlags(LCCO_READER *r, GWEN_TYPE_UINT32 f);
-void LCCO_Reader_AddFlags(LCCO_READER *r, GWEN_TYPE_UINT32 f);
-void LCCO_Reader_SubFlags(LCCO_READER *r, GWEN_TYPE_UINT32 f);
+uint32_t LCCO_Reader_GetFlags(const LCCO_READER *r);
+void LCCO_Reader_SetFlags(LCCO_READER *r, uint32_t f);
+void LCCO_Reader_AddFlags(LCCO_READER *r, uint32_t f);
+void LCCO_Reader_SubFlags(LCCO_READER *r, uint32_t f);
 
 LC_DEVICE_BUSTYPE LCCO_Reader_GetBusType(const LCCO_READER *r);
 void LCCO_Reader_SetBusType(LCCO_READER *r, LC_DEVICE_BUSTYPE i);
-GWEN_TYPE_UINT32 LCCO_Reader_GetVendorId(const LCCO_READER *r);
-void LCCO_Reader_SetVendorId(LCCO_READER *r, GWEN_TYPE_UINT32 i);
-GWEN_TYPE_UINT32 LCCO_Reader_GetProductId(const LCCO_READER *r);
-void LCCO_Reader_SetProductId(LCCO_READER *r, GWEN_TYPE_UINT32 i);
-GWEN_TYPE_UINT32 LCCO_Reader_GetBusId(const LCCO_READER *r);
-void LCCO_Reader_SetBusId(LCCO_READER *r, GWEN_TYPE_UINT32 i);
-GWEN_TYPE_UINT32 LCCO_Reader_GetDeviceId(const LCCO_READER *r);
-void LCCO_Reader_SetDeviceId(LCCO_READER *r, GWEN_TYPE_UINT32 i);
+uint32_t LCCO_Reader_GetVendorId(const LCCO_READER *r);
+void LCCO_Reader_SetVendorId(LCCO_READER *r, uint32_t i);
+uint32_t LCCO_Reader_GetProductId(const LCCO_READER *r);
+void LCCO_Reader_SetProductId(LCCO_READER *r, uint32_t i);
+uint32_t LCCO_Reader_GetBusId(const LCCO_READER *r);
+void LCCO_Reader_SetBusId(LCCO_READER *r, uint32_t i);
+uint32_t LCCO_Reader_GetDeviceId(const LCCO_READER *r);
+void LCCO_Reader_SetDeviceId(LCCO_READER *r, uint32_t i);
 
 const char *LCCO_Reader_GetDevicePath(const LCCO_READER *r);
 void LCCO_Reader_SetDevicePath(LCCO_READER *r, const char *s);

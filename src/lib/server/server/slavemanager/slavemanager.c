@@ -24,10 +24,13 @@
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/ipc.h>
 #include <gwenhywfar/pathmanager.h>
-#include <gwenhywfar/net2.h>
-#include <gwenhywfar/nl_http.h>
-#include <gwenhywfar/nl_ssl.h>
-#include <gwenhywfar/nl_socket.h>
+#include <gwenhywfar/iolayer.h>
+#include <gwenhywfar/iomanager.h>
+#include <gwenhywfar/io_socket.h>
+#include <gwenhywfar/io_tls.h>
+#include <gwenhywfar/io_buffered.h>
+#include <gwenhywfar/io_http.h>
+#include <gwenhywfar/url.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -113,201 +116,98 @@ int LCSL_SlaveManager_Init(LCSL_SLAVEMANAGER *slm, GWEN_DB_NODE *dbConfig) {
 int LCSL_SlaveManager__PrepareConnection(LCSL_SLAVEMANAGER *slm,
                                          GWEN_DB_NODE *gr) {
   const char *typ;
-  GWEN_NETLAYER *nl;
-  GWEN_NETLAYER *nlBase;
-  GWEN_SOCKET *sk;
-  GWEN_INETADDRESS *addr;
-  GWEN_TYPE_UINT32 sid;
   const char *address;
   int port;
-  GWEN_DB_NODE *dbHeader;
+  GWEN_SOCKET *sk;
+  GWEN_INETADDRESS *addr;
+  uint32_t sid;
+  GWEN_IO_LAYER *ioBase;
+  GWEN_IO_LAYER *io;
   GWEN_URL *url;
-
-  assert(slm);
-  assert(gr);
+  GWEN_DB_NODE *db;
 
   typ=GWEN_DB_GetCharValue(gr, "typ", 0, "local");
   address=GWEN_DB_GetCharValue(gr,
-                               "addr", 0, 0);
-  if (!address) {
-    DBG_ERROR(0, "No address given");
-    return -1;
-  }
+			       "addr", 0,
+			       "0.0.0.0");
   url=GWEN_Url_fromString(address);
-  if (!url) {
-    DBG_ERROR(0, "Bad url: %s", address);
-    return -1;
-  }
   port=GWEN_DB_GetIntValue(gr,
                            "port", 0,
                            LC_DEFAULT_PORT);
 
   if (strcasecmp(typ, "local")==0) {
-    char *taddr, *p;
-
     /* HTTP over UDS */
-    taddr=strdup(address);
-    p=strrchr(taddr, '/');
-    if (p)
-      *p=0;
-    if (GWEN_Directory_GetPath(taddr, GWEN_PATH_FLAGS_CHECKROOT)) {
-      DBG_ERROR(0, "Could not create path \"%s\"", taddr);
-      free(taddr);
-      GWEN_Url_free(url);
-      return -1;
-    }
-    free(taddr);
     sk=GWEN_Socket_new(GWEN_SocketTypeUnix);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyUnix);
     GWEN_InetAddr_SetAddress(addr, address);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
-  }
-  else if (strcasecmp(typ, "public")==0) {
-    /* HTTP over TCP */
-    sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-    addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
-    GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
-    GWEN_InetAddr_SetPort(addr, port);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+    ioBase=GWEN_Io_LayerSocket_new(sk);
+    GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
   }
   else {
-    const char *certDir;
-    const char *newCertDir;
     const char *ownCertFile;
-    const char *ciphers;
-    GWEN_BUFFER *cfbuf=0;
-    GWEN_BUFFER *cdbuf=0;
-    GWEN_BUFFER *ncdbuf=0;
-    GWEN_BUFFER *dhbuf=0;
+    const char *ownKeyFile;
+    const char *caFile;
 
-    /* get cert dir */
-    certDir=GWEN_DB_GetCharValue(gr, "certdir", 0, DEF_SERVER_TRUSTEDCERTDIR);
-    if (!certDir) {
-      GWEN_STRINGLIST *sl;
-
-      sl=GWEN_PathManager_GetPaths(LCS_PATH_DESTLIB,
-                                   LCS_PATH_SERVER_NEWCERTDIR);
-      assert(sl);
-
-      cdbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      GWEN_Buffer_AppendString(cdbuf,
-                               GWEN_StringList_FirstString(sl));
-      certDir=GWEN_Buffer_GetStart(cdbuf);
-      GWEN_StringList_free(sl);
-    }
-
-    /* get new cert dir */
-    newCertDir=GWEN_DB_GetCharValue(gr, "newcertdir", 0,
-                                    DEF_SERVER_NEWCERTDIR);
-    if (!newCertDir) {
-      GWEN_STRINGLIST *sl;
-
-      sl=GWEN_PathManager_GetPaths(LCS_PATH_DESTLIB,
-                                   LCS_PATH_SERVER_NEWCERTDIR);
-      assert(sl);
-      ncdbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      GWEN_Buffer_AppendString(ncdbuf,
-                               GWEN_StringList_FirstString(sl));
-      newCertDir=GWEN_Buffer_GetStart(ncdbuf);
-      GWEN_StringList_free(sl);
-    }
-
-    ciphers=GWEN_DB_GetCharValue(gr, "ciphers", 0, 0);
-    ownCertFile=GWEN_DB_GetCharValue(gr, "certfile", 0, 0);
-    if (ownCertFile) {
-      if (*ownCertFile!='/' && *ownCertFile!='\\') {
-        GWEN_STRINGLIST *sl;
-        int rv;
-
-        sl=GWEN_PathManager_GetPaths(LCS_PATH_DESTLIB,
-                                     LCS_PATH_SERVER_DATADIR);
-        assert(sl);
-
-        cfbuf=GWEN_Buffer_new(0, 256, 0, 1);
-        rv=GWEN_Directory_FindPathForFile(sl, ownCertFile, cfbuf);
-        GWEN_StringList_free(sl);
-        if (rv) {
-          DBG_ERROR(0, "Cert file \"%s\" not found", ownCertFile);
-          GWEN_Buffer_free(cfbuf);
-          GWEN_Buffer_free(cdbuf);
-          GWEN_Buffer_free(ncdbuf);
-          GWEN_Buffer_free(dhbuf);
-          GWEN_Url_free(url);
-          return rv;
-        }
-        ownCertFile=GWEN_Buffer_GetStart(cfbuf);
-      }
-    }
+    ownCertFile=GWEN_DB_GetCharValue(gr, "certfile", 0, NULL);
+    ownKeyFile=GWEN_DB_GetCharValue(gr, "keyfile", 0, NULL);
+    caFile=GWEN_DB_GetCharValue(gr, "cafile", 0, NULL);
     addr=GWEN_InetAddr_new(GWEN_AddressFamilyIP);
     GWEN_InetAddr_SetAddress(addr, GWEN_Url_GetServer(url));
     GWEN_InetAddr_SetPort(addr, port);
     sk=GWEN_Socket_new(GWEN_SocketTypeTCP);
-    nlBase=GWEN_NetLayerSocket_new(sk, 1);
-    GWEN_NetLayer_SetPeerAddr(nlBase, addr);
+
+    ioBase=GWEN_Io_LayerSocket_new(sk);
+    GWEN_Io_LayerSocket_SetPeerAddr(ioBase, addr);
+
+    io=GWEN_Io_LayerTls_new(ioBase);
+    ioBase=io;
+    GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_FORCE_SSL_V3);
+    if (ownCertFile)
+      GWEN_Io_LayerTls_SetLocalCertFile(ioBase, ownCertFile);
+    if (ownKeyFile)
+      GWEN_Io_LayerTls_SetLocalKeyFile(ioBase, ownKeyFile);
+    if (caFile)
+      GWEN_Io_LayerTls_SetLocalTrustFile(ioBase, caFile);
 
     if (strcasecmp(typ, "private")==0) {
       /* HTTP over SSL */
-      nl=GWEN_NetLayerSsl_new(nlBase,
-                              certDir,
-                              newCertDir,
-                              ownCertFile,
-                              0, /* dhFile */
-                              0);
-      GWEN_NetLayerSsl_SetAskAddCertFn(nl, LCS_Server_AskAddCert,
-                                       (void*)slm->server);
-      GWEN_NetLayer_free(nlBase);
-      nlBase=nl;
     }
     else if (strcasecmp(typ, "secure")==0) {
-      /* HTTP over SSL with certificates */
-      nl=GWEN_NetLayerSsl_new(nlBase,
-                              certDir,
-                              newCertDir,
-                              ownCertFile,
-                              0, /*dhFile */
-                              1);
-      GWEN_NetLayerSsl_SetAskAddCertFn(nl, LCS_Server_AskAddCert,
-                                       (void*)slm->server);
-      GWEN_NetLayer_free(nlBase);
-      nlBase=nl;
+      /* HTTP over SSL with mandatory certificates from both sides */
+      GWEN_Io_Layer_AddFlags(ioBase, GWEN_IO_LAYER_TLS_FLAGS_NEED_PEER_CERT);
     }
     else {
       DBG_ERROR(0, "Unknown mode \"%s\"", typ);
+      GWEN_Io_Layer_free(io);
       GWEN_InetAddr_free(addr);
-      GWEN_Buffer_free(cfbuf);
-      GWEN_Buffer_free(cdbuf);
-      GWEN_Buffer_free(ncdbuf);
-      GWEN_Buffer_free(dhbuf);
       GWEN_Url_free(url);
       return -1;
     }
-    GWEN_Buffer_free(cfbuf);
-    GWEN_Buffer_free(cdbuf);
-    GWEN_Buffer_free(ncdbuf);
-    GWEN_Buffer_free(dhbuf);
-
-    if (ciphers)
-      GWEN_NetLayerSsl_SetCiphers(nl, ciphers);
   }
   GWEN_InetAddr_free(addr);
 
-  /* create HTTP layer, initialize it */
-  nl=GWEN_NetLayerHttp_new(nlBase);
-  GWEN_NetLayer_free(nlBase);
+  io=GWEN_Io_LayerBuffered_new(ioBase);
+  ioBase=io;
 
-  dbHeader=GWEN_NetLayerHttp_GetOutHeader(nl);
+  io=GWEN_Io_LayerHttp_new(ioBase);
+  GWEN_Io_Layer_AddFlags(io, GWEN_IO_LAYER_HTTP_FLAGS_IPC);
 
-  GWEN_NetLayerHttp_SetOutCommand(nl, "POST", url);
+  db=GWEN_Io_LayerHttp_GetDbCommandOut(io);
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "command", "POST");
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "protocol", "HTTP/1.1");
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "url", GWEN_Url_GetPath(url));
 
-  sid=GWEN_IpcManager_AddClient(slm->ipcManager,
-                                nl,
-                                LCS_MARK_SLAVE);
+  db=GWEN_Io_LayerHttp_GetDbHeaderOut(io);
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Host", GWEN_Url_GetServer(url));
+  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "Connection", "keep alive");
+
+  ioBase=io;
+
+  sid=GWEN_IpcManager_AddClient(slm->ipcManager, io, LCS_MARK_SLAVE);
   if (sid==0) {
     DBG_ERROR(0, "Could not add client");
     GWEN_DB_Dump(gr, stderr, 2);
-    GWEN_NetLayer_free(nl);
+    GWEN_Io_Layer_free(ioBase);
     GWEN_Url_free(url);
     return -1;
   }
@@ -316,7 +216,7 @@ int LCSL_SlaveManager__PrepareConnection(LCSL_SLAVEMANAGER *slm,
 
   slm->ipcId=sid;
   LCS_Server_UseConnectionFor(slm->server,
-                              nl,
+			      ioBase,
                               LCS_Connection_Type_Master,
                               sid);
   return 0;
@@ -325,34 +225,63 @@ int LCSL_SlaveManager__PrepareConnection(LCSL_SLAVEMANAGER *slm,
 
 
 int LCSL_SlaveManager__Work(LCSL_SLAVEMANAGER *slm, int timeout){
-  GWEN_NETLAYER_RESULT res;
-  int rv;
+  time_t startt;
+  GWEN_IO_LAYER_WORKRESULT res;
 
-  if (!GWEN_Net_HasActiveConnections()) {
-    DBG_ERROR(0, "No active connections, stopping");
-    return -1;
-  }
+  startt=time(0);
+  assert(slm);
 
-  res=GWEN_Net_HeartBeat(timeout);
-  if (res==GWEN_NetLayerResult_Error) {
-    DBG_ERROR(0, "Network error");
-    return -1;
-  }
-  else if (res==GWEN_NetLayerResult_Idle) {
-    DBG_VERBOUS(0, "No activity");
-  }
 
-  while(1) {
-    DBG_DEBUG(0, "SlaveManager: Working");
-    /* activity detected, work with it */
-    rv=GWEN_IpcManager_Work(slm->ipcManager);
-    if (rv==-1) {
-      DBG_ERROR(0, "Error while working with IPC");
+  for (;;) {
+    int doneIo=0;
+    int doneIpc=0;
+    int rv;
+
+    /* let io manager work until there is nothing to do */
+    while((res=GWEN_Io_Manager_Work())==GWEN_Io_Layer_WorkResultOk)
+      doneIo=1;
+    if (res==GWEN_Io_Layer_WorkResultError) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on io layers");
       return -1;
     }
-    else if (rv==1)
-      break;
-  }
+
+    /* let ipc manager work until there is nothing to do */
+    while((rv=GWEN_IpcManager_Work(slm->ipcManager))==0)
+      doneIpc=1;
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error working on ipc");
+      return -1;
+    }
+
+    if (doneIpc)
+      return 0;
+
+    if (doneIo==0) {
+      int d;
+      int secs;
+
+      /* check timeout */
+      d=(int)difftime(time(0), startt);
+      if (timeout!=GWEN_TIMEOUT_FOREVER) {
+	if (timeout==GWEN_TIMEOUT_NONE ||
+	    d>timeout) {
+	  DBG_INFO(GWEN_LOGDOMAIN,
+		   "Timeout (%d) while waiting, giving up",
+		   timeout);
+	  return -1;
+	}
+      }
+
+      /* calculate waiting time */
+      if (timeout==GWEN_TIMEOUT_FOREVER)
+	secs=(timeout/1000)-d;
+      else
+	secs=5;
+
+      /* actually wait for changes in io */
+      GWEN_Io_Manager_Wait(secs*1000, 0);
+    }
+  } /* for */
 
   return 0;
 }
@@ -363,7 +292,7 @@ int LCSL_SlaveManager__Connect(LCSL_SLAVEMANAGER *slm) {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   time_t startt;
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
   int rv;
 
   startt=time(0);
@@ -381,12 +310,13 @@ int LCSL_SlaveManager__Connect(LCSL_SLAVEMANAGER *slm) {
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "text", "Slave started and ready");
 
-  rid=GWEN_IpcManager_SendRequest(slm->ipcManager,
-                                  slm->ipcId,
-                                  dbReq);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send command");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(slm->ipcManager,
+				 slm->ipcId,
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send command (%d)", rv);
+    return rv;
   }
 
   /* this sends the message and hopefully receives an answer */
@@ -399,7 +329,7 @@ int LCSL_SlaveManager__Connect(LCSL_SLAVEMANAGER *slm) {
       break;
     }
     DBG_VERBOUS(0, "Working...");
-    if (LCSL_SlaveManager__Work(slm, 1000)) {
+    if (LCSL_SlaveManager__Work(slm, 10000)) {
       DBG_ERROR(0, "Error at work");
       GWEN_IpcManager_RemoveRequest(slm->ipcManager, slm->ipcId, 1);
       return -1;
@@ -444,7 +374,7 @@ int LCSL_SlaveManager_Fini(LCSL_SLAVEMANAGER *slm, GWEN_DB_NODE *db) {
 
 
 int LCSL_SlaveManager_HandleRequest(LCSL_SLAVEMANAGER *slm,
-                                     GWEN_TYPE_UINT32 rid,
+                                     uint32_t rid,
                                      const char *name,
                                      GWEN_DB_NODE *dbReq) {
   int rv;
@@ -499,7 +429,7 @@ void LCSL_SlaveManager_DumpState(const LCSL_SLAVEMANAGER *slm) {
 
 
 void LCSL_SlaveManager_ReaderChg(LCSL_SLAVEMANAGER *slm,
-                                 GWEN_TYPE_UINT32 did,
+                                 uint32_t did,
                                  LCCO_READER *r,
                                  LC_READER_STATUS newSt,
                                  const char *reason) {
@@ -543,7 +473,7 @@ int LCSL_SlaveManager_Work(LCSL_SLAVEMANAGER *slm) {
     sr=LCCO_Reader_List2Iterator_Data(it);
     assert(sr);
     while(sr) {
-      GWEN_TYPE_UINT32 flags;
+      uint32_t flags;
 
       flags=LCSL_Reader_GetFlags(sr);
       if (LCCO_Reader_IsAvailable(sr)) {
@@ -647,7 +577,7 @@ int LCSL_SlaveManager_Work(LCSL_SLAVEMANAGER *slm) {
 
 
 void LCSL_SlaveManager_NewCard(LCSL_SLAVEMANAGER *slm, LCCO_CARD *card) {
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   LCCO_READER_LIST2_ITERATOR *it;
   LCCO_READER *sr=0;
 
@@ -682,7 +612,7 @@ void LCSL_SlaveManager_NewCard(LCSL_SLAVEMANAGER *slm, LCCO_CARD *card) {
 
 void LCSL_SlaveManager_CardRemoved(LCSL_SLAVEMANAGER *slm,
                                    LCCO_CARD *card) {
-  GWEN_TYPE_UINT32 readerId;
+  uint32_t readerId;
   LCCO_READER_LIST2_ITERATOR *it;
   LCCO_READER *sr=0;
 
@@ -715,8 +645,7 @@ void LCSL_SlaveManager_CardRemoved(LCSL_SLAVEMANAGER *slm,
 
 
 
-void LCSL_SlaveManager_ConnectionDown(LCSL_SLAVEMANAGER *slm,
-                                      GWEN_NETLAYER *nl) {
+void LCSL_SlaveManager_ConnectionDown(LCSL_SLAVEMANAGER *slm, GWEN_IO_LAYER *nl) {
   DBG_WARN(0, "Connection to master is down, will restart in a few seconds");
   slm->disconnected=1;
 }
@@ -729,7 +658,7 @@ int LCSL_SlaveManager_SendReaderAdd(LCSL_SLAVEMANAGER *slm,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbReader;
   char numbuf[16];
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   int rv;
 
   DBG_NOTICE(0, "Announcing plugged-in reader \"%s\" to master",
@@ -746,12 +675,13 @@ int LCSL_SlaveManager_SendReaderAdd(LCSL_SLAVEMANAGER *slm,
   numbuf[sizeof(numbuf)-1]=0;
   GWEN_DB_SetCharValue(dbReader, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driversReaderId", numbuf);
-  rqid=GWEN_IpcManager_SendRequest(slm->ipcManager,
-                                   slm->ipcId,
-                                   dbReq);
-  if (rqid==0) {
-    DBG_ERROR(0, "Could not send ReaderAdd request to master");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(slm->ipcManager,
+				 slm->ipcId,
+				 dbReq,
+				 &rqid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send ReaderAdd request to master (%d)", rv);
+    return rv;
   }
   else {
     /* remove request, we don't expect an answer */
@@ -770,7 +700,7 @@ int LCSL_SlaveManager_SendReaderDel(LCSL_SLAVEMANAGER *slm,
                                      LCCO_READER *sr) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   int rv;
 
   DBG_NOTICE(0, "Announcing unplugged reader \"%s\" to master",
@@ -784,12 +714,13 @@ int LCSL_SlaveManager_SendReaderDel(LCSL_SLAVEMANAGER *slm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driversReaderId", numbuf);
 
-  rqid=GWEN_IpcManager_SendRequest(slm->ipcManager,
-                                   slm->ipcId,
-                                   dbReq);
-  if (rqid==0) {
+  rv=GWEN_IpcManager_SendRequest(slm->ipcManager,
+				 slm->ipcId,
+				 dbReq,
+				 &rqid);
+  if (rv<0) {
     DBG_ERROR(0, "Could not send ReaderDel request to master");
-    return -1;
+    return rv;
   }
   else {
     /* remove request, we don't expect an answer */
@@ -813,7 +744,7 @@ int LCSL_SlaveManager_SendCardInserted(LCSL_SLAVEMANAGER *slm,
   int cardnum;
   const void *atr;
   unsigned int atrLen;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
   const char *cardType;
 
   assert(slm);
@@ -862,12 +793,13 @@ int LCSL_SlaveManager_SendCardInserted(LCSL_SLAVEMANAGER *slm,
     GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "cardType", cardType);
 
-  rqid=GWEN_IpcManager_SendRequest(slm->ipcManager,
-                                   slm->ipcId,
-                                   dbReq);
-  if (rqid==0) {
-    DBG_ERROR(0, "Could not send command");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(slm->ipcManager,
+				 slm->ipcId,
+				 dbReq,
+				 &rqid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send command (%d)", rv);
+    return rv;
   }
   else {
     GWEN_IpcManager_RemoveRequest(slm->ipcManager, rqid, 1);
@@ -885,7 +817,7 @@ int LCSL_SlaveManager_SendCardRemoved(LCSL_SLAVEMANAGER *slm,
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
-  GWEN_TYPE_UINT32 rqid;
+  uint32_t rqid;
 
   assert(slm);
   assert(sr);
@@ -914,14 +846,15 @@ int LCSL_SlaveManager_SendCardRemoved(LCSL_SLAVEMANAGER *slm,
                       "slotnum", LCCO_Card_GetSlotNum(card));
 
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "cardnum", LCCO_Card_GetCardId(card));
+		      "cardnum", LCCO_Card_GetCardId(card));
 
-  rqid=GWEN_IpcManager_SendRequest(slm->ipcManager,
-                                   slm->ipcId,
-                                   dbReq);
-  if (rqid==0) {
-    DBG_ERROR(0, "Could not send command");
-    return -1;
+  rv=GWEN_IpcManager_SendRequest(slm->ipcManager,
+				 slm->ipcId,
+				 dbReq,
+				 &rqid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send command (%d)", rv);
+    return rv;
   }
   else {
     GWEN_IpcManager_RemoveRequest(slm->ipcManager, rqid, 1);

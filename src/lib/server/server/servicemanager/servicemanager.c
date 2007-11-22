@@ -79,12 +79,8 @@ int LCSV_ServiceManager_Init(LCSV_SERVICEMANAGER *svm, GWEN_DB_NODE *db) {
   /* read configuration file */
   dbT=GWEN_DB_GetGroup(db, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
                        "ServiceManager");
-  if (dbT==0) {
-    DBG_WARN(0,
-             "Your configuration does not have a \"ServiceManager\" group. "
-             "Please update the file.");
+  if (dbT==0)
     dbT=db;
-  }
   if (dbT) {
     svm->allowClientService=GWEN_DB_GetIntValue(dbT, "allowClient", 0, 0);
 
@@ -211,11 +207,12 @@ void LCSV_ServiceManager_AbandonService(LCSV_SERVICEMANAGER *svm,
 
 
 
-GWEN_TYPE_UINT32 LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
-                                                     const LCSV_SERVICE *sv){
+uint32_t LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
+					     const LCSV_SERVICE *sv){
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
+  uint32_t rid;
 
   assert(svm);
   assert(sv);
@@ -228,9 +225,16 @@ GWEN_TYPE_UINT32 LCSV_ServiceManager_SendStopService(LCSV_SERVICEMANAGER *svm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "serviceId", numbuf);
 
-  return GWEN_IpcManager_SendRequest(svm->ipcManager,
-                                     LCSV_Service_GetIpcId(sv),
-                                     dbReq);
+  rv=GWEN_IpcManager_SendRequest(svm->ipcManager,
+				 LCSV_Service_GetIpcId(sv),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
@@ -305,6 +309,15 @@ int LCSV_ServiceManager_StartService(LCSV_SERVICEMANAGER *svm,
     return -1;
   }
 
+  /* add configuration folder */
+  GWEN_Buffer_AppendString(abuf,
+			   " -C "
+			   LC_DEFAULT_CONFDIR
+			   DIRSEP
+			   "services"
+			   DIRSEP);
+  GWEN_Buffer_AppendString(abuf, s);
+
   /* get driver path by loading its plugin description */
   pm=GWEN_PluginManager_FindPluginManager(LCS_PLUGIN_SERVICE);
   if (!pm) {
@@ -378,9 +391,9 @@ int LCSV_ServiceManager_StartService(LCSV_SERVICEMANAGER *svm,
 int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
                                      LCSV_SERVICE *sv) {
   int done=0;
-  GWEN_TYPE_UINT32 nid;
+  uint32_t nid;
   LC_SERVICE_STATUS st;
-  GWEN_TYPE_UINT32 sflags;
+  uint32_t sflags;
 
   assert(svm);
   assert(sv);
@@ -600,7 +613,6 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
   if (st==LC_ServiceStatusUp) {
     GWEN_PROCESS *p;
     GWEN_PROCESS_STATE pst;
-    GWEN_NETLAYER *conn;
 
     /* check whether the service really is still up and running */
     p=LCSV_Service_GetProcess(sv);
@@ -623,24 +635,6 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
       }
     }
 
-    /* check connection */
-    conn=GWEN_IpcManager_GetNetLayer(svm->ipcManager,
-                                     LCSV_Service_GetIpcId(sv));
-    assert(conn);
-    if (GWEN_NetLayer_GetStatus(conn)!=
-        GWEN_NetLayerStatus_Connected) {
-      DBG_ERROR(0, "Service connection is down");
-      p=LCSV_Service_GetProcess(sv);
-      if (p) {
-        GWEN_Process_Terminate(p);
-      }
-      LCSV_Service_SetProcess(sv, 0);
-      st=LC_ServiceStatusAborted;
-      LCSV_ServiceManager_AbandonService(svm, sv, st,
-                                       "Service connection broken");
-      done++;
-    }
-
     DBG_DEBUG(0, "Service still running");
     if (svm->serviceIdleTimeout &&
         !(sflags & LC_SERVICE_FLAGS_AUTOLOAD) &&
@@ -653,7 +647,7 @@ int LCSV_ServiceManager_CheckService(LCSV_SERVICEMANAGER *svm,
       assert(t);
 
       if (difftime(time(0), t)>svm->serviceIdleTimeout) {
-        GWEN_TYPE_UINT32 rid;
+        uint32_t rid;
 
         DBG_NOTICE(0, "Service \"%s\" is too long idle, stopping it",
                    LCSV_Service_GetServiceName(sv));
@@ -770,7 +764,7 @@ int LCSV_ServiceManager_ListServices(LCSV_SERVICEMANAGER *svm) {
 
 
 void LCSV_ServiceManager_ConnectionDown(LCSV_SERVICEMANAGER *svm,
-                                        GWEN_TYPE_UINT32 ipcId) {
+                                        uint32_t ipcId) {
   LCSV_SERVICE *sv;
 
   assert(svm);
@@ -794,7 +788,7 @@ void LCSV_ServiceManager_ConnectionDown(LCSV_SERVICEMANAGER *svm,
 
 
 int LCSV_ServiceManager_HandleRequest(LCSV_SERVICEMANAGER *svm,
-                                      GWEN_TYPE_UINT32 rid,
+                                      uint32_t rid,
                                       const char *name,
                                       GWEN_DB_NODE *dbReq) {
   int rv;
@@ -817,11 +811,11 @@ int LCSV_ServiceManager_HandleRequest(LCSV_SERVICEMANAGER *svm,
 
 
 int LCSV_ServiceManager_HandleServiceReady(LCSV_SERVICEMANAGER *svm,
-                                           GWEN_TYPE_UINT32 rid,
+                                           uint32_t rid,
                                            GWEN_DB_NODE *dbReq) {
   GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 serviceId;
-  GWEN_TYPE_UINT32 nodeId;
+  uint32_t serviceId;
+  uint32_t nodeId;
   LCSV_SERVICE *sv;
   const char *text;
   const char *p;
@@ -1024,12 +1018,13 @@ int LCSV_ServiceManager_GetMatchingServices(LCSV_SERVICEMANAGER *svm,
 
 
 
-GWEN_TYPE_UINT32 LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
-                                                 GWEN_TYPE_UINT32 serviceId,
-                                                 GWEN_DB_NODE *dbCmd) {
+uint32_t LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
+					 uint32_t serviceId,
+					 GWEN_DB_NODE *dbCmd) {
   LCSV_SERVICE *sv;
   char numbuf[16];
-  GWEN_TYPE_UINT32 rid;
+  int rv;
+  uint32_t rid;
 
   assert(svm);
 
@@ -1057,11 +1052,12 @@ GWEN_TYPE_UINT32 LCSV_ServiceManager_SendCommand(LCSV_SERVICEMANAGER *svm,
   GWEN_DB_SetCharValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "serviceId", numbuf);
 
-  rid=GWEN_IpcManager_SendRequest(svm->ipcManager,
-                                  LCSV_Service_GetIpcId(sv),
-                                  dbCmd);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send request");
+  rv=GWEN_IpcManager_SendRequest(svm->ipcManager,
+				 LCSV_Service_GetIpcId(sv),
+				 dbCmd,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send request (%d)", rv);
     return 0;
   }
 

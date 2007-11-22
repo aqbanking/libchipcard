@@ -30,29 +30,34 @@ extern "C" {
 
 GWEN_LIST_FUNCTION_DEFS(LCS_LOCKREQUEST, LCS_LockRequest)
 LCS_LOCKREQUEST_LIST *LCS_LockRequest_List_dup(const LCS_LOCKREQUEST_LIST *stl);
+
 LCS_LOCKREQUEST *LCS_LockRequest_new();
+LCS_LOCKREQUEST *LCS_LockRequest_fromDb(GWEN_DB_NODE *db);
+LCS_LOCKREQUEST *LCS_LockRequest_dup(const LCS_LOCKREQUEST*st);
 void LCS_LockRequest_free(LCS_LOCKREQUEST *st);
 void LCS_LockRequest_Attach(LCS_LOCKREQUEST *st);
-LCS_LOCKREQUEST *LCS_LockRequest_dup(const LCS_LOCKREQUEST*st);LCS_LOCKREQUEST *LCS_LockRequest_fromDb(GWEN_DB_NODE *db);int LCS_LockRequest_toDb(const LCS_LOCKREQUEST*st, GWEN_DB_NODE *db);int LCS_LockRequest_IsModified(const LCS_LOCKREQUEST *st);
+int LCS_LockRequest_ReadDb(LCS_LOCKREQUEST *st, GWEN_DB_NODE *db);
+int LCS_LockRequest_toDb(const LCS_LOCKREQUEST*st, GWEN_DB_NODE *db);
+int LCS_LockRequest_IsModified(const LCS_LOCKREQUEST *st);
 void LCS_LockRequest_SetModified(LCS_LOCKREQUEST *st, int i);
 
 /**
 * Returns the property @ref LCS_LOCKREQUEST_RequestId
 */
-GWEN_TYPE_UINT32 LCS_LockRequest_GetRequestId(const LCS_LOCKREQUEST *el);
+uint32_t LCS_LockRequest_GetRequestId(const LCS_LOCKREQUEST *el);
 /**
 * Set the property @ref LCS_LOCKREQUEST_RequestId
 */
-void LCS_LockRequest_SetRequestId(LCS_LOCKREQUEST *el, GWEN_TYPE_UINT32 d);
+void LCS_LockRequest_SetRequestId(LCS_LOCKREQUEST *el, uint32_t d);
 
 /**
 * Returns the property @ref LCS_LOCKREQUEST_ClientId
 */
-GWEN_TYPE_UINT32 LCS_LockRequest_GetClientId(const LCS_LOCKREQUEST *el);
+uint32_t LCS_LockRequest_GetClientId(const LCS_LOCKREQUEST *el);
 /**
 * Set the property @ref LCS_LOCKREQUEST_ClientId
 */
-void LCS_LockRequest_SetClientId(LCS_LOCKREQUEST *el, GWEN_TYPE_UINT32 d);
+void LCS_LockRequest_SetClientId(LCS_LOCKREQUEST *el, uint32_t d);
 
 /**
 * Returns the property @ref LCS_LOCKREQUEST_LockTime

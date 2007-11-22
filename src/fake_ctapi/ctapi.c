@@ -298,9 +298,9 @@ CHIPCARD_EXPORT char CT_init(unsigned short ctn, unsigned short pn){
 
       /* only set our logger if it not already has been */
       GWEN_Logger_Open(CT_API_LOGDOMAIN, "ctapi", 0,
-                       GWEN_LoggerTypeConsole,
-                       GWEN_LoggerFacilityUser);
-      GWEN_Logger_SetLevel(CT_API_LOGDOMAIN, GWEN_LoggerLevelWarning);
+		       GWEN_LoggerType_Console,
+                       GWEN_LoggerFacility_User);
+      GWEN_Logger_SetLevel(CT_API_LOGDOMAIN, GWEN_LoggerLevel_Warning);
 
       /* get and set log level */
       s=getenv("LC_CTAPI_LOGLEVEL");
@@ -388,7 +388,7 @@ CHIPCARD_EXPORT char CT_data(unsigned short ctn,
     return CT_API_RV_ERR_INVALID;
   }
 
-  if (GWEN_Logger_GetLevel(CT_API_LOGDOMAIN)>=GWEN_LoggerLevelDebug){
+  if (GWEN_Logger_GetLevel(CT_API_LOGDOMAIN)>=GWEN_LoggerLevel_Debug){
     GWEN_BUFFER *mbuf;
 
     mbuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -496,7 +496,7 @@ CHIPCARD_EXPORT char CT_data(unsigned short ctn,
   }
 
   CTAPI_APDU_free(apdu);
-  if (GWEN_Logger_GetLevel(CT_API_LOGDOMAIN)>=GWEN_LoggerLevelDebug){
+  if (GWEN_Logger_GetLevel(CT_API_LOGDOMAIN)>=GWEN_LoggerLevel_Debug){
     if (result==CT_API_RV_OK) {
       GWEN_BUFFER *mbuf;
 

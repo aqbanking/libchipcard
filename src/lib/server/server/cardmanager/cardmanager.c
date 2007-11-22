@@ -26,7 +26,7 @@
 #include <string.h>
 
 
-static GWEN_TYPE_UINT32 lccm_cardmanager__last_card_id=0;
+static uint32_t lccm_cardmanager__last_card_id=0;
 
 
 LCCM_CARDMANAGER *LCCM_CardManager_new(LCS_SERVER *server) {
@@ -86,7 +86,7 @@ int LCCM_CardManager_Fini(LCCM_CARDMANAGER *cm, GWEN_DB_NODE *dbConfig) {
 
 
 void LCCM_CardManager__RemoveCardsInSlots(LCCM_CARDMANAGER *cm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           int slotNum) {
   LCCO_CARD *card;
 
@@ -105,7 +105,7 @@ void LCCM_CardManager__RemoveCardsInSlots(LCCM_CARDMANAGER *cm,
 
 
 void LCCM_CardManager__RemoveCardsInReader(LCCM_CARDMANAGER *cm,
-                                           GWEN_TYPE_UINT32 rid) {
+                                           uint32_t rid) {
   LCCO_CARD *card;
 
   card=LCCO_Card_List_First(cm->cards);
@@ -152,7 +152,7 @@ void LCCM_CardManager_CardRemoved(LCCM_CARDMANAGER *cm, LCCO_CARD *card) {
 
 
 LCCO_CARD *LCCM_CardManager_FindCard(LCCM_CARDMANAGER *cm,
-                                     GWEN_TYPE_UINT32 cid) {
+                                     uint32_t cid) {
   LCCO_CARD *card;
 
   card=LCCO_Card_List_First(cm->cards);
@@ -169,7 +169,7 @@ LCCO_CARD *LCCM_CardManager_FindCard(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_CheckAccess(LCCM_CARDMANAGER *cm,
                                  LCCO_CARD *card,
-                                 GWEN_TYPE_UINT32 clid) {
+                                 uint32_t clid) {
   assert(cm);
   assert(card);
   return LCCM_Card_CheckAccess(card, clid);
@@ -207,7 +207,7 @@ LCCO_CARD *LCCM_CardManager_GetNextCard(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_RequestLockCard(LCCM_CARDMANAGER *cm,
                                      LCCO_CARD *card,
-                                     GWEN_TYPE_UINT32 clid,
+                                     uint32_t clid,
                                      int duration,
                                      int maxLocks) {
   assert(cm);
@@ -220,7 +220,7 @@ int LCCM_CardManager_RequestLockCard(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_CheckLockCardRequest(LCCM_CARDMANAGER *cm,
                                           LCCO_CARD *card,
-                                          GWEN_TYPE_UINT32 clid) {
+                                          uint32_t clid) {
   assert(cm);
   assert(card);
 
@@ -231,7 +231,7 @@ int LCCM_CardManager_CheckLockCardRequest(LCCM_CARDMANAGER *cm,
 
 int LCCM_CardManager_UnlockCard(LCCM_CARDMANAGER *cm,
                                 LCCO_CARD *card,
-                                GWEN_TYPE_UINT32 clid) {
+                                uint32_t clid) {
   assert(cm);
   assert(card);
 
@@ -252,14 +252,14 @@ int LCCM_CardManager_SetCardAdTime(LCCM_CARDMANAGER *cm,
 
 
 
-void LCCM_CardManager_ReaderDown(LCCM_CARDMANAGER *cm, GWEN_TYPE_UINT32 rid){
+void LCCM_CardManager_ReaderDown(LCCM_CARDMANAGER *cm, uint32_t rid){
   assert(cm);
   LCCM_CardManager__RemoveCardsInReader(cm, rid);
 }
 
 
 
-void LCCM_CardManager_ClientDown(LCCM_CARDMANAGER *cm, GWEN_TYPE_UINT32 clid){
+void LCCM_CardManager_ClientDown(LCCM_CARDMANAGER *cm, uint32_t clid){
   LCCO_CARD *card;
 
   assert(cm);

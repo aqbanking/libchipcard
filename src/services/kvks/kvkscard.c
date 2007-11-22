@@ -19,7 +19,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 
 /* This must be at the top of the file to tell GWEN that we are to inherit
@@ -166,7 +166,7 @@ LC_CLIENT_RESULT KVKSCard_Reopen(LC_CARD *card){
   }
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
-  res=LC_Card_SelectMF(card);
+  res=LC_Card_SelectMf(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -237,7 +237,7 @@ GWEN_BUFFER *KVKSCard_GetBuffer(const LC_CARD *card){
 
 
 
-GWEN_TYPE_UINT32 KVKSCard_GetCurrentRequest(const LC_CARD *card){
+uint32_t KVKSCard_GetCurrentRequest(const LC_CARD *card){
   KVKS_CARD *xc;
 
   assert(card);
@@ -249,7 +249,7 @@ GWEN_TYPE_UINT32 KVKSCard_GetCurrentRequest(const LC_CARD *card){
 
 
 
-void KVKSCard_SetCurrentRequest(LC_CARD *card, GWEN_TYPE_UINT32 i){
+void KVKSCard_SetCurrentRequest(LC_CARD *card, uint32_t i){
   KVKS_CARD *xc;
 
   assert(card);

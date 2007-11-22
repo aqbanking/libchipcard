@@ -127,7 +127,7 @@ void LCSL_Request_SetSlaveManager(GWEN_IPC_REQUEST *rq,
 
 
 
-GWEN_TYPE_UINT32 LCSL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq) {
+uint32_t LCSL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq) {
   LCSL_REQUEST *srq;
 
   assert(rq);
@@ -139,7 +139,7 @@ GWEN_TYPE_UINT32 LCSL_Request_GetUint32Data(const GWEN_IPC_REQUEST *rq) {
 
 
 
-void LCSL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i) {
+void LCSL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, uint32_t i) {
   LCSL_REQUEST *srq;
 
   assert(rq);
@@ -151,7 +151,7 @@ void LCSL_Request_SetUint32Data(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i) {
 
 
 
-GWEN_TYPE_UINT32 LCSL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq) {
+uint32_t LCSL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq) {
   LCSL_REQUEST *srq;
 
   assert(rq);
@@ -163,7 +163,7 @@ GWEN_TYPE_UINT32 LCSL_Request_GetUint32Data2(const GWEN_IPC_REQUEST *rq) {
 
 
 
-void LCSL_Request_SetUint32Data2(GWEN_IPC_REQUEST *rq, GWEN_TYPE_UINT32 i) {
+void LCSL_Request_SetUint32Data2(GWEN_IPC_REQUEST *rq, uint32_t i) {
   LCSL_REQUEST *srq;
 
   assert(rq);

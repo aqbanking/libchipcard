@@ -23,7 +23,7 @@
 #include "usbrawscanner_l.h"
 #include "usbttyscanner_l.h"
 
-#include "common/driverinfo.h"
+#include <chipcard/sharedstuff/driverinfo.h>
 
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/pathmanager.h>
@@ -119,12 +119,8 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   /* read configuration file */
   dbT=GWEN_DB_GetGroup(dbConfig, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
                        "DeviceManager");
-  if (dbT==0) {
-    DBG_WARN(0,
-             "Your configuration does not have a \"DeviceManager\" group. "
-             "Please update the file.");
+  if (dbT==0)
     dbT=dbConfig;
-  }
 
   /* read driver black list */
   for (i=0; ; i++) {
@@ -345,7 +341,7 @@ void LCDM_DeviceManager_EndUseReaders(LCDM_DEVICEMANAGER *dm, int count) {
 
 
 void LCDM_DeviceManager_BeginUseReader(LCDM_DEVICEMANAGER *dm,
-                                       GWEN_TYPE_UINT32 rid) {
+                                       uint32_t rid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -363,7 +359,7 @@ void LCDM_DeviceManager_BeginUseReader(LCDM_DEVICEMANAGER *dm,
 
 
 void LCDM_DeviceManager_EndUseReader(LCDM_DEVICEMANAGER *dm,
-                                     GWEN_TYPE_UINT32 rid) {
+                                     uint32_t rid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -451,16 +447,14 @@ void LCDM_DeviceManager_AbandonDriver(LCDM_DEVICEMANAGER *dm,
                                       LCDM_DRIVER *d,
                                       LC_DRIVER_STATUS newSt,
                                       const char *reason) {
-  GWEN_TYPE_UINT32 ipcId;
+  uint32_t ipcId;
 
   DBG_INFO(0, "Abandoning driver %08x", LCDM_Driver_GetDriverId(d));
   ipcId=LCDM_Driver_GetIpcId(d);
   if (ipcId!=0) {
     /* remove IPC node */
     LCDM_Driver_SetIpcId(d, 0);
-    DBG_ERROR(0, "Removing driver client %0x8", ipcId);
     GWEN_IpcManager_RemoveClient(dm->ipcManager, ipcId);
-    DBG_ERROR(0, "Removing driver client %0x8: done", ipcId);
   }
 
   if (LCDM_Driver_GetStatus(d)!= newSt) {
@@ -522,7 +516,7 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
     s=GWEN_StringListEntry_Data(se);
     assert(s);
     /* read all available drivers from folder */
-    rv=LC_DriverInfo_ReadDrivers(s, dbDrivers, 1);
+    rv=LC_DriverInfo_ReadDrivers(s, dbDrivers, 1, 0);
     if (rv) {
       DBG_INFO(0, "No driver info in folder \"%s\"", s);
     }
@@ -555,14 +549,15 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
-						    const LCCO_READER *r) {
+uint32_t LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
+					    const LCCO_READER *r) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
   LCDM_DRIVER *d;
   int port;
   const char *p;
+  uint32_t rid;
 
   assert(dm);
   assert(r);
@@ -606,20 +601,28 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStartReader(LCDM_DEVICEMANAGER *dm,
     GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                          "devicePath", p);
 
-  return GWEN_IpcManager_SendRequest(dm->ipcManager,
-				     LCDM_Driver_GetIpcId(d),
-				     dbReq);
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
-						   const LCCO_READER *r) {
+uint32_t LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
+					   const LCCO_READER *r) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
   const char *p;
   LCDM_DRIVER *d;
+  uint32_t rid;
 
   d=LCDM_Reader_GetDriver(r);
   assert(d);
@@ -649,18 +652,26 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopReader(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "slots", LCCO_Reader_GetSlots(r));
 
-  return GWEN_IpcManager_SendRequest(dm->ipcManager,
-				     LCDM_Driver_GetIpcId(d),
-				     dbReq);
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
-                                                   const LCDM_DRIVER *d) {
+uint32_t LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
+					   const LCDM_DRIVER *d) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
+  uint32_t rid;
 
   assert(d);
   dbReq=GWEN_DB_Group_new("Driver_StopDriver");
@@ -672,19 +683,27 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendStopDriver(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driverId", numbuf);
 
-  return GWEN_IpcManager_SendRequest(dm->ipcManager,
-                                     LCDM_Driver_GetIpcId(d),
-                                     dbReq);
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
-                                                     const LCCO_READER *r) {
+uint32_t LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
+					     const LCCO_READER *r) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
   LCDM_DRIVER *d;
+  uint32_t rid;
 
   assert(dm);
   assert(r);
@@ -706,19 +725,27 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendSuspendCheck(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		       "driversReaderId", numbuf);
 
-  return GWEN_IpcManager_SendRequest(dm->ipcManager,
-				     LCDM_Driver_GetIpcId(d),
-				     dbReq);
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
-                                                    const LCCO_READER *r) {
+uint32_t LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
+					    const LCCO_READER *r) {
   GWEN_DB_NODE *dbReq;
   char numbuf[16];
   int rv;
   LCDM_DRIVER *d;
+  uint32_t rid;
 
   assert(dm);
   assert(r);
@@ -740,9 +767,16 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendResumeCheck(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
 		       "driversReaderId", numbuf);
 
-  return GWEN_IpcManager_SendRequest(dm->ipcManager,
-				     LCDM_Driver_GetIpcId(d),
-				     dbReq);
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbReq,
+				 &rid);
+  if (rv<0) {
+    DBG_INFO(0, "here (%d)", rv);
+    return 0;
+  }
+
+  return rid;
 }
 
 
@@ -928,9 +962,9 @@ void LCDM_DeviceManager_DeleteDriver(LCDM_DEVICEMANAGER *dm,
 
 int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   int done=0;
-  GWEN_TYPE_UINT32 nid;
+  uint32_t nid;
   LC_DRIVER_STATUS dst;
-  GWEN_TYPE_UINT32 dflags;
+  uint32_t dflags;
 
   assert(dm);
   assert(d);
@@ -950,7 +984,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
    */
   if (!(dflags & LC_DRIVER_FLAGS_REMOTE) &&
       (dflags & LC_DRIVER_FLAGS_AUTO)) {
-    GWEN_TYPE_UINT32 ipcId;
+    uint32_t ipcId;
 
     /* local auto reader */
     ipcId=LCDM_Driver_GetIpcId(d);
@@ -1153,7 +1187,6 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   if (dst==LC_DriverStatusUp) {
     GWEN_PROCESS *p;
     GWEN_PROCESS_STATE pst;
-    GWEN_NETLAYER *conn;
 
     /* check whether the driver really is still up and running */
     p=LCDM_Driver_GetProcess(d);
@@ -1179,26 +1212,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       }
     }
 
-    if (LCDM_Driver_GetIpcId(d)) {
-      /* check connection */
-      conn=GWEN_IpcManager_GetNetLayer(dm->ipcManager,
-                                       LCDM_Driver_GetIpcId(d));
-      assert(conn);
-      if (GWEN_NetLayer_GetStatus(conn)!=
-          GWEN_NetLayerStatus_Connected) {
-        DBG_ERROR(0, "Driver connection is down");
-        p=LCDM_Driver_GetProcess(d);
-        if (p) {
-          GWEN_Process_Terminate(p);
-        }
-        LCDM_Driver_SetProcess(d, 0);
-        dst=LC_DriverStatusAborted;
-        LCDM_DeviceManager_AbandonDriver(dm, d, dst,
-                                         "Driver connection broken");
-        done++;
-      }
-    }
-    else {
+    if (LCDM_Driver_GetIpcId(d)==0) {
       DBG_ERROR(0, "Driver connection is down");
       p=LCDM_Driver_GetProcess(d);
       if (p) {
@@ -1206,8 +1220,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       }
       LCDM_Driver_SetProcess(d, 0);
       dst=LC_DriverStatusAborted;
-      LCDM_DeviceManager_AbandonDriver(dm, d, dst,
-                                       "Driver connection broken");
+      LCDM_DeviceManager_AbandonDriver(dm, d, dst, "Driver connection broken");
       done++;
     }
 
@@ -1223,7 +1236,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
       if (!(LCDM_Driver_GetDriverFlags(d) & LC_DRIVER_FLAGS_REMOTE) &&
           dm->driverIdleTimeout &&
           (difftime(time(0), t)>dm->driverIdleTimeout)) {
-        GWEN_TYPE_UINT32 rid;
+        uint32_t rid;
 
         DBG_NOTICE(0, "Driver \"%s\" is too long idle, stopping it",
                    LCDM_Driver_GetDriverName(d));
@@ -1279,7 +1292,7 @@ int LCDM_DeviceManager_CheckDriver(LCDM_DEVICEMANAGER *dm, LCDM_DRIVER *d) {
   }
 
   if (dflags & LC_DRIVER_FLAGS_REMOTE) {
-    GWEN_TYPE_UINT32 ipcId;
+    uint32_t ipcId;
 
     ipcId=LCDM_Driver_GetIpcId(d);
     if (ipcId==0){
@@ -1352,7 +1365,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCCO_READER *r) {
 
       dst=LCDM_Driver_GetStatus(d);
       if (dst==LC_DriverStatusUp) {
-	GWEN_TYPE_UINT32 rid;
+	uint32_t rid;
 
 	rid=LCDM_DeviceManager_SendStartReader(dm, r);
 	if (rid==0) {
@@ -1386,7 +1399,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCCO_READER *r) {
   }
 
   if (rst==LC_ReaderStatusWaitForReaderUp) {
-    GWEN_TYPE_UINT32 rid;
+    uint32_t rid;
     GWEN_DB_NODE *dbRsp;
 
     rid=LCDM_Reader_GetCurrentRequestId(r);
@@ -1494,7 +1507,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCCO_READER *r) {
           }
           LCDM_Reader_SetCurrentRequestId(r, 0);
           if (LCCO_Reader_GetFlags(r) & LC_READER_FLAGS_SUSPENDED_CHECKS) {
-            GWEN_TYPE_UINT32 rqid;
+            uint32_t rqid;
 
             /* checks have been suspended, tell this to the reader */
             rqid=LCDM_DeviceManager_SendSuspendCheck(dm, r);
@@ -1552,7 +1565,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCCO_READER *r) {
 		       LCCO_Reader_GetReaderName(r));
 	    dst=LCDM_Driver_GetStatus(d);
 	    if (dst==LC_DriverStatusUp) {
-	      GWEN_TYPE_UINT32 rid;
+	      uint32_t rid;
   
 	      rid=LCDM_DeviceManager_SendStopReader(dm, r);
 	      if (rid==0) {
@@ -1586,7 +1599,7 @@ int LCDM_DeviceManager_CheckReader(LCDM_DEVICEMANAGER *dm, LCCO_READER *r) {
   } /* if readerStatusUp */
 
   if (rst==LC_ReaderStatusWaitForReaderDown) {
-    GWEN_TYPE_UINT32 rid;
+    uint32_t rid;
     GWEN_DB_NODE *dbRsp;
 
     rid=LCDM_Reader_GetCurrentRequestId(r);
@@ -1842,7 +1855,7 @@ int LCDM_DeviceManager_Work(LCDM_DEVICEMANAGER *dm) {
 
 
 void LCDM_DeviceManager_DriverIpcDown(LCDM_DEVICEMANAGER *dm,
-                                      GWEN_TYPE_UINT32 ipcId) {
+                                      uint32_t ipcId) {
   LCDM_DRIVER *d;
 
   d=LCDM_Driver_List_First(dm->drivers);
@@ -1867,7 +1880,7 @@ void LCDM_DeviceManager_DriverIpcDown(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleRequest(LCDM_DEVICEMANAGER *dm,
-                                     GWEN_TYPE_UINT32 rid,
+                                     uint32_t rid,
                                      const char *name,
                                      GWEN_DB_NODE *dbReq) {
   int rv;
@@ -1905,18 +1918,18 @@ int LCDM_DeviceManager_HandleRequest(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq) {
   GWEN_DB_NODE *dbRsp;
-  GWEN_TYPE_UINT32 driverId;
-  GWEN_TYPE_UINT32 nodeId;
-  GWEN_TYPE_UINT32 driverFlagsValue;
-  GWEN_TYPE_UINT32 driverFlagsMask;
+  uint32_t driverId;
+  uint32_t nodeId;
+  uint32_t driverFlagsValue;
+  uint32_t driverFlagsMask;
   LCDM_DRIVER *d;
   int code;
   const char *text;
   int i;
-  GWEN_NETLAYER *conn;
+  GWEN_IO_LAYER *conn;
 
   assert(dbReq);
 
@@ -2030,7 +2043,7 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
   driverFlagsValue=LC_DriverFlags_fromDb(dbReq, "data/driverFlagsValue");
   driverFlagsMask=LC_DriverFlags_fromDb(dbReq, "data/driverFlagsMask");
   if (driverFlagsMask) {
-    GWEN_TYPE_UINT32 x;
+    uint32_t x;
 
     /* don't change runtime flags */
     x=(((LCDM_Driver_GetDriverFlags(d) ^ driverFlagsValue) &
@@ -2069,11 +2082,11 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
     return -1;
   }
 
-  conn=GWEN_IpcManager_GetNetLayer(dm->ipcManager, nodeId);
+  conn=GWEN_IpcManager_GetIoLayer(dm->ipcManager, nodeId);
   assert(conn);
   LCS_Server_UseConnectionFor(dm->server, conn,
-                              LCS_Connection_Type_Driver,
-                              nodeId);
+			      LCS_Connection_Type_Driver,
+			      nodeId);
 
   DBG_NOTICE(0, "Driver \"%08x\" (%s) is up (%s)",
              driverId, LCDM_Driver_GetDriverName(d), text);
@@ -2110,16 +2123,16 @@ int LCDM_DeviceManager_HandleDriverReady(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
-                                          GWEN_TYPE_UINT32 rid,
+                                          uint32_t rid,
                                           GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 readerId=0;
-  GWEN_TYPE_UINT32 driversReaderId=0;
-  GWEN_TYPE_UINT32 x;
-  GWEN_TYPE_UINT32 nodeId;
+  uint32_t readerId=0;
+  uint32_t driversReaderId=0;
+  uint32_t x;
+  uint32_t nodeId;
   LCCO_READER *r;
   LCDM_DRIVER *d;
   int slotNum;
-  GWEN_TYPE_UINT32 cardNum;
+  uint32_t cardNum;
   LCCO_CARD *card;
   GWEN_BUFFER *atr;
   const void *p;
@@ -2275,14 +2288,14 @@ int LCDM_DeviceManager_HandleCardInserted(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 nodeId;
-  GWEN_TYPE_UINT32 x;
-  GWEN_TYPE_UINT32 readerId=0;
+  uint32_t nodeId;
+  uint32_t x;
+  uint32_t readerId=0;
   LCCO_READER *r;
   int slotNum;
-  GWEN_TYPE_UINT32 cardNum;
+  uint32_t cardNum;
   LCDM_DRIVER *d;
   LCCM_CARDMANAGER *cm;
   LCCO_CARD *card;
@@ -2392,11 +2405,11 @@ int LCDM_DeviceManager_HandleCardRemoved(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleReaderError(LCDM_DEVICEMANAGER *dm,
-                                         GWEN_TYPE_UINT32 rid,
+                                         uint32_t rid,
                                          GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 nodeId;
-  GWEN_TYPE_UINT32 x;
-  GWEN_TYPE_UINT32 driversReaderId=0;
+  uint32_t nodeId;
+  uint32_t x;
+  uint32_t driversReaderId=0;
   LCDM_DRIVER *d;
   LCCO_READER *r;
   const char *text;
@@ -2484,9 +2497,9 @@ int LCDM_DeviceManager_HandleReaderError(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleReaderAdd(LCDM_DEVICEMANAGER *dm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        GWEN_DB_NODE *dbReq){
-  GWEN_TYPE_UINT32 nodeId;
+  uint32_t nodeId;
   LCCO_READER *r;
   LCDM_DRIVER *d;
   GWEN_DB_NODE *dbReader;
@@ -2594,10 +2607,10 @@ int LCDM_DeviceManager_HandleReaderAdd(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_HandleReaderDel(LCDM_DEVICEMANAGER *dm,
-                                       GWEN_TYPE_UINT32 rid,
+                                       uint32_t rid,
                                        GWEN_DB_NODE *dbReq) {
-  GWEN_TYPE_UINT32 readerId;
-  GWEN_TYPE_UINT32 nodeId;
+  uint32_t readerId;
+  uint32_t nodeId;
   LCDM_DRIVER *d;
   LCCO_READER *r;
 
@@ -2718,13 +2731,14 @@ int LCDM_DeviceManager_ListReaders(LCDM_DEVICEMANAGER *dm) {
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
+uint32_t LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
                                                     LCCO_CARD *card,
                                                     GWEN_DB_NODE *dbCmd) {
   LCCO_READER *r;
   LCDM_DRIVER *d;
   char numbuf[16];
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
+  int rv;
 
   assert(dm);
   assert(card);
@@ -2763,11 +2777,12 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetIntValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "cardnum", LCCO_Card_GetReadersCardId(card));
 
-  rid=GWEN_IpcManager_SendRequest(dm->ipcManager,
-                                  LCDM_Driver_GetIpcId(d),
-                                  dbCmd);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send request");
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbCmd,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send request (%d)", rv);
     return 0;
   }
 
@@ -2776,14 +2791,15 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_SendCardCommand(LCDM_DEVICEMANAGER *dm,
 
 
 
-GWEN_TYPE_UINT32
+uint32_t
 LCDM_DeviceManager_SendReaderCommand(LCDM_DEVICEMANAGER *dm,
-                                     GWEN_TYPE_UINT32 readerId,
+                                     uint32_t readerId,
                                      GWEN_DB_NODE *dbCmd) {
   LCCO_READER *r;
   LCDM_DRIVER *d;
   char numbuf[16];
-  GWEN_TYPE_UINT32 rid;
+  uint32_t rid;
+  int rv;
 
   assert(dm);
   assert(readerId);
@@ -2827,11 +2843,12 @@ LCDM_DeviceManager_SendReaderCommand(LCDM_DEVICEMANAGER *dm,
   GWEN_DB_SetCharValue(dbCmd, GWEN_DB_FLAGS_OVERWRITE_VARS,
                        "driversReaderId", numbuf);
 
-  rid=GWEN_IpcManager_SendRequest(dm->ipcManager,
-                                  LCDM_Driver_GetIpcId(d),
-                                  dbCmd);
-  if (rid==0) {
-    DBG_ERROR(0, "Could not send request");
+  rv=GWEN_IpcManager_SendRequest(dm->ipcManager,
+				 LCDM_Driver_GetIpcId(d),
+				 dbCmd,
+				 &rid);
+  if (rv<0) {
+    DBG_ERROR(0, "Could not send request (%d)", rv);
     return 0;
   }
 
@@ -3444,7 +3461,7 @@ void LCDM_DeviceManager_DumpState(const LCDM_DEVICEMANAGER *dm) {
 
 LCS_LOCKMANAGER*
 LCDM_DeviceManager_GetLockManager(const LCDM_DEVICEMANAGER *dm,
-                                  GWEN_TYPE_UINT32 rid,
+                                  uint32_t rid,
                                   int slot) {
   LCCO_READER *r;
 
@@ -3468,7 +3485,7 @@ LCDM_DeviceManager_GetLockManager(const LCDM_DEVICEMANAGER *dm,
 
 
 void LCDM_DeviceManager_ClientDown(LCDM_DEVICEMANAGER *dm,
-                                   GWEN_TYPE_UINT32 clid) {
+                                   uint32_t clid) {
   LCCO_READER *r;
 
   if (clid==0) {
@@ -3496,9 +3513,9 @@ void LCDM_DeviceManager_ClientDown(LCDM_DEVICEMANAGER *dm,
 
 
 
-GWEN_TYPE_UINT32 LCDM_DeviceManager_LockReader(LCDM_DEVICEMANAGER *dm,
-                                               GWEN_TYPE_UINT32 rid,
-                                               GWEN_TYPE_UINT32 clid,
+uint32_t LCDM_DeviceManager_LockReader(LCDM_DEVICEMANAGER *dm,
+                                               uint32_t rid,
+                                               uint32_t clid,
                                                int maxLockTime,
                                                int maxLockCount) {
   LCCO_READER *r;
@@ -3518,8 +3535,8 @@ GWEN_TYPE_UINT32 LCDM_DeviceManager_LockReader(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_CheckLockReaderRequest(LCDM_DEVICEMANAGER *dm,
-                                              GWEN_TYPE_UINT32 rid,
-                                              GWEN_TYPE_UINT32 rqid) {
+                                              uint32_t rid,
+                                              uint32_t rqid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3537,8 +3554,8 @@ int LCDM_DeviceManager_CheckLockReaderRequest(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_CheckLockReaderAccess(LCDM_DEVICEMANAGER *dm,
-                                             GWEN_TYPE_UINT32 rid,
-                                             GWEN_TYPE_UINT32 rqid) {
+                                             uint32_t rid,
+                                             uint32_t rqid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3556,8 +3573,8 @@ int LCDM_DeviceManager_CheckLockReaderAccess(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_RemoveLockReaderRequest(LCDM_DEVICEMANAGER *dm,
-                                               GWEN_TYPE_UINT32 rid,
-                                               GWEN_TYPE_UINT32 rqid) {
+                                               uint32_t rid,
+                                               uint32_t rqid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3575,8 +3592,8 @@ int LCDM_DeviceManager_RemoveLockReaderRequest(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_UnlockReader(LCDM_DEVICEMANAGER *dm,
-                                    GWEN_TYPE_UINT32 rid,
-                                    GWEN_TYPE_UINT32 rqid) {
+                                    uint32_t rid,
+                                    uint32_t rqid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3595,7 +3612,7 @@ int LCDM_DeviceManager_UnlockReader(LCDM_DEVICEMANAGER *dm,
 
 
 LC_READER_STATUS LCDM_DeviceManager_GetReaderStatus(LCDM_DEVICEMANAGER *dm,
-                                                    GWEN_TYPE_UINT32 rid) {
+                                                    uint32_t rid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3614,7 +3631,7 @@ LC_READER_STATUS LCDM_DeviceManager_GetReaderStatus(LCDM_DEVICEMANAGER *dm,
 
 
 int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
-                                          GWEN_TYPE_UINT32 rid) {
+                                          uint32_t rid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3628,7 +3645,7 @@ int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
   assert(r);
   LCCO_Reader_AddFlags(r, LC_READER_FLAGS_SUSPENDED_CHECKS);
   if (LCCO_Reader_GetStatus(r)==LC_ReaderStatusUp) {
-    GWEN_TYPE_UINT32 rqid;
+    uint32_t rqid;
 
     rqid=LCDM_DeviceManager_SendSuspendCheck(dm, r);
     if (rqid==0) {
@@ -3652,7 +3669,7 @@ int LCDM_DeviceManager_SuspendReaderCheck(LCDM_DEVICEMANAGER *dm,
 
 
 void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
-                                          GWEN_TYPE_UINT32 rid) {
+                                          uint32_t rid) {
   LCCO_READER *r;
 
   assert(dm);
@@ -3665,7 +3682,7 @@ void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
 
   assert(r);
   if (LCCO_Reader_GetStatus(r)==LC_ReaderStatusUp) {
-    GWEN_TYPE_UINT32 rqid;
+    uint32_t rqid;
 
     rqid=LCDM_DeviceManager_SendResumeCheck(dm, r);
     if (rqid==0) {

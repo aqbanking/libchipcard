@@ -19,7 +19,7 @@
 #include "reader_p.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
-#include <chipcard3/chipcard3.h>
+#include <chipcard/chipcard.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -31,11 +31,11 @@ GWEN_LIST_FUNCTIONS(LCD_READER, LCD_Reader);
 GWEN_INHERIT_FUNCTIONS(LCD_READER);
 
 
-LCD_READER *LCD_Reader_new(GWEN_TYPE_UINT32 readerId,
+LCD_READER *LCD_Reader_new(uint32_t readerId,
                            const char *name,
                            int port,
                            unsigned int slots,
-                           GWEN_TYPE_UINT32 flags){
+                           uint32_t flags){
   LCD_READER *r;
   unsigned int i;
 
@@ -77,28 +77,28 @@ void LCD_Reader_free(LCD_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderId(const LCD_READER *r){
+uint32_t LCD_Reader_GetReaderId(const LCD_READER *r){
   assert(r);
   return r->readerId;
 }
 
 
 
-void LCD_Reader_SetReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id){
+void LCD_Reader_SetReaderId(LCD_READER *r, uint32_t id){
   assert(r);
   r->readerId=id;
 }
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetDriversReaderId(const LCD_READER *r){
+uint32_t LCD_Reader_GetDriversReaderId(const LCD_READER *r){
   assert(r);
   return r->driversReaderId;
 }
 
 
 
-void LCD_Reader_SetDriversReaderId(LCD_READER *r, GWEN_TYPE_UINT32 id){
+void LCD_Reader_SetDriversReaderId(LCD_READER *r, uint32_t id){
   assert(r);
   r->driversReaderId=id;
 }
@@ -135,35 +135,35 @@ int LCD_Reader_GetPort(const LCD_READER *r){
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetCardNum(const LCD_READER *r){
+uint32_t LCD_Reader_GetCardNum(const LCD_READER *r){
   assert(r);
   return r->cardNum;
 }
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetStatus(const LCD_READER *r){
+uint32_t LCD_Reader_GetStatus(const LCD_READER *r){
   assert(r);
   return r->status;
 }
 
 
 
-void LCD_Reader_SetStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SetStatus(LCD_READER *r, uint32_t s){
   assert(r);
   r->status=s;
 }
 
 
 
-void LCD_Reader_AddStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_AddStatus(LCD_READER *r, uint32_t s){
   assert(r);
   r->status|=s;
 }
 
 
 
-void LCD_Reader_SubStatus(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SubStatus(LCD_READER *r, uint32_t s){
   assert(r);
   r->status&=~s;
 }
@@ -209,56 +209,56 @@ void LCD_Reader_SetLogger(LCD_READER *r, const char *logDomain){
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetDriverFlags(const LCD_READER *r){
+uint32_t LCD_Reader_GetDriverFlags(const LCD_READER *r){
   assert(r);
   return r->driverFlags;
 }
 
 
 
-void LCD_Reader_SetDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SetDriverFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->driverFlags=s;
 }
 
 
 
-void LCD_Reader_AddDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_AddDriverFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->driverFlags|=s;
 }
 
 
 
-void LCD_Reader_SubDriverFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SubDriverFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->driverFlags&=~s;
 }
 
 
 
-GWEN_TYPE_UINT32 LCD_Reader_GetReaderFlags(const LCD_READER *r){
+uint32_t LCD_Reader_GetReaderFlags(const LCD_READER *r){
   assert(r);
   return r->readerFlags;
 }
 
 
 
-void LCD_Reader_SetReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SetReaderFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->readerFlags=s;
 }
 
 
 
-void LCD_Reader_AddReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_AddReaderFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->readerFlags|=s;
 }
 
 
 
-void LCD_Reader_SubReaderFlags(LCD_READER *r, GWEN_TYPE_UINT32 s){
+void LCD_Reader_SubReaderFlags(LCD_READER *r, uint32_t s){
   assert(r);
   r->readerFlags&=~s;
 }
@@ -278,6 +278,33 @@ void LCD_Reader_SetDevicePath(LCD_READER *r, const char *s) {
   if (s) r->devicePath=strdup(s);
   else r->devicePath=0;
 }
+
+
+
+uint32_t LCD_Reader_GetErrorCount(const LCD_READER *r) {
+  assert(r);
+  return r->errorCount;
+}
+
+
+uint32_t LCD_Reader_IncErrorCount(LCD_READER *r) {
+  assert(r);
+  r->errorCount++;
+  if (!r->errorCount)
+    r->errorCount--;
+  return r->errorCount;
+}
+
+
+void LCD_Reader_ResetErrorCount(LCD_READER *r) {
+  assert(r);
+  r->errorCount=0;
+}
+
+
+
+
+
 
 
 

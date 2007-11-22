@@ -18,7 +18,7 @@
 
 typedef struct LC_CARD_LCC LC_CARD_LCC;
 struct LC_CARD_LCC {
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   int connected;
 };
 void GWENHYWFAR_CB LC_CardLcc_FreeData(void *bp, void *p);

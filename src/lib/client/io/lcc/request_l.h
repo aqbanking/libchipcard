@@ -21,27 +21,27 @@ typedef struct LC_REQUEST LC_REQUEST;
 
 #include <time.h>
 
-#include <chipcard3/client/card.h>
+#include <chipcard/client/card.h>
 
 
 GWEN_LIST_FUNCTION_DEFS(LC_REQUEST, LC_Request);
 
 LC_REQUEST *LC_Request_new(LC_CARD *card,
                            GWEN_DB_NODE *dbReq,
-                           GWEN_TYPE_UINT32 serverId,
-                           GWEN_TYPE_UINT32 ipcRequestId);
+                           uint32_t serverId,
+                           uint32_t ipcRequestId);
 void LC_Request_free(LC_REQUEST *rq);
 
 GWEN_DB_NODE *LC_Request_GetRequestData(const LC_REQUEST *rq);
 time_t LC_Request_GetRequestTime(const LC_REQUEST *rq);
 
-GWEN_TYPE_UINT32 LC_Request_GetRequestId(const LC_REQUEST *rq);
-void LC_Request_SetRequestId(LC_REQUEST *rq, GWEN_TYPE_UINT32 rqid);
+uint32_t LC_Request_GetRequestId(const LC_REQUEST *rq);
+void LC_Request_SetRequestId(LC_REQUEST *rq, uint32_t rqid);
 
-GWEN_TYPE_UINT32 LC_Request_GetIpcRequestId(const LC_REQUEST *rq);
-void LC_Request_SetIpcRequestId(LC_REQUEST *rq, GWEN_TYPE_UINT32 rqid);
+uint32_t LC_Request_GetIpcRequestId(const LC_REQUEST *rq);
+void LC_Request_SetIpcRequestId(LC_REQUEST *rq, uint32_t rqid);
 
-GWEN_TYPE_UINT32 LC_Request_GetServerId(const LC_REQUEST *rq);
+uint32_t LC_Request_GetServerId(const LC_REQUEST *rq);
 
 LC_CARD *LC_Request_GetCard(const LC_REQUEST *rq);
 

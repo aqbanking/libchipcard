@@ -1,4 +1,4 @@
-SUBDIRS=base io cards crypttoken mon service
+SUBDIRS=base io cards ct mon service
 
 EXTRA_DIST=ressource.rc.in
 
@@ -9,37 +9,32 @@ AM_CFLAGS=$(visibility_cflags)
 
 INCLUDES = $(gwenhywfar_includes)
 
-lib_LTLIBRARIES=libchipcard3c.la
+lib_LTLIBRARIES=libchipcardc.la
 noinst_PROGRAMS=libtest
 
-iheaderdir=${includedir}/chipcard3/client
+iheaderdir=${includedir}/chipcard/client
 iheader_HEADERS=switch.h
 
-# if IS_WINDOWS
-if IS_WINDOWS
- mingw_ldflags=-L/mingw/lib
-endif
-
-libchipcard3c_la_SOURCES=switch.c
-libchipcard3c_la_LIBADD= \
+libchipcardc_la_SOURCES=switch.c
+libchipcardc_la_LIBADD= \
   base/libbase.la \
   io/lcc/libio_lcc.la \
   cards/libcards.la \
-  crypttoken/libctcard.la \
+  ct/liblcct.la \
   mon/libmon.la \
   service/libservice.la \
   ../sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@
 
 if USE_PCSC
-libchipcard3c_la_LIBADD+=io/pcsc/libio_pcsc.la @pcsc_libs@
+libchipcardc_la_LIBADD+=io/pcsc/libio_pcsc.la @pcsc_libs@
 endif
 
-libchipcard3c_la_LDFLAGS= \
+libchipcardc_la_LDFLAGS= \
   @STRIPALL@ -no-undefined -version-info \
   @LIBCHIPCARD_SO_CURRENT@:@LIBCHIPCARD_SO_REVISION@:@LIBCHIPCARD_SO_AGE@
 
 
 libtest_SOURCES=libtest.c
-libtest_LDADD=@gwenhywfar_libs@ libchipcard3c.la
+libtest_LDADD=@gwenhywfar_libs@ libchipcardc.la
 
 

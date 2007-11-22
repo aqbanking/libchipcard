@@ -22,8 +22,8 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/types.h>
 #include <gwenhywfar/gwentime.h>
-#include <chipcard3/chipcard3.h>
-#include <chipcard3/client/card.h>
+#include <chipcard/chipcard.h>
+#include <chipcard/client/card.h>
 
 
 #include <stdlib.h>
@@ -197,7 +197,7 @@ int LCM_Monitor_HandleReaderNotification(LCM_MONITOR *mm,
   if (!mr) {
     const char *s;
     unsigned int i;
-    GWEN_TYPE_UINT32 f;
+    uint32_t f;
 
     mr=LCM_Reader_new(LCM_Server_GetServerId(ms));
     LCM_Reader_SetReaderId(mr, readerId);
@@ -302,7 +302,7 @@ int LCM_Monitor_HandleServiceNotification(LCM_MONITOR *mm,
   const char *ncode;
   GWEN_DB_NODE *dbData;
   LCM_SERVICE *md;
-  GWEN_TYPE_UINT32 serviceId;
+  uint32_t serviceId;
   const char *t;
 
   assert(mm);
@@ -388,7 +388,7 @@ int LCM_Monitor_HandleCardNotification(LCM_MONITOR *mm,
 int LCM_Monitor_HandleNotification(LCM_MONITOR *mm,
                                    const LC_NOTIFICATION *n){
   const char *ntype;
-  GWEN_TYPE_UINT32 serverId;
+  uint32_t serverId;
   LCM_SERVER *ms;
   int rv;
 
@@ -431,7 +431,7 @@ int LCM_Monitor_HandleNotification(LCM_MONITOR *mm,
 
 
 LCM_SERVER *LCM_Monitor_FindServer(const LCM_MONITOR *mm,
-                                   GWEN_TYPE_UINT32 serverId){
+                                   uint32_t serverId){
   LCM_SERVER *ms;
 
   assert(mm);
@@ -448,7 +448,7 @@ LCM_SERVER *LCM_Monitor_FindServer(const LCM_MONITOR *mm,
 
 
 LCM_DRIVER *LCM_Monitor_FindDriver(const LCM_MONITOR *mm,
-                                   GWEN_TYPE_UINT32 serverId,
+                                   uint32_t serverId,
                                    const char *driverId){
   LCM_SERVER *ms;
   LCM_DRIVER *md;
@@ -470,7 +470,7 @@ LCM_DRIVER *LCM_Monitor_FindDriver(const LCM_MONITOR *mm,
 
 
 LCM_READER *LCM_Monitor_FindReader(const LCM_MONITOR *mm,
-                                   GWEN_TYPE_UINT32 serverId,
+                                   uint32_t serverId,
                                    const char *readerId){
   LCM_SERVER *ms;
   LCM_READER *mr;

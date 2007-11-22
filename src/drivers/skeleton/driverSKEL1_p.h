@@ -16,7 +16,7 @@
 
 #include "driverSKEL1.h"
 
-#include <chipcard3/server/driver/driver.h>
+#include <chipcard/server/driver/driver.h>
 
 
 struct DRIVER_SKEL2 {
@@ -27,7 +27,7 @@ struct DRIVER_SKEL2 {
 
 void GWENHYWFAR_CB DriverSKEL3_freeData(void *bp, void *p);
 
-GWEN_TYPE_UINT32  DriverSKEL3_SendAPDU(LCD_DRIVER *d,
+uint32_t  DriverSKEL3_SendAPDU(LCD_DRIVER *d,
                                        int toReader,
                                        LCD_READER *r,
                                        LCD_SLOT *slot,
@@ -36,20 +36,20 @@ GWEN_TYPE_UINT32  DriverSKEL3_SendAPDU(LCD_DRIVER *d,
                                        unsigned char *buffer,
                                        int *bufferlen);
 
-GWEN_TYPE_UINT32  DriverSKEL3_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
-GWEN_TYPE_UINT32  DriverSKEL3_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t  DriverSKEL3_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t  DriverSKEL3_ConnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32  DriverSKEL3_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
-GWEN_TYPE_UINT32  DriverSKEL3_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
+uint32_t  DriverSKEL3_DisconnectSlot(LCD_DRIVER *d, LCD_SLOT *sl);
+uint32_t  DriverSKEL3_DisconnectReader(LCD_DRIVER *d, LCD_READER *r);
 
-GWEN_TYPE_UINT32  DriverSKEL3_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
-
-
-GWEN_TYPE_UINT32  DriverSKEL3_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
-const char *DriverSKEL3_GetErrorText(LCD_DRIVER *d, GWEN_TYPE_UINT32 err);
+uint32_t  DriverSKEL3_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl);
 
 
-GWEN_TYPE_UINT32 DriverSKEL3_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
+uint32_t  DriverSKEL3_ReaderStatus(LCD_DRIVER *d, LCD_READER *r);
+const char *DriverSKEL3_GetErrorText(LCD_DRIVER *d, uint32_t err);
+
+
+uint32_t DriverSKEL3_ReaderInfo(LCD_DRIVER *d, LCD_READER *r,
                                         GWEN_BUFFER *buf);
 
 int DriverSKEL3_ExtendReader(LCD_DRIVER *d, LCD_READER *r);
