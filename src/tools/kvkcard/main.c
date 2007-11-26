@@ -20,8 +20,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/stat.h>
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
+#include <sys/stat.h>
 #include <fcntl.h>
 
 #ifdef HAVE_SIGNAL_H
@@ -45,6 +47,12 @@
     "(c) 2006 Martin Preuss<martin@libchipcard.de>\n" \
     "This program is free software licensed under GPL.\n"\
     "See COPYING for details.\n"
+
+#ifdef OS_WIN32
+# include <windows.h>
+#
+# define usleep(x) Sleep((x/1000))
+#endif
 
 
 const GWEN_ARGS prg_args[]={
@@ -294,7 +302,12 @@ int main(int argc, char **argv) {
     rv=kvkRead(cl, db);
   }
   else if (strcasecmp(s, "daemon")==0) {
+#ifdef OS_WIN32
+    fprintf(stderr, "KVK daemon not yet supported on WIN32 platforms\n");
+    return RETURNVALUE_SETUP;
+#else
     rv=kvkDaemon(cl, db);
+#endif
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);

@@ -168,13 +168,6 @@ void usage(const char *name) {
 	       "Usage:\n"
                k_PRG" COMMAND [OPTIONS]\n"
                "\nCommands:\n"
-               " init\n"
-               "  Creates a self-signed server certificate, Diffie-Hellman\n"
-               "  key files etc. This is needed once before the first start\n"
-               "  of the chipcard daemon.\n"
-               " mkcert\n"
-               "  Generates a self-signed certificate to be used by chipcard\n"
-               "  clients.\n"
                " addreader\n"
                "  Adds a reader to the configuration file.\n"
                " delreader\n"
@@ -185,10 +178,6 @@ void usage(const char *name) {
                "  Dumps a list of supported readers.\n"
                "\n"
                "\nOptions:\n"
-               " --accept-all-certs - accept all client certificates and\n"
-               "                      trust them temporarily\n"
-               " --store-all-certs  - store all client certificates and\n"
-               "                      trust them permanently\n"
                " -C CONFIGFILE    - path and name of the configuration file\n"),
 #ifdef HAVE_FORK
 	  I18N(" -f               - stay in foreground (do not fork)\n"),

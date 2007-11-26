@@ -1,5 +1,6 @@
 
 
+#ifndef OS_WIN32
 
 
 static void signalHandler(int s) {
@@ -159,5 +160,6 @@ int kvkDaemon(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 }
 
 
+#endif
 
 

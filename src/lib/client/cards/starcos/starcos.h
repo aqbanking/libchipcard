@@ -15,8 +15,6 @@
 #define CHIPCARD_CARD_STARCOS_H
 
 #include <chipcard/client/card.h>
-#include <gwenhywfar/keyspec.h>
-#include <gwenhywfar/crypt.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,18 +50,6 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card);
  *
  */
 /*@{*/
-/**
- * Returns a GWEN_KEYSPEC for the given key.
- * The caller becomes the owner of the returned object (if any), so he is
- * responsible for freeing it (using @ref GWEN_KeySpec_free).
- */
-CHIPCARD_API
-GWEN_KEYSPEC *LC_Starcos_GetKeySpec(LC_CARD *card, int kid);
-
-CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_SetKeySpec(LC_CARD *card,
-                                       int kid,
-                                       const GWEN_KEYSPEC *ks);
 
 
 /**
@@ -75,7 +61,7 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
                                             int bits);
-
+#if 0
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
@@ -88,6 +74,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
 CHIPCARD_API
 GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid);
+#endif
 /*@}*/
 
 

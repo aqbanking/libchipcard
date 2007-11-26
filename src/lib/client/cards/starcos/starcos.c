@@ -660,6 +660,7 @@ LC_STARCOS_KEYDESCR *LC_Starcos__GetKeyDescr(LC_CARD *card, int kid) {
 
 
 
+#if 0
 GWEN_KEYSPEC *LC_Starcos_GetKeySpec(LC_CARD *card, int kid) {
   LC_STARCOS *scos;
   LC_STARCOS_KEYDESCR *d;
@@ -687,9 +688,11 @@ GWEN_KEYSPEC *LC_Starcos_GetKeySpec(LC_CARD *card, int kid) {
   GWEN_KeySpec_SetVersion(ks, LC_Starcos_KeyDescr_GetKeyVer(d));
   return ks;
 }
+#endif
 
 
 
+#if 0
 LC_CLIENT_RESULT LC_Starcos_SetKeySpec(LC_CARD *card,
                                        int kid,
                                        const GWEN_KEYSPEC *ks) {
@@ -736,6 +739,7 @@ LC_CLIENT_RESULT LC_Starcos_SetKeySpec(LC_CARD *card,
   LC_Starcos_KeyDescr_SetModified(d, 0);
   return LC_Client_ResultOk;
 }
+#endif
 
 
 
@@ -805,6 +809,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
 
 
 
+#if 0
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
                                             int dstKid,
@@ -911,6 +916,7 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
   GWEN_DB_Group_free(dbResp);
   return res;
 }
+#endif
 
 
 
@@ -986,7 +992,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid) {
 
 
 
-
+#if 0
 LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
                                            const GWEN_CRYPTKEY *key) {
   LC_STARCOS *scos;
@@ -1148,9 +1154,11 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
   return LC_Client_ResultOk;
 }
+#endif
 
 
 
+#if 0
 GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid) {
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
@@ -1271,6 +1279,7 @@ GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid) {
   GWEN_DB_Group_free(dbKey);
   return key;
 }
+#endif
 
 
 

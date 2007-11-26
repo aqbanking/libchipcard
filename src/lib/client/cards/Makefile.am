@@ -1,4 +1,4 @@
-SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard
+SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
 DIST_SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
 
 DEFS += \
