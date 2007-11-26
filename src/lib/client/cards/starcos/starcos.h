@@ -15,6 +15,7 @@
 #define CHIPCARD_CARD_STARCOS_H
 
 #include <chipcard/client/card.h>
+#include <chipcard/client/cards/starcos_keydescr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,20 +62,33 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
                                             int bits);
-#if 0
+
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
-                                            int dstKid,
-                                            const GWEN_KEYSPEC *ks);
+					    int dstKid,
+					    const LC_STARCOS_KEYDESCR *descr);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
+					LC_STARCOS_KEYDESCR **pDescr);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
+					 const LC_STARCOS_KEYDESCR *d);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
-                                           const GWEN_CRYPTKEY *key);
+					   const uint8_t *pModulus,
+					   uint32_t lModulus,
+					   const uint8_t *pExponent,
+					   uint32_t lExponent);
 
 CHIPCARD_API
-GWEN_CRYPTKEY *LC_Starcos_ReadPublicKey(LC_CARD *card, int kid);
-#endif
+LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
+					  GWEN_BUFFER *bModulus,
+					  GWEN_BUFFER *bExponent);
+
 /*@}*/
 
 

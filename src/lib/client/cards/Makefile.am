@@ -1,5 +1,4 @@
 SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
-DIST_SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
 
 DEFS += \
   -DBUILDING_CHIPCARD
@@ -19,6 +18,7 @@ libcards_la_LIBADD=\
   egkcard/libcards-egk.la \
   geldkarte/libcards-geldkarte.la \
   kvkcard/libcards-kvk.la \
+  starcos/libcards-starcos.la \
   memorycard/libcards-memorycard.la \
   processorcard/libcards-processorcard.la
 

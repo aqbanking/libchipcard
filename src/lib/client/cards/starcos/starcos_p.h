@@ -15,7 +15,7 @@
 #define CHIPCARD_CARD_STARCOS_P_H
 
 #include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/starcos.h>
+#include "starcos.h"
 #include "starcos_keydescr_l.h"
 
 typedef struct LC_STARCOS LC_STARCOS;
@@ -64,13 +64,11 @@ LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
 
 
 int LC_Starcos__FindKeyDescrOffset(int kid);
-LC_STARCOS_KEYDESCR *LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid);
-LC_CLIENT_RESULT LC_Starcos__SaveKeyDescr(LC_CARD *card,
-                                          const LC_STARCOS_KEYDESCR *d);
+LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
+					  LC_STARCOS_KEYDESCR **pDescr);
 
-LC_STARCOS_KEYDESCR *LC_Starcos__GetKeyDescr(LC_CARD *card, int kid);
-
-unsigned int LC_Starcos__GetKeyLogInfo(LC_CARD *card);
+LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
+					   unsigned int *pResult);
 LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card);
 
 int LC_Starcos__IsSignKey(int kid);

@@ -4,6 +4,7 @@ $Rev$
 2007/11/26: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - updated help screen of chipcard daemon
+- started on re-implementing card class for STARCOS cards
 
 
 ===========================================================================
