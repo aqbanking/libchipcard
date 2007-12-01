@@ -474,8 +474,17 @@ fi
 AC_SUBST(STRIPALL)
 AC_MSG_RESULT($enable_release)
 
-dnl check for the documentation output path
-AQ_DOCPATH
+
+###-------------------------------------------------------------------------
+#
+# check docpath
+#
+AC_MSG_CHECKING(docpath)
+AC_ARG_WITH(docpath, [  --with-docpath=DIR where to store the apidoc],
+  [docpath="$withval"],
+  [docpath="${HOME}/apidoc"])
+AC_SUBST(docpath)
+AC_MSG_RESULT($docpath)
 
 
 

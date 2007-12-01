@@ -50,19 +50,18 @@ listdoc.h:
 	$(gwenhywfar_bindir)/mklistdoc -v `find chipcard -name '*.h' ` >listdoc.h
 
 
-srcdoc: Doxyfile
+srcdoc: Doxyfile listdoc.h
+	if test -d apidoc; then rm -Rf apidoc; fi
+	mkdir -p apidoc/html/libchipcard-@CHIPCARD_VERSION_RELEASE_STRING@
 	doxygen
 
-$(PACKAGE).tag: Doxyfile listdoc.h
-	doxygen
-
-install-srcdoc: $(PACKAGE).tag
+install-srcdoc: srcdoc
 	test -d "$(DESTDIR)@docpath@/$(PACKAGE)" || \
 	  mkdir -p "$(DESTDIR)@docpath@/$(PACKAGE)"
-	for f in apidoc/*; do \
+	for f in apidoc/html/libchipcard-@CHIPCARD_VERSION_RELEASE_STRING@/*; do \
 	  cp $$f "$(DESTDIR)@docpath@/$(PACKAGE)/"; \
 	done
-	cp "$(PACKAGE).tag" "$(DESTDIR)@docpath@/"
+	cp "apidoc/$(PACKAGE).tag" "$(DESTDIR)@docpath@/"
 	if test -x "$(DESTDIR)@docpath@/$(PACKAGE)/installdox"; then \
 	  cd "$(DESTDIR)@docpath@/$(PACKAGE)" && \
 	   ID_OPT="-q" ; \
