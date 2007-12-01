@@ -210,4 +210,10 @@ int ExampleCard_GetExampleData(const LC_CARD *card){
 
 
 
+int test_type(TYPE_VISIBLE *v) {
+  return test_type(v);
+  return ((EXAMPLE_CARD*)v)->exampleData;
+}
+
+
 

@@ -22,6 +22,7 @@
 #ifndef CHIPCARD_CARD_EXAMPLECARD_P_H
 #define CHIPCARD_CARD_EXAMPLECARD_P_H
 
+
 #include "examplecard.h"
 #include <chipcard/client/card_imp.h>
 
@@ -46,7 +47,6 @@ void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p);
 
 LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card);
 LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card);
-
 
 
 

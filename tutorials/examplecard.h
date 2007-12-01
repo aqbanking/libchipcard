@@ -33,6 +33,8 @@ LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card);
 int ExampleCard_GetExampleData(const LC_CARD *card);
 
 
+typedef struct TYPE_REAL TYPE_VISIBLE;
+int test_type(TYPE_VISIBLE *v);
 
 #endif /* CHIPCARD_CARD_EXAMPLECARD_P_H */
 
