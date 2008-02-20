@@ -1,6 +1,16 @@
 
 $Rev$
 
+2008/02/20: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added crypt token for STARCOS cards (not tested yet)
+
+
+2008/02/08: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- added support for Cherry ST2000-U
+
+
 2007/11/26: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - updated help screen of chipcard daemon

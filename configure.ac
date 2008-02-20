@@ -17,7 +17,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=0
 CHIPCARD_VERSION_PATCHLEVEL=0
-CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_BUILD=3
 CHIPCARD_VERSION_TAG="svn"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
@@ -700,6 +700,8 @@ AC_CONFIG_FILES([Makefile
                  src/ct/Makefile
                  src/ct/ddvcard/Makefile
                  src/ct/ddvcard/ddvcard.xml
+                 src/ct/starcoscard/Makefile
+                 src/ct/starcoscard/starcoscard.xml
                  src/drivers/Makefile
                  src/drivers/ctapi/Makefile
                  src/drivers/ctapi/ctapi.xml

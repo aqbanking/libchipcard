@@ -245,6 +245,18 @@
       -->
     </reader>
 
+    <reader name="ccid_cherry_st2000u" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x046a" product="0x003e" >
+      <short>Cherry ST-1044u</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
     <reader name="ccid_acr38" busType="UsbRaw" 
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"

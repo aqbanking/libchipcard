@@ -1138,8 +1138,6 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
                                               GWEN_DB_NODE *dbData) {
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
-  GWEN_DB_NODE *dbCurr;
-  int i;
   GWEN_BUFFER *buf;
 
   assert(card);
@@ -1155,41 +1153,24 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  for (i=1; i<6; i++) {
-    GWEN_Buffer_Reset(buf);
-    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
-                              idx?idx:i, buf);
-    if (res!=LC_Client_ResultOk)
-      break;
-    if (idx)
-      dbCurr=dbData;
-    else
-      dbCurr=GWEN_DB_Group_new("context");
-    GWEN_Buffer_Rewind(buf);
-    if (GWEN_Buffer_GetUsedBytes(buf)) {
-      if ((unsigned char)(GWEN_Buffer_GetStart(buf)[0])!=0xff) {
-	if (LC_Card_ParseRecord(card, idx?idx:i, buf, dbCurr)) {
-	  DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx?idx:i);
-	  GWEN_DB_Group_free(dbCurr);
-	  GWEN_Buffer_free(buf);
-          return LC_Client_ResultDataError;
-	}
-	else {
-	  const char *p1, *p2;
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
+			    idx, buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
+    GWEN_Buffer_free(buf);
+    return res;
+  }
 
-	  p1=GWEN_DB_GetCharValue(dbCurr, "country", 0, "");
-	  p2=GWEN_DB_GetCharValue(dbCurr, "bankCode", 0, "");
-	  if (!*p1 || !*p2) {
-	    DBG_WARN(LC_LOGDOMAIN, "Entry %d is empty", idx?idx:i);
-	  }
-	}
-      } /* if buffer content is valid */
-    } /* if buffer not empty */
-    if (idx==0)
-      GWEN_DB_AddGroup(dbData, dbCurr);
-    else
-      break;
-  } /* for */
+  GWEN_Buffer_Rewind(buf);
+  if (GWEN_Buffer_GetUsedBytes(buf)) {
+    if ((unsigned char)(GWEN_Buffer_GetStart(buf)[0])!=0xff) {
+      if (LC_Card_ParseRecord(card, idx, buf, dbData)) {
+	DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
+	GWEN_Buffer_free(buf);
+	return LC_Client_ResultDataError;
+      }
+    } /* if buffer content is valid */
+  } /* if buffer not empty */
   GWEN_Buffer_free(buf);
 
   return LC_Client_ResultOk;
@@ -1244,7 +1225,8 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
 
 
 
-uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
+LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
+					   uint32_t *pSeq) {
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   unsigned int i;
@@ -1262,14 +1244,14 @@ uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Bad key id (accepted: 0x81-0x85, is: %02x)",
               kid);
-    return 0;
+    return LC_Client_ResultInvalid;
   }
   i=kid-0x80;
 
   res=LC_Card_SelectEf(card, "EF_SEQ");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (res=%d)", res);
-    return 0;
+    return res;
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -1278,7 +1260,7 @@ uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (res=%d)", res);
     GWEN_Buffer_free(buf);
-    return 0;
+    return res;
   }
   GWEN_Buffer_Rewind(buf);
   dbData=GWEN_DB_Group_new("signcounter");
@@ -1287,7 +1269,7 @@ uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d (%d)", i, res);
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(buf);
-    return 0;
+    return res;
   }
   GWEN_Buffer_free(buf);
 
@@ -1296,11 +1278,12 @@ uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid) {
     DBG_ERROR(LC_LOGDOMAIN, "No signature counter in data");
     GWEN_DB_Dump(dbData, stderr, 2);
     GWEN_DB_Group_free(dbData);
-    return 0;
+    return LC_Client_ResultInternal;
   }
   GWEN_DB_Group_free(dbData);
 
-  return seq;
+  *pSeq=seq;
+  return LC_Client_ResultOk;
 }
 
 

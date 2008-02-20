@@ -127,7 +127,8 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-uint32_t LC_Starcos_ReadSigCounter(LC_CARD *card, int kid);
+LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
+					   uint32_t *pSeq);
 
 /**
  * returns 8 random bytes

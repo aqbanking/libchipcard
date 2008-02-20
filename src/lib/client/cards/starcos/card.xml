@@ -246,18 +246,18 @@
       <!-- Generate Keypair -->
       <command name="GenerateKeyPair" >
         <send>
-                <APDU >
+          <APDU >
             <ELEM type="word">0x0046</ELEM>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="kid" type="byte" />
-                </APDU>
-                <DATA>
-                    <ELEM name="bits" type="word" />
-                </DATA>
-                </send>
+          </APDU>
+          <DATA>
+            <ELEM name="bits" type="word" />
+          </DATA>
+        </send>
 
-                <results>
-            <result sw1="0x69" sw2="0x82" type="error" >
+        <results>
+          <result sw1="0x69" sw2="0x82" type="error" >
             Security status not satisfied (please verify E/G PIN before).
           </result>
             <result sw1="0x69" sw2="0x85" type="error" >
@@ -266,11 +266,11 @@
           <result sw1="0x6a" sw2="0x80" type="error" >
             Key length must be divisible by 8.
           </result>
-                </results>
+        </results>
 
-                <responses>
-                <response type="success">
-                    <ELEM name="modulus" type="bytes" />
+        <responses>
+          <response type="success">
+            <ELEM name="modulus" type="bytes" />
           </response>
         </responses>
       </command>
@@ -326,13 +326,13 @@
           hash value is 20 for RIPEMD-160 (and maybe 16 for the others?).
         </DESCR>
         <send>
-                <APDU >
+          <APDU >
             <ELEM type="dword">0x002a9081</ELEM>
-                </APDU>
-                <DATA>
+          </APDU>
+          <DATA>
             <ELEM name="data" type="bytes" minsize="16" maxsize="20"/>
-                </DATA>
-                </send>
+          </DATA>
+        </send>
       </command>
 
 
@@ -342,14 +342,14 @@
           This command signs the hash value sent to the card via PutHash.
         </DESCR>
         <send>
-                <APDU lr="0" >
+          <APDU lr="0" >
             <ELEM type="dword">0x002a9e9a</ELEM>
-                </APDU>
-                </send>
+          </APDU>
+        </send>
 
-                <responses>
-                <response type="success">
-                    <ELEM name="signature" type="bytes" />
+        <responses>
+          <response type="success">
+            <ELEM name="signature" type="bytes" />
           </response>
         </responses>
       </command>
@@ -362,13 +362,13 @@
           signature of the hash sent to the card via PutHash.
         </DESCR>
         <send>
-                <APDU>
+          <APDU>
             <ELEM type="dword">0x002a00a8</ELEM>
-                </APDU>
-                <DATA>
+          </APDU>
+          <DATA>
             <ELEM name="signature" type="bytes" />
-                </DATA>
-                </send>
+          </DATA>
+        </send>
       </command>
 
 
@@ -407,6 +407,12 @@
       <result sw1="0x6a" sw2="0x81" type="error" >
         Function not supported (wrong parameters P1/P2).
       </result>
+      <result sw1="0x6a" sw2="0x88" type="error" >
+        Referenced data not found.
+      </result>
+      <result sw1="0x6f" sw2="0x01" type="error" >
+        Public key not complete.
+      </result>
       <result sw1="0x6f" sw2="0x03" type="error" >
         Invalid command sequence.
       </result>
@@ -415,6 +421,9 @@
       </result>
       <result sw1="0x6f" sw2="0x08" type="error" >
         Signature could not be verified with public key.
+      </result>
+      <result sw1="0x6f" sw2="0x0a" type="error" >
+        Key format list does not match key length.
       </result>
     </results>
 

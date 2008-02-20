@@ -271,6 +271,7 @@
        </results>
       </command>
 
+
 <!--
       <command name="IsoWriteRecord" >
         <send>
@@ -295,40 +296,6 @@
       </command>
 
       <command name="IsoUpdateRecord" >
-        <send>
-          <APDU lr="0" >
-            <ELEM type="dword">0x11223344</ELEM>
-          </APDU>
-          <DATA>
-            <ELEM type="word">0x1122</ELEM>
-          </DATA>
-        </send>
-      </command>
-
-
-      <command name="IsoManageSE" >
-        <send>
-          <APDU lr="0" >
-            <ELEM type="dword">0x11223344</ELEM>
-          </APDU>
-          <DATA>
-            <ELEM type="word">0x1122</ELEM>
-          </DATA>
-        </send>
-      </command>
-
-      <command name="IsoEncipher" >
-        <send>
-          <APDU lr="0" >
-            <ELEM type="dword">0x11223344</ELEM>
-          </APDU>
-          <DATA>
-            <ELEM type="word">0x1122</ELEM>
-          </DATA>
-        </send>
-      </command>
-
-      <command name="IsoDecipher" >
         <send>
           <APDU lr="0" >
             <ELEM type="dword">0x11223344</ELEM>
@@ -725,7 +692,7 @@
       </command>
 
       <!-- Manage SE -->
-      <command name="ManageSE" >
+      <command name="IsoManageSE" >
         <DESCR>
           This command selects the public key, the private key and 
           the algorith to be used for padding/hashing.
@@ -769,28 +736,28 @@
 
 
       <!-- Encipher -->
-      <command name="Encipher" >
+      <command name="IsoEncipher" >
         <DESCR>
           This command enciphers the given data.
         </DESCR>
         <send>
-                <APDU lr="0" >
+          <APDU lr="0" >
             <ELEM type="dword">0x002a8680</ELEM>
-                </APDU>
-                <DATA>
+          </APDU>
+          <DATA>
             <ELEM name="data" type="bytes" />
-                </DATA>
-                </send>
+          </DATA>
+        </send>
 
-                <responses>
-                <response type="success">
-                    <ELEM name="data" type="bytes" />
+        <responses>
+          <response type="success">
+            <ELEM name="data" type="bytes" />
           </response>
         </responses>
       </command>
 
       <!-- Decipher -->
-      <command name="Decipher" >
+      <command name="IsoDecipher" >
         <DESCR>
           This command deciphers the given data.
         </DESCR>
