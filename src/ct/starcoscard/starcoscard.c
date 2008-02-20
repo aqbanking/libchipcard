@@ -175,7 +175,7 @@ LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
 	assert(dbCardData);
 
         currCardNumber=GWEN_DB_GetCharValue(dbCardData,
-                                            "cardNumber",
+					    "ICCSN/cardNumber",
                                             0,
                                             0);
 	if (!currCardNumber) {
