@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
                      GWEN_ARGS_MODE_ALLOW_FREEPARAM,
                      prg_args,
                      db);
-  if (rv==-2) {
+  if (rv==GWEN_ARGS_RESULT_HELP) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -255,7 +255,7 @@ int main(int argc, char **argv) {
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
     }
-    fprintf(stderr, "%s\n", GWEN_Buffer_GetStart(ubuf));
+    fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
   }

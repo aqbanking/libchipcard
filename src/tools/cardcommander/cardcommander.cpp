@@ -114,7 +114,7 @@ const GWEN_ARGS prg_args[]={
 
 
 void usage(const char *name, const char *ustr) {
-  fprintf(stderr,
+  fprintf(stdout,
           I18N("CardCommander - A command line tool to manipulate a chip card.\n"
                "(c) 2003-2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
@@ -452,7 +452,7 @@ int main(int argc, char **argv) {
                      GWEN_ARGS_MODE_ALLOW_FREEPARAM,
                      prg_args,
                      db);
-  if (rv==-2) {
+  if (rv==GWEN_ARGS_RESULT_HELP) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);
@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
       GWEN_Buffer_free(ubuf);
       return 1;
     }
-    fprintf(stderr, "%s\n", GWEN_Buffer_GetStart(ubuf));
+    usage(argv[0], GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
   }
@@ -513,6 +513,11 @@ int main(int argc, char **argv) {
   while(rv!=-1) {
     fprintf(stdout,"Card: ");
     cmd=fgets(buffer,sizeof(buffer),stdin);
+    if (cmd==0) {
+      fprintf(stderr, "Input terminated.\n");
+      rv=-1;
+      break;
+    }
     cmdstring=cmd;
     rv=execCommand(db, cl, &card, cmdstring);
   }
@@ -523,7 +528,7 @@ int main(int argc, char **argv) {
   }
 
   LC_Client_free(cl);
-  return rv;
+  return 0;
 }
 
 

@@ -152,7 +152,7 @@ const GWEN_ARGS prg_args[]={
 
 
 void usage(const char *ustr) {
-  fprintf(stderr,"%s%s",
+  fprintf(stdout,"%s%s",
           I18N("MemCard2 - A tool to read/write data from/to a memory chip card\n"
                "(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
@@ -742,7 +742,7 @@ int main(int argc, char **argv) {
                      GWEN_ARGS_MODE_ALLOW_FREEPARAM,
                      prg_args,
                      db);
-  if (rv==-2) {
+  if (rv==GWEN_ARGS_RESULT_HELP) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 256, 0, 1);

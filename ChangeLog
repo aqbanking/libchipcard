@@ -1,6 +1,14 @@
 
 $Rev$
 
+2008/02/23: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- applied 3 patches supplied by Micha Lenk which fix the following bugs:
+  - please output help on STDOUT, not STDERR (fixes #3)
+  - cardcommander segfaults with no input (fixes #4)
+  - cardcommander exits with exitcode 255 (fixes #5)
+
+
 2008/02/20: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - added crypt token for STARCOS cards (not tested yet)
