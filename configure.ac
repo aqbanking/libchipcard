@@ -732,11 +732,12 @@ AC_OUTPUT
 # create header directory for all, make symlinks
 #
 
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
 rm -Rf chipcard
 mkdir chipcard
+
+# These two headers here are generated and hence reside in builddir,
+# not in srcdir!
+lprefix=`pwd`
 AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard.h"
 ln -s "${lprefix}/src/lib/version.h" chipcard/version.h
 ln -s "${lprefix}/src/lib/chipcard.h" chipcard/chipcard.h
