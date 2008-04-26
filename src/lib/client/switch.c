@@ -84,6 +84,15 @@ LC_CLIENT *LC_Client_Factory(const char *resmgr,
 
 
 
+void LC_Client_Version(int *major,
+		       int *minor,
+		       int *patchlevel,
+		       int *build){
+  *major=CHIPCARD_VERSION_MAJOR;
+  *minor=CHIPCARD_VERSION_MINOR;
+  *patchlevel=CHIPCARD_VERSION_PATCHLEVEL;
+  *build=CHIPCARD_VERSION_BUILD;
+}
 
 
 

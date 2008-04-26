@@ -1,7 +1,4 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: starcoscard.c 378 2007-05-02 08:41:05Z martin $
     begin       : Mon Mar 01 2004
     copyright   : (C) 2004 by Martin Preuss
     email       : martin@libchipcard.de
@@ -38,8 +35,8 @@ GWEN_INHERIT(GWEN_PLUGIN, LC_CT_PLUGIN_STARCOS)
 
 
 GWEN_PLUGIN *ct_starcoscard_factory(GWEN_PLUGIN_MANAGER *pm,
-				const char *modName,
-				const char *fileName) {
+				    const char *modName,
+				    const char *fileName) {
   GWEN_PLUGIN *pl;
 
   pl=LC_Crypt_TokenStarcos_Plugin_new(pm, modName, fileName);

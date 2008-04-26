@@ -302,6 +302,14 @@
       </flags>
     </reader>
 
+    <reader name="ccid_o2_776" busType="UsbRaw" 
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0b97" product="0x7662" >
+      <short>O2 Micro Oz776 </short>
+    </reader>
+
+
   </readers>
 
 

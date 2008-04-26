@@ -1,5 +1,12 @@
 
-$Rev$
+
+2008/04/26: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- applied a patch by Sascha Silbe (allow configuration of init-folder
+- allow for static linking of Libchipcard and plugins
+- added function LC_Client_Version()
+- added support O2 Micro 776 USB reader
+
 
 2008/02/23: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------

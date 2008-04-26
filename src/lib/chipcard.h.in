@@ -1,7 +1,4 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Tue Dec 23 2003
     copyright   : (C) 2003 by Martin Preuss
     email       : martin@libchipcard.de
@@ -11,41 +8,55 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_CHIPCARD3_H
-#define CHIPCARD_CHIPCARD3_H
+#ifndef CHIPCARD_CHIPCARD_H
+#define CHIPCARD_CHIPCARD_H
 
 #define CHIPCARD_SYS_IS_WINDOWS @lc_sys_is_windows@
 
 
-#ifdef BUILDING_CHIPCARD
-  /* building Gwenhywfar */
-# if CHIPCARD_SYS_IS_WINDOWS
-    /* for windows */
-#   ifdef __declspec
-#     define CHIPCARD_API __declspec (dllexport)
-#   else /* if __declspec */
-#     define CHIPCARD_API
-#   endif /* if NOT __declspec */
-# else
-    /* for non-win32 */
-#   ifdef GCC_WITH_VISIBILITY_ATTRIBUTE
-#     define CHIPCARD_API __attribute__((visibility("default")))
-#   else
-#     define CHIPCARD_API
-#   endif
-# endif
+#ifdef LCC_IS_SUBPROJECT
+# define CHIPCARD_API
+# define CHIPCARD_EXPORT
+# define CHIPCARD_NOEXPORT
 #else
-  /* not building Gwenhywfar */
-# if CHIPCARD_SYS_IS_WINDOWS
-    /* for windows */
-#   ifdef __declspec
-#     define CHIPCARD_API __declspec (dllimport)
-#   else /* if __declspec */
-#     define CHIPCARD_API
-#   endif /* if NOT __declspec */
+# ifdef BUILDING_CHIPCARD
+   /* building Gwenhywfar */
+#  if CHIPCARD_SYS_IS_WINDOWS
+     /* for windows */
+#    ifdef __declspec
+#      define CHIPCARD_API __declspec (dllexport)
+#    else /* if __declspec */
+#      define CHIPCARD_API
+#    endif /* if NOT __declspec */
+#  else
+     /* for non-win32 */
+#    ifdef GCC_WITH_VISIBILITY_ATTRIBUTE
+#      define CHIPCARD_API __attribute__((visibility("default")))
+#    else
+#      define CHIPCARD_API
+#    endif
+#  endif
 # else
-    /* for non-win32 */
-#   define CHIPCARD_API
+   /* not building Gwenhywfar */
+#  if CHIPCARD_SYS_IS_WINDOWS
+     /* for windows */
+#    ifdef __declspec
+#      define CHIPCARD_API __declspec (dllimport)
+#    else /* if __declspec */
+#      define CHIPCARD_API
+#    endif /* if NOT __declspec */
+#  else
+     /* for non-win32 */
+#    define CHIPCARD_API
+#  endif
+# endif
+
+# ifdef GCC_WITH_VISIBILITY_ATTRIBUTE
+#  define CHIPCARD_EXPORT __attribute__((visibility("default")))
+#  define CHIPCARD_NOEXPORT __attribute__((visibility("hidden")))
+# else
+#  define CHIPCARD_EXPORT
+#  define CHIPCARD_NOEXPORT
 # endif
 #endif
 
@@ -54,15 +65,6 @@
 # define CHIPCARD_CB __stdcall
 #else
 # define CHIPCARD_CB
-#endif
-
-
-#ifdef GCC_WITH_VISIBILITY_ATTRIBUTE
-# define CHIPCARD_EXPORT __attribute__((visibility("default")))
-# define CHIPCARD_NOEXPORT __attribute__((visibility("hidden")))
-#else
-# define CHIPCARD_EXPORT
-# define CHIPCARD_NOEXPORT
 #endif
 
 
@@ -83,7 +85,7 @@
 
 
 #define LC_DEFAULT_PORT 7392 /* FIXME: make this adjustable by configure */
-#define LC_DEFAULT_UDS_SOCK "/var/run/chipcard3.sock"
+#define LC_DEFAULT_UDS_SOCK "/var/run/chipcard.comm"
 
 /** Error codes */
 /*@{*/
@@ -340,4 +342,4 @@ typedef enum {
 } LC_CARD_TYPE;
 
 
-#endif /* CHIPCARD_CHIPCARD3_H */
+#endif /* CHIPCARD_CHIPCARD_H */

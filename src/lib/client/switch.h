@@ -46,6 +46,12 @@ LC_CLIENT *LC_Client_Factory(const char *resmgr,
                              const char *programVersion);
 
 
+CHIPCARD_API
+void LC_Client_Version(int *major,
+		       int *minor,
+		       int *patchlevel,
+		       int *build);
+
 #ifdef __cplusplus
 }
 #endif

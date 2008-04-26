@@ -17,7 +17,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=0
 CHIPCARD_VERSION_PATCHLEVEL=0
-CHIPCARD_VERSION_BUILD=3
+CHIPCARD_VERSION_BUILD=4
 CHIPCARD_VERSION_TAG="svn"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
@@ -112,10 +112,25 @@ AC_SUBST(prefix)
 
 
 ###-------------------------------------------------------------------------
+# /etc/init.d cannot be written by ordinary users, but Martin wants to have 
+# this as default even for prefix != /usr (e.g. /usr/local), so we need an 
+# option to override it
+#
+AC_MSG_CHECKING(for init script directory)
+AC_ARG_WITH([init_script_dir], 
+  [AS_HELP_STRING([--with-init-script-dir],
+    [directory to use instead of /etc/init.d (esp. for non-root installs) @<:@default=/etc/init.d@:>@])]
+  [],
+  [with_init_script_dir=/etc/init.d])
+AC_SUBST([init_script_dir], with_init_script_dir)
+
+
+
+###-------------------------------------------------------------------------
 #
 # static/shared handling
 #
-AC_ENABLE_STATIC(no)
+AC_ENABLE_STATIC(yes)
 AC_ENABLE_SHARED(yes)
 
 
@@ -339,6 +354,41 @@ AC_MSG_RESULT($enable_local_install)
 
 if test "$enable_local_install" != "no"; then
   AC_DEFINE(ENABLE_LOCAL_INSTALL, 1, [whether local install is wanted])
+fi
+
+
+
+###-------------------------------------------------------------------------
+#
+# check whether lcc is a subproject to another one
+#
+
+AC_MSG_CHECKING(if lcc is a subproject)
+AC_ARG_ENABLE(lcc-subproject,
+  [  --enable-lcc-subproject       make libchipcard only a subproject (default=no)],
+  enable_lcc_subproject="$enableval",
+  enable_lcc_subproject="no")
+AC_MSG_RESULT($enable_lcc_subproject)
+
+if test "$enable_lcc_subproject" != "no"; then
+  AC_DEFINE(LIBCHIPCARD_IS_SUBPROJECT, 1, [whether lcc is a subproject])
+fi
+
+
+
+###-------------------------------------------------------------------------
+#
+# check for plugin init
+#
+AC_MSG_CHECKING(if plugin init is wanted)
+AC_ARG_ENABLE(init-plugins,
+  [  --enable-init-plugins             enable plugin init (default=yes)],
+  enable_init_plugins="$enableval",
+  enable_init_plugins="yes")
+AC_MSG_RESULT($enable_init_plugins)
+
+if test "$enable_init_plugins" != "no"; then
+  AC_DEFINE(LC_ENABLE_INIT_PLUGINS, 1, [if plugin init is wanted])
 fi
 
 
