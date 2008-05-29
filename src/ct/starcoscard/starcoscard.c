@@ -573,11 +573,9 @@ LC_Crypt_TokenStarcos_GetKeyIdList(GWEN_CRYPT_TOKEN *ct,
 
 
 
-const GWEN_CRYPT_TOKEN_KEYINFO* GWENHYWFAR_CB
-LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
-				 uint32_t kid,
-				 uint32_t flags,
-				 uint32_t gid) {
+int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
+				       uint32_t kid,
+				       uint32_t gid) {
   LC_CT_STARCOS *lct;
   GWEN_CRYPT_TOKEN_KEYINFO *ki=NULL;
   int idx;
@@ -588,7 +586,7 @@ LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
   if (lct->card==0) {
     DBG_ERROR(LC_LOGDOMAIN, "No card.");
-    return NULL;
+    return GWEN_ERROR_NOT_OPEN;
   }
 
   idx=0;
@@ -598,7 +596,7 @@ LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
   if (idx<0 || idx>=LC_CT_STARCOS_NUM_KEY) {
     DBG_ERROR(LC_LOGDOMAIN, "Invalid key id %02x (idx=%d)", kid, idx);
-    return NULL;
+    return GWEN_ERROR_INVALID;
   }
 
   ki=lct->keyInfos[idx];
@@ -614,14 +612,14 @@ LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
     rv=LC_Crypt_TokenStarcos__EnsureAccessPin(ct, gid);
     if (rv<0) {
       DBG_ERROR(LC_LOGDOMAIN, "here (%d)", rv);
-      return NULL;
+      return rv;
     }
 
     /* read key descriptor */
     res=LC_Starcos_GetKeyDescr(lct->card, kid, &kdescr);
     if (res!=LC_Client_ResultOk) {
       DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
-      return NULL;
+      return GWEN_ERROR_IO;
     }
 
     /* read public key */
@@ -711,6 +709,67 @@ LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
     }
   }
 
+  return 0;
+}
+
+
+
+const GWEN_CRYPT_TOKEN_KEYINFO* GWENHYWFAR_CB
+LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
+				 uint32_t kid,
+				 uint32_t flags,
+				 uint32_t gid) {
+  LC_CT_STARCOS *lct;
+  GWEN_CRYPT_TOKEN_KEYINFO *ki=NULL;
+  int idx;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_STARCOS, ct);
+  assert(lct);
+
+  if (lct->card==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No card.");
+    return NULL;
+  }
+
+  idx=0;
+  if (kid>0x90)
+    idx+=10;
+  idx+=(kid & 0xf)-1;
+
+  if (idx<0 || idx>=LC_CT_STARCOS_NUM_KEY) {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid key id %02x (idx=%d)", kid, idx);
+    return NULL;
+  }
+
+  ki=lct->keyInfos[idx];
+  if (ki==NULL) {
+    int rv;
+
+    rv=LC_Crypt_TokenStarcos__ReadKeyInfo(ct, kid, gid);
+    if (rv<0) {
+      DBG_ERROR(LC_LOGDOMAIN, "here (%d)", rv);
+      return NULL;
+    }
+  }
+  ki=lct->keyInfos[idx];
+
+  if (kid>=0x81 && kid<=0x85) {
+    uint32_t seq;
+    LC_CLIENT_RESULT res;
+
+    /* read signature counter for user sign keys in any case */
+    res=LC_Starcos_ReadSigCounter(lct->card, kid, &seq);
+    if (res!=LC_Client_ResultOk) {
+      DBG_WARN(LC_LOGDOMAIN, "No signature counter for key 0x%02x (%d)", kid, res);
+    }
+    else {
+      GWEN_Crypt_Token_KeyInfo_SetSignCounter(ki, seq);
+      GWEN_Crypt_Token_KeyInfo_AddFlags(ki,
+					GWEN_CRYPT_TOKEN_KEYFLAGS_HASSIGNCOUNTER);
+    }
+  }
+
   return ki;
 }
 
@@ -718,11 +777,13 @@ LC_Crypt_TokenStarcos_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
 int GWENHYWFAR_CB
 LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
-				 uint32_t id,
+				 uint32_t kid,
 				 const GWEN_CRYPT_TOKEN_KEYINFO *ki,
 				 uint32_t gid) {
   LC_CT_STARCOS *lct;
   uint32_t fl;
+  GWEN_CRYPT_TOKEN_KEYINFO *cardki;
+  int idx;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_STARCOS, ct);
@@ -733,11 +794,155 @@ LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
     return GWEN_ERROR_NOT_OPEN;
   }
 
+  /* get stored key info */
+  idx=0;
+  if (kid>0x90)
+    idx+=10;
+  idx+=(kid & 0xf)-1;
+
+  if (idx<0 || idx>=LC_CT_STARCOS_NUM_KEY) {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid key id %02x (idx=%d)", kid, idx);
+    return GWEN_ERROR_INVALID;
+  }
+
+  cardki=lct->keyInfos[idx];
+  if (cardki==NULL) {
+    int rv;
+
+    rv=LC_Crypt_TokenStarcos__ReadKeyInfo(ct, kid, gid);
+    if (rv<0) {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+      return rv;
+    }
+  }
+  cardki=lct->keyInfos[idx];
+  assert(cardki);
+
+  /* ensure the access pin is verified */
+  rv=LC_Crypt_TokenStarcos__EnsureAccessPin(ct, gid);
+  if (rv<0) {
+    DBG_ERROR(LC_LOGDOMAIN, "here (%d)", rv);
+    return rv;
+  }
+
+  /* ensure the admin pin is verified */
+  rv=LC_Crypt_TokenStarcos__EnsureAdminPin(ct, gid);
+  if (rv<0) {
+    DBG_ERROR(LC_LOGDOMAIN, "here (%d)", rv);
+    return rv;
+  }
+
   fl=GWEN_Crypt_Token_KeyInfo_GetFlags(ki);
 
   if (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASSIGNCOUNTER) {
+    /* do not write sig counter for now */
   }
 
+  /* write descriptor */
+  if ((fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYVERSION) ||
+      (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYNUMBER) ||
+      (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASSTATUS)) {
+    LC_CLIENT_RESULT res;
+    LC_STARCOS_KEYDESCR *descr;
+
+    DBG_INFO(LC_LOGDOMAIN, "Loading key descriptor");
+    res=LC_Starcos_GetKeyDescr(lct->card, kid, &descr);
+    if (res!=LC_Client_ResultOk) {
+      DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
+      return GWEN_ERROR_IO;
+    }
+
+    if (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYNUMBER) {
+      uint32_t i;
+
+      i=GWEN_Crypt_Token_KeyInfo_GetKeyNumber(ki);
+      LC_Starcos_KeyDescr_SetKeyNum(descr, i);
+      GWEN_Crypt_Token_KeyInfo_SetKeyNumber(cardki, i);
+    }
+
+    if (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYVERSION) {
+      uint32_t i;
+
+      i=GWEN_Crypt_Token_KeyInfo_GetKeyVersion(ki);
+      LC_Starcos_KeyDescr_SetKeyVer(descr, i);
+      GWEN_Crypt_Token_KeyInfo_SetKeyVersion(cardki, i);
+    }
+
+#if 0 /* status not yet defined in gwen */
+    if (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASSTATUS) {
+      GWEN_CRYPT_TOKEN_KEYSTATUS i;
+      int nstatus;
+
+      i=GWEN_Crypt_Token_KeyInfo_GetStatus(ki);
+      switch(i) {
+      case GWEN_Crypt_Token_KeyStatusFree:
+	nstatus=LC_STARCOS_KEY_STATUS_INACTIVE_FREE;
+	break;
+      case GWEN_Crypt_Token_KeyStatusNew:
+	nstatus=LC_STARCOS_KEY_STATUS_ACTIVE_NEW;
+        break;
+      case GWEN_Crypt_Token_KeyStatusActive:
+	nstatus=LC_STARCOS_KEY_STATUS_ACTIVE;
+        break;
+      case GWEN_Crypt_Token_KeyStatusUnknown:
+      default:
+	nstatus=LC_STARCOS_KEY_STATUS_INTERNAL_UNUSED;
+        break;
+      }
+
+      if (nstatus!=LC_STARCOS_KEY_STATUS_INTERNAL_UNUSED) {
+	LC_Starcos_KeyDescr_SetStatus(descr, nstatus);
+	GWEN_Crypt_Token_KeyInfo_SetStatus(cardki, i);
+      }
+    }
+#endif
+
+    /* save descriptor after changing */
+    DBG_INFO(LC_LOGDOMAIN, "Saving key descriptor");
+    res=LC_Starcos_SaveKeyDescr(lct->card, descr);
+    if (res!=LC_Client_ResultOk) {
+      DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
+      return GWEN_ERROR_IO;
+    }
+  }
+
+  /* write public key */
+  if ((fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASMODULUS) &&
+      (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASEXPONENT)) {
+    if (kid<0x91 || kid>0x9a) {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"Cannot change public part on private key");
+      return GWEN_ERROR_INVALID;
+    }
+    else {
+      LC_CLIENT_RESULT res;
+      const uint8_t *pModulus;
+      uint32_t lModulus;
+      const uint8_t *pExponent;
+      uint32_t lExponent;
+  
+      pModulus=GWEN_Crypt_Token_KeyInfo_GetModulusData(ki);
+      lModulus=GWEN_Crypt_Token_KeyInfo_GetModulusLen(ki);
+      pExponent=GWEN_Crypt_Token_KeyInfo_GetExponentData(ki);
+      lExponent=GWEN_Crypt_Token_KeyInfo_GetExponentLen(ki);
+      assert(pModulus && lModulus && pExponent && lExponent);
+      DBG_INFO(LC_LOGDOMAIN, "Writing public key");
+      res=LC_Starcos_WritePublicKey(lct->card, kid,
+				    pModulus, lModulus,
+				    pExponent, lExponent);
+      if (res!=LC_Client_ResultOk) {
+	DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
+	return GWEN_ERROR_IO;
+      }
+      GWEN_Crypt_Token_KeyInfo_SetModulus(cardki, pModulus, lModulus);
+      GWEN_Crypt_Token_KeyInfo_SetExponent(cardki, pExponent, lExponent);
+      GWEN_Crypt_Token_KeyInfo_AddFlags(cardki,
+					GWEN_CRYPT_TOKEN_KEYFLAGS_HASMODULUS |
+					GWEN_CRYPT_TOKEN_KEYFLAGS_HASEXPONENT);
+    }
+  }
+
+  /* done */
   return 0;
 }
 

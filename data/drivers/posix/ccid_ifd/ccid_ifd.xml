@@ -249,7 +249,7 @@
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
             vendor="0x046a" product="0x003e" >
-      <short>Cherry ST-1044u</short>
+      <short>Cherry ST-2000u</short>
       <!--
         <flags>
           <flag>keypad</flag>

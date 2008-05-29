@@ -165,6 +165,10 @@ static int GWENHYWFAR_CB
 				    const GWEN_CRYPT_CRYPTALGO *a,
 				    uint32_t gid);
 
+static int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
+					      uint32_t kid,
+					      uint32_t gid);
+
 
 #endif
 
