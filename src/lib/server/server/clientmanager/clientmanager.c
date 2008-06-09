@@ -445,8 +445,11 @@ int LCCL_ClientManager_CheckClientCardAccess(LCCL_CLIENTMANAGER *clm,
 
   lm=LCDM_DeviceManager_GetLockManager(dm,
                                        LCCO_Card_GetReaderId(card),
-                                       LCCO_Card_GetSlotNum(card));
-  assert(lm);
+				       LCCO_Card_GetSlotNum(card));
+  if (lm==NULL) {
+    DBG_INFO(0, "Lock manager not found");
+    return -1;
+  }
   return LCS_LockManager_CheckAccess(lm, LCCO_Card_GetLockId(card));
 }
 

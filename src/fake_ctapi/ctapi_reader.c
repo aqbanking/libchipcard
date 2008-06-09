@@ -385,12 +385,12 @@ char CT__resetICC(CTAPI_CONTEXT *ctx,
     /* only return historic bytes */
     /* TODO */
   }
-  *p=0x90;
+  *(p++)=0x90;
   j++;
   if (strcasecmp(LC_Card_GetCardType(ctx->card), "processor")==0)
-    *p=0x01;
+    *(p++)=0x01;
   else
-    *p=0x00;
+    *(p++)=0x00;
   j++;
   *lenr=j;
 

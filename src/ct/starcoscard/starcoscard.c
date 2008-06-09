@@ -784,6 +784,7 @@ LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
   uint32_t fl;
   GWEN_CRYPT_TOKEN_KEYINFO *cardki;
   int idx;
+  int rv;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_STARCOS, ct);
@@ -807,8 +808,6 @@ LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
   cardki=lct->keyInfos[idx];
   if (cardki==NULL) {
-    int rv;
-
     rv=LC_Crypt_TokenStarcos__ReadKeyInfo(ct, kid, gid);
     if (rv<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
