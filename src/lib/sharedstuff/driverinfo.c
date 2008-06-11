@@ -534,7 +534,7 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
       GWEN_XMLNODE *nData;
 
       nData=GWEN_XMLNode_GetFirstData(n);
-      if (n) {
+      if (nData) {
 	p=GWEN_XMLNode_GetData(nData);
 	if (p)
 	  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
