@@ -1,4 +1,24 @@
 
+===========================================================================
+MARK: released Libchipcard 4.1.2 (2008/07/01)
+===========================================================================
+
+
+2008/07/01: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- DDVCard crypttoken: Wrap around sequence counter when reaching 65535
+
+
+===========================================================================
+MARK: released Libchipcard 4.1.1 (2008/06/11)
+===========================================================================
+
+
+2008/06/11: Martin Preuss<martin@libchipcard.de>
+------------------------------------------------
+- fixed a bug in LC_DriverInfo_ReaderDbFromXml()
+
+
 2008/06/09: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - fixed a bug in CTAPI-wrapper (bug in RESET_ICC)

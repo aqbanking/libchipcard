@@ -660,14 +660,19 @@ int LC_Crypt_TokenDDV__IncSignSeq(GWEN_CRYPT_TOKEN *ct,
 				  uint32_t kid,
 				  uint32_t *pSigCounter) {
   int rv;
+  uint32_t sc;
 
-  rv=LC_Crypt_TokenDDV__ReadSignSeq(ct, kid, pSigCounter);
+  rv=LC_Crypt_TokenDDV__ReadSignSeq(ct, kid, &sc);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
     return rv;
   }
 
-  rv=LC_Crypt_TokenDDV__WriteSignSeq(ct, kid, (*pSigCounter)+1);
+  sc++;
+  sc&=0xffff;
+  *pSigCounter=sc;
+
+  rv=LC_Crypt_TokenDDV__WriteSignSeq(ct, kid, sc);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
     return rv;

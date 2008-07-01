@@ -16,7 +16,7 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=1
-CHIPCARD_VERSION_PATCHLEVEL=0
+CHIPCARD_VERSION_PATCHLEVEL=2
 CHIPCARD_VERSION_BUILD=0
 CHIPCARD_VERSION_TAG="stable"
 
@@ -28,7 +28,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=3
 LIBCHIPCARD_SO_AGE=1
-LIBCHIPCARD_SO_REVISION=0
+LIBCHIPCARD_SO_REVISION=2
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -117,12 +117,11 @@ AC_SUBST(prefix)
 # option to override it
 #
 AC_MSG_CHECKING(for init script directory)
-AC_ARG_WITH([init_script_dir], 
-  [AS_HELP_STRING([--with-init-script-dir],
-    [directory to use instead of /etc/init.d (esp. for non-root installs) @<:@default=/etc/init.d@:>@])]
-  [],
-  [with_init_script_dir=/etc/init.d])
-AC_SUBST([init_script_dir], $with_init_script_dir)
+AC_ARG_WITH(init-script-dir, 
+  [  --with-init-script-dir=DIR directory to use instead of /etc/init.d (esp. for non-root installs)],
+  [lc_init_script_dir="$withval"],
+  [lc_init_script_dir="/etc/init.d"])
+AC_SUBST(lc_init_script_dir)
 
 
 

@@ -11,7 +11,7 @@ serverconf_DATA=\
  chipcardd.conf.slave
 
 
-initscriptdir=@init_script_dir@
+initscriptdir=@lc_init_script_dir@
 initscript_DATA=chipcardd
 
 EXTRA_DIST=$(clientconf_DATA) $(serverconf_DATA) $(initscript_DATA)
