@@ -1,4 +1,9 @@
 
+===========================================================================
+MARK: released Libchipcard 4.1.3 (2008/07/08)
+===========================================================================
+
+
 2008/07/07: Martin Preuss<martin@libchipcard.de>
 ------------------------------------------------
 - applied a fix for the endianness test provided by David Reiser (NOTE:
