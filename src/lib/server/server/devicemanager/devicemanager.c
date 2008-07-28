@@ -163,7 +163,8 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   }
 
   /* ensure some minimum values */
-  if (dm->hardwareScanInterval<LCDM_DEVICEMANAGER_MIN_HARDWARE_SCAN_INTERVAL)
+  if ((dm->hardwareScanInterval!=0) &&
+      (dm->hardwareScanInterval<LCDM_DEVICEMANAGER_MIN_HARDWARE_SCAN_INTERVAL))
     dm->hardwareScanInterval=LCDM_DEVICEMANAGER_MIN_HARDWARE_SCAN_INTERVAL;
 
   /* find config of server to be used for drivers */
