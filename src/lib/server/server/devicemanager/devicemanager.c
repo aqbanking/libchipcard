@@ -3707,7 +3707,7 @@ void LCDM_DeviceManager_ResumeReaderCheck(LCDM_DEVICEMANAGER *dm,
 
 void LCDM_DeviceManager_TriggerHwScan(LCDM_DEVICEMANAGER *dm) {
   assert(dm);
-  dm->triggeredScan=LCDM_DEVICEMANAGER_DEF_HARDWARE_SCAN_TRIGGERS;
+  dm->triggeredScan=dm->hardwareScanTriggerIntervals;
 }
 
 
