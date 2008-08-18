@@ -14,8 +14,8 @@
         list="lib"
         list2="lib" >
     <headers>
-      <header type="sys" >chipcard3/client/cards/starcos.h</header>
-      <header type="sys" >chipcard3/chipcard3.h</header>
+      <header type="sys" >chipcard/client/cards/starcos.h</header>
+      <header type="sys" >chipcard/chipcard.h</header>
     </headers>
     
     <elem name="keyId" type="int" />
