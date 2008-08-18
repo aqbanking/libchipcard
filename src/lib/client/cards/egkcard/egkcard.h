@@ -15,6 +15,8 @@
 #define CHIPCARD_CARD_EGKCARD_H
 
 #include <chipcard/client/card.h>
+#include <chipcard/client/cards/hipersonaldata.h>
+#include <chipcard/client/cards/hiinsurancedata.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,14 +38,14 @@ extern "C" {
 /*@{*/
 /**
  * Extends a basic card type thus making functions of this group available.
- * This stores some DDV-related data with the given card object.
+ * This stores some EGK-related data with the given card object.
  * This function internally calls @ref LC_ProcessorCard_ExtendCard.
  */
 CHIPCARD_API int LC_EgkCard_ExtendCard(LC_CARD *card);
 
 /**
  * Unextend a card object which has previously been extended using
- * @ref LC_EgkCard_ExtendCard. This functions releases all DDV-related
+ * @ref LC_EgkCard_ExtendCard. This functions releases all EGK-related
  * ressources.
  * This function internally calls @ref LC_ProcessorCard_UnextendCard.
  */
@@ -75,11 +77,23 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card);
 /*@}*/
 
 
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
-						GWEN_BUFFER *buf);
+CHIPCARD_API CHIPCARD_DEPRECATED
+  LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
+				     GWEN_BUFFER *buf);
 
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
-						GWEN_BUFFER *buf);
+CHIPCARD_API CHIPCARD_DEPRECATED
+  LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
+				     GWEN_BUFFER *buf);
+
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
+					     LC_HI_PERSONAL_DATA **pData);
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
+					      LC_HI_INSURANCE_DATA **pData);
+
 
 /*@}*/ /* defgroup */
 

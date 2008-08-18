@@ -17,7 +17,7 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=1
 CHIPCARD_VERSION_PATCHLEVEL=3
-CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_BUILD=2
 CHIPCARD_VERSION_TAG="git"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
@@ -503,6 +503,15 @@ fi
 AM_CONDITIONAL(USE_PCSC, [test "$have_pcsc" = "yes"])
 AC_SUBST(lc_pcsc_io_dir)
 AC_SUBST(pcsc_libs)
+
+
+
+# ---------------------------------------------------------------------------
+# check for zlib
+# (actually we assume that it is present)
+#
+zlib_libs="-lz"
+AC_SUBST(zlib_libs)
 
 
 

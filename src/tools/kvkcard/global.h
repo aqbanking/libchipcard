@@ -18,15 +18,19 @@
 #include <chipcard/chipcard.h>
 #include <chipcard/client/client.h>
 #include <chipcard/client/cards/kvkcard.h>
+#include <chipcard/client/cards/egkcard.h>
+#include <chipcard/client/cards/hipersonaldata.h>
+#include <chipcard/client/cards/hiinsurancedata.h>
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/process.h>
 
 
-#define RETURNVALUE_PARAM   1
-#define RETURNVALUE_SETUP   2
-#define RETURNVALUE_WORK    3
-#define RETURNVALUE_DEINIT  4
+#define RETURNVALUE_PARAM          1
+#define RETURNVALUE_SETUP          2
+#define RETURNVALUE_WORK           3
+#define RETURNVALUE_DEINIT         4
+#define RETURNVALUE_CARD_NOT_SUPP  5
 
 
 void usage(const char *name, const char *ustr);
@@ -39,6 +43,7 @@ void errorBeep();
 int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 int kvkDaemon(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
+int kvkRead2(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
 

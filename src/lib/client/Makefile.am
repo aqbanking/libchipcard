@@ -23,7 +23,7 @@ libchipcardc_la_LIBADD= \
   ct/liblcct.la \
   mon/libmon.la \
   service/libservice.la \
-  ../sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@
+  ../sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@ @zlib_libs@
 
 if USE_PCSC
 libchipcardc_la_LIBADD+=io/pcsc/libio_pcsc.la @pcsc_libs@

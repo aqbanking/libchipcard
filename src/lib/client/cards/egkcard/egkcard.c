@@ -15,6 +15,7 @@
 # include <config.h>
 #endif
 
+#define CHIPCARD_NOWARN_DEPRECATED
 
 #include "egkcard_p.h"
 #include <gwenhywfar/debug.h>
@@ -24,6 +25,8 @@
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
 #include <chipcard/client/cards/processorcard.h>
+
+#include <zlib.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_EGKCARD)
@@ -88,7 +91,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_EGKCARD *egk;
 
-  DBG_INFO(LC_LOGDOMAIN, "Opening card as DDV card");
+  DBG_INFO(LC_LOGDOMAIN, "Opening card as EGK card");
 
   assert(card);
   egk=GWEN_INHERIT_GETDATA(LC_CARD, LC_EGKCARD, card);
@@ -218,6 +221,75 @@ LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card){
 
 
 
+LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
+				  GWEN_BUFFER *tbuf) {
+  unsigned char buffer[256];
+  z_stream strm;
+  int rv;
+  int first=1;
+
+  memset(&strm, 0, sizeof(strm));
+
+  strm.next_in=(Bytef*) src;
+  strm.avail_in=slen;
+
+  strm.next_out=buffer;
+  strm.avail_out=sizeof(buffer);
+  strm.opaque=Z_NULL;
+  strm.zalloc=Z_NULL;
+  strm.zfree=Z_NULL;
+  strm.msg=NULL;
+
+  rv=inflateInit2(&strm, 15+16);
+  if (rv!=Z_OK) {
+    switch(rv) {
+    case Z_VERSION_ERROR:
+      DBG_ERROR(LC_LOGDOMAIN, "Non-matching version of ZLIB");
+      return LC_Client_ResultGeneric;
+    case Z_STREAM_ERROR:
+      DBG_ERROR(LC_LOGDOMAIN, "inflateInit: stream error (%d, %s)",
+		rv, (strm.msg)?strm.msg:"NULL");
+      return LC_Client_ResultDataError;
+    default:
+      DBG_ERROR(LC_LOGDOMAIN, "inflateInit: %d (%s)",
+		rv, (strm.msg)?strm.msg:"NULL");
+      return LC_Client_ResultGeneric;
+    }
+  }
+
+  for (;;) {
+    unsigned int inflated;
+
+    strm.next_out=buffer;
+    strm.avail_out=sizeof(buffer);
+    rv=inflate(&strm, Z_NO_FLUSH);
+    inflated=sizeof(buffer)-strm.avail_out;
+    if (inflated)
+      GWEN_Buffer_AppendBytes(tbuf, (const char*)buffer, inflated);
+    if (rv==Z_STREAM_END || rv==Z_BUF_ERROR)
+      break;
+    if (rv!=Z_OK) {
+      DBG_ERROR(LC_LOGDOMAIN, "inflate: %d (%s)",
+		rv, (strm.msg)?strm.msg:"NULL");
+      inflateEnd(&strm);
+      return LC_Client_ResultIoError;
+    }
+    if (first)
+      first=0;
+  }
+
+  rv=inflateEnd(&strm);
+  if (rv!=Z_OK) {
+    DBG_ERROR(LC_LOGDOMAIN, "inflateEnd: %d (%s)",
+	      rv, (strm.msg)?strm.msg:"NULL");
+    return LC_Client_ResultIoError;
+  }
+
+  return 0;
+}
+
+
+
 LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf){
   LC_EGKCARD *egk;
   LC_CLIENT_RESULT res;
@@ -257,17 +329,24 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf){
     return LC_Client_ResultDataError;
   }
   size-=2;
-  GWEN_Buffer_free(lbuf);
+
+  GWEN_Buffer_Reset(lbuf);
 
   if (size) {
-    res=LC_Card_ReadBinary(card, 2, size, buf);
+    res=LC_Card_ReadBinary(card, 2, size, lbuf);
     if (res!=LC_Client_ResultOk) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      GWEN_Buffer_free(lbuf);
       return res;
     }
   }
 
-  return LC_Client_ResultOk;
+  res=LC_EgkCard_Unzip(GWEN_Buffer_GetStart(lbuf),
+		       GWEN_Buffer_GetUsedBytes(lbuf),
+                       buf);
+  GWEN_Buffer_free(lbuf);
+
+  return res;
 }
 
 
@@ -317,27 +396,216 @@ LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf){
   end2+=(*(p++));
   size2=end2-offs2+1;
 
-  GWEN_Buffer_free(lbuf);
+  GWEN_Buffer_Reset(lbuf);
 
   if (offs1!=0xffff && end1!=0xffff && size1>0) {
-    res=LC_Card_ReadBinary(card, offs1, size1, buf);
+    res=LC_Card_ReadBinary(card, offs1, size1, lbuf);
     if (res!=LC_Client_ResultOk) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      GWEN_Buffer_free(lbuf);
       return res;
     }
   }
 
+  res=LC_EgkCard_Unzip(GWEN_Buffer_GetStart(lbuf),
+		       GWEN_Buffer_GetUsedBytes(lbuf),
+		       buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(lbuf);
+    return res;
+  }
+
+  GWEN_Buffer_Reset(lbuf);
+
   if (offs2!=0xffff && end2!=0xffff && size2>0) {
-    res=LC_Card_ReadBinary(card, offs2, size2, buf);
+    res=LC_Card_ReadBinary(card, offs2, size2, lbuf);
     if (res!=LC_Client_ResultOk) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      GWEN_Buffer_free(lbuf);
       return res;
     }
+  }
+
+  res=LC_EgkCard_Unzip(GWEN_Buffer_GetStart(lbuf),
+		       GWEN_Buffer_GetUsedBytes(lbuf),
+		       buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(lbuf);
+    return res;
+  }
+
+  GWEN_Buffer_free(lbuf);
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
+					     LC_HI_PERSONAL_DATA **pData) {
+  GWEN_BUFFER *dbuf;
+  LC_CLIENT_RESULT res;
+
+  dbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_EgkCard_ReadPd(card, dbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(dbuf);
+    return res;
+  }
+  else {
+    GWEN_XMLNODE *root;
+    GWEN_XMLNODE *n;
+
+    root=GWEN_XMLNode_fromString(GWEN_Buffer_GetStart(dbuf),
+				 GWEN_Buffer_GetUsedBytes(dbuf),
+				 GWEN_XML_FLAGS_HANDLE_HEADERS |
+				 GWEN_XML_FLAGS_HANDLE_NAMESPACES);
+    if (root==NULL) {
+      DBG_INFO(LC_LOGDOMAIN, "Invalid XML string");
+      GWEN_Buffer_free(dbuf);
+      return LC_Client_ResultDataError;
+    }
+
+    n=GWEN_XMLNode_FindFirstTag(root,
+				"UC_PersoenlicheVersichertendatenXML",
+				NULL, NULL);
+    if (n) {
+      LC_HI_PERSONAL_DATA *d;
+      const char *s;
+      GWEN_XMLNODE *nn;
+
+      d=LC_HIPersonalData_new();
+      s=GWEN_XMLNode_GetCharValue(n, "Versicherten_ID", NULL);
+      LC_HIPersonalData_SetInsuranceId(d, s);
+
+      s=GWEN_XMLNode_GetCharValue(n, "Geburtsdatum", NULL);
+      if (s) {
+	GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+	LC_HIPersonalData_SetDateOfBirth(d, ti);
+        GWEN_Time_free(ti);
+      }
+      s=GWEN_XMLNode_GetCharValue(n, "Vorname", NULL);
+      LC_HIPersonalData_SetPrename(d, s);
+      s=GWEN_XMLNode_GetCharValue(n, "Nachname", NULL);
+      LC_HIPersonalData_SetName(d, s);
+      s=GWEN_XMLNode_GetCharValue(n, "Sex", "1");
+      if (s) {
+	if (strcasecmp(s, "1")==0)
+	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexMale);
+	else if (strcasecmp(s, "2")==0)
+	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexFemale);
+	else {
+          DBG_WARN(LC_LOGDOMAIN, "Unknown sex \"%s\"", s);
+	}
+      }
+
+      nn=GWEN_XMLNode_FindFirstTag(n,
+				   "Anschrift",
+				   NULL, NULL);
+      if (nn) {
+	s=GWEN_XMLNode_GetCharValue(nn, "Postleitzahl", NULL);
+	LC_HIPersonalData_SetAddrZipCode(d, s);
+	s=GWEN_XMLNode_GetCharValue(nn, "Ort", NULL);
+        LC_HIPersonalData_SetAddrCity(d, s);
+	s=GWEN_XMLNode_GetCharValue(nn, "Wohnsitzlaendercode", NULL);
+	LC_HIPersonalData_SetAddrCountry(d, s);
+	nn=GWEN_XMLNode_FindFirstTag(nn,
+				     "Adresse",
+				     NULL, NULL);
+	if (nn) {
+	  s=GWEN_XMLNode_GetCharValue(nn, "Strasse", NULL);
+	  LC_HIPersonalData_SetAddrStreet(d, s);
+	  s=GWEN_XMLNode_GetCharValue(nn, "Hausnummer", NULL);
+          LC_HIPersonalData_SetAddrHouseNum(d, s);
+	}
+      }
+
+      *pData=d;
+    }
+
+    GWEN_XMLNode_free(root);
   }
 
   return LC_Client_ResultOk;
 }
 
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
+					      LC_HI_INSURANCE_DATA **pData) {
+  GWEN_BUFFER *dbuf;
+  LC_CLIENT_RESULT res;
+
+  dbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_EgkCard_ReadVd(card, dbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(dbuf);
+    return res;
+  }
+  else {
+    GWEN_XMLNODE *root;
+    GWEN_XMLNODE *n;
+
+    root=GWEN_XMLNode_fromString(GWEN_Buffer_GetStart(dbuf),
+				 GWEN_Buffer_GetUsedBytes(dbuf),
+				 GWEN_XML_FLAGS_HANDLE_HEADERS |
+				 GWEN_XML_FLAGS_HANDLE_NAMESPACES);
+    if (root==NULL) {
+      DBG_INFO(LC_LOGDOMAIN, "Invalid XML string");
+      GWEN_Buffer_free(dbuf);
+      return LC_Client_ResultDataError;
+    }
+
+    n=GWEN_XMLNode_FindFirstTag(root,
+                                "UC_allgemeineVersicherungsdatenXML",
+				NULL, NULL);
+    if (n) {
+      LC_HI_INSURANCE_DATA *d;
+      const char *s;
+      GWEN_XMLNODE *nn;
+
+      d=LC_HIInsuranceData_new();
+      nn=GWEN_XMLNode_FindFirstTag(n,
+				   "Versicherungsschutz",
+				   NULL, NULL);
+      if (nn) {
+	s=GWEN_XMLNode_GetCharValue(nn, "Begin", NULL);
+	if (s) {
+	  GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+          LC_HIInsuranceData_SetCoverBegin(d, ti);
+	  GWEN_Time_free(ti);
+	}
+	s=GWEN_XMLNode_GetCharValue(nn, "Kostentraegerkennung", NULL);
+	LC_HIInsuranceData_SetInstitutionId(d, s);
+	s=GWEN_XMLNode_GetCharValue(nn, "Name", NULL);
+	LC_HIInsuranceData_SetInstitutionName(d, s);
+      }
+      nn=GWEN_XMLNode_FindFirstTag(n,
+				   "Zusatzinfos",
+				   NULL, NULL);
+      if (nn)
+	nn=GWEN_XMLNode_FindFirstTag(nn,
+				     "Zusatzinfos_GKV",
+				     NULL, NULL);
+      if (nn) {
+	s=GWEN_XMLNode_GetCharValue(nn, "Rechtskreis", NULL);
+	LC_HIInsuranceData_SetGroup(d, s);
+	s=GWEN_XMLNode_GetCharValue(nn, "Versichertenart", NULL);
+	LC_HIInsuranceData_SetStatus(d, s);
+      }
+      *pData=d;
+
+    }
+
+    GWEN_XMLNode_free(root);
+  }
+
+  return LC_Client_ResultOk;
+}
 
 
 

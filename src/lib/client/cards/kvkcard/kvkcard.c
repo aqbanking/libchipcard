@@ -384,3 +384,101 @@ GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card){
 
 
 
+const char *LC_KvkCard_GetCardNumber(const LC_CARD *card) {
+  LC_KVKCARD *kvk;
+
+  assert(card);
+  kvk=GWEN_INHERIT_GETDATA(LC_CARD, LC_KVKCARD, card);
+  assert(kvk);
+
+  return GWEN_DB_GetCharValue(kvk->dbData, "cardNumber", 0, NULL);
+}
+
+
+
+LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
+					 LC_HI_PERSONAL_DATA **pPersonal,
+					 LC_HI_INSURANCE_DATA **pInsurance) {
+  LC_KVKCARD *kvk;
+  LC_HI_PERSONAL_DATA *pData;
+  LC_HI_INSURANCE_DATA *iData;
+  const char *s;
+
+  assert(card);
+  kvk=GWEN_INHERIT_GETDATA(LC_CARD, LC_KVKCARD, card);
+  assert(kvk);
+
+  pData=LC_HIPersonalData_new();
+  iData=LC_HIInsuranceData_new();
+
+  if (GWEN_Logger_GetLevel(LC_LOGDOMAIN)>GWEN_LoggerLevel_Info)
+    GWEN_DB_Dump(kvk->dbData, stderr, 2);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceCompanyName", 0, NULL);
+  LC_HIInsuranceData_SetInstitutionName(iData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceCompanyCode", 0, NULL);
+  LC_HIInsuranceData_SetInstitutionId(iData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceNumber", 0, NULL);
+  LC_HIPersonalData_SetInsuranceId(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceState", 0, NULL);
+  LC_HIInsuranceData_SetStatus(iData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "eastOrWest", 0, NULL);
+  LC_HIInsuranceData_SetGroup(iData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "title", 0, NULL);
+  LC_HIPersonalData_SetTitle(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "foreName", 0, NULL);
+  LC_HIPersonalData_SetPrename(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "name", 0, NULL);
+  LC_HIPersonalData_SetName(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "nameSuffix", 0, NULL);
+  LC_HIPersonalData_SetNameSuffix(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "dateOfBirth", 0, NULL);
+  if (s) {
+    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "DDMMYYYY");
+    LC_HIPersonalData_SetDateOfBirth(pData, ti);
+    GWEN_Time_free(ti);
+  }
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "addrState", 0, NULL);
+  LC_HIPersonalData_SetAddrState(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "addrCity", 0, NULL);
+  LC_HIPersonalData_SetAddrCity(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "addrStreet", 0, NULL);
+  LC_HIPersonalData_SetAddrStreet(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "addrPostalCode", 0, NULL);
+  LC_HIPersonalData_SetAddrZipCode(pData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceState", 0, NULL);
+  LC_HIInsuranceData_SetStatus(iData, s);
+
+  s=GWEN_DB_GetCharValue(kvk->dbData, "bestBefore", 0, NULL);
+  if (s) {
+    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "MMYY");
+    LC_HIInsuranceData_SetCoverEnd(iData, ti);
+    GWEN_Time_free(ti);
+  }
+
+  LC_HIPersonalData_SetAddrCountry(pData, "de");
+
+  *pPersonal=pData;
+  *pInsurance=iData;
+
+  return LC_Client_ResultOk;
+}
+
+
+
+
+
