@@ -894,7 +894,15 @@ LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 	GWEN_Crypt_Token_KeyInfo_SetStatus(cardki, i);
       }
     }
+#else
+    LC_Starcos_KeyDescr_SetStatus(descr, LC_STARCOS_KEY_STATUS_ACTIVE);
 #endif
+
+    if ((kid>=0x86 && kid<=0x8a) ||
+	(kid>=0x96 && kid<=0x9a))
+      LC_Starcos_KeyDescr_SetKeyType(descr, 'V');
+    else
+      LC_Starcos_KeyDescr_SetKeyType(descr, 'S');
 
     /* save descriptor after changing */
     DBG_INFO(LC_LOGDOMAIN, "Saving key descriptor");
@@ -1043,17 +1051,17 @@ LC_Crypt_TokenStarcos_GetContext(GWEN_CRYPT_TOKEN *ct,
       default:
 	break;
       }
-
-      /* set key ids (same for every context) */
-      GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 0x80+id);     /* user sign key */
-      GWEN_Crypt_Token_Context_SetVerifyKeyId(ctx, 0x90+id);   /* peer sign key */
-      GWEN_Crypt_Token_Context_SetEncipherKeyId(ctx, 0x95+id); /* peer crypt key */
-      GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 0x85+id); /* user crypt key */
     }
     else {
       DBG_INFO(LC_LOGDOMAIN, "Empty entry (%d)", id);
     }
     GWEN_DB_Group_free(dbData);
+
+    /* set key ids (same for every context) */
+    GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 0x80+id);     /* user sign key */
+    GWEN_Crypt_Token_Context_SetVerifyKeyId(ctx, 0x90+id);   /* peer sign key */
+    GWEN_Crypt_Token_Context_SetEncipherKeyId(ctx, 0x95+id); /* peer crypt key */
+    GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 0x85+id); /* user crypt key */
 
     /* store new context */
     lct->contexts[id-1]=ctx;
@@ -1132,11 +1140,19 @@ LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
     return GWEN_ERROR_IO;
   }
 
+  LC_Starcos_KeyDescr_SetStatus(kdescr, LC_STARCOS_KEY_STATUS_INACTIVE_FREE);
+  res=LC_Starcos_SaveKeyDescr(lct->card, kdescr);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    LC_Starcos_KeyDescr_free(kdescr);
+    return GWEN_ERROR_IO;
+  }
+
   if (nkeyId==0x8f)
     LC_Starcos_KeyDescr_SetKeyType(kdescr, 'S');
   else
     LC_Starcos_KeyDescr_SetKeyType(kdescr, 'V');
-  LC_Starcos_KeyDescr_SetStatus(kdescr, 0x10);
+  LC_Starcos_KeyDescr_SetStatus(kdescr, LC_STARCOS_KEY_STATUS_ACTIVE);
 
   res=LC_Starcos_ActivateKeyPair(lct->card, nkeyId, kid, kdescr);
   if (res!=LC_Client_ResultOk) {
@@ -1204,7 +1220,7 @@ LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
   res=LC_Card_IsoManageSe(lct->card, 0xb6,
                           kid & 0xff,
                           kid & 0xff,
-			  0x21); /* assume RMD160 and 9796-2 */
+			  0x25); /* assume RMD160 and 9796-2 */
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error preparing signing (%d)", res);
     return GWEN_ERROR_IO;
@@ -1223,7 +1239,7 @@ LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
   }
 
   /* copy signature into given buffer */
-  if (GWEN_Buffer_GetUsedBytes(dbuf)>=*pSignatureLen) {
+  if (GWEN_Buffer_GetUsedBytes(dbuf)>*pSignatureLen) {
     DBG_ERROR(LC_LOGDOMAIN, "Buffer overrun (%d>=%d)",
 	      GWEN_Buffer_GetUsedBytes(dbuf), *pSignatureLen);
     GWEN_Buffer_free(dbuf);
@@ -1289,11 +1305,11 @@ LC_Crypt_TokenStarcos_Verify(GWEN_CRYPT_TOKEN *ct,
 
   /* set security environment */
   res=LC_Card_IsoManageSe(lct->card, 0xb6,
+			  0,
                           kid & 0xff,
-                          kid & 0xff,
-			  0x21); /* assume RMD160 and 9796-2 */
+			  0x25); /* assume RMD160 and 9796-2 */
   if (res!=LC_Client_ResultOk) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error preparing signing (%d)", res);
+    DBG_ERROR(LC_LOGDOMAIN, "Error preparing verification (%d)", res);
     return GWEN_ERROR_IO;
   }
 
@@ -1427,8 +1443,10 @@ LC_Crypt_TokenStarcos_Decipher(GWEN_CRYPT_TOKEN *ct,
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_STARCOS, ct);
   assert(lct);
 
-  if (GWEN_Crypt_PaddAlgo_GetId(a)!=GWEN_Crypt_PaddAlgoId_LeftZero) {
-    DBG_ERROR(LC_LOGDOMAIN, "Invalid padd algo");
+  if (GWEN_Crypt_PaddAlgo_GetId(a)!=GWEN_Crypt_PaddAlgoId_LeftZero &&
+      GWEN_Crypt_PaddAlgo_GetId(a)!=GWEN_Crypt_PaddAlgoId_None) {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid padd algo (%02x)",
+	      GWEN_Crypt_PaddAlgo_GetId(a));
     return GWEN_ERROR_INVALID;
   }
 
@@ -1469,6 +1487,13 @@ LC_Crypt_TokenStarcos_Decipher(GWEN_CRYPT_TOKEN *ct,
     DBG_ERROR(LC_LOGDOMAIN, "Error decrypting (%d)", res);
     GWEN_Buffer_free(dbuf);
     return GWEN_ERROR_IO;
+  }
+
+  if (GWEN_Crypt_PaddAlgo_GetId(a)==GWEN_Crypt_PaddAlgoId_None &&
+      GWEN_Buffer_GetUsedBytes(dbuf)<inLen) {
+    GWEN_Buffer_SetPos(dbuf, 0);
+    GWEN_Buffer_FillLeftWithBytes(dbuf, 0,
+				  inLen-GWEN_Buffer_GetUsedBytes(dbuf));
   }
 
   /* copy result into given buffer */
