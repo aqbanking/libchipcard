@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   int rv;
-  GWEN_DB_NODE *dbData;
+  GWEN_DB_NODE *dbData=NULL;
 
   cl=LC_Client_new("tutorial2", "1.0");
   res=LC_Client_Init(cl);
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
    * Please note that there is no data if the card is corrupted (e.g. a bad
    * checksum).
    */
-  dbData=LC_KVKCard_GetCardData(card);
+  /* dbData=LC_KVKCard_GetCardData(card); */ /* FIXME: deprecated function */
   if (!dbData) {
     fprintf(stderr, "ERROR: No card data available.\n");
     LC_Client_ReleaseCard(cl, card);

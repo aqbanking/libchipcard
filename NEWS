@@ -1,5 +1,16 @@
 
 ===========================================================================
+                 Libchipcard 4.2.0 (2008/08/19)
+===========================================================================
+
+This release reintroduces a CryptToken for STARCOS cards and improves 
+support for the upcoming "Elektronische Gesundheitskarte" which can now be
+read by the tool kvkread along with old "Krankenversichertenkarte" cards.
+Hardware scans can now be triggered by signals again (was broken in previous
+releases).
+
+
+===========================================================================
                  Libchipcard 4.1.3 (2008/07/08)
 ===========================================================================
 
