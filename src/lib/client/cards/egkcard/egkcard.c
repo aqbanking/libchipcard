@@ -549,6 +549,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
   else {
     GWEN_XMLNODE *root;
     GWEN_XMLNODE *n;
+    LC_HI_INSURANCE_DATA *d=NULL;
 
     root=GWEN_XMLNode_fromString(GWEN_Buffer_GetStart(dbuf),
 				 GWEN_Buffer_GetUsedBytes(dbuf),
@@ -560,15 +561,15 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
       return LC_Client_ResultDataError;
     }
 
+    d=LC_HIInsuranceData_new();
+
     n=GWEN_XMLNode_FindFirstTag(root,
                                 "UC_allgemeineVersicherungsdatenXML",
 				NULL, NULL);
     if (n) {
-      LC_HI_INSURANCE_DATA *d;
       const char *s;
       GWEN_XMLNODE *nn;
 
-      d=LC_HIInsuranceData_new();
       nn=GWEN_XMLNode_FindFirstTag(n,
 				   "Versicherungsschutz",
 				   NULL, NULL);
@@ -597,14 +598,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
 	s=GWEN_XMLNode_GetCharValue(nn, "Versichertenart", NULL);
 	LC_HIInsuranceData_SetStatus(d, s);
       }
-      *pData=d;
-
     }
 
     GWEN_XMLNode_free(root);
+    *pData=d;
+    return LC_Client_ResultOk;
   }
-
-  return LC_Client_ResultOk;
 }
 
 

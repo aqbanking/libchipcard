@@ -208,8 +208,8 @@ int handleEgkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs) {
   int dobeep;
   int dosMode;
   LC_CLIENT_RESULT res;
-  LC_HI_PERSONAL_DATA *pdata;
-  LC_HI_INSURANCE_DATA *idata;
+  LC_HI_PERSONAL_DATA *pdata=NULL;
+  LC_HI_INSURANCE_DATA *idata=NULL;
 
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
   dobeep=GWEN_DB_GetIntValue(dbArgs, "beep", 0, 0);

@@ -119,8 +119,8 @@ const GWEN_ARGS prg_args[]={
   1,
   "p",
   "program",
-  "Program to call on found cards",
-  "File to write to. If omitted stdout will be used."
+  "Program to call on cards found",
+  "Program to call on cards found."
 },
 {
   GWEN_ARGS_FLAGS_HAS_ARGUMENT,
