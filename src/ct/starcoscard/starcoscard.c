@@ -19,13 +19,15 @@
 #include <gwenhywfar/ctplugin_be.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/padd.h>
+#include <gwenhywfar/gui.h>
+#include <gwenhywfar/i18n.h>
 
 #include <chipcard/client/cards/starcos.h>
 #include <chipcard/client/cards/processorcard.h>
 #include <chipcard/client/ct/ct_card.h>
 
 
-#define I18N(msg) msg
+#define I18N(message) GWEN_I18N_Translate("libchipcard", message)
 
 
 
@@ -119,6 +121,7 @@ LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
   LC_CLIENT_RESULT res;
   LC_CARD *hcard=0;
   const char *currCardNumber;
+  int i;
 
   assert(pl);
   cpl=GWEN_INHERIT_GETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_STARCOS, pl);
@@ -133,7 +136,43 @@ LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
     return GWEN_ERROR_IO;
   }
 
-  res=LC_Client_GetNextCard(cpl->client, &hcard, 5);
+  for (i=0;i<10;i++) {
+    res=LC_Client_GetNextCard(cpl->client, &hcard, i==0?5:10);
+    if (res==LC_Client_ResultOk)
+      break;
+    else {
+      if (res==LC_Client_ResultWait) {
+	int mres;
+
+	mres=GWEN_Gui_MessageBox(GWEN_GUI_MSG_FLAGS_SEVERITY_NORMAL |
+				 GWEN_GUI_MSG_FLAGS_CONFIRM_B1 |
+				 GWEN_GUI_MSG_FLAGS_TYPE_WARN,
+				 I18N("Insert card"),
+				 I18N("Please insert a chipcard into the reader "
+				      "and click a button."
+				      "<html>"
+				      "Please insert a chipcard into the reader "
+				      "and click a button."
+				      "</html>"),
+				 I18N("Ok"),
+				 I18N("Abort"),
+				 NULL,
+				 0);
+	if (mres!=1) {
+	  DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction (%d)", mres);
+	  LC_Client_Stop(cpl->client);
+	  return GWEN_ERROR_USER_ABORTED;
+	}
+      }
+      else {
+	GWEN_Gui_ProgressLog(0, GWEN_LoggerLevel_Error,
+			     I18N("Error while waiting for card"));
+	LC_Client_Stop(cpl->client);
+	return GWEN_ERROR_IO;
+      }
+    }
+  }
+
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
 	      "No card within specified timeout (%d)", res);
