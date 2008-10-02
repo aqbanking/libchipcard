@@ -109,6 +109,7 @@ void LC_Device_free(LC_DEVICE *ud) {
     free(ud->path);
     free(ud->deviceName);
     free(ud->busName);
+    free(ud->halPath);
     GWEN_FREE_OBJECT(ud);
     DBG_MEM_DEC("LC_DEVICE");
   }
@@ -138,6 +139,8 @@ LC_DEVICE *LC_Device_dup(const LC_DEVICE *od) {
     ud->readerType=strdup(od->readerType);
   if (od->driverType)
     ud->driverType=strdup(od->driverType);
+  if (od->halPath)
+    ud->halPath=strdup(od->halPath);
 
   return ud;
 }
@@ -270,6 +273,22 @@ void LC_Device_SetReaderType(LC_DEVICE *ud, const char *s) {
   free(ud->readerType);
   if (s) ud->readerType=strdup(s);
   else ud->readerType=0;
+}
+
+
+
+const char *LC_Device_GetHalPath(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->halPath;
+}
+
+
+
+void LC_Device_SetHalPath(LC_DEVICE *ud, const char *s) {
+  assert(ud);
+  free(ud->halPath);
+  if (s) ud->halPath=strdup(s);
+  else ud->halPath=NULL;
 }
 
 
@@ -457,6 +476,10 @@ int LC_Device_ReplaceVars(const LC_DEVICE *d, const char *tmpl,
           if (d->driverType)
             GWEN_Buffer_AppendString(buf, d->driverType);
         }
+	else if (strcasecmp(vname, "halpath")==0) {
+	  if (d->halPath)
+	    GWEN_Buffer_AppendString(buf, d->halPath);
+	}
         else {
           DBG_ERROR(0, "Bad replace string (unknown var \"%s\" in \"%s\")",
                     vname, tmpl);
@@ -519,6 +542,8 @@ void LC_DevScanner_SetReadDevsFn(LC_DEVSCANNER *um,
   assert(um);
   um->readDevsFn=fn;
 }
+
+
 
 
 
@@ -609,7 +634,7 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
                 d->busId,
                 d->deviceId,
                 d->vendorId,
-                d->productId);
+		d->productId);
       newd=LC_Device_dup(d);
       newd->devicePos=d->devicePos;
       LC_Device_List_Add(newd, um->newDevices);
@@ -681,6 +706,7 @@ void LC_DevMonitor_AddScanner(LC_DEVMONITOR *um, LC_DEVSCANNER *sc) {
   assert(sc);
   LC_DevScanner_List_Add(sc, um->scanners);
 }
+
 
 
 

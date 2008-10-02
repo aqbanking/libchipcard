@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_SERVER_USBSCANNER_L_H
-#define CHIPCARD_SERVER_USBSCANNER_L_H
+#ifndef CHIPCARD_SERVER_USBRAWSCANNER_L_H
+#define CHIPCARD_SERVER_USBRAWSCANNER_L_H
 
 #include "devmonitor.h"
 
@@ -23,4 +23,4 @@ LC_DEVSCANNER *LC_UsbRawScanner_new();
 
 
 
-#endif /* CHIPCARD_SERVER_USBSCANNER_L_H */
+#endif /* CHIPCARD_SERVER_USBRAWSCANNER_L_H */

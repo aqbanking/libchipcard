@@ -118,6 +118,9 @@ void LC_Device_SetDriverType(LC_DEVICE *ud, const char *s);
 const char *LC_Device_GetReaderType(const LC_DEVICE *ud);
 void LC_Device_SetReaderType(LC_DEVICE *ud, const char *s);
 
+const char *LC_Device_GetHalPath(const LC_DEVICE *ud);
+void LC_Device_SetHalPath(LC_DEVICE *ud, const char *s);
+
 int LC_Device_ReplaceVars(const LC_DEVICE *d, const char *tmpl,
                           GWEN_BUFFER *buf);
 

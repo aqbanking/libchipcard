@@ -11,14 +11,16 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_SERVER_USBRAWSCANNER_P_H
-#define CHIPCARD_SERVER_USBRAWSCANNER_P_H
+#ifndef CHIPCARD_SERVER_HALSCANNER_L_H
+#define CHIPCARD_SERVER_HALSCANNER_L_H
 
-#include "usbrawscanner_l.h"
-
-
-static
-int LC_UsbRawScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl);
+#include "devmonitor.h"
 
 
-#endif /* CHIPCARD_SERVER_USBRAWSCANNER_P_H */
+LC_DEVSCANNER *LC_HalScanner_new();
+
+
+
+
+
+#endif /* CHIPCARD_SERVER_HALSCANNER_L_H */

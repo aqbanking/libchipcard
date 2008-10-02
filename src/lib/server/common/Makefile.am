@@ -1,10 +1,12 @@
-INCLUDES=-I.. -I$(srcdir)/.. @all_includes@
+INCLUDES=-I.. -I$(srcdir)/.. @all_includes@ @hal_includes@
 
 noinst_LTLIBRARIES=libcommon.la
 
 noinst_HEADERS=\
   card_p.h \
   devmonitor_p.h \
+  halscanner_l.h \
+  halscanner_p.h \
   pciscanner_p.h \
   pciscanner_l.h \
   pcmciascanner_p.h \
@@ -25,13 +27,14 @@ iheader_HEADERS=\
 libcommon_la_SOURCES=\
   card.c \
   devmonitor.c \
+  halscanner.c \
   pciscanner.c \
   pcmciascanner.c \
   reader.c \
   usbrawscanner.c \
   usbttyscanner.c
 
-libcommon_la_LIBADD=@libusb_libs@ @libsysfs_libs@
+libcommon_la_LIBADD=@libusb_libs@ @libsysfs_libs@ @hal_libs@
 
 MAINTAINERCLEANFILES=Makefile.in
 

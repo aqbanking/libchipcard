@@ -1,7 +1,4 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
     copyright   : (C) 2004 by Martin Preuss
     email       : martin@libchipcard.de
@@ -22,6 +19,9 @@
 #include "pcmciascanner_l.h"
 #include "usbrawscanner_l.h"
 #include "usbttyscanner_l.h"
+#ifdef USE_HAL
+# include "halscanner_l.h"
+#endif
 
 #include <chipcard/sharedstuff/driverinfo.h>
 
@@ -245,6 +245,12 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
 
     DBG_INFO(0, "Autoconfiguration enabled");
     dm->deviceMonitor=LC_DevMonitor_new();
+#ifdef USE_HAL
+    DBG_INFO(0, "Adding HAL scanner");
+    scanner=LC_HalScanner_new();
+    LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+    scanners++;
+#else
     if (dm->disablePciScan==0) {
       DBG_INFO(0, "Adding PCI bus scanner");
       scanner=LC_PciScanner_new();
@@ -269,6 +275,7 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
       LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
       scanners++;
     }
+#endif
     dm->lastHardwareScan=0;
     if (scanners==0) {
       DBG_WARN(0,

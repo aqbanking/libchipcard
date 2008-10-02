@@ -35,6 +35,12 @@
 # include <sysfs/libsysfs.h>
 #endif
 
+#ifdef USE_LIBHAL
+# include <hal/libhal.h>
+# include <dbus/dbus.h>
+#endif
+
+
 #ifdef OS_WIN32
 # define DIRSEP "\\"
 #else
@@ -51,6 +57,90 @@ LC_DEVSCANNER *LC_UsbRawScanner_new() {
 
   return sc;
 }
+
+
+#ifdef USE_LIBHAL
+
+int LC_UsbRawScanner_FillHalName(LC_DEVICE *dev) {
+  DBusError dbus_error;
+  DBusConnection *dbus_conn;
+  LibHalContext *ctx;
+  char **devices;
+  int i_devices, i;
+  int foundDev=0;
+  
+  dbus_error_init(&dbus_error);
+  dbus_conn = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
+  if (dbus_error_is_set(&dbus_error)) {
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "Could not connect to system bus [%s]",
+	      dbus_error.message);
+    dbus_error_free(&dbus_error);
+    return GWEN_ERROR_IO;
+  }
+  
+  ctx=libhal_ctx_new();
+  if (ctx==NULL) {
+    DBG_ERROR(LC_LOGDOMAIN, "Could not create HAL context");
+    dbus_error_free(&dbus_error);
+    return NULL;
+  }
+
+  libhal_ctx_set_dbus_connection(ctx, dbus_conn);
+
+  devices=libhal_get_all_devices(ctx, &i_devices, &dbus_error);
+  if (devices==NULL) {
+    DBG_INFO(LC_LOGDOMAIN, "HAL not running: %s", dbus_error.message);
+    dbus_error_free (&dbus_error);
+    /*libhal_ctx_shutdown (ctx, NULL);*/
+    libhal_ctx_free (ctx);
+    return GWEN_ERROR_IO;
+  }
+
+  for (i=0; i<i_devices; i++) {
+    const char *udi=devices[i];
+
+    if (libhal_device_exists(ctx, udi, &dbus_error)) {
+      if (libhal_device_property_exists(ctx, udi, "usb.bus_number", NULL) &&
+	  libhal_device_property_exists(ctx, udi, "usb.linux.device_number", NULL)){
+	int busNumber;
+	int busPos;
+
+	busNumber=libhal_device_get_property_int(ctx,
+						 udi,
+						 "usb.bus_number",
+						 NULL);
+	busPos=libhal_device_get_property_int(ctx,
+					      udi,
+					      "usb.linux.device_number",
+					      NULL);
+	LC_Device_SetHalPath(dev, udi);
+        foundDev=1;
+	break;
+      }
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN, "Device [%s] does not exist", udi);
+      break;
+    }
+  }
+
+  dbus_error_free(&dbus_error);
+  /*libhal_ctx_shutdown(ctx, NULL);*/
+  libhal_ctx_free(ctx);
+  
+  if (!deviceFound) {
+    DBG_INFO(LC_LOGDOMAIN, "Device not found");
+    return GWEN_ERROR_IO;
+  }
+
+  return 0;
+}
+
+
+#endif
+
+
 
 
 #ifndef USE_LIBSYSFS

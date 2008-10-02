@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 
-#ifndef CHIPCARD_SERVER_USBTTYMONITOR_P_H
-#define CHIPCARD_SERVER_USBTTYMONITOR_P_H
+#ifndef CHIPCARD_SERVER_USBTTYSCANNER_P_H
+#define CHIPCARD_SERVER_USBTTYSCANNER_P_H
 
 #include "usbttyscanner_l.h"
 

@@ -217,22 +217,62 @@ AQ_DISTRIBUTION
 
 
 
-# ---------------------------------------------------------------------------
-# check for libsysfs
+###-------------------------------------------------------------------------
+#
+# HAL
 #
 
-AC_LIBSYSFS
-if test "$have_libsysfs" == "yes" ; then
-    all_includes="$all_includes $libsysfs_includes"
-    all_libraries="$all_libraries $libsysfs_libs"
-    AC_DEFINE(USE_LIBSYSFS, 1, [whether libsysfs is to be used])
-else
+AC_MSG_CHECKING(whether HAL support is wanted)
+AC_ARG_ENABLE(hal,
+  [  --enable-hal        add support for libHAL (default=auto)],
+  enable_hal="$enableval",
+  enable_hal="auto")
+AC_MSG_RESULT($enable_hal)
+
+if test "${enable_hal}" != "no"; then
+  pkg_modules="hal >= 0.5.0"
+  PKG_CHECK_MODULES(hal, [$pkg_modules], [have_hal="yes"], [have_hal="no"])
+  if test "$have_hal" = "yes"; then
+    AC_DEFINE(USE_HAL, 1, [if HAL is available])
+    hal_includes="$hal_CFLAGS"
+    hal_libs="$hal_LIBS"
+    enable_hal="yes"
+  else
+    if test "$enable_hal" == "yes"; then
+      AC_MSG_ERROR([
+*** HAL not found even though it was requested.
+*** Please install libhal and libhal-dev (or libhal-devel on some systems)
+*** or don't use --enable-hal.])
+    else
+      enable_hal="no"
+    fi
+  fi
+fi
+
+AC_SUBST(hal_libs)
+AC_SUBST(hal_includes)
+
+
+
+# ---------------------------------------------------------------------------
+# check for libsysfs as a fallback if HAL is not available
+#
+
+if test "${enable_hal}" != "yes"; then
+  AC_LIBSYSFS
+  if test "$have_libsysfs" == "yes" ; then
+      all_includes="$all_includes $libsysfs_includes"
+      all_libraries="$all_libraries $libsysfs_libs"
+      AC_DEFINE(USE_LIBSYSFS, 1, [whether libsysfs is to be used])
+  else
     AC_MSG_WARN([
-*** LibSysFS not found, autoconfiguration of PCMCIA and UsbTTY devices will 
-*** not be available.
+*** LibSysFS not found, and HAL support is not enabled. 
+*** Autoconfiguration of PCMCIA and UsbTTY devices will not be available.
 *** If you are using those devices under Linux you really should consider 
-*** installing libSysFS.
-*** You can get it from http://linux-diag.sourceforge.net/Sysfsutils.html.])
+*** installing libSysFS or even better libHAL.])
+  fi
+else
+  have_libsysfs="no"
 fi
 
 
@@ -953,6 +993,7 @@ echo "================================="
 echo "Libchipcard version     : $CHIPCARD_VERSION_FULL_STRING"
 echo "System                  : $OSYSTEM"
 echo "Support for LibSysFS    : $have_libsysfs"
+echo "Support for HAL         : $have_hal"
 echo "Cfg Installation Folder : $lc_client_config_dir"
 echo "Cfg Search Folder       : $lc_cfg_searchdir"
 echo "Data Installation Folder: $lc_client_xml_dir"

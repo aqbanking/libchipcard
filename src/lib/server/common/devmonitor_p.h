@@ -32,6 +32,7 @@ struct LC_DEVICE {
   char *deviceName;
   char *readerType;
   char *driverType;
+  char *halPath;
 };
 
 
