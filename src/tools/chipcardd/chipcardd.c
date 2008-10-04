@@ -736,12 +736,16 @@ int server(ARGUMENTS *args) {
   pidfile=args->pidFile;
 
   DBG_NOTICE(0, "Chipcardd v"CHIPCARD_VERSION_FULL_STRING" started.");
-#ifdef USE_LIBSYSFS
-  DBG_NOTICE(0, "LibSYSFS supported.");
+#ifdef USE_HAL
+  DBG_NOTICE(0, "LibHAL supported.");
 #else
+# ifdef USE_LIBSYSFS
+  DBG_NOTICE(0, "LibSYSFS supported.");
+# else
   DBG_WARN(0,
 	   "USB scanning not supported "
-	   "(LibSYSFS is not available).");
+	   "(Neither LibHAL nor LibSYSFS available).");
+# endif
 #endif
 
 #ifdef HAVE_FORK
