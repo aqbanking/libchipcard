@@ -287,6 +287,14 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
     }
   }
 
+  if (dm->hardwareScanInterval==0) {
+    /* no auto scanning, disable poll mode */
+    DBG_INFO(0, "Disabling poll mode");
+    LCS_Server_SetPollModeDisabled(dm->server, 1);
+  }
+  else
+    LCS_Server_SetPollModeDisabled(dm->server, 0);
+
   LCDM_DeviceManager_ReloadDrivers(dm);
 
   return 0;

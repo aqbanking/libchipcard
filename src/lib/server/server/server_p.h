@@ -38,6 +38,8 @@ struct LCS_SERVER {
   /* runtime vars */
   GWEN_PLUGIN_MANAGER *driverPluginManager;
   GWEN_PLUGIN_MANAGER *servicePluginManager;
+
+  int pollModeDisabled;
 };
 
 

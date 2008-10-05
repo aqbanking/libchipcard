@@ -33,3 +33,18 @@
 #include "cs_work.c"
 
 
+int LCS_Server_GetPollModeDisabled(const LCS_SERVER *cs) {
+  assert(cs);
+  return cs->pollModeDisabled;
+}
+
+
+
+void LCS_Server_SetPollModeDisabled(LCS_SERVER *cs, int i) {
+  assert(cs);
+  cs->pollModeDisabled=i;
+}
+
+
+
+

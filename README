@@ -8,6 +8,7 @@
                3.2. Adding Readers
                3.3. File Permissions
                4. Starting The Daemon
+               4.1. Disabling Poll Mode
                5. Server Environment Variables
                6. Client Setup
                7. Using Libchipcard in your own Projects
@@ -178,6 +179,19 @@ stop it using CTRL-C.
 
 Please note that the server doesn't start if there is no line in the
 configuration file saying "enabled=1".
+
+
+4.1. Disabling Poll Mode
+------------------------
+
+The default setting of Libchipcard is to scan every 1-2 seconds for new
+hardware. However, on modern udev-based systems this polling can be avoided
+by setting "hardwareScanInterval" in the section "DeviceManager" of the server
+configuration file "chipcardd.conf" to "0".
+The daemon will then only initially scan for connected hardware. It can be
+notified about hardware changes via signals (SIGUSR2). Upon receiption of this
+signal the daemon immediately scans for new hardware 
+(e.g. "killall -SIGUSR2 chipcardd" will trigger a hardware scan).
 
 
 

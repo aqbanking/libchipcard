@@ -206,6 +206,9 @@ int LCS_Server_GetClientCount(LCS_SERVER *cs);
 
 void LCS_Server_TriggerHwScan(LCS_SERVER *cs);
 
+int LCS_Server_GetPollModeDisabled(const LCS_SERVER *cs);
+void LCS_Server_SetPollModeDisabled(LCS_SERVER *cs, int i);
+
 
 #endif /* CHIPCARD_SERVER2_SERVER_L_H */
 

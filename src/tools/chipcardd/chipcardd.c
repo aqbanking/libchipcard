@@ -1029,6 +1029,9 @@ int server(ARGUMENTS *args) {
     return RETURNVALUE_SETUP;
   }
 
+  /* initially trigger a hardware scan */
+  LCS_Server_TriggerHwScan(cardServer);
+
   /* loop */
   DBG_INFO(0, "Ready to service requests.");
   loopCount=0;
@@ -1086,7 +1089,16 @@ int server(ARGUMENTS *args) {
     }
 
     /* actually wait for changes in io */
-    GWEN_Io_Manager_Wait(750, 0);
+    if (LCS_Server_GetPollModeDisabled(cardServer))
+      /* poll mode is disabled, so we can wait for a much longer time
+       * In this case hardware changes a communicated via signals, upon
+       * which the GWEN_Io_Manager_Wait() function returns anyway.
+       * This should put an end to the discussion I read on a Debian list
+       * about chipcardd wasting energy...
+       */
+      GWEN_Io_Manager_Wait(10000, 0);
+    else
+      GWEN_Io_Manager_Wait(1500, 0);
   } /* while */
 
   DBG_INFO(0, "Will now deinitialize server.\n");
