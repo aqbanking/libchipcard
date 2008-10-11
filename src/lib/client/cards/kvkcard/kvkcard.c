@@ -320,9 +320,14 @@ LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card){
   assert(kvk);
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting KVK card and app");
+  res=LC_Card_SelectCard(card, "kvk");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    return res;
+  }
   res=LC_Card_SelectApp(card, "kvk");
   if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
 

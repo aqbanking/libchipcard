@@ -145,13 +145,13 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
   GWEN_Buffer_free(ddv->bin_ef_id_1);
   ddv->bin_ef_id_1=0;
 
-  res=LC_Card_SelectApp(card, "ddv");
+  res=LC_Card_SelectCard(card, 0);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  res=LC_Card_SelectCard(card, 0);
+  res=LC_Card_SelectApp(card, "ddv");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;

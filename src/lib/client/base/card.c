@@ -564,6 +564,7 @@ LC_CLIENT_RESULT LC_Card_SelectCard(LC_CARD *card, const char *s) {
       return LC_Client_ResultNotFound;
     }
     card->cardNode=node;
+    DBG_INFO(LC_LOGDOMAIN, "Clearing command cache");
     GWEN_DB_ClearGroup(card->dbCommandCache, NULL);
   }
   return LC_Client_ResultOk;

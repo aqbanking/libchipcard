@@ -73,7 +73,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card){
   LC_CLIENT_RESULT res;
   LC_PROCESSORCARD *mc;
 
-  DBG_DEBUG(LC_LOGDOMAIN, "Opening card as memory card");
+  DBG_DEBUG(LC_LOGDOMAIN, "Opening card as processor card");
 
   assert(card);
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_PROCESSORCARD, card);
@@ -108,6 +108,12 @@ LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card){
   assert(mc);
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting processor card and app");
+  res=LC_Card_SelectCard(card, "ProcessorCard");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
   res=LC_Card_SelectApp(card, "ProcessorCard");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");

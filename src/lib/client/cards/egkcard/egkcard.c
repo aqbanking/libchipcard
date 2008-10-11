@@ -97,12 +97,6 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Open(LC_CARD *card){
   egk=GWEN_INHERIT_GETDATA(LC_CARD, LC_EGKCARD, card);
   assert(egk);
 
-  if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
-    DBG_ERROR(LC_LOGDOMAIN, "Not a processor card (%s)",
-              LC_Card_GetCardType(card));
-    return LC_Client_ResultNotSupported;
-  }
-
   res=egk->openFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
@@ -131,13 +125,13 @@ LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card){
   egk=GWEN_INHERIT_GETDATA(LC_CARD, LC_EGKCARD, card);
   assert(egk);
 
-  res=LC_Card_SelectApp(card, "egk");
+  res=LC_Card_SelectCard(card, "egk");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  res=LC_Card_SelectCard(card, 0);
+  res=LC_Card_SelectApp(card, "egk");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;

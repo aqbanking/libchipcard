@@ -113,6 +113,11 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
   assert(mc);
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting memory card and app");
+  res=LC_Card_SelectCard(card, "MemoryCard");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
   res=LC_Card_SelectApp(card, "MemoryCard");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
