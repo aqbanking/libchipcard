@@ -437,6 +437,135 @@ LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf){
 
 
 
+LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,
+						 LC_HI_PERSONAL_DATA *d) {
+  const char *s;
+  GWEN_XMLNODE *nn;
+  
+  s=GWEN_XMLNode_GetCharValue(n, "Versicherten_ID", NULL);
+  LC_HIPersonalData_SetInsuranceId(d, s);
+  
+  s=GWEN_XMLNode_GetCharValue(n, "Geburtsdatum", NULL);
+  if (s) {
+    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+    LC_HIPersonalData_SetDateOfBirth(d, ti);
+    GWEN_Time_free(ti);
+  }
+  s=GWEN_XMLNode_GetCharValue(n, "Vorname", NULL);
+  LC_HIPersonalData_SetPrename(d, s);
+  s=GWEN_XMLNode_GetCharValue(n, "Nachname", NULL);
+  LC_HIPersonalData_SetName(d, s);
+  s=GWEN_XMLNode_GetCharValue(n, "Sex", "1");
+  if (s) {
+    if (strcasecmp(s, "1")==0)
+      LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexMale);
+    else if (strcasecmp(s, "2")==0)
+      LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexFemale);
+    else {
+      DBG_WARN(LC_LOGDOMAIN, "Unknown sex \"%s\"", s);
+    }
+  }
+  
+  nn=GWEN_XMLNode_FindFirstTag(n,
+			       "Anschrift",
+			       NULL, NULL);
+  if (nn) {
+    s=GWEN_XMLNode_GetCharValue(nn, "Postleitzahl", NULL);
+    LC_HIPersonalData_SetAddrZipCode(d, s);
+    s=GWEN_XMLNode_GetCharValue(nn, "Ort", NULL);
+    LC_HIPersonalData_SetAddrCity(d, s);
+    s=GWEN_XMLNode_GetCharValue(nn, "Wohnsitzlaendercode", NULL);
+    LC_HIPersonalData_SetAddrCountry(d, s);
+    nn=GWEN_XMLNode_FindFirstTag(nn,
+				 "Adresse",
+				 NULL, NULL);
+    if (nn) {
+      s=GWEN_XMLNode_GetCharValue(nn, "Strasse", NULL);
+      LC_HIPersonalData_SetAddrStreet(d, s);
+      s=GWEN_XMLNode_GetCharValue(nn, "Hausnummer", NULL);
+      LC_HIPersonalData_SetAddrHouseNum(d, s);
+    }
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_5_1_0(GWEN_XMLNODE *n,
+						   LC_HI_PERSONAL_DATA *d) {
+  n=GWEN_XMLNode_FindFirstTag(n,
+			      "Versicherter",
+			      NULL, NULL);
+  if (n) {
+    const char *s;
+    GWEN_XMLNODE *nn;
+
+    s=GWEN_XMLNode_GetCharValue(n, "Versicherten_ID", NULL);
+    LC_HIPersonalData_SetInsuranceId(d, s);
+
+    nn=GWEN_XMLNode_FindFirstTag(n,
+				 "Person",
+				 NULL, NULL);
+    if (nn) {
+      GWEN_XMLNODE *nnn;
+
+      s=GWEN_XMLNode_GetCharValue(nn, "Geburtsdatum", NULL);
+      if (s) {
+	GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+	LC_HIPersonalData_SetDateOfBirth(d, ti);
+	GWEN_Time_free(ti);
+      }
+      s=GWEN_XMLNode_GetCharValue(nn, "Vorname", NULL);
+      LC_HIPersonalData_SetPrename(d, s);
+      s=GWEN_XMLNode_GetCharValue(nn, "Nachname", NULL);
+      LC_HIPersonalData_SetName(d, s);
+      s=GWEN_XMLNode_GetCharValue(nn, "Sex", "M");
+      if (s) {
+	if (strcasecmp(s, "M")==0)
+	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexMale);
+	else if (strcasecmp(s, "W")==0)
+	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexFemale);
+	else {
+	  DBG_WARN(LC_LOGDOMAIN, "Unknown sex \"%s\"", s);
+	}
+      }
+      s=GWEN_XMLNode_GetCharValue(nn, "Titel", NULL);
+      LC_HIPersonalData_SetTitle(d, s);
+
+      s=GWEN_XMLNode_GetCharValue(nn, "Namenszusatz", NULL);
+      LC_HIPersonalData_SetNameSuffix(d, s);
+
+      nnn=GWEN_XMLNode_FindFirstTag(nn,
+				    "StrassenAdresse",
+				    NULL, NULL);
+      if (nnn) {
+	GWEN_XMLNODE *nnnn;
+
+	s=GWEN_XMLNode_GetCharValue(nnn, "Postleitzahl", NULL);
+	LC_HIPersonalData_SetAddrZipCode(d, s);
+	s=GWEN_XMLNode_GetCharValue(nnn, "Ort", NULL);
+	LC_HIPersonalData_SetAddrCity(d, s);
+	s=GWEN_XMLNode_GetCharValue(nnn, "Strasse", NULL);
+	LC_HIPersonalData_SetAddrStreet(d, s);
+	s=GWEN_XMLNode_GetCharValue(nnn, "Hausnummer", NULL);
+	LC_HIPersonalData_SetAddrHouseNum(d, s);
+
+	nnnn=GWEN_XMLNode_FindFirstTag(nnn,
+				       "Land",
+				       NULL, NULL);
+	if (nnnn) {
+	  s=GWEN_XMLNode_GetCharValue(nnnn, "Wohnsitzlaendercode", NULL);
+	  LC_HIPersonalData_SetAddrCountry(d, s);
+	}
+      }
+    }
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
 LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
 					     LC_HI_PERSONAL_DATA **pData) {
   GWEN_BUFFER *dbuf;
@@ -462,59 +591,39 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
       GWEN_Buffer_free(dbuf);
       return LC_Client_ResultDataError;
     }
+    GWEN_Buffer_free(dbuf);
+
+    GWEN_XMLNode_StripNamespaces(root);
+
+    /*GWEN_XMLNode_Dump(root, stderr, 2);*/
 
     n=GWEN_XMLNode_FindFirstTag(root,
 				"UC_PersoenlicheVersichertendatenXML",
 				NULL, NULL);
     if (n) {
-      LC_HI_PERSONAL_DATA *d;
       const char *s;
-      GWEN_XMLNODE *nn;
+      LC_HI_PERSONAL_DATA *d;
 
       d=LC_HIPersonalData_new();
-      s=GWEN_XMLNode_GetCharValue(n, "Versicherten_ID", NULL);
-      LC_HIPersonalData_SetInsuranceId(d, s);
 
-      s=GWEN_XMLNode_GetCharValue(n, "Geburtsdatum", NULL);
+      s=GWEN_XMLNode_GetProperty(n, "CDM_VERSION", NULL);
       if (s) {
-	GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-	LC_HIPersonalData_SetDateOfBirth(d, ti);
-        GWEN_Time_free(ti);
-      }
-      s=GWEN_XMLNode_GetCharValue(n, "Vorname", NULL);
-      LC_HIPersonalData_SetPrename(d, s);
-      s=GWEN_XMLNode_GetCharValue(n, "Nachname", NULL);
-      LC_HIPersonalData_SetName(d, s);
-      s=GWEN_XMLNode_GetCharValue(n, "Sex", "1");
-      if (s) {
-	if (strcasecmp(s, "1")==0)
-	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexMale);
-	else if (strcasecmp(s, "2")==0)
-	  LC_HIPersonalData_SetSex(d, LC_HIPersonalData_SexFemale);
+	if (GWEN_Text_ComparePattern(s, "5.*", 0)!=-1)
+	  res=LC_EgkCard_ReadPersonalData_5_1_0(n, d);
 	else {
-          DBG_WARN(LC_LOGDOMAIN, "Unknown sex \"%s\"", s);
+	  DBG_WARN(LC_LOGDOMAIN,
+		   "Unhandled CDM_VERSION [%s], trying 5.1.0", s);
+	  res=LC_EgkCard_ReadPersonalData_5_1_0(n, d);
 	}
       }
+      else
+	res=LC_EgkCard_ReadPersonalData_old(n, d);
 
-      nn=GWEN_XMLNode_FindFirstTag(n,
-				   "Anschrift",
-				   NULL, NULL);
-      if (nn) {
-	s=GWEN_XMLNode_GetCharValue(nn, "Postleitzahl", NULL);
-	LC_HIPersonalData_SetAddrZipCode(d, s);
-	s=GWEN_XMLNode_GetCharValue(nn, "Ort", NULL);
-        LC_HIPersonalData_SetAddrCity(d, s);
-	s=GWEN_XMLNode_GetCharValue(nn, "Wohnsitzlaendercode", NULL);
-	LC_HIPersonalData_SetAddrCountry(d, s);
-	nn=GWEN_XMLNode_FindFirstTag(nn,
-				     "Adresse",
-				     NULL, NULL);
-	if (nn) {
-	  s=GWEN_XMLNode_GetCharValue(nn, "Strasse", NULL);
-	  LC_HIPersonalData_SetAddrStreet(d, s);
-	  s=GWEN_XMLNode_GetCharValue(nn, "Hausnummer", NULL);
-          LC_HIPersonalData_SetAddrHouseNum(d, s);
-	}
+      if (res!=LC_Client_ResultOk) {
+	DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+	LC_HIPersonalData_free(d);
+	GWEN_XMLNode_free(root);
+	return res;
       }
 
       *pData=d;
@@ -525,6 +634,120 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
 
   return LC_Client_ResultOk;
 }
+
+
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_old(GWEN_XMLNODE *n,
+						  LC_HI_INSURANCE_DATA *d) {
+  const char *s;
+  GWEN_XMLNODE *nn;
+
+  nn=GWEN_XMLNode_FindFirstTag(n,
+			       "Versicherungsschutz",
+			       NULL, NULL);
+  if (nn) {
+    s=GWEN_XMLNode_GetCharValue(nn, "Begin", NULL);
+    if (s) {
+      GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+      LC_HIInsuranceData_SetCoverBegin(d, ti);
+      GWEN_Time_free(ti);
+    }
+    s=GWEN_XMLNode_GetCharValue(nn, "Ende", NULL);
+    if (s) {
+      GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+      LC_HIInsuranceData_SetCoverEnd(d, ti);
+      GWEN_Time_free(ti);
+    }
+    s=GWEN_XMLNode_GetCharValue(nn, "Kostentraegerkennung", NULL);
+    DBG_ERROR(0, "KT-Kennung: %s", s);
+    LC_HIInsuranceData_SetInstitutionId(d, s);
+    s=GWEN_XMLNode_GetCharValue(nn, "Name", NULL);
+    LC_HIInsuranceData_SetInstitutionName(d, s);
+  }
+  else {
+    DBG_INFO(LC_LOGDOMAIN,
+	     "XML element \"Versicherungsschutz\" not found");
+  }
+  nn=GWEN_XMLNode_FindFirstTag(n,
+			       "Zusatzinfos",
+			       NULL, NULL);
+  if (nn)
+    nn=GWEN_XMLNode_FindFirstTag(nn,
+				 "Zusatzinfos_GKV",
+				 NULL, NULL);
+  if (nn) {
+    s=GWEN_XMLNode_GetCharValue(nn, "Rechtskreis", NULL);
+    LC_HIInsuranceData_SetGroup(d, s);
+    s=GWEN_XMLNode_GetCharValue(nn, "Versichertenart", NULL);
+    LC_HIInsuranceData_SetStatus(d, s);
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
+						    LC_HI_INSURANCE_DATA *d) {
+  const char *s;
+  GWEN_XMLNODE *nn;
+
+  n=GWEN_XMLNode_FindFirstTag(n,
+			      "Versicherter",
+			      NULL, NULL);
+  if (n) {
+    nn=GWEN_XMLNode_FindFirstTag(n,
+				 "Versicherungsschutz",
+				 NULL, NULL);
+    if (nn) {
+      GWEN_XMLNODE *nnn;
+
+      s=GWEN_XMLNode_GetCharValue(nn, "Beginn", NULL);
+      if (s) {
+	GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+	LC_HIInsuranceData_SetCoverBegin(d, ti);
+	GWEN_Time_free(ti);
+      }
+      s=GWEN_XMLNode_GetCharValue(nn, "Ende", NULL);
+      if (s) {
+	GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
+	LC_HIInsuranceData_SetCoverEnd(d, ti);
+	GWEN_Time_free(ti);
+      }
+
+      nnn=GWEN_XMLNode_FindFirstTag(nn,
+				    "Kostentraeger",
+				    NULL, NULL);
+      if (nnn) {
+	s=GWEN_XMLNode_GetCharValue(nnn, "Kostentraegerkennung", NULL);
+	LC_HIInsuranceData_SetInstitutionId(d, s);
+	s=GWEN_XMLNode_GetCharValue(nnn, "Name", NULL);
+	LC_HIInsuranceData_SetInstitutionName(d, s);
+      }
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN,
+	       "XML element \"Versicherungsschutz\" not found");
+    }
+    nn=GWEN_XMLNode_FindFirstTag(n,
+				 "Zusatzinfos",
+				 NULL, NULL);
+    if (nn)
+      nn=GWEN_XMLNode_FindFirstTag(nn,
+				   "Zusatzinfos_GKV",
+				   NULL, NULL);
+    if (nn) {
+      s=GWEN_XMLNode_GetCharValue(nn, "Rechtskreis", NULL);
+      LC_HIInsuranceData_SetGroup(d, s);
+      s=GWEN_XMLNode_GetCharValue(nn, "Versichertenart", NULL);
+      LC_HIInsuranceData_SetStatus(d, s);
+    }
+  }
+
+  return LC_Client_ResultOk;
+}
+
 
 
 
@@ -554,43 +777,36 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
       GWEN_Buffer_free(dbuf);
       return LC_Client_ResultDataError;
     }
+    GWEN_Buffer_free(dbuf);
 
     d=LC_HIInsuranceData_new();
+
+    GWEN_XMLNode_StripNamespaces(root);
 
     n=GWEN_XMLNode_FindFirstTag(root,
                                 "UC_allgemeineVersicherungsdatenXML",
 				NULL, NULL);
     if (n) {
       const char *s;
-      GWEN_XMLNODE *nn;
 
-      nn=GWEN_XMLNode_FindFirstTag(n,
-				   "Versicherungsschutz",
-				   NULL, NULL);
-      if (nn) {
-	s=GWEN_XMLNode_GetCharValue(nn, "Begin", NULL);
-	if (s) {
-	  GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-          LC_HIInsuranceData_SetCoverBegin(d, ti);
-	  GWEN_Time_free(ti);
+      s=GWEN_XMLNode_GetProperty(n, "CDM_VERSION", NULL);
+      if (s) {
+	if (GWEN_Text_ComparePattern(s, "5.*", 0)!=-1)
+	  res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
+	else {
+	  DBG_WARN(LC_LOGDOMAIN,
+		   "Unhandled CDM_VERSION [%s], trying 5.1.0", s);
+	  res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
 	}
-	s=GWEN_XMLNode_GetCharValue(nn, "Kostentraegerkennung", NULL);
-	LC_HIInsuranceData_SetInstitutionId(d, s);
-	s=GWEN_XMLNode_GetCharValue(nn, "Name", NULL);
-	LC_HIInsuranceData_SetInstitutionName(d, s);
       }
-      nn=GWEN_XMLNode_FindFirstTag(n,
-				   "Zusatzinfos",
-				   NULL, NULL);
-      if (nn)
-	nn=GWEN_XMLNode_FindFirstTag(nn,
-				     "Zusatzinfos_GKV",
-				     NULL, NULL);
-      if (nn) {
-	s=GWEN_XMLNode_GetCharValue(nn, "Rechtskreis", NULL);
-	LC_HIInsuranceData_SetGroup(d, s);
-	s=GWEN_XMLNode_GetCharValue(nn, "Versichertenart", NULL);
-	LC_HIInsuranceData_SetStatus(d, s);
+      else
+	res=LC_EgkCard_ReadInsuranceData_old(n, d);
+
+      if (res!=LC_Client_ResultOk) {
+	DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        LC_HIInsuranceData_free(d);
+	GWEN_XMLNode_free(root);
+	return res;
       }
     }
 
@@ -599,11 +815,6 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
     return LC_Client_ResultOk;
   }
 }
-
-
-
-
-
 
 
 
