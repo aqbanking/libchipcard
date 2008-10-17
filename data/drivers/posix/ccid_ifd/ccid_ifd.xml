@@ -316,6 +316,18 @@
       <short>O2 Micro Oz776 (2) </short>
     </reader>
 
+    <reader name="ko_kaan_tribank_usb" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0d46" product="0x3010" >
+      <short>Kobil Kaan Advanced (USB)</short>
+
+      <flags>
+        <flag>keypad</flag>
+        <flag>noMemorySw</flag>
+      </flags>
+    </reader>
+
 
   </readers>
 
