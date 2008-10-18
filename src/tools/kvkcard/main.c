@@ -227,6 +227,30 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
+int writeFile(FILE *f, const char *p, int len) {
+  while(len>0) {
+    ssize_t l;
+    ssize_t s;
+
+    l=1024;
+    if (l>len)
+      l=len;
+    s=fwrite(p, 1, l, f);
+    if (s==(ssize_t)-1 || s==0) {
+      DBG_INFO(LC_LOGDOMAIN,
+	       "fwrite: %s",
+	       strerror(errno));
+      return GWEN_ERROR_IO;
+    }
+    p+=s;
+    len-=s;
+  }
+
+  return 0;
+}
+
+
+
 void errorBeep() {
   fprintf(stderr, "\007");
   usleep(250000);
@@ -309,6 +333,12 @@ int main(int argc, char **argv) {
     rv=kvkDaemon(cl, db);
 #endif
   }
+  else if (strcasecmp(s, "rdvd")==0) {
+    rv=rdvd(cl, db);
+  }
+  else if (strcasecmp(s, "rdpd")==0) {
+    rv=rdpd(cl, db);
+  }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);
     rv=RETURNVALUE_PARAM;
@@ -325,6 +355,7 @@ int main(int argc, char **argv) {
 
 #include "read.c"
 #include "daemon.c"
-
+#include "rdvd.c"
+#include "rdpd.c"
 
 

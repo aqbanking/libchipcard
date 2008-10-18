@@ -45,6 +45,8 @@ int kvkDaemon(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 int kvkRead2(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
+int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
+int rdpd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
 #endif /* RSACARD_GLOBAL_H */
