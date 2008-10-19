@@ -88,9 +88,11 @@ install-data-local:
 
 #	git-log --pretty="format:%ad %an%n%s%n%b" >ChangeLog
 
-git-log:
+ChangeLog:
 	git-log --pretty="format:------------------------------------------------------------------%n%ai %an%n%s%n%b" >ChangeLog
 
 
-dist-hook: git-log
+dist-hook:
+	rm -f ChangeLog 2>/dev/null
+	$(MAKE) ChangeLog
 
