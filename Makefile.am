@@ -4,6 +4,7 @@ EXTRA_DIST= \
  AUTHORS \
  COPYING \
  ChangeLog \
+ ChangeLog.old \
  Doxyfile.in \
  INSTALL \
  NEWS \
