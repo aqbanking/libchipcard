@@ -2,7 +2,7 @@ bin_PROGRAMS=kvkcard
 
 INCLUDES=@all_includes@
 
-EXTRA_DIST=README daemon.c read.c
+EXTRA_DIST=README daemon.c read.c rdvd.c rdpd.c
 
 noinst_HEADERS=global.h
 

@@ -341,7 +341,7 @@ int LC_UsbTtyScanner_Read_ProcTtyDriverUsbSerial(LC_DEVICE_LIST *dl) {
                   productId);
       }
       else {
-        currentDevice=LC_Device_new(LC_Device_BusType_UsbTty, 0,
+	currentDevice=LC_Device_new(LC_Device_BusType_Tty, 0,
                                     port, vendorId, productId);
         DBG_VERBOUS(0, "Adding device %d (%04x/%04x)",
                     port,

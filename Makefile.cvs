@@ -93,6 +93,3 @@ mp-w32:
 	  --with-gwen-dir=$(MINGW32_PREFIX)
 
 
-git-log:
-	git-log --pretty="format:%ad %an%n%s%n%b" --since="2008-08-19" >git.log
-

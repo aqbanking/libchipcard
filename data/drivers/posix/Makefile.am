@@ -1,5 +1,6 @@
 SUBDIRS=\
  ccid_ifd \
+ ccid_serial_ifd \
  celectronic_ctapi \
  cherry_ctapi \
  cyberjack_ctapi \

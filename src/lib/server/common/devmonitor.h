@@ -30,7 +30,7 @@ typedef enum {
   LC_Device_BusType_Unknown=-1,
   LC_Device_BusType_Any=0,
   LC_Device_BusType_UsbRaw,
-  LC_Device_BusType_UsbTty,
+  LC_Device_BusType_Tty,
   LC_Device_BusType_Pci,
   LC_Device_BusType_Pcmcia,
   LC_Device_BusType_Serial

@@ -51,8 +51,9 @@ LC_DEVICE_BUSTYPE LC_Device_BusType_fromString(const char *s) {
     return LC_Device_BusType_Any;
   else if (strcasecmp(s, "UsbRaw")==0)
     return LC_Device_BusType_UsbRaw;
-  else if (strcasecmp(s, "UsbTty")==0)
-    return LC_Device_BusType_UsbTty;
+  else if ((strcasecmp(s, "UsbTty")==0) ||
+	   (strcasecmp(s, "tty")==0))
+    return LC_Device_BusType_Tty;
   else if (strcasecmp(s, "pci")==0)
     return LC_Device_BusType_Pci;
   else if (strcasecmp(s, "pcmcia")==0)
@@ -68,7 +69,7 @@ const char *LC_Device_BusType_toString(LC_DEVICE_BUSTYPE i) {
   switch(i) {
   case LC_Device_BusType_Any:    return "any";
   case LC_Device_BusType_UsbRaw: return "UsbRaw";
-  case LC_Device_BusType_UsbTty: return "UsbTty";
+  case LC_Device_BusType_Tty:    return "tty";
   case LC_Device_BusType_Pci:    return "pci";
   case LC_Device_BusType_Pcmcia: return "pcmcia";
   case LC_Device_BusType_Serial: return "serial";

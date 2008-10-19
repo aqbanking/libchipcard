@@ -85,3 +85,11 @@ install-data-local:
 	$(mkinstalldirs) "$(DESTDIR)@lc_client_def_cert_dir@"
 
 
+#	git-log --pretty="format:%ad %an%n%s%n%b" >ChangeLog
+
+git-log:
+	git-log --pretty="format:------------------------------------------------------------------%n%ai %an%n%s%n%b" >ChangeLog
+
+
+dist-hook: git-log
+

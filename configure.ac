@@ -16,9 +16,9 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=2
-CHIPCARD_VERSION_PATCHLEVEL=1
-CHIPCARD_VERSION_BUILD=1
-CHIPCARD_VERSION_TAG="git"
+CHIPCARD_VERSION_PATCHLEVEL=2
+CHIPCARD_VERSION_BUILD=0
+CHIPCARD_VERSION_TAG="stable"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -28,7 +28,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=4
 LIBCHIPCARD_SO_AGE=2
-LIBCHIPCARD_SO_REVISION=1
+LIBCHIPCARD_SO_REVISION=2
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -281,7 +281,7 @@ fi
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(3,0,0,0)
+AC_GWENHYWFAR(3,5,0,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -752,6 +752,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/Makefile
                  data/drivers/posix/Makefile
                  data/drivers/posix/ccid_ifd/Makefile
+                 data/drivers/posix/ccid_serial_ifd/Makefile
                  data/drivers/posix/cherry_ctapi/Makefile
                  data/drivers/posix/cyberjack_ctapi/Makefile
                  data/drivers/posix/kobil_ctapi/Makefile
@@ -1000,9 +1001,9 @@ echo "Data Installation Folder: $lc_client_xml_dir"
 echo "Data Search Folder      : $lc_data_searchdir"
 echo "Local Installation Mode : $enable_local_install"
 if test "$OS_TYPE" != "windows"; then
-  if test "$have_libsysfs" != "yes" ; then
+  if test "$have_hal" != "yes" ; then
     echo ""
-    echo "HINT: You really should install libsysfs (including"
+    echo "HINT: You really should install libhal (including"
     echo "development packages), this will make Libchipcard much more usefull."
     echo "Otherwise autodetection of readers is not fully available."
   fi

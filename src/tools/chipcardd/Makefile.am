@@ -14,6 +14,8 @@ DEFS=@DEFS@ \
   -DLC_DEFAULT_PIDDIR=\"@lc_server_pid_dir@\" \
   -DLC_DEFAULT_LOGDIR=\"@lc_server_log_dir@\"
 
+EXTRA_DIST=runme.sh
+
 # if IS_WINDOWS
 if IS_WINDOWS
  mingw_ldflags=-L/mingw/lib

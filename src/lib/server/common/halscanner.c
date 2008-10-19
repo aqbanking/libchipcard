@@ -210,7 +210,7 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 						       "serial.device",
 						       NULL);
 
-		d=LC_Device_new(LC_Device_BusType_UsbTty,
+		d=LC_Device_new(LC_Device_BusType_Tty,
 				0, busPos,
 				vendorId, productId);
 		LC_Device_SetDevicePos(d, count++);
@@ -222,8 +222,74 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 		/* all set, add device */
 		LC_Device_List_Add(d, dl);
 	      } /* if USB info exists in parent */
+	      else if (libhal_device_property_exists(ctx, parent_udi, "pcmcia.manf_id", NULL) &&
+		       libhal_device_property_exists(ctx, parent_udi, "pcmcia.card_id", NULL)){
+		LC_DEVICE *d;
+		int busPos;
+		int vendorId;
+		int productId;
+		const char *path;
+    
+		busPos=libhal_device_get_property_int(ctx,
+						      parent_udi,
+						      "pcmcia.socket_number",
+						      NULL);
+		vendorId=libhal_device_get_property_int(ctx,
+							parent_udi,
+							"pcmcia.manf_id",
+							NULL);
+		productId=libhal_device_get_property_int(ctx,
+							 parent_udi,
+							 "pcmcia.card_id",
+							 NULL);
+		path=libhal_device_get_property_string(ctx,
+						       udi,
+						       "serial.device",
+						       NULL);
+
+		d=LC_Device_new(LC_Device_BusType_Tty,
+				0, busPos,
+				vendorId, productId);
+		LC_Device_SetDevicePos(d, count++);
+    
+		LC_Device_SetHalPath(d, udi);
+		if (path)
+		  LC_Device_SetPath(d, path);
+
+		/* all set, add device */
+		LC_Device_List_Add(d, dl);
+	      } /* if PCMCIA info exists in parent */
 	    } /* if parent */
 	  } /* if tty */
+	  else if (strcasecmp(subsys, "pcmcia")==0) {
+	    LC_DEVICE *d;
+	    int busPos;
+	    int vendorId;
+	    int productId;
+
+	    busPos=libhal_device_get_property_int(ctx,
+						  udi,
+						  "pcmcia.socket_number",
+						  NULL);
+	    vendorId=libhal_device_get_property_int(ctx,
+						    udi,
+						    "pcmcia.manf_id",
+						    NULL);
+	    productId=libhal_device_get_property_int(ctx,
+						     udi,
+						     "pcmcia.card_id",
+						     NULL);
+  
+	    d=LC_Device_new(LC_Device_BusType_Pcmcia,
+			    0, busPos,
+			    vendorId, productId);
+	    LC_Device_SetDevicePos(d, count++);
+
+	    LC_Device_SetHalPath(d, udi);
+
+	    /* all set, add device */
+	    LC_Device_List_Add(d, dl);
+	  } /* if PCMCIA */
 	} /* if subsys */
 
       }
