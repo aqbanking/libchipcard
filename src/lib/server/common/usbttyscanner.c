@@ -171,7 +171,7 @@ int LC_UsbTtyScanner_ScanSysFS_UsbSerial(LC_DEVICE_LIST *dl) {
 	      }
             }
           }
-          currentDevice=LC_Device_new(LC_Device_BusType_UsbTty,
+          currentDevice=LC_Device_new(LC_Device_BusType_Tty,
                                       0,
                                       port,
                                       vendorId, productId);
