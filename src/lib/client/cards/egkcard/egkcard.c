@@ -284,7 +284,7 @@ LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf){
+LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf){
   LC_EGKCARD *egk;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *lbuf;
@@ -345,7 +345,13 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf){
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf){
+LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf){
+  return LC_EgkCard_ReadRawPd(card, buf);
+}
+
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf){
   LC_EGKCARD *egk;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *lbuf;
@@ -435,6 +441,11 @@ LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf){
   return LC_Client_ResultOk;
 }
 
+
+
+LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf){
+  return LC_EgkCard_ReadRawVd(card, buf);
+}
 
 
 LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,

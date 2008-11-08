@@ -146,7 +146,7 @@ LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
 
 	mres=GWEN_Gui_MessageBox(GWEN_GUI_MSG_FLAGS_SEVERITY_NORMAL |
 				 GWEN_GUI_MSG_FLAGS_CONFIRM_B1 |
-				 GWEN_GUI_MSG_FLAGS_TYPE_WARN,
+				 GWEN_GUI_MSG_FLAGS_TYPE_INFO,
 				 I18N("Insert card"),
 				 I18N("Please insert a chipcard into the reader "
 				      "and click a button."

@@ -26,7 +26,7 @@ int readPD(LC_CARD *card, GWEN_DB_NODE *dbArgs) {
     if (v>0)
       fprintf(stderr, "Card is a EGK card, handling it.\n");
     tbuf=GWEN_Buffer_new(0, 256, 0, 1);
-    res=LC_EgkCard_ReadPd(card, tbuf);
+    res=LC_EgkCard_ReadRawPd(card, tbuf);
     if (res!=LC_Client_ResultOk) {
       showError(card, res, "LC_EgkCard_ReadPd");
       GWEN_Buffer_free(tbuf);

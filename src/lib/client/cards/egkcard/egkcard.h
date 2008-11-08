@@ -77,14 +77,13 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card);
 /*@}*/
 
 
-CHIPCARD_API CHIPCARD_DEPRECATED
-  LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
-				     GWEN_BUFFER *buf);
+/** @name Reading Card Data
+ *
+ */
+/*@{*/
 
-CHIPCARD_API CHIPCARD_DEPRECATED
-  LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
-				     GWEN_BUFFER *buf);
-
+CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf);
+CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
@@ -93,6 +92,24 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
 					      LC_HI_INSURANCE_DATA **pData);
+
+/*@}*/
+
+
+
+/** @name Deprecated Functions
+ *
+ */
+/*@{*/
+
+CHIPCARD_API CHIPCARD_DEPRECATED
+  LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
+				     GWEN_BUFFER *buf);
+
+CHIPCARD_API CHIPCARD_DEPRECATED
+  LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
+				     GWEN_BUFFER *buf);
+/*@}*/
 
 
 /*@}*/ /* defgroup */
