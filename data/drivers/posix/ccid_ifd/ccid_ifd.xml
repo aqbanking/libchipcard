@@ -210,24 +210,20 @@
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
             vendor="0x046a" product="0x0005" >
       <short>Cherry XX33</short>
-      <!--
-        <flags>
-          <flag>keypad</flag>
-        </flags>
-      -->
     </reader>
 
+    <reader name="ccid_cherry_xx44" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x046a" product="0x0010" >
+      <short>Cherry XX44</short>
+    </reader>
 
     <reader name="ccid_cherry_st1044u" busType="UsbRaw" 
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
             vendor="0x046a" product="0x002d" >
       <short>Cherry ST-1044u</short>
-      <!--
-        <flags>
-          <flag>keypad</flag>
-        </flags>
-      -->
     </reader>
 
     <reader name="ccid_cherry_st2000u" busType="UsbRaw" 
@@ -301,6 +297,13 @@
       <short>O2 Micro Oz776 (2) </short>
     </reader>
 
+    <reader name="ccid_o2_776_3" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x0b97" product="0x7762" >
+      <short>O2 Micro Oz776 (3) </short>
+    </reader>
+
     <reader name="ko_kaan_tribank_usb" busType="UsbRaw"
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
@@ -312,7 +315,6 @@
         <flag>noMemorySw</flag>
       </flags>
     </reader>
-
 
   </readers>
 
