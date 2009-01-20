@@ -23,7 +23,6 @@
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
 #include <chipcard/client/cards/processorcard.h>
-#include <chipcard/client/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_STARCOS)
