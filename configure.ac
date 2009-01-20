@@ -17,8 +17,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=2
 CHIPCARD_VERSION_PATCHLEVEL=3
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="git"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -788,6 +788,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/cards/kvkcard/Makefile
                  src/lib/client/cards/processorcard/Makefile
                  src/lib/client/cards/starcos/Makefile
+                 src/lib/client/cards/zkacard/Makefile
                  src/lib/client/mon/Makefile
                  src/lib/client/ct/Makefile
                  src/lib/client/service/Makefile
@@ -881,7 +882,7 @@ lc_modules="io cards ct mon service"
 #client cards mon fs
 lc_client_io_modules="lcc pcsc"
 
-lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard processorcard"
+lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard processorcard zkacard"
 
 
 lprefix="${srcdir}"
