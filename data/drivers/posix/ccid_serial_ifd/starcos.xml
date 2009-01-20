@@ -1,0 +1,13 @@
+<cards>
+  <card name="STARCOS" >
+
+      <!-- 
+    <flags driver="ccid_serial_ifd" reader="ccid_scm_x32">
+        This section removes all flags for this reader and this card
+        because currently secure pin verification does not work with this
+        reader and ASCII pins...
+    </flags>
+      -->
+  </card>
+</cards>
+
