@@ -97,7 +97,9 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
     if (libhal_device_exists(ctx, udi, &dbus_error)) {
       const char *busType;
 
-      busType=libhal_device_get_property_string(ctx, udi, "info.bus", NULL);
+      busType=libhal_device_get_property_string(ctx, udi, "info.subsystem", NULL);
+      if (busType==NULL)
+	busType=libhal_device_get_property_string(ctx, udi, "info.bus", NULL);
       if (busType) {
 	if (strcasecmp(busType, "usb")==0) {
 	  /* USB device, look for LibUSB info */
