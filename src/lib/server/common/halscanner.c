@@ -87,6 +87,9 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
     libhal_ctx_free (ctx);
     return GWEN_ERROR_IO;
   }
+  if (i_devices<1) {
+    DBG_INFO(0, "HAL returned an empty device list, this can't be right...");
+  }
 
   for (i=0; i<i_devices; i++) {
     const char *udi=devices[i];
