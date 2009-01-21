@@ -538,6 +538,7 @@ CHIPCARD_EXPORT char CT_close(unsigned short ctn){
       CT__showError(ctx->card, res, "LC_Card_Close");
       rv=CT_API_RV_ERR_HOST;
     }
+    LC_Client_ReleaseCard(lc_ctapi_client, ctx->card);
   }
   CTAPI_Context_List_Del(ctx);
   CTAPI_Context_free(ctx);
