@@ -304,6 +304,13 @@
       <short>O2 Micro Oz776 (3) </short>
     </reader>
 
+    <reader name="ccid_lenovo" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x17ef" product="0x1003" >
+      <short>Lenovo Integrated Smart Card Reader</short>
+    </reader>
+
     <reader name="ko_kaan_tribank_usb" busType="UsbRaw"
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
