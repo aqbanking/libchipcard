@@ -98,6 +98,9 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
       const char *busType;
 
       busType=libhal_device_get_property_string(ctx, udi, "info.subsystem", NULL);
+      if (busType && (strcasecmp(busType, "usb")!=0))
+        busType=NULL; /* non-USB devices are handled below */
+
       if (busType==NULL)
 	busType=libhal_device_get_property_string(ctx, udi, "info.bus", NULL);
       if (busType) {
@@ -271,6 +274,8 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    int busPos;
 	    int vendorId;
 	    int productId;
+	    char *path;
+	    char *name = NULL;
 
 	    busPos=libhal_device_get_property_int(ctx,
 						  udi,
@@ -284,6 +289,15 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 						     udi,
 						     "pcmcia.card_id",
 						     NULL);
+	    path=libhal_device_get_property_string(ctx,
+						   udi,
+						   "linux.sysfs_path",
+						   NULL);
+	    if (path) {
+	      name=strrchr(path, '/');
+	      if (name)
+	        name++;
+	    }
   
 	    d=LC_Device_new(LC_Device_BusType_Pcmcia,
 			    0, busPos,
@@ -291,8 +305,16 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    LC_Device_SetDevicePos(d, count++);
 
 	    LC_Device_SetHalPath(d, udi);
+	    if (path)
+	      LC_Device_SetPath(d, path);
+	    if (name)
+	      LC_Device_SetDeviceName(d, name);
 
 	    /* all set, add device */
+            /*
+            DBG_DEBUG(0, "Adding device %d (%04x/%04x) with path '%s' and name '%s' (UDI: '%s')",
+            busPos, vendorId, productId, path, name, udi);
+            */
 	    LC_Device_List_Add(d, dl);
 	  } /* if PCMCIA */
 	} /* if subsys */
