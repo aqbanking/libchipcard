@@ -59,6 +59,18 @@
       -->
     </reader>
 
+    <reader name="ccid_gempc_express" busType="UsbRaw"
+            addressType="devicePath"
+            devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
+            vendor="0x08e6" product="0x34ec" >
+      <short>GemPC Express</short>
+      <!--
+        <flags>
+          <flag>keypad</flag>
+        </flags>
+      -->
+    </reader>
+
     <reader name="ccid_gempc_433" busType="UsbRaw" 
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
