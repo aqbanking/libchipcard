@@ -249,12 +249,35 @@ int main(int argc, char **argv) {
   if (rv==GWEN_ARGS_RESULT_HELP) {
     GWEN_BUFFER *ubuf;
 
-    ubuf=GWEN_Buffer_new(0, 256, 0, 1);
+    ubuf=GWEN_Buffer_new(0, 1024, 0, 1);
+    GWEN_Buffer_AppendString(ubuf,
+			     I18N("Usage: "));
+    GWEN_Buffer_AppendString(ubuf, argv[0]);
+    GWEN_Buffer_AppendString(ubuf,
+    			     I18N(" [GLOBAL OPTIONS] COMMAND"
+			          " [LOCAL OPTIONS]\n"));
     if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
-      fprintf(stderr, "Could not generate usage string.\n");
+      fprintf(stderr, "Could not generate help string.\n");
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
     }
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("\nCommands:\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+    			     I18N("  list:\n"
+			          "    List all chipcard readers served by"
+				     " the chipcard daemon\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+    			     I18N("  check:\n"
+			          "    Check all chipcard readers whether they are"
+				  "    available and ready for use\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+    			     I18N("  atr:\n"
+			          "    Read the ATR data from a chipcard\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+    			     I18N("  monitor:\n"
+			          "    Connect to the chipcard daemon and display"
+				     " observed chipcard events."));
     fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
