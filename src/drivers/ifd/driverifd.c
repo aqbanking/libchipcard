@@ -864,10 +864,10 @@ uint32_t DriverIFD_ReaderInfo(LCD_DRIVER *d, LCD_READER *r, GWEN_BUFFER *buf){
 #ifdef LC_ENDIAN_LITTLE
       /* only translate control codes for generic ccid driver >=1.1.0 */
       if (lc_driver__ccid_pre_1_1_0==-1)
-        v=((v & 0xff000000)>>24) |
-          ((v & 0x00ff0000)>>8) |
-          ((v & 0x0000ff00)<<8) |
-          ((v & 0x000000ff)<<24);
+	v=((v & 0xff000000)>>24) |
+	  ((v & 0x00ff0000)>>8) |
+	  ((v & 0x0000ff00)<<8) |
+	  ((v & 0x000000ff)<<24);
 #endif
       DBG_NOTICE(lg, "TLV: %d (%08x)", tlv[i].tag, v);
       ReaderIFD_SetFeatureCode(r, tlv[i].tag, v);
@@ -1018,15 +1018,15 @@ void log_msg(const int priority, const char *fmt, ...) {
 
   switch(priority) {
   case 1: /* PCSC_LOG_INFO */
-    DBG_INFO(0, "PCSC: %s", msgBuf);
+    DBG_INFO(0, "PCSC(%d): %s", priority, msgBuf);
     break;
   case 2: /* PCSC_LOG_ERROR */
   case 3: /* PCSC_LOG_CRITICAL */
-    DBG_ERROR(0, "PCSC: %s", msgBuf);
+    DBG_ERROR(0, "PCSC(%d): %s", priority, msgBuf);
     break;
   case 0: /* PCSC_LOG_DEBUG */
   default:
-    DBG_DEBUG(0, "PCSC: %s", msgBuf);
+    DBG_DEBUG(0, "PCSC(%d): %s", priority, msgBuf);
     break;
   } /* switch */
 
@@ -1104,14 +1104,14 @@ char *pcsc_stringify_error(long x) {
 void DriverIFD__checkMsg(int priority, const char *msg) {
   if (lc_driver__ccid_pre_1_1_0==0 && priority>0) {
     if (GWEN_Text_ComparePattern((const char*)msg,
-                                 "*ProductString: Generic CCID driver v*",
+                                 "*ProductString: Generic CCID driver*",
                                  0)!=-1) {
       const char *p;
 
       p=msg;
       p=strrchr(p, 'v');
-      if (p) {
-        int vmajor=0;
+      if (p && isdigit(p[1])) {
+	int vmajor=0;
         int vminor=0;
         int vpatchlevel=0;
 
@@ -1151,6 +1151,13 @@ void DriverIFD__checkMsg(int priority, const char *msg) {
               lc_driver__ccid_pre_1_1_0=-1;
           }
         }
+      }
+      else {
+	/* grr... newer drivers don't show the version string in this message,
+	 * so we assume this *is* a newer driver
+	 */
+	DBG_NOTICE(0, "Message doesn't show the version, assuming newer driver version (post 1.1.0)");
+	lc_driver__ccid_pre_1_1_0=-1;
       }
     } /* if generic ccid driver */
   } /* if driver type still undetermined */
