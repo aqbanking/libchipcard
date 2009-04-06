@@ -1233,6 +1233,7 @@ int main(int argc, char **argv) {
     rv=RETURNVALUE_PARAM;
   }
   GWEN_Logger_Close(0);
+  DBG_ERROR(0, "Closing GWEN");
   err=GWEN_Fini();
   if (err) {
     DBG_ERROR_ERR(0, err);

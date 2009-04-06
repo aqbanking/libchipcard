@@ -29,9 +29,6 @@
 #include <sys/stat.h>
 #include <ctype.h>
 
-#include <hal/libhal.h>
-#include <dbus/dbus.h>
-
 
 #ifdef OS_WIN32
 # define DIRSEP "\\"
@@ -41,50 +38,73 @@
 
 
 
+GWEN_INHERIT(LC_DEVSCANNER, HALSCANNER);
+
+
+
+
 LC_DEVSCANNER *LC_HalScanner_new() {
   LC_DEVSCANNER *sc;
+  HALSCANNER *xsc;
 
   sc=LC_DevScanner_new();
+  GWEN_NEW_OBJECT(HALSCANNER, xsc);
+  GWEN_INHERIT_SETDATA(LC_DEVSCANNER, HALSCANNER, sc, xsc, LC_HalScanner_FreeData);
   LC_DevScanner_SetReadDevsFn(sc, LC_HalScanner_ReadDevs);
+
+  dbus_error_init(&(xsc->dbus_error));
+  xsc->dbus_conn=dbus_bus_get (DBUS_BUS_SYSTEM, &(xsc->dbus_error));
+  if (dbus_error_is_set(&(xsc->dbus_error))) {
+    DBG_ERROR(0,
+	      "Could not connect to system bus [%s]",
+	      xsc->dbus_error.message);
+    LC_DevScanner_free(sc);
+    return NULL;
+  }
+
+  xsc->ctx=libhal_ctx_new();
+  if (xsc->ctx==NULL) {
+    DBG_ERROR(0, "Could not create HAL context");
+    LC_DevScanner_free(sc);
+    return NULL;
+  }
+
+  libhal_ctx_set_dbus_connection(xsc->ctx, xsc->dbus_conn);
 
   return sc;
 }
 
 
 
+void LC_HalScanner_FreeData(void *bp, void *p) {
+  HALSCANNER *xsc;
+
+  xsc=(HALSCANNER*) p;
+  DBG_INFO(0, "Closing HAL scanner");
+
+  dbus_error_free(&(xsc->dbus_error));
+  dbus_connection_unref(xsc->dbus_conn);
+  /*libhal_ctx_shutdown(ctx, NULL);*/
+  libhal_ctx_free(xsc->ctx);
+
+  GWEN_FREE_OBJECT(xsc);
+}
+
+
+
 int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
-  DBusError dbus_error;
-  DBusConnection *dbus_conn;
-  LibHalContext *ctx;
   char **devices;
   int i_devices, i;
   int count=0;
-  
-  dbus_error_init(&dbus_error);
-  dbus_conn = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
-  if (dbus_error_is_set(&dbus_error)) {
-    DBG_ERROR(0,
-	      "Could not connect to system bus [%s]",
-	      dbus_error.message);
-    dbus_error_free(&dbus_error);
-    return GWEN_ERROR_IO;
-  }
-  
-  ctx=libhal_ctx_new();
-  if (ctx==NULL) {
-    DBG_ERROR(0, "Could not create HAL context");
-    dbus_error_free(&dbus_error);
-    return GWEN_ERROR_IO;
-  }
+  HALSCANNER *xsc;
 
-  libhal_ctx_set_dbus_connection(ctx, dbus_conn);
+  assert(sc);
+  xsc=GWEN_INHERIT_GETDATA(LC_DEVSCANNER, HALSCANNER, sc);
+  assert(xsc);
 
-  devices=libhal_get_all_devices(ctx, &i_devices, &dbus_error);
+  devices=libhal_get_all_devices(xsc->ctx, &i_devices, &(xsc->dbus_error));
   if (devices==NULL) {
-    DBG_INFO(0, "HAL not running: %s", dbus_error.message);
-    dbus_error_free (&dbus_error);
-    /*libhal_ctx_shutdown (ctx, NULL);*/
-    libhal_ctx_free (ctx);
+    DBG_INFO(0, "HAL not running: %s", xsc->dbus_error.message);
     return GWEN_ERROR_IO;
   }
   if (i_devices<1) {
@@ -94,20 +114,22 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
   for (i=0; i<i_devices; i++) {
     const char *udi=devices[i];
 
-    if (libhal_device_exists(ctx, udi, &dbus_error)) {
-      const char *busType;
+    if (libhal_device_exists(xsc->ctx, udi, &(xsc->dbus_error))) {
+      char *busType;
 
-      busType=libhal_device_get_property_string(ctx, udi, "info.subsystem", NULL);
-      if (busType && (strcasecmp(busType, "usb")!=0))
-        busType=NULL; /* non-USB devices are handled below */
+      busType=libhal_device_get_property_string(xsc->ctx, udi, "info.subsystem", NULL);
+      if (busType && (strcasecmp(busType, "usb")!=0)) {
+	libhal_free_string(busType);
+	busType=NULL; /* non-USB devices are handled below */
+      }
 
       if (busType==NULL)
-	busType=libhal_device_get_property_string(ctx, udi, "info.bus", NULL);
+	busType=libhal_device_get_property_string(xsc->ctx, udi, "info.bus", NULL);
       if (busType) {
 	if (strcasecmp(busType, "usb")==0) {
 	  /* USB device, look for LibUSB info */
-	  if (libhal_device_property_exists(ctx, udi, "usb.bus_number", NULL) &&
-	      libhal_device_property_exists(ctx, udi, "usb.linux.device_number", NULL)){
+	  if (libhal_device_property_exists(xsc->ctx, udi, "usb.bus_number", NULL) &&
+	      libhal_device_property_exists(xsc->ctx, udi, "usb.linux.device_number", NULL)){
 	    LC_DEVICE *d;
 	    int busId;
 	    int busPos;
@@ -117,19 +139,19 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    struct stat st;
 	    int havePath=0;
 
-	    busId=libhal_device_get_property_int(ctx,
+	    busId=libhal_device_get_property_int(xsc->ctx,
 						 udi,
 						 "usb.bus_number",
 						 NULL);
-	    busPos=libhal_device_get_property_int(ctx,
+	    busPos=libhal_device_get_property_int(xsc->ctx,
 						  udi,
 						  "usb.linux.device_number",
 						  NULL);
-	    vendorId=libhal_device_get_property_int(ctx,
+	    vendorId=libhal_device_get_property_int(xsc->ctx,
 						    udi,
 						    "usb.vendor_id",
 						    NULL);
-	    productId=libhal_device_get_property_int(ctx,
+	    productId=libhal_device_get_property_int(xsc->ctx,
 						     udi,
 						     "usb.product_id",
 						     NULL);
@@ -177,43 +199,43 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    LC_Device_List_Add(d, dl);
 	  }
 	} /* if USB */
-
+	libhal_free_string(busType);
       } /* if bus type */
       else {
-	const char *subsys;
+	char *subsys;
 
-	subsys=libhal_device_get_property_string(ctx, udi, "linux.subsystem", NULL);
+	subsys=libhal_device_get_property_string(xsc->ctx, udi, "linux.subsystem", NULL);
 	if (subsys) {
 	  if (strcasecmp(subsys, "tty")==0) {
 	    char *parent_udi;
 
 	    /* ttyUSB device, get USB info from parent */
-	    parent_udi=libhal_device_get_property_string(ctx,
+	    parent_udi=libhal_device_get_property_string(xsc->ctx,
 							 udi,
 							 "info.parent",
 							 NULL);
 	    if (parent_udi) {
-	      if (libhal_device_property_exists(ctx, parent_udi, "usb.bus_number", NULL) &&
-		  libhal_device_property_exists(ctx, parent_udi, "usb.linux.device_number", NULL)){
+	      if (libhal_device_property_exists(xsc->ctx, parent_udi, "usb.bus_number", NULL) &&
+		  libhal_device_property_exists(xsc->ctx, parent_udi, "usb.linux.device_number", NULL)){
 		LC_DEVICE *d;
 		int busPos;
 		int vendorId;
 		int productId;
                 const char *path;
 
-		busPos=libhal_device_get_property_int(ctx,
+		busPos=libhal_device_get_property_int(xsc->ctx,
 						      udi,
 						      "serial.port",
 						      NULL);
-		vendorId=libhal_device_get_property_int(ctx,
+		vendorId=libhal_device_get_property_int(xsc->ctx,
 							parent_udi,
 							"usb.vendor_id",
 							NULL);
-		productId=libhal_device_get_property_int(ctx,
+		productId=libhal_device_get_property_int(xsc->ctx,
 							 parent_udi,
 							 "usb.product_id",
 							 NULL);
-		path=libhal_device_get_property_string(ctx,
+		path=libhal_device_get_property_string(xsc->ctx,
 						       udi,
 						       "serial.device",
 						       NULL);
@@ -230,27 +252,27 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 		/* all set, add device */
 		LC_Device_List_Add(d, dl);
 	      } /* if USB info exists in parent */
-	      else if (libhal_device_property_exists(ctx, parent_udi, "pcmcia.manf_id", NULL) &&
-		       libhal_device_property_exists(ctx, parent_udi, "pcmcia.card_id", NULL)){
+	      else if (libhal_device_property_exists(xsc->ctx, parent_udi, "pcmcia.manf_id", NULL) &&
+		       libhal_device_property_exists(xsc->ctx, parent_udi, "pcmcia.card_id", NULL)){
 		LC_DEVICE *d;
 		int busPos;
 		int vendorId;
 		int productId;
-		const char *path;
+		char *path;
     
-		busPos=libhal_device_get_property_int(ctx,
+		busPos=libhal_device_get_property_int(xsc->ctx,
 						      parent_udi,
 						      "pcmcia.socket_number",
 						      NULL);
-		vendorId=libhal_device_get_property_int(ctx,
+		vendorId=libhal_device_get_property_int(xsc->ctx,
 							parent_udi,
 							"pcmcia.manf_id",
 							NULL);
-		productId=libhal_device_get_property_int(ctx,
+		productId=libhal_device_get_property_int(xsc->ctx,
 							 parent_udi,
 							 "pcmcia.card_id",
 							 NULL);
-		path=libhal_device_get_property_string(ctx,
+		path=libhal_device_get_property_string(xsc->ctx,
 						       udi,
 						       "serial.device",
 						       NULL);
@@ -261,12 +283,15 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 		LC_Device_SetDevicePos(d, count++);
     
 		LC_Device_SetHalPath(d, udi);
-		if (path)
+		if (path) {
 		  LC_Device_SetPath(d, path);
+		  libhal_free_string(path);
+		}
 
 		/* all set, add device */
 		LC_Device_List_Add(d, dl);
 	      } /* if PCMCIA info exists in parent */
+	      libhal_free_string(parent_udi);
 	    } /* if parent */
 	  } /* if tty */
 	  else if (strcasecmp(subsys, "pcmcia")==0) {
@@ -277,19 +302,19 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    char *path;
 	    char *name = NULL;
 
-	    busPos=libhal_device_get_property_int(ctx,
+	    busPos=libhal_device_get_property_int(xsc->ctx,
 						  udi,
 						  "pcmcia.socket_number",
 						  NULL);
-	    vendorId=libhal_device_get_property_int(ctx,
+	    vendorId=libhal_device_get_property_int(xsc->ctx,
 						    udi,
 						    "pcmcia.manf_id",
 						    NULL);
-	    productId=libhal_device_get_property_int(ctx,
+	    productId=libhal_device_get_property_int(xsc->ctx,
 						     udi,
 						     "pcmcia.card_id",
 						     NULL);
-	    path=libhal_device_get_property_string(ctx,
+	    path=libhal_device_get_property_string(xsc->ctx,
 						   udi,
 						   "linux.sysfs_path",
 						   NULL);
@@ -305,8 +330,10 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    LC_Device_SetDevicePos(d, count++);
 
 	    LC_Device_SetHalPath(d, udi);
-	    if (path)
+	    if (path) {
 	      LC_Device_SetPath(d, path);
+	      libhal_free_string(path);
+	    }
 	    if (name)
 	      LC_Device_SetDeviceName(d, name);
 
@@ -317,16 +344,15 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
             */
 	    LC_Device_List_Add(d, dl);
 	  } /* if PCMCIA */
+	  libhal_free_string(subsys);
 	} /* if subsys */
 
       }
     } /* if device exists */
   } /* for */
 
-  dbus_error_free(&dbus_error);
-  /*libhal_ctx_shutdown(ctx, NULL);*/
-  libhal_ctx_free(ctx);
-  
+  libhal_free_string_array(devices);
+
   return 0;
 }
 

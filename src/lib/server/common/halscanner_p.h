@@ -13,6 +13,19 @@
 
 #include "halscanner_l.h"
 
+#include <hal/libhal.h>
+#include <dbus/dbus.h>
+
+
+typedef struct HALSCANNER HALSCANNER;
+struct HALSCANNER {
+  DBusError dbus_error;
+  DBusConnection *dbus_conn;
+  LibHalContext *ctx;
+};
+
+static void LC_HalScanner_FreeData(void *bp, void *p);
+
 
 static
 int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl);
