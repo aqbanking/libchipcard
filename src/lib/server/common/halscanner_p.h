@@ -17,8 +17,8 @@
 #include <dbus/dbus.h>
 
 
-typedef struct HALSCANNER HALSCANNER;
-struct HALSCANNER {
+typedef struct LC_HALSCANNER LC_HALSCANNER;
+struct LC_HALSCANNER {
   DBusError dbus_error;
   DBusConnection *dbus_conn;
   LibHalContext *ctx;

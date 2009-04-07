@@ -38,18 +38,18 @@
 
 
 
-GWEN_INHERIT(LC_DEVSCANNER, HALSCANNER);
+GWEN_INHERIT(LC_DEVSCANNER, LC_HALSCANNER);
 
 
 
 
 LC_DEVSCANNER *LC_HalScanner_new() {
   LC_DEVSCANNER *sc;
-  HALSCANNER *xsc;
+  LC_HALSCANNER *xsc;
 
   sc=LC_DevScanner_new();
-  GWEN_NEW_OBJECT(HALSCANNER, xsc);
-  GWEN_INHERIT_SETDATA(LC_DEVSCANNER, HALSCANNER, sc, xsc, LC_HalScanner_FreeData);
+  GWEN_NEW_OBJECT(LC_HALSCANNER, xsc);
+  GWEN_INHERIT_SETDATA(LC_DEVSCANNER, LC_HALSCANNER, sc, xsc, LC_HalScanner_FreeData);
   LC_DevScanner_SetReadDevsFn(sc, LC_HalScanner_ReadDevs);
 
   dbus_error_init(&(xsc->dbus_error));
@@ -77,9 +77,9 @@ LC_DEVSCANNER *LC_HalScanner_new() {
 
 
 void LC_HalScanner_FreeData(void *bp, void *p) {
-  HALSCANNER *xsc;
+  LC_HALSCANNER *xsc;
 
-  xsc=(HALSCANNER*) p;
+  xsc=(LC_HALSCANNER*) p;
   DBG_INFO(0, "Closing HAL scanner");
 
   dbus_error_free(&(xsc->dbus_error));
@@ -96,10 +96,10 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
   char **devices;
   int i_devices, i;
   int count=0;
-  HALSCANNER *xsc;
+  LC_HALSCANNER *xsc;
 
   assert(sc);
-  xsc=GWEN_INHERIT_GETDATA(LC_DEVSCANNER, HALSCANNER, sc);
+  xsc=GWEN_INHERIT_GETDATA(LC_DEVSCANNER, LC_HALSCANNER, sc);
   assert(xsc);
 
   devices=libhal_get_all_devices(xsc->ctx, &i_devices, &(xsc->dbus_error));

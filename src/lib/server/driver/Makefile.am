@@ -18,7 +18,7 @@ EXTRA_DIST=\
   d_virtual.c \
   d_work.c
 
-lib_LTLIBRARIES=libchipcardd.la
+noinst_LTLIBRARIES=libchipcardd.la
 
 iheaderdir=${includedir}/chipcard/server/driver
 iheader_HEADERS=\
