@@ -83,7 +83,10 @@ void LC_HalScanner_FreeData(void *bp, void *p) {
   DBG_INFO(0, "Closing HAL scanner");
 
   dbus_error_free(&(xsc->dbus_error));
-  dbus_connection_unref(xsc->dbus_conn);
+  if (xsc->dbus_conn) {
+    dbus_connection_unref(xsc->dbus_conn);
+    xsc->dbus_conn = NULL;
+  }
   /*libhal_ctx_shutdown(ctx, NULL);*/
   libhal_ctx_free(xsc->ctx);
 

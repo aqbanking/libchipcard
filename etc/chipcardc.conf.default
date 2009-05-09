@@ -24,6 +24,6 @@
 server {
   char typ="local"
   char addr="/var/run/chipcard.comm"
-} # service
+} # server
 
 

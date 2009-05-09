@@ -248,32 +248,42 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
 #ifdef USE_HAL
     DBG_INFO(0, "Adding HAL scanner");
     scanner=LC_HalScanner_new();
-    LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-    scanners++;
+    if (scanner) {
+      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+      scanners++;
+    }
 #else
     if (dm->disablePciScan==0) {
       DBG_INFO(0, "Adding PCI bus scanner");
       scanner=LC_PciScanner_new();
-      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-      scanners++;
+      if (scanner) {
+        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+        scanners++;
+      }
     }
     if (dm->disablePcmciaScan==0) {
       DBG_INFO(0, "Adding PCMCIA bus scanner");
       scanner=LC_PcmciaScanner_new();
-      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-      scanners++;
+      if (scanner) {
+        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+        scanners++;
+      }
     }
     if (dm->disableUsbRawScan==0) {
       DBG_INFO(0, "Adding USB bus scanner");
       scanner=LC_UsbRawScanner_new();
-      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-      scanners++;
+      if (scanner) {
+        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+        scanners++;
+      }
     }
     if (dm->disableUsbTtyScan==0) {
       DBG_INFO(0, "Adding USB TTY bus scanner");
       scanner=LC_UsbTtyScanner_new();
-      LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-      scanners++;
+      if (scanner) {
+        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
+        scanners++;
+      }
     }
 #endif
     dm->lastHardwareScan=0;

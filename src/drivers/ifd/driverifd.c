@@ -285,6 +285,9 @@ const char *DriverIFD_GetErrorText(LCD_DRIVER *d, uint32_t err) {
   case CCID_ICC_NOT_PRESENT:
     s="Card not present";
     break;
+  case CCID_COMMUNICATION_ERROR:
+    s="Communication error";
+    break;
   default:
     s="Unknow error code";
   };
@@ -511,7 +514,7 @@ uint32_t DriverIFD_SendAPDU(LCD_DRIVER *d,
 
 
 
-long DriverIFD__ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
+uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
   long retval;
   unsigned char atrBuffer[300];
   DWORD atrLen;
@@ -567,6 +570,7 @@ long DriverIFD__ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 
   if (retval==CCID_ICC_PRESENT || retval==0) {
     int proto;
+    int ccid_proto=0;
 
     DBG_INFO(LCD_Reader_GetLogger(r), "Card present.");
     LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
@@ -584,6 +588,26 @@ long DriverIFD__ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
       LCD_Slot_AddFlags(sl, LCD_SLOT_FLAGS_PROCESSORCARD);
     }
     LCD_Slot_SetProtocolInfo(sl, proto);
+
+    switch (proto) {
+      case 0: ccid_proto = 1; break;
+      case 1: ccid_proto = 2; break;
+      default:
+	DBG_ERROR(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	         "CCID: Unkown Protocol in ATR: T=%d", proto);
+	break;
+    }
+    DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	     "CCID: Setting Protocol T=%d", proto);
+    retval=dct->setProtoFn(LCD_Slot_GetSlotNum(sl),
+			   ccid_proto, 0, 0, 0, 0);
+    if (retval) {
+      DBG_ERROR(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	       "CCID: Error setting protocol T=%d (%d)",
+	       proto, (int)retval);
+      return retval;
+    }
+
   }
   else if (retval==CCID_ICC_NOT_PRESENT) {
     DBG_NOTICE(LCD_Reader_GetLogger(r), "No card inserted");
@@ -597,55 +621,6 @@ long DriverIFD__ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
     LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
     return retval;
   }
-  return 0;
-}
-
-
-
-uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
-  int i;
-  DRIVER_IFD *dct;
-  long retval;
-
-  assert(d);
-  dct=GWEN_INHERIT_GETDATA(LCD_DRIVER, DRIVER_IFD, d);
-  assert(dct);
-
-  retval=DriverIFD__ConnectSlot(d, sl);
-  if (retval!=CCID_ERROR_POWER_ACTION) {
-    DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-	     "CCID: Result is not POWER_ACTION (%d)",
-	     (int)retval);
-    return retval;
-  }
-
-  if (dct->setProtoFn==NULL)
-    return retval;
-
-  /* try protocols 0 through 15 */
-  for (i=0; i<16; i++) {
-    /* set protocol bt don't change PTS */
-    retval=dct->setProtoFn(LCD_Slot_GetSlotNum(sl),
-			   i, 0, 0, 0, 0);
-    if (retval) {
-      DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-	       "CCID: Error setting protocol %d (%d)",
-	       i, (int)retval);
-    }
-    else {
-      retval=DriverIFD__ConnectSlot(d, sl);
-      if (retval!=CCID_ERROR_POWER_ACTION) {
-	DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-		 "CCID: Result is not POWER_ACTION (%d, proto=%d)",
-		 (int)retval, i);
-	return retval;
-      }
-    }
-  }
-
-  /* assuming no card inserted */
-  DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-	   "Assuming no card is inserted");
   return 0;
 }
 
@@ -714,8 +689,32 @@ uint32_t DriverIFD_ResetSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
     LCD_Slot_SubStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
   }
   else if (retval==0) {
+    int proto;
+    int ccid_proto=0;
+
     LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_INSERTED);
     LCD_Slot_AddStatus(sl, LCD_SLOT_STATUS_CARD_CONNECTED);
+
+    proto=DriverIFD_ExtractProtocolInfo(atrBuffer, atrLen);
+    // Or should it be read from LCD_Slot_GetProtocolInfo?
+    switch (proto) {
+      case 0: ccid_proto = 1; break;
+      case 1: ccid_proto = 2; break;
+      default:
+	DBG_ERROR(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	         "CCID: Unkown Protocol in ATR: T=%d", proto);
+	break;
+    }
+    DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	     "CCID: Setting Protocol T=%d", proto);
+    retval=dct->setProtoFn(LCD_Slot_GetSlotNum(sl),
+			   ccid_proto, 0, 0, 0, 0);
+    if (retval) {
+      DBG_ERROR(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
+	       "CCID: Error setting protocol T=%d (%d)",
+	       proto, (int)retval);
+      return retval;
+    }
   }
   else {
     DBG_NOTICE(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),

@@ -172,6 +172,9 @@ int LC_Client_InitCommon() {
 		 "No configuration file found, using defaults");
       }
       else {
+	DBG_INFO(LC_LOGDOMAIN,
+		 "Reading configuration file \"%s\"",
+		 GWEN_Buffer_GetStart(fbuf));
 	rv=GWEN_DB_ReadFile(db, GWEN_Buffer_GetStart(fbuf),
 			    GWEN_DB_FLAGS_DEFAULT |
 			    GWEN_PATH_FLAGS_CREATE_GROUP,

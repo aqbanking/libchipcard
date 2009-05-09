@@ -16,7 +16,7 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=2
-CHIPCARD_VERSION_PATCHLEVEL=7
+CHIPCARD_VERSION_PATCHLEVEL=8
 CHIPCARD_VERSION_BUILD=0
 CHIPCARD_VERSION_TAG="stable"
 
@@ -28,7 +28,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=4
 LIBCHIPCARD_SO_AGE=2
-LIBCHIPCARD_SO_REVISION=7
+LIBCHIPCARD_SO_REVISION=8
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -760,6 +760,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/posix/omnikey_ifd/Makefile
                  data/drivers/posix/omnikey_ifd/cm_2020_ifd/Makefile
                  data/drivers/posix/omnikey_ifd/cm_4000_ifd/Makefile
+                 data/drivers/posix/omnikey_ifd/cm_4040_ifd/Makefile
                  data/drivers/posix/orga_ctapi/Makefile
                  data/drivers/posix/scmx32_ifd/Makefile
                  data/drivers/posix/scm33x_ifd/Makefile
