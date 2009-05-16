@@ -49,7 +49,6 @@ stamp-h1
 i18nsources
 
 chipcard/*
-*.xml
 *.rc
 src/lib/chipcard.h
 src/lib/version.h
@@ -75,3 +74,9 @@ m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
+src/ct/ddvcard/ddvcard.xml
+src/ct/starcoscard/starcoscard.xml
+src/drivers/ctapi/ctapi.xml
+src/drivers/ifd/ifd.xml
+src/drivers/skeleton/SKEL1.xml
+src/services/kvks/kvks.xml
