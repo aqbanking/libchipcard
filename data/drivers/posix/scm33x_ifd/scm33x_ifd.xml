@@ -8,6 +8,7 @@
 
   <lib>
     <names>
+      <name>libscmccid.so.5.*</name>
       <name>libscr33x.so.4.*</name>
       <name>libscr33x.so.*</name>
     </names>
