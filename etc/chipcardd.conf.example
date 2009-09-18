@@ -151,16 +151,6 @@ DeviceManager {
   #
   int disablePciScan="0"
   
-  #
-  # if "1" then scanning for raw USB devices is disabled.
-  #
-  int disableUsbRawScan="0"
-  
-  #
-  # if "1" then scanning for raw USB serial devices (/dev/ttyUSBx) is disabled.
-  #
-  int disableUsbTtyScan="0"
-  
   
   #
   # minimum time in seconds which has to elapse between two hardware scans

@@ -21,6 +21,6 @@ ctapi_SOURCES=\
   main.c
 
 ctapi_LDADD=../../lib/server/driver/libchipcardd.la \
-  @gwenhywfar_libs@ @libsysfs_libs@
+  @gwenhywfar_libs@
 ctapi_LDFLAGS=@STRIPALL@
 

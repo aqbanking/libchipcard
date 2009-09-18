@@ -526,6 +526,12 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
       GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
                           "productId", i);
 
+  if (1==sscanf(GWEN_XMLNode_GetProperty(node, "usbclass", "-1"),
+                "%i", &i))
+    if (i!=-1)
+      GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
+                          "usbclass", i);
+
   /* read flags */
   n=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "flags");
   if (n) {

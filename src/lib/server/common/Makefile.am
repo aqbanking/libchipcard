@@ -9,13 +9,7 @@ noinst_HEADERS=\
   halscanner_p.h \
   pciscanner_p.h \
   pciscanner_l.h \
-  pcmciascanner_p.h \
-  pcmciascanner_l.h \
-  reader_p.h \
-  usbrawscanner_p.h \
-  usbrawscanner_l.h \
-  usbttyscanner_p.h \
-  usbttyscanner_l.h
+  reader_p.h
 
 
 iheaderdir=${includedir}/chipcard/server/common
@@ -29,12 +23,9 @@ libcommon_la_SOURCES=\
   devmonitor.c \
   halscanner.c \
   pciscanner.c \
-  pcmciascanner.c \
-  reader.c \
-  usbrawscanner.c \
-  usbttyscanner.c
+  reader.c
 
-libcommon_la_LIBADD=@libusb_libs@ @libsysfs_libs@ @hal_libs@
+libcommon_la_LIBADD=@libusb_libs@ @hal_libs@
 
 MAINTAINERCLEANFILES=Makefile.in
 

@@ -304,7 +304,8 @@ int main(int argc, char **argv) {
   }
 
   v=GWEN_DB_GetIntValue(db, "verbosity", 0, 0);
-  GWEN_Gui_CGui_SetIsNonInteractive(gui, (v<2)?1:0);
+  if (v<2)
+    GWEN_Gui_AddFlags(gui, GWEN_GUI_FLAGS_NONINTERACTIVE);
 
   /* get command */
   s=GWEN_DB_GetCharValue(db, "params", 0, 0);

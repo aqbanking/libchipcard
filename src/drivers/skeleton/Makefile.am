@@ -21,6 +21,6 @@ SKEL1_SOURCES=\
   main.c
 
 SKEL1_LDADD=../../lib/server/driver/libchipcardd.la \
-  @gwenhywfar_libs@ @libsysfs_libs@
+  @gwenhywfar_libs@
 SKEL1_LDFLAGS=@STRIPALL@
 

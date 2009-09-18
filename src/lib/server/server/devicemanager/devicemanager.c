@@ -16,9 +16,6 @@
 #include "server_l.h"
 #include "dm_card_l.h"
 #include "pciscanner_l.h"
-#include "pcmciascanner_l.h"
-#include "usbrawscanner_l.h"
-#include "usbttyscanner_l.h"
 #ifdef USE_HAL
 # include "halscanner_l.h"
 #endif
@@ -97,9 +94,6 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
   /* preset with reasonable values */
   dm->disableAutoConf=0;
   dm->disablePciScan=0;
-  dm->disablePcmciaScan=0;
-  dm->disableUsbRawScan=0;
-  dm->disableUsbTtyScan=0;
   dm->driverStartDelay=LCDM_DEVICEMANAGER_DEF_DRIVER_START_DELAY;
   dm->driverStartTimeout=LCDM_DEVICEMANAGER_DEF_DRIVER_START_TIMEOUT;
   dm->driverStopTimeout=LCDM_DEVICEMANAGER_DEF_DRIVER_STOP_TIMEOUT;
@@ -137,12 +131,6 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
                                             dm->disableAutoConf);
     defval=dm->disableAutoConf;
     dm->disablePciScan=GWEN_DB_GetIntValue(dbT, "disablePciScan", 0, defval);
-    dm->disablePcmciaScan=GWEN_DB_GetIntValue(dbT, "disablePcmciaScan", 0,
-                                              defval);
-    dm->disableUsbRawScan=GWEN_DB_GetIntValue(dbT, "disableUsbRawScan", 0,
-                                              defval);
-    dm->disableUsbTtyScan=GWEN_DB_GetIntValue(dbT, "disableUsbTtyScan", 0,
-                                              defval);
 
     /* read some timeout values */
 #define LCDM_DM_INIT_INT(s) \
@@ -3164,8 +3152,12 @@ int LCDM_DeviceManager_DeviceUp(LCDM_DEVICEMANAGER *dm,
 	     (int)LC_Device_GetVendorId(ud)) &&
 	    (GWEN_DB_GetIntValue(dbReader, "productId", 0, 0)==
 	     (int)LC_Device_GetProductId(ud))) {
-	  /* reader found */
-	  break;
+	  int usbClass;
+
+	  usbClass=GWEN_DB_GetIntValue(dbReader, "usbClass", 0, 0);
+	  if (usbClass==0 || (usbClass==LC_Device_GetUsbClass(ud)))
+	    /* reader found */
+	    break;
 	}
       }
       dbReader=GWEN_DB_FindNextGroup(dbReader, "reader");

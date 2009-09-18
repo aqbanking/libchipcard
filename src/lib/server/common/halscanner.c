@@ -138,6 +138,7 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 	    int busPos;
 	    int vendorId;
 	    int productId;
+	    int usbClass=0;
 	    char pbuff[256];
 	    struct stat st;
 	    int havePath=0;
@@ -159,12 +160,19 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 						     "usb.product_id",
 						     NULL);
 
+	    if (libhal_device_property_exists(xsc->ctx, udi, "usb.interface.class", NULL))
+	      usbClass=libhal_device_get_property_int(xsc->ctx,
+						      udi,
+						      "usb.interface.class",
+						      NULL);
+
 	    d=LC_Device_new(LC_Device_BusType_UsbRaw,
 			    busId, busPos,
 			    vendorId, productId);
 	    LC_Device_SetDevicePos(d, count++);
 
 	    LC_Device_SetHalPath(d, udi);
+	    LC_Device_SetUsbClass(d, usbClass);
 
 	    /* determine path for LibUSB */
 	    snprintf(pbuff, sizeof(pbuff),
@@ -321,6 +329,7 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 						   udi,
 						   "linux.sysfs_path",
 						   NULL);
+	    /* TODO: maybe this is no longer needed? We no longer support libsysfs anyway */
 	    if (path) {
 	      name=strrchr(path, '/');
 	      if (name)

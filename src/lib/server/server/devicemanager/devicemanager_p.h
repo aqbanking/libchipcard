@@ -60,9 +60,6 @@ struct LCDM_DEVICEMANAGER {
 
   int disableAutoConf;
   int disablePciScan;
-  int disablePcmciaScan;
-  int disableUsbRawScan;
-  int disableUsbTtyScan;
   unsigned int hardwareScanInterval;
   unsigned int hardwareScanTriggerIntervals;
 

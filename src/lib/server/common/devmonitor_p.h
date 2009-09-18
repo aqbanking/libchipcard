@@ -28,6 +28,7 @@ struct LC_DEVICE {
   uint32_t deviceId;
   uint32_t vendorId;
   uint32_t productId;
+  int usbClass;
   char *busName;
   char *deviceName;
   char *readerType;

@@ -130,6 +130,7 @@ LC_DEVICE *LC_Device_dup(const LC_DEVICE *od) {
   ud->deviceId=od->deviceId;
   ud->vendorId=od->vendorId;
   ud->productId=od->productId;
+  ud->usbClass=od->usbClass;
   if (od->path)
     ud->path=strdup(od->path);
   if (od->busName)
@@ -194,6 +195,20 @@ uint32_t LC_Device_GetVendorId(const LC_DEVICE *ud){
 uint32_t LC_Device_GetProductId(const LC_DEVICE *ud){
   assert(ud);
   return ud->productId;
+}
+
+
+
+int LC_Device_GetUsbClass(const LC_DEVICE *ud) {
+  assert(ud);
+  return ud->usbClass;
+}
+
+
+
+void LC_Device_SetUsbClass(LC_DEVICE *ud, int i) {
+  assert(ud);
+  ud->usbClass=i;
 }
 
 
@@ -299,16 +314,20 @@ LC_DEVICE *LC_Device_List_Find(LC_DEVICE_LIST *dl,
                                uint32_t busId,
                                uint32_t deviceId,
                                uint32_t vendorId,
-                               uint32_t productId) {
+			       uint32_t productId,
+			       int usbClass) {
   LC_DEVICE *d;
 
   d=LC_Device_List_First(dl);
   while(d) {
-    if ((busType==LC_Device_BusType_Any || busType==d->busType) &&
+    if (
+	(busType==LC_Device_BusType_Any || busType==d->busType) &&
 	(busId==0 || busId==d->busId) &&
-        (deviceId==0 || deviceId==d->deviceId) &&
-        (vendorId==0 || vendorId==d->vendorId) &&
-        (productId==0 || productId==d->productId))
+	(deviceId==0 || deviceId==d->deviceId) &&
+	(vendorId==0 || vendorId==d->vendorId) &&
+	(productId==0 || productId==d->productId) &&
+	(usbClass==0 || usbClass==d->usbClass)
+       )
       return d;
     d=LC_Device_List_Next(d);
   } /* while */
@@ -455,6 +474,10 @@ int LC_Device_ReplaceVars(const LC_DEVICE *d, const char *tmpl,
 	}
         else if (strcasecmp(vname, "productId")==0) {
 	  LC_Device__WriteIntVar(d->productId,
+				 format_type, format_len, format_null, buf);
+	}
+	else if (strcasecmp(vname, "usbClass")==0) {
+	  LC_Device__WriteIntVar(d->usbClass,
 				 format_type, format_len, format_null, buf);
 	}
 	else if (strcasecmp(vname, "path")==0) {
@@ -626,7 +649,8 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
 			   d->busId,
 			   d->deviceId,
 			   d->vendorId,
-			   d->productId);
+			   d->productId,
+			   d->usbClass);
     if (!dd) {
       LC_DEVICE *newd;
 
@@ -654,7 +678,8 @@ int LC_DevMonitor_Scan(LC_DEVMONITOR *um) {
 			   d->busId,
 			   d->deviceId,
 			   d->vendorId,
-			   d->productId);
+			   d->productId,
+			   d->usbClass);
     if (!dd) {
       LC_DEVICE *lostd;
 

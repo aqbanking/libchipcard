@@ -227,7 +227,7 @@
     <reader name="ccid_cherry_xx44" busType="UsbRaw"
             addressType="devicePath"
             devicePathTmpl="usb:$(vendorId:04x)/$(productId:04x):libusb:$(busName):$(deviceName)"
-            vendor="0x046a" product="0x0010" >
+            vendor="0x046a" product="0x0010" usbclass="11" >
       <short>Cherry XX44</short>
     </reader>
 

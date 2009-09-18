@@ -22,6 +22,6 @@ ifd_SOURCES=\
 
 
 ifd_LDADD= ../../lib/server/driver/libchipcardd.la \
-  @gwenhywfar_libs@ @libsysfs_libs@
+  @gwenhywfar_libs@
 ifd_LDFLAGS=@STRIPALL@ -export-dynamic
 

@@ -117,6 +117,9 @@ void LCCO_Reader_SetBusId(LCCO_READER *r, uint32_t i);
 uint32_t LCCO_Reader_GetDeviceId(const LCCO_READER *r);
 void LCCO_Reader_SetDeviceId(LCCO_READER *r, uint32_t i);
 
+int LCCO_Reader_GetUsbClass(const LCCO_READER *r);
+void LCCO_Reader_SetUsbClass(LCCO_READER *r, int i);
+
 const char *LCCO_Reader_GetDevicePath(const LCCO_READER *r);
 void LCCO_Reader_SetDevicePath(LCCO_READER *r, const char *s);
 

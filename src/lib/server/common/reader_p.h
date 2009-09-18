@@ -41,6 +41,8 @@ struct LCCO_READER {
   uint32_t vendorId;
   uint32_t productId;
 
+  int usbClass;
+
   /* runtime variables */
   int isAvailable;
   uint32_t busId;

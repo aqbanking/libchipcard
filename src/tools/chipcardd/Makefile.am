@@ -35,6 +35,6 @@ chipcardd4_SOURCES=\
 chipcardd4_LDADD=\
   ../../lib/server/server/libchipcards.la \
   ../../lib/server/common/libcommon.la  \
-  ../../lib/sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@ @libsysfs_libs@
+  ../../lib/sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@
 chipcardd4_LDFLAGS=@STRIPALL@
 

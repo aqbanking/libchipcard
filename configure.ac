@@ -17,8 +17,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=2
 CHIPCARD_VERSION_PATCHLEVEL=8
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="git"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -225,9 +225,9 @@ AQ_DISTRIBUTION
 
 AC_MSG_CHECKING(whether HAL support is wanted)
 AC_ARG_ENABLE(hal,
-  [  --enable-hal        add support for libHAL (default=auto)],
+  [  --enable-hal        add support for libHAL (default=yes)],
   enable_hal="$enableval",
-  enable_hal="auto")
+  enable_hal="yes")
 AC_MSG_RESULT($enable_hal)
 
 if test "${enable_hal}" != "no"; then
@@ -243,7 +243,7 @@ if test "${enable_hal}" != "no"; then
       AC_MSG_ERROR([
 *** HAL not found even though it was requested.
 *** Please install libhal and libhal-dev (or libhal-devel on some systems)
-*** or don't use --enable-hal.])
+*** or use --disable-hal.])
     else
       enable_hal="no"
     fi
@@ -255,34 +255,11 @@ AC_SUBST(hal_includes)
 
 
 
-# ---------------------------------------------------------------------------
-# check for libsysfs as a fallback if HAL is not available
-#
-
-if test "${enable_hal}" != "yes"; then
-  AC_LIBSYSFS
-  if test "$have_libsysfs" == "yes" ; then
-      all_includes="$all_includes $libsysfs_includes"
-      all_libraries="$all_libraries $libsysfs_libs"
-      AC_DEFINE(USE_LIBSYSFS, 1, [whether libsysfs is to be used])
-  else
-    AC_MSG_WARN([
-*** LibSysFS not found, and HAL support is not enabled. 
-*** Autoconfiguration of PCMCIA and UsbTTY devices will not be available.
-*** If you are using those devices under Linux you really should consider 
-*** installing libSysFS or even better libHAL.])
-  fi
-else
-  have_libsysfs="no"
-fi
-
-
-
 ###-------------------------------------------------------------------------
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(3,5,0,0)
+AC_GWENHYWFAR(3,9,0,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -995,7 +972,6 @@ echo "Summary:"
 echo "================================="
 echo "Libchipcard version     : $CHIPCARD_VERSION_FULL_STRING"
 echo "System                  : $OSYSTEM"
-echo "Support for LibSysFS    : $have_libsysfs"
 echo "Support for HAL         : $have_hal"
 echo "Cfg Installation Folder : $lc_client_config_dir"
 echo "Cfg Search Folder       : $lc_cfg_searchdir"

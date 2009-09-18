@@ -87,7 +87,8 @@ LC_DEVICE *LC_Device_List_Find(LC_DEVICE_LIST *dl,
                                uint32_t busId,
                                uint32_t deviceId,
                                uint32_t vendorId,
-                               uint32_t productId);
+			       uint32_t productId,
+			       int usbClass);
 
 LC_DEVICE *LC_Device_Get(LC_DEVICE_LIST *dl,
                          LC_DEVICE_BUSTYPE busType,
@@ -105,6 +106,9 @@ uint32_t LC_Device_GetBusId(const LC_DEVICE *ud);
 uint32_t LC_Device_GetDeviceId(const LC_DEVICE *ud);
 uint32_t LC_Device_GetVendorId(const LC_DEVICE *ud);
 uint32_t LC_Device_GetProductId(const LC_DEVICE *ud);
+
+int LC_Device_GetUsbClass(const LC_DEVICE *ud);
+void LC_Device_SetUsbClass(LC_DEVICE *ud, int i);
 
 const char *LC_Device_GetBusName(const LC_DEVICE *ud);
 void LC_Device_SetBusName(LC_DEVICE *ud, const char *s);

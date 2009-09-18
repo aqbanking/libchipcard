@@ -93,6 +93,7 @@ LCCO_READER *LCCO_Reader_dup(const LCCO_READER *r){
   nr->busType=r->busType;
   nr->vendorId=r->vendorId;
   nr->productId=r->productId;
+  nr->usbClass=r->usbClass;
   nr->isAvailable=r->isAvailable;
   nr->busId=r->busId;
   nr->deviceId=r->deviceId;
@@ -163,6 +164,7 @@ LCCO_READER *LCCO_Reader_fromDb(GWEN_DB_NODE *db){
   r->busId=GWEN_DB_GetIntValue(db, "busId", 0, 0);
   r->vendorId=GWEN_DB_GetIntValue(db, "vendorId", 0, 0);
   r->productId=GWEN_DB_GetIntValue(db, "productId", 0, 0);
+  r->usbClass=GWEN_DB_GetIntValue(db, "usbClass", 0, 0);
 
   r->flags=LC_ReaderFlags_fromDb(db, "flags");
 
@@ -277,6 +279,8 @@ void LCCO_Reader_toDb(const LCCO_READER *r, GWEN_DB_NODE *db){
                       "vendorId", r->vendorId);
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "productId", r->productId);
+  GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                      "usbClass", r->usbClass);
 
   /* store flags */
   LC_ReaderFlags_toDb(db, "flags", r->flags);
@@ -513,6 +517,20 @@ uint32_t LCCO_Reader_GetProductId(const LCCO_READER *r){
 void LCCO_Reader_SetProductId(LCCO_READER *r, uint32_t i){
   assert(r);
   r->productId=i;
+}
+
+
+
+int LCCO_Reader_GetUsbClass(const LCCO_READER *r) {
+  assert(r);
+  return r->usbClass;
+}
+
+
+
+void LCCO_Reader_SetUsbClass(LCCO_READER *r, int i) {
+  assert(r);
+  r->usbClass=i;
 }
 
 
