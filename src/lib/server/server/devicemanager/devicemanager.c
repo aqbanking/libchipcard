@@ -241,38 +241,7 @@ int LCDM_DeviceManager_Init(LCDM_DEVICEMANAGER *dm, GWEN_DB_NODE *dbConfig) {
       scanners++;
     }
 #else
-    if (dm->disablePciScan==0) {
-      DBG_INFO(0, "Adding PCI bus scanner");
-      scanner=LC_PciScanner_new();
-      if (scanner) {
-        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-        scanners++;
-      }
-    }
-    if (dm->disablePcmciaScan==0) {
-      DBG_INFO(0, "Adding PCMCIA bus scanner");
-      scanner=LC_PcmciaScanner_new();
-      if (scanner) {
-        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-        scanners++;
-      }
-    }
-    if (dm->disableUsbRawScan==0) {
-      DBG_INFO(0, "Adding USB bus scanner");
-      scanner=LC_UsbRawScanner_new();
-      if (scanner) {
-        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-        scanners++;
-      }
-    }
-    if (dm->disableUsbTtyScan==0) {
-      DBG_INFO(0, "Adding USB TTY bus scanner");
-      scanner=LC_UsbTtyScanner_new();
-      if (scanner) {
-        LC_DevMonitor_AddScanner(dm->deviceMonitor, scanner);
-        scanners++;
-      }
-    }
+    DBG_NOTICE(0, "No suport for HAL, autoconfiguration not available");
 #endif
     dm->lastHardwareScan=0;
     if (scanners==0) {
