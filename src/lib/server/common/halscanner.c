@@ -69,7 +69,17 @@ LC_DEVSCANNER *LC_HalScanner_new() {
     return NULL;
   }
 
-  libhal_ctx_set_dbus_connection(xsc->ctx, xsc->dbus_conn);
+  if (!libhal_ctx_set_dbus_connection(xsc->ctx, xsc->dbus_conn)) {
+    DBG_ERROR(0, "Failed to set dbus connection for HAL context (is the HAL daemon running?)");
+    LC_DevScanner_free(sc);
+    return NULL;
+  }
+
+  if (!libhal_ctx_init(xsc->ctx, &(xsc->dbus_error))) {
+    DBG_ERROR(0, "Failed to initialize HAL context (is the HAL daemon running?)");
+    LC_DevScanner_free(sc);
+    return NULL;
+  }
 
   return sc;
 }
@@ -232,7 +242,7 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 		int busPos;
 		int vendorId;
 		int productId;
-                const char *path;
+                char *path;
 
 		busPos=libhal_device_get_property_int(xsc->ctx,
 						      udi,
@@ -257,8 +267,10 @@ int LC_HalScanner_ReadDevs(LC_DEVSCANNER *sc, LC_DEVICE_LIST *dl) {
 		LC_Device_SetDevicePos(d, count++);
 
 		LC_Device_SetHalPath(d, udi);
-                if (path)
-		  LC_Device_SetPath(d, path);
+		if (path) {
+		    LC_Device_SetPath(d, path);
+		    libhal_free_string(path);
+		}
 
 		/* all set, add device */
 		LC_Device_List_Add(d, dl);
