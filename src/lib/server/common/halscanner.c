@@ -65,18 +65,23 @@ LC_DEVSCANNER *LC_HalScanner_new() {
   xsc->ctx=libhal_ctx_new();
   if (xsc->ctx==NULL) {
     DBG_ERROR(0, "Could not create HAL context");
+    dbus_connection_unref(xsc->dbus_conn); xsc->dbus_conn = NULL;
     LC_DevScanner_free(sc);
     return NULL;
   }
 
   if (!libhal_ctx_set_dbus_connection(xsc->ctx, xsc->dbus_conn)) {
-    DBG_ERROR(0, "Failed to set dbus connection for HAL context (is the HAL daemon running?)");
+    DBG_ERROR(0, "Failed to set dbus connection for HAL context");
+    libhal_ctx_free(xsc->ctx); xsc->ctx = NULL;
+    dbus_connection_unref(xsc->dbus_conn); xsc->dbus_conn = NULL;
     LC_DevScanner_free(sc);
     return NULL;
   }
 
-  if (!libhal_ctx_init(xsc->ctx, &(xsc->dbus_error))) {
+  if (!libhal_ctx_init(xsc->ctx, NULL)) {
     DBG_ERROR(0, "Failed to initialize HAL context (is the HAL daemon running?)");
+    libhal_ctx_free(xsc->ctx); xsc->ctx = NULL;
+    dbus_connection_unref(xsc->dbus_conn); xsc->dbus_conn = NULL;
     LC_DevScanner_free(sc);
     return NULL;
   }
@@ -92,13 +97,16 @@ void LC_HalScanner_FreeData(void *bp, void *p) {
   xsc=(LC_HALSCANNER*) p;
   DBG_INFO(0, "Closing HAL scanner");
 
+  if (xsc->ctx) {
+    libhal_ctx_shutdown(xsc->ctx, NULL);
+    libhal_ctx_free(xsc->ctx);
+    xsc->ctx = NULL;
+  }
   dbus_error_free(&(xsc->dbus_error));
   if (xsc->dbus_conn) {
     dbus_connection_unref(xsc->dbus_conn);
     xsc->dbus_conn = NULL;
   }
-  /*libhal_ctx_shutdown(ctx, NULL);*/
-  libhal_ctx_free(xsc->ctx);
 
   GWEN_FREE_OBJECT(xsc);
 }
