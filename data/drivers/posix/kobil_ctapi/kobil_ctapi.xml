@@ -106,7 +106,7 @@
       </flags>
     </reader>
 
-    <reader name="ko_kaan_pro_usb" busType="UsbTty" 
+    <reader name="ko_kaan_pro_usb" busType="tty" 
             vendor="0x0d46" product="0x2011" >
       <short>Kaan Professional (USB)</short>
 
@@ -132,7 +132,7 @@
       </flags>
     </reader>
 
-    <reader name="ko_kaan_plus_usb" busType="UsbTty" 
+    <reader name="ko_kaan_plus_usb" busType="tty" 
             vendor="0x0d46" product="0x2012" >
       <short>Kaan Standard Plus (USB)</short>
 

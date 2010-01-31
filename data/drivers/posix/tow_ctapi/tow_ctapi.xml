@@ -48,7 +48,7 @@
       <image>tow_cdm.jpg</image>
     </reader>
 
-    <reader name="tow_usb" busType="UsbTty" 
+    <reader name="tow_usb" busType="tty" 
             vendor="0x067b" product="0x2303">
       <short>Towitoko Chipdrive Micro (USB)</short>
 
