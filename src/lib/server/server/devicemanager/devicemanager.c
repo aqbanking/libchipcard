@@ -518,7 +518,7 @@ int LCDM_DeviceManager_ReloadDrivers(LCDM_DEVICEMANAGER *dm) {
     n=GWEN_DB_GetCharValue(dbT, "driverName", 0, 0);
     assert(n);
     if (GWEN_StringList_HasString(dm->driverBlackList, n)) {
-      DBG_ERROR(0, "Removing driver \"%s\" (blacklisted)", n);
+      DBG_NOTICE(0, "Removing driver \"%s\" (blacklisted)", n);
       GWEN_DB_Group_free(dbT);
     }
     else
