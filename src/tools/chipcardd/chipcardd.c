@@ -83,10 +83,10 @@ static LCS_SERVER *cardServer=0;
 
 
 
-#define k_PRG "chipcardd2"
+#define k_PRG "chipcardd"
 #define k_PRG_VERSION_INFO \
   "chipcardd (part of libchipcard v"CHIPCARD_VERSION_STRING")\n"\
-  "(c) 2005,2006 Martin Preuss<martin@libchipcard.de>\n"\
+  "(c) 2005-2010 Martin Preuss<martin@libchipcard.de>\n"\
   "This program is free software licensed under GPL.\n"\
   "See COPYING for details.\n"
 
@@ -159,7 +159,7 @@ void usage(const char *name) {
 	  I18N("ChipCardDaemon2 - A daemon for chipcard access\n"
                "                 Part of LibChipCard2 "
                CHIPCARD_VERSION_STRING"\n"
-	       "(c) 2004,2005 Martin Preuss<martin@libchipcard.de>\n"
+	       "(c) 2004-2010 Martin Preuss<martin@libchipcard.de>\n"
 	       "This library is free software; you can redistribute it and/or\n"
 	       "modify it under the terms of the GNU Lesser General Public\n"
 	       "License as published by the Free Software Foundation; either\n"
