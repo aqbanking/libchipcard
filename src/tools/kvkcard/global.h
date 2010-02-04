@@ -49,5 +49,8 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 int rdpd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
+int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
+
+
 #endif /* RSACARD_GLOBAL_H */
 

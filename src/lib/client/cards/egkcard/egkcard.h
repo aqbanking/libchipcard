@@ -77,7 +77,7 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card);
 /*@}*/
 
 
-/** @name Reading Card Data
+/** @name Reading And Parsing Card Data
  *
  */
 /*@{*/
@@ -92,6 +92,10 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
 					      LC_HI_INSURANCE_DATA **pData);
+
+CHIPCARD_API 
+LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
+					       LC_HI_INSURANCE_DATA **pData);
 
 /*@}*/
 

@@ -101,6 +101,17 @@ const GWEN_ARGS prg_args[]={
   "Beep after reading a card."
 },
 {
+  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+  GWEN_ArgsType_Char,
+  "infilename",
+  0,
+  1,
+  "i",
+  "infilename",
+  "File to read from. Only needed for psvd and pspd.",
+  "File to read from. Only needed for psvd and pspd."
+},
+{
   0,
   GWEN_ArgsType_Int,
   "dosmode",
@@ -340,6 +351,9 @@ int main(int argc, char **argv) {
   else if (strcasecmp(s, "rdpd")==0) {
     rv=rdpd(cl, db);
   }
+  else if (strcasecmp(s, "psvd")==0) {
+    rv=psvd(cl, db);
+  }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);
     rv=RETURNVALUE_PARAM;
@@ -358,5 +372,6 @@ int main(int argc, char **argv) {
 #include "daemon.c"
 #include "rdvd.c"
 #include "rdpd.c"
+#include "psvd.c"
 
 

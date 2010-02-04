@@ -902,6 +902,62 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
 
 
 
+LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
+					       LC_HI_INSURANCE_DATA **pData) {
+  LC_CLIENT_RESULT res;
+
+  GWEN_XMLNODE *n;
+  LC_HI_INSURANCE_DATA *d=NULL;
+
+  n=GWEN_XMLNode_FindFirstTag(root,
+			      "UC_allgemeineVersicherungsdatenXML",
+			      NULL, NULL);
+  if (n) {
+    const char *s;
+
+    d=LC_HIInsuranceData_new();
+    s=GWEN_XMLNode_GetProperty(n, "CDM_VERSION", NULL);
+    if (s) {
+      DBG_INFO(LC_LOGDOMAIN, "CDM_VERSION is [%s]", s);
+      if (GWEN_Text_ComparePattern(s, "5.*", 0)!=-1) {
+	DBG_INFO(LC_LOGDOMAIN, "Reading as 5.1.0");
+	res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
+      }
+      else if (GWEN_Text_ComparePattern(s, "3.*", 0)!=-1) {
+	DBG_INFO(LC_LOGDOMAIN, "Reading as 3.0.0");
+	res=LC_EgkCard_ReadInsuranceData_3_0_0(n, d);
+      }
+      else {
+	DBG_WARN(LC_LOGDOMAIN,
+		 "Unhandled CDM_VERSION [%s], trying 5.1.0", s);
+	res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
+      }
+    }
+    else {
+      DBG_INFO(LC_LOGDOMAIN,
+	       "Missing CDM_VERSION, trying old data type");
+      /*GWEN_XMLNode_Dump(n, stderr, 2);*/
+      res=LC_EgkCard_ReadInsuranceData_old(n, d);
+    }
+
+    if (res!=LC_Client_ResultOk) {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      LC_HIInsuranceData_free(d);
+      return res;
+    }
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN, "UC_allgemeineVersicherungsdatenXML not found, data follows:");
+    GWEN_XMLNode_Dump(root, stderr, 2);
+    return LC_Client_ResultNotFound;
+  }
+
+  *pData=d;
+  return LC_Client_ResultOk;
+}
+
+
+
 LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
 					      LC_HI_INSURANCE_DATA **pData) {
   GWEN_BUFFER *dbuf;
@@ -916,8 +972,6 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
   }
   else {
     GWEN_XMLNODE *root;
-    GWEN_XMLNODE *n;
-    LC_HI_INSURANCE_DATA *d=NULL;
 
     root=GWEN_XMLNode_fromString(GWEN_Buffer_GetStart(dbuf),
 				 GWEN_Buffer_GetUsedBytes(dbuf),
@@ -930,42 +984,11 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
     }
     GWEN_Buffer_free(dbuf);
 
-    d=LC_HIInsuranceData_new();
-
     GWEN_XMLNode_StripNamespaces(root);
-
-    n=GWEN_XMLNode_FindFirstTag(root,
-                                "UC_allgemeineVersicherungsdatenXML",
-				NULL, NULL);
-    if (n) {
-      const char *s;
-
-      s=GWEN_XMLNode_GetProperty(n, "CDM_VERSION", NULL);
-      if (s) {
-	if (GWEN_Text_ComparePattern(s, "5.*", 0)!=-1)
-	  res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
-	else if (GWEN_Text_ComparePattern(s, "3.*", 0)!=-1)
-	  res=LC_EgkCard_ReadInsuranceData_3_0_0(n, d);
-	else {
-	  DBG_WARN(LC_LOGDOMAIN,
-		   "Unhandled CDM_VERSION [%s], trying 5.1.0", s);
-	  res=LC_EgkCard_ReadInsuranceData_5_1_0(n, d);
-	}
-      }
-      else
-	res=LC_EgkCard_ReadInsuranceData_old(n, d);
-
-      if (res!=LC_Client_ResultOk) {
-	DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-        LC_HIInsuranceData_free(d);
-	GWEN_XMLNode_free(root);
-	return res;
-      }
-    }
+    res=LC_EgkCard_ParseInsuranceData(root, pData);
 
     GWEN_XMLNode_free(root);
-    *pData=d;
-    return LC_Client_ResultOk;
+    return res;
   }
 }
 
