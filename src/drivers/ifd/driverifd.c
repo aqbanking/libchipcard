@@ -565,7 +565,14 @@ uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
       abuf=GWEN_Buffer_new(0, atrLen, 0, 1);
       GWEN_Buffer_AppendBytes(abuf, (const char*)atrBuffer, atrLen);
       LCD_Slot_SetAtr(sl, abuf);
+      DBG_INFO(LCD_Reader_GetLogger(r), "Got a card with this ATR:");
+      GWEN_Text_LogString((const char*)atrBuffer, atrLen,
+			  LCD_Reader_GetLogger(r),
+			  GWEN_LoggerLevel_Info);
     }
+  }
+  if (atrLen==0) {
+    DBG_INFO(LCD_Reader_GetLogger(r), "Got a card with empty ATR");
   }
 
   if (retval==CCID_ICC_PRESENT || retval==0) {
@@ -598,7 +605,7 @@ uint32_t DriverIFD_ConnectSlot(LCD_DRIVER *d, LCD_SLOT *sl) {
 	break;
     }
     DBG_INFO(LCD_Reader_GetLogger(LCD_Slot_GetReader(sl)),
-	     "CCID: Setting Protocol T=%d", proto);
+	     "CCID: Setting Protocol T=%d (%d)", proto, ccid_proto);
     retval=dct->setProtoFn(LCD_Slot_GetSlotNum(sl),
 			   ccid_proto, 0, 0, 0, 0);
     if (retval) {
