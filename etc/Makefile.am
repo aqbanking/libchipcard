@@ -12,6 +12,6 @@ serverconf_DATA=\
 
 
 initscriptdir=@lc_init_script_dir@
-initscript_DATA=chipcardd
+initscript_DATA=chipcardd chipcardd.fedora
 
 EXTRA_DIST=$(clientconf_DATA) $(serverconf_DATA) $(initscript_DATA)
