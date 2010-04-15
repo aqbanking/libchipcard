@@ -1,12 +1,12 @@
 
 EXTRA_DIST=\
-  cyberjack_pcsc.xml \
+  ccid_pcsc.xml \
   card.xml \
   kvk.xml \
   processorcard.xml
 
 
-carddatadir=@lc_client_xml_dir@/cards/cyberjack_pcsc
+carddatadir=@lc_client_xml_dir@/cards/ccid_pcsc
 carddata_DATA=\
   card.xml \
   kvk.xml \
@@ -17,5 +17,5 @@ carddata_DATA=\
 # drivers, but has to assign PC/SC reader names to reader types using these
 # files)
 driverdatadir=@lc_client_xml_dir@/drivers
-driverdata_DATA=cyberjack_pcsc.xml
+driverdata_DATA=ccid_pcsc.xml
 
