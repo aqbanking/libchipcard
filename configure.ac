@@ -17,8 +17,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=2
 CHIPCARD_VERSION_PATCHLEVEL=9
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="git"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -731,8 +731,10 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/posix/Makefile
                  data/drivers/posix/ccid_ifd/Makefile
                  data/drivers/posix/ccid_serial_ifd/Makefile
+                 data/drivers/posix/ccid_pcsc/Makefile
                  data/drivers/posix/cherry_ctapi/Makefile
                  data/drivers/posix/cyberjack_ctapi/Makefile
+                 data/drivers/posix/cyberjack_pcsc/Makefile
                  data/drivers/posix/kobil_ctapi/Makefile
                  data/drivers/posix/omnikey_ifd/Makefile
                  data/drivers/posix/omnikey_ifd/cm_2020_ifd/Makefile
