@@ -4,14 +4,4 @@ clientconf_DATA=\
   chipcardc.conf.example \
   chipcardc.conf.default
 
-serverconfdir=@lc_server_config_dir@
-serverconf_DATA=\
- chipcardd.conf.example \
- chipcardd.conf.default \
- chipcardd.conf.slave
-
-
-initscriptdir=@lc_init_script_dir@
-initscript_DATA=chipcardd chipcardd.fedora
-
-EXTRA_DIST=$(clientconf_DATA) $(serverconf_DATA) $(initscript_DATA)
+EXTRA_DIST=$(clientconf_DATA)

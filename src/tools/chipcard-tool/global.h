@@ -24,7 +24,6 @@
 #define I18N(msg) msg
 
 #define LISTREADERS_TIMEOUT 5
-#define CHECKREADERS_TIMEOUT 15
 #define CARD_TIMEOUT 30
 
 #define RETURNVALUE_PARAM   1
@@ -35,10 +34,7 @@
 
 void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
 
-int listReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
-int checkReaders(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
-int monitor(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 
 

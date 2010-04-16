@@ -81,26 +81,13 @@ LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir} make DESTDIR=$RPM_BUILD_ROOT \
 %doc README COPYING ChangeLog
 %{_libdir}/libchipcardc.so
 %{_libdir}/libchipcardc.so.*
-%{_libdir}/libchipcardd.so
-%{_libdir}/libchipcardd.so.*
-#%{_libdir}/libchipcardi.so
-#%{_libdir}/libchipcardi.so.*
-%{_libdir}/libchipcard_ctapi.so
-%{_libdir}/libchipcard_ctapi.so.*
-%{_libdir}/chipcard/server
-%{_sysconfdir}/chipcard/client
-%{_sysconfdir}/chipcard/server
+%{_sysconfdir}/chipcard
 %{_bindir}/cardcommander
 %{_bindir}/chipcard-tool
 %{_bindir}/geldkarte
 %{_bindir}/kvkcard
 %{_bindir}/memcard
-%{_sbindir}/chipcardd4
-%{_datadir}/chipcard/client
-%{_datadir}/chipcard/server
-%{_localstatedir}/log/chipcard/drivers
-%{_localstatedir}/log/chipcard/services
-%attr(0755,root,root) /etc/init.d/chipcardd
+%{_datadir}/chipcard
 
 %files devel
 %defattr(-,root,root,0755)

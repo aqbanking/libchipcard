@@ -1,4 +1,4 @@
-DIST_SUBDIRS=lib drivers tools services fake_ctapi ct
+DIST_SUBDIRS=lib tools ct
 
-SUBDIRS=lib tools fake_ctapi @lc_dir_nonwindows_src@ ct
+SUBDIRS=lib tools ct
 

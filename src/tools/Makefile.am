@@ -1,4 +1,4 @@
-DIST_SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander chipcardd 
+DIST_SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander
 
-SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander @lc_dir_nonwindows_tools@
+SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander
 

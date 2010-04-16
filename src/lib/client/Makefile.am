@@ -1,4 +1,4 @@
-SUBDIRS=base io cards ct mon service
+SUBDIRS=base io cards ct mon
 
 EXTRA_DIST=ressource.rc.in
 
@@ -18,16 +18,11 @@ iheader_HEADERS=switch.h
 libchipcardc_la_SOURCES=switch.c
 libchipcardc_la_LIBADD= \
   base/libbase.la \
-  io/lcc/libio_lcc.la \
   cards/libcards.la \
   ct/liblcct.la \
   mon/libmon.la \
-  service/libservice.la \
-  ../sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@ @zlib_libs@
-
-if USE_PCSC
-libchipcardc_la_LIBADD+=io/pcsc/libio_pcsc.la @pcsc_libs@
-endif
+  io/pcsc/libio_pcsc.la \
+  ../sharedstuff/libsharedstuff.la $(mingw_ldflags) @gwenhywfar_libs@ @zlib_libs@ @pcsc_libs@
 
 libchipcardc_la_LDFLAGS= \
   @STRIPALL@ -no-undefined -version-info \

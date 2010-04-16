@@ -176,6 +176,7 @@ LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
   DWORD dwAtrLen;
   DWORD dwState;
   uint32_t rflags=0;
+  uint32_t assumedRFlags=0;
   unsigned char rbuffer[300];
   DWORD rblen;
   GWEN_BUFFER *bDriverType;
@@ -245,7 +246,8 @@ LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
         ((v & 0x000000ff)<<24);
 #endif
       DBG_INFO(LC_LOGDOMAIN, "Feature %d: %08x", tlv[i].tag, v);
-
+      if (tlv[i].tag==FEATURE_VERIFY_PIN_DIRECT)
+	assumedRFlags|=LC_READER_FLAGS_KEYPAD;
       LC_ReaderPcsc_SetFeatureCode(r, tlv[i].tag, v);
     }
   }
@@ -276,9 +278,12 @@ LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
 				       bDriverType, bReaderType, &rflags);
   if (res) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "Unable to determine type of reader [%s] (%d)",
+	     "Unable to determine type of reader [%s] (%d), assuming generic pcsc",
 	     LC_ReaderPcsc_GetReaderName(r),
 	     res);
+    GWEN_Buffer_AppendString(bDriverType, "generic_pcsc");
+    GWEN_Buffer_AppendString(bReaderType, "generic_pcsc");
+    rflags=assumedRFlags;
   }
 
   /* create new card */
@@ -290,12 +295,10 @@ LC_CLIENT_RESULT LC_ClientPcsc_ConnectReader(LC_CLIENT *cl,
                        dwAtrLen?pbAtr:0, /* atrBuf */
 		       dwAtrLen);        /* atrLen */
 
-  /* complete card data, use rv from previous call to
-   * LC_Client_GetReaderAndDriverType */
-  if (res==0) {
-    LC_Card_SetDriverType(card, GWEN_Buffer_GetStart(bDriverType));
-    LC_Card_SetReaderType(card, GWEN_Buffer_GetStart(bReaderType));
-  }
+  /* complete card data */
+  LC_Card_SetDriverType(card, GWEN_Buffer_GetStart(bDriverType));
+  LC_Card_SetReaderType(card, GWEN_Buffer_GetStart(bReaderType));
+
   GWEN_Buffer_free(bReaderType);
   GWEN_Buffer_free(bDriverType);
 

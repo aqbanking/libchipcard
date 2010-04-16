@@ -75,17 +75,6 @@ install-srcdoc: srcdoc
 	fi
 
 
-install-data-local:
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_pid_dir@"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@/drivers"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_log_dir@/services"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_def_newcert_dir@"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_def_cert_dir@"
-	$(mkinstalldirs) "$(DESTDIR)@lc_server_lowlevel_driver_dir@"
-	$(mkinstalldirs) "$(DESTDIR)@lc_client_def_cert_dir@"
-
-
 #	git-log --pretty="format:%ad %an%n%s%n%b" >ChangeLog
 
 ChangeLog:

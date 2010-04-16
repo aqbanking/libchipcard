@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -19,7 +16,7 @@
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/cgui.h>
 
-#define PROGRAM_VERSION "2.9"
+#define PROGRAM_VERSION "3.0"
 
 
 const GWEN_ARGS prg_args[]={
@@ -90,72 +87,6 @@ const GWEN_ARGS prg_args[]={
   "verbous",                    /* long option */
   "Increase the verbosity",     /* short description */
   "Every occurrence of this option increases the verbosity."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "showAll",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "a",                          /* short option */
-  "showall",                    /* long option */
-  "Show event log for drivers and readers",     /* short description */
-  "Show event log for drivers and readers."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "timeout",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "t",                          /* short option */
-  "timeout",                    /* long option */
-  "Total timeout for check command",     /* short description */
-  "Set the total timeout for check command."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "readers",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "readers",                    /* long option */
-  "Show readers",               /* short description */
-  "Show readers."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "drivers",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "drivers",                    /* long option */
-  "Show drivers",               /* short description */
-  "Show drivers."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "services",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "services",                   /* long option */
-  "Show services",              /* short description */
-  "Show services."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "startAll",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "start-all",                   /* long option */
-  "Start all readers",           /* short description */
-  "Start all readers when monitoring server"
 },
 {
   GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
@@ -264,20 +195,8 @@ int main(int argc, char **argv) {
     GWEN_Buffer_AppendString(ubuf,
                              I18N("\nCommands:\n\n"));
     GWEN_Buffer_AppendString(ubuf,
-    			     I18N("  list:\n"
-			          "    List all chipcard readers served by"
-				     " the chipcard daemon\n\n"));
-    GWEN_Buffer_AppendString(ubuf,
-    			     I18N("  check:\n"
-			          "    Check all chipcard readers whether they are"
-				  "    available and ready for use\n\n"));
-    GWEN_Buffer_AppendString(ubuf,
     			     I18N("  atr:\n"
 			          "    Read the ATR data from a chipcard\n\n"));
-    GWEN_Buffer_AppendString(ubuf,
-    			     I18N("  monitor:\n"
-			          "    Connect to the chipcard daemon and display"
-				     " observed chipcard events."));
     fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
@@ -330,16 +249,19 @@ int main(int argc, char **argv) {
 
   /* handle command */
   if (strcasecmp(s, "list")==0) {
-    rv=listReaders(cl, db);
+    fprintf(stderr, "Command \"list\" no longer supported\n");
+    rv=RETURNVALUE_PARAM;
   }
   else if (strcasecmp(s, "check")==0) {
-    rv=checkReaders(cl, db);
+    fprintf(stderr, "Command \"check\" no longer supported\n");
+    rv=RETURNVALUE_PARAM;
   }
   else if (strcasecmp(s, "atr")==0) {
     rv=getAtr(cl, db);
   }
   else if (strcasecmp(s, "monitor")==0) {
-    rv=monitor(cl, db);
+    fprintf(stderr, "Command \"monitor\" no longer supported\n");
+    rv=RETURNVALUE_PARAM;
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"", s);

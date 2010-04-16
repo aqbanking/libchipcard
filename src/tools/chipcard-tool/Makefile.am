@@ -6,10 +6,7 @@ noinst_HEADERS=global.h
 
 chipcard_tool_SOURCES=\
   main.c \
-  checkreaders.c \
-  getatr.c \
-  listreaders.c \
-  monitor.c
+  getatr.c
 chipcard_tool_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
 chipcard_tool_LDFLAGS=@STRIPALL@
 
