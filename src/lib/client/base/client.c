@@ -177,8 +177,7 @@ int LC_Client_InitCommon() {
 		 GWEN_Buffer_GetStart(fbuf));
 	rv=GWEN_DB_ReadFile(db, GWEN_Buffer_GetStart(fbuf),
 			    GWEN_DB_FLAGS_DEFAULT |
-			    GWEN_PATH_FLAGS_CREATE_GROUP,
-			    0, 5000);
+			    GWEN_PATH_FLAGS_CREATE_GROUP);
 	if (rv<0) {
 	  DBG_ERROR(LC_LOGDOMAIN,
 		    "Error in configuration file \"%s\" (%d)",

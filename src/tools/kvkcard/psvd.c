@@ -53,7 +53,7 @@ int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   }
 
 
-  rv=GWEN_DB_WriteFile(db, outFile, GWEN_DB_FLAGS_DEFAULT, 0, 2000);
+  rv=GWEN_DB_WriteFile(db, outFile, GWEN_DB_FLAGS_DEFAULT);
   if (rv<0) {
     GWEN_DB_Group_free(db);
     GWEN_XMLNode_free(root);
