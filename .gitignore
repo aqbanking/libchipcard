@@ -81,3 +81,4 @@ src/drivers/ctapi/ctapi.xml
 src/drivers/ifd/ifd.xml
 src/drivers/skeleton/SKEL1.xml
 src/services/kvks/kvks.xml
+core
