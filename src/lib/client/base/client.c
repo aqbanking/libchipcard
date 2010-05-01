@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: card.c 187 2006-06-15 16:13:23Z martin $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -149,6 +146,7 @@ int LC_Client_InitCommon() {
 #endif
 
     /* load configuration file */
+#if 0
     paths=GWEN_PathManager_GetPaths(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
     if (paths) {
       GWEN_DB_NODE *db;
@@ -196,6 +194,7 @@ int LC_Client_InitCommon() {
       DBG_ERROR(LC_LOGDOMAIN, "Internal error: Paths not found");
       return GWEN_ERROR_INTERNAL;
     }
+#endif
 
     /* load XML files */
     paths=GWEN_PathManager_GetPaths(LCC_PM_LIBNAME, LCC_PM_DATADIR);
