@@ -194,6 +194,8 @@ int LC_Client_InitCommon() {
       DBG_ERROR(LC_LOGDOMAIN, "Internal error: Paths not found");
       return GWEN_ERROR_INTERNAL;
     }
+#else
+    lc_client__config=GWEN_DB_Group_new("config");
 #endif
 
     /* load XML files */
