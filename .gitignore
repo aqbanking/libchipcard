@@ -49,7 +49,7 @@ mkinstalldirs
 stamp-h1
 i18nsources
 
-chipcard/*
+libchipcard5/*
 *.rc
 src/lib/chipcard.h
 src/lib/version.h
