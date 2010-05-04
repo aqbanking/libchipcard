@@ -6,7 +6,7 @@ AM_CFLAGS=$(visibility_cflags)
 
 EXTRA_DIST=app-hvb.xml app-vr.xml app.xml card.xml types.xml
 
-INCLUDES=@all_includes@ -I../
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 typefiles=types.xml
 
@@ -18,7 +18,7 @@ noinst_HEADERS=\
   starcos_keydescr_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=@libchipcard_headerdir_am@/cards
 iheader_HEADERS=\
   starcos.h \
   starcos_keydescr.h

@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: tlv_p.h 2 2005-01-02 10:05:37Z aquamaniac $
     begin       : Sun Jun 13 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -15,7 +12,7 @@
 #define CHIPCARD_CLIENT_TLV_P_H
 
 
-#include <chipcard/client/tlv.h>
+#include <chipcard/tlv.h>
 
 
 struct LC_TLV {

@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -25,7 +22,7 @@
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
-#include <chipcard/client/cards/processorcard.h>
+#include <chipcard/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_GELDKARTE)
@@ -261,55 +258,6 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card){
     return res;
   }
 
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_GeldKarte_VerifyPin(LC_CARD *card, const char *pin){
-  LC_GELDKARTE *gk;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  gk=GWEN_INHERIT_GETDATA(LC_CARD, LC_GELDKARTE, card);
-  assert(gk);
-
-  dbReq=GWEN_DB_Group_new("VerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  if (pin)
-    GWEN_DB_SetCharValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                         "pin", pin);
-  res=LC_Card_ExecCommand(card,
-                          "VerifyPin",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_GeldKarte_SecureVerifyPin(LC_CARD *card){
-  LC_GELDKARTE *gk;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-
-  assert(card);
-  gk=GWEN_INHERIT_GETDATA(LC_CARD, LC_GELDKARTE, card);
-  assert(gk);
-
-  dbReq=GWEN_DB_Group_new("SecureVerifyPin");
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card,
-                          "SecureVerifyPin",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
   return res;
 }
 

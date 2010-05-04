@@ -1,4 +1,4 @@
-INCLUDES=-I.. -I$(srcdir)/.. -I$(top_srcdir) @gwenhywfar_includes@
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I$(srcdir)/.. -I$(top_srcdir) @gwenhywfar_includes@ $(pcsc_includes)
 
 noinst_LTLIBRARIES=libbase.la
 
@@ -17,24 +17,20 @@ DEFS += \
 
 AM_CFLAGS=$(visibility_cflags)
 
-iheaderdir=${includedir}/chipcard/client
+iheaderdir=@libchipcard_headerdir_am@
 iheader_HEADERS=\
- client.h client_imp.h \
+ client.h \
  card.h card_imp.h card_l.h \
- notifications.h \
  tlv.h
 
 noinst_HEADERS=\
  client_l.h client_p.h \
  card_p.h \
- notifications_l.h \
- notifications_p.h \
  tlv_p.h
 
 libbase_la_SOURCES=\
  client.c \
  card.c \
- notifications.c \
  tlv.c
 
 appdatadir=@lc_client_xml_dir@/apps

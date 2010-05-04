@@ -1,5 +1,5 @@
 
-INCLUDES=@all_includes@ -I.. -I$(srcdir)/.. 
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I$(srcdir)/.. 
 
 DEFS += \
   -DBUILDING_CHIPCARD
@@ -8,7 +8,7 @@ AM_CFLAGS=$(visibility_cflags)
 
 noinst_LTLIBRARIES=liblcct.la
 
-iheaderdir=${includedir}/chipcard/client/ct
+iheaderdir=@libchipcard_headerdir_am@/ct
 iheader_HEADERS=\
   ct_card.h
 

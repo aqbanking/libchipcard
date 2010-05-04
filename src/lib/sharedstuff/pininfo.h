@@ -92,6 +92,7 @@ typedef struct LC_PININFO LC_PININFO;
 extern "C" {
 #endif
 
+
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_PININFO, CHIPCARD_API)
 GWEN_LIST2_FUNCTION_LIB_DEFS(LC_PININFO, LC_PinInfo, CHIPCARD_API)
 
@@ -127,7 +128,6 @@ CHIPCARD_API int LC_PinInfo_IsModified(const LC_PININFO *st);
 */
 CHIPCARD_API void LC_PinInfo_SetModified(LC_PININFO *st, int i);
 
-
 /**
 * Returns the property @ref LC_PININFO_Name
 */
@@ -149,11 +149,11 @@ CHIPCARD_API void LC_PinInfo_SetId(LC_PININFO *el, uint32_t d);
 /**
 * Returns the property @ref LC_PININFO_Encoding
 */
-CHIPCARD_API GWEN_CRYPT_PINENCODING LC_PinInfo_GetEncoding(const LC_PININFO *el);
+CHIPCARD_API int LC_PinInfo_GetEncoding(const LC_PININFO *el);
 /**
 * Set the property @ref LC_PININFO_Encoding
 */
-CHIPCARD_API void LC_PinInfo_SetEncoding(LC_PININFO *el, GWEN_CRYPT_PINENCODING d);
+CHIPCARD_API void LC_PinInfo_SetEncoding(LC_PININFO *el, int d);
 
 /**
 * Returns the property @ref LC_PININFO_MinLength

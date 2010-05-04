@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Sun Jun 13 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -21,7 +18,7 @@
 #ifndef CHIPCARD_CARD_EXAMPLECARD_H
 #define CHIPCARD_CARD_EXAMPLECARD_H
 
-#include <chipcard/client/card.h>
+#include <chipcard/card.h>
 
 
 int ExampleCard_ExtendCard(LC_CARD *card);

@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -16,11 +13,11 @@
 
 
 #include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
-#include <chipcard/client/cards/kvkcard.h>
-#include <chipcard/client/cards/egkcard.h>
-#include <chipcard/client/cards/hipersonaldata.h>
-#include <chipcard/client/cards/hiinsurancedata.h>
+#include <chipcard/client.h>
+#include <chipcard/cards/kvkcard.h>
+#include <chipcard/cards/egkcard.h>
+#include <chipcard/cards/hipersonaldata.h>
+#include <chipcard/cards/hiinsurancedata.h>
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/process.h>
@@ -41,7 +38,6 @@ void errorBeep();
 
 
 int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
-int kvkDaemon(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 
 int kvkRead2(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 

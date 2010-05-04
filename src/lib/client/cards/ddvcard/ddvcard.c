@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -23,7 +20,7 @@
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
-#include <chipcard/client/cards/processorcard.h>
+#include <chipcard/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_DDVCARD)
@@ -468,9 +465,7 @@ int LC_DDVCard_GetKeyVersion1(LC_CARD *card, int keyNumber){
   dbResp=GWEN_DB_Group_new("response");
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "keyNumber", keyNumber);
-  res=LC_Card_ExecCommand(card, "GetKeyInfo",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "GetKeyInfo", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -589,8 +584,7 @@ LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf){
   dbResp=GWEN_DB_Group_new("response");
   res=LC_Card_ExecCommand(card,
                           "GetChallenge",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+			  dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -647,10 +641,7 @@ LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
                       "in",
                       data, dlen);
 
-  res=LC_Card_ExecCommand(card,
-                          "CryptBlock",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "CryptBlock", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -716,10 +707,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
                       "hashR",
                       GWEN_Buffer_GetStart(hbuf)+8, 12);
 
-  res=LC_Card_ExecCommand(card,
-                          "WriteHashR",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "WriteHashR", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing WriteHashR");
     GWEN_DB_Group_free(dbReq);
@@ -736,10 +724,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
                       "hashL",
                       GWEN_Buffer_GetStart(hbuf), 8);
 
-  res=LC_Card_ExecCommand(card,
-                          "WriteHashL",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "WriteHashL", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing WriteHashL");
     GWEN_DB_Group_free(dbReq);
@@ -753,10 +738,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
   /* retrieve signed hash */
   dbReq=GWEN_DB_Group_new("ReadSignedHash");
   dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card,
-                          "ReadSignedHash",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "ReadSignedHash", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing ReadSignedHash");
     GWEN_DB_Group_free(dbReq);
@@ -812,10 +794,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
                       "hashR",
                       GWEN_Buffer_GetStart(hbuf)+8, 12);
 
-  res=LC_Card_ExecCommand(card,
-                          "WriteHashR",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "WriteHashR", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing WriteHashR");
     GWEN_DB_Group_free(dbReq);
@@ -832,10 +811,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "hashL",
                       GWEN_Buffer_GetStart(hbuf), 8);
-  res=LC_Card_ExecCommand(card,
-                          "SignHash",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "SignHash", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing SignHash");
     GWEN_DB_Group_free(dbReq);

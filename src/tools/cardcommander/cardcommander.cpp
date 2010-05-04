@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
- -------------------
- cvs         : $Id$
  begin       : Fri Dec 13 2002
- copyright   : (C) 2002 by Martin Preuss
+ copyright   : (C) 2002-2010 by Martin Preuss
  email       : martin@libchipcard.de
 
  ****************************************************************************
@@ -43,7 +40,7 @@
 #include <gwenhywfar/cgui.h>
 
 #include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
+#include <chipcard/client.h>
 
 using namespace std;
 
@@ -116,16 +113,13 @@ const GWEN_ARGS prg_args[]={
 void usage(const char *name, const char *ustr) {
   fprintf(stdout,
           I18N("CardCommander - A command line tool to manipulate a chip card.\n"
-               "(c) 2003-2006 Martin Preuss<martin@libchipcard.de>\n"
+               "(c) 2003-2010 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
                "modify it under the terms of the GNU Lesser General Public\n"
                "License as published by the Free Software Foundation; either\n"
                "version 2.1 of the License, or (at your option) any later version.\n"
                "\n"
-               "Usage: %s COMMAND [OPTIONS]\n"
-               "\n"
-               "Available commands:\n"
-               "  read  : read data from a German medical card\n"
+               "Usage: %s [OPTIONS]\n"
                "\n"
                "Available options:\n"
                "%s\n"),
@@ -309,8 +303,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     res=LC_Card_ExecApdu(*card, GWEN_Buffer_GetStart(abuf),
                          GWEN_Buffer_GetUsedBytes(abuf),
                          rbuf,
-                         LC_Client_CmdTargetCard,
-                         30);
+                         LC_Client_CmdTargetCard);
     GWEN_Buffer_free(abuf);
     if (res!=LC_Client_ResultOk) {
       showError(*card, res, "ExecAPDU");
@@ -359,8 +352,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     res=LC_Card_ExecApdu(*card, GWEN_Buffer_GetStart(abuf),
                          GWEN_Buffer_GetUsedBytes(abuf),
                          rbuf,
-                         LC_Client_CmdTargetReader,
-                         30);
+                         LC_Client_CmdTargetReader);
     GWEN_Buffer_free(abuf);
     if (res!=LC_Client_ResultOk) {
       showError(*card, res, "ExecAPDU");

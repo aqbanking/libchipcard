@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include <chipcard/client/cards/starcos.h>
+#include <chipcard/cards/starcos.h>
 #include <chipcard/chipcard.h>
 
 

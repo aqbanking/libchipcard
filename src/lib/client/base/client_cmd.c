@@ -840,8 +840,7 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
                                        LC_CARD *card,
                                        const char *commandName,
                                        GWEN_DB_NODE *cmdData,
-                                       GWEN_DB_NODE *rspData,
-                                       int timeout) {
+                                       GWEN_DB_NODE *rspData) {
   GWEN_XMLNODE *node;
   GWEN_BUFFER *buf;
   GWEN_BUFFER *rbuf;
@@ -896,8 +895,7 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
                        GWEN_Buffer_GetStart(buf),
                        GWEN_Buffer_GetUsedBytes(buf),
                        rbuf,
-                       t,
-                       timeout);
+                       t);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(rbuf);

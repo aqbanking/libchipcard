@@ -14,12 +14,14 @@
 #include <strings.h>
 
 #include <gwenhywfar/types.h>
+#include <gwenhywfar/cryptdefs.h>
 #include <chipcard/chipcard.h>
 
 
 GWEN_INHERIT_FUNCTIONS(LC_PININFO)
 GWEN_LIST_FUNCTIONS(LC_PININFO, LC_PinInfo)
 GWEN_LIST2_FUNCTIONS(LC_PININFO, LC_PinInfo)
+
 
 
 
@@ -74,7 +76,7 @@ int LC_PinInfo_toDb(const LC_PININFO *st, GWEN_DB_NODE *db) {
       return -1;
   if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "id", st->id))
     return -1;
-  if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "encoding", GWEN_Crypt_PinEncoding_toString(st->encoding)))
+  if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "encoding", st->encoding))
     return -1;
   if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "minLength", st->minLength))
     return -1;
@@ -93,7 +95,7 @@ int LC_PinInfo_ReadDb(LC_PININFO *st, GWEN_DB_NODE *db) {
   assert(db);
   LC_PinInfo_SetName(st, GWEN_DB_GetCharValue(db, "name", 0, 0));
   LC_PinInfo_SetId(st, GWEN_DB_GetIntValue(db, "id", 0, 0));
-  LC_PinInfo_SetEncoding(st, GWEN_Crypt_PinEncoding_fromString(GWEN_DB_GetCharValue(db, "encoding", 0, 0)));
+  LC_PinInfo_SetEncoding(st, GWEN_DB_GetIntValue(db, "encoding", 0, 0));
   LC_PinInfo_SetMinLength(st, GWEN_DB_GetIntValue(db, "minLength", 0, 0));
   LC_PinInfo_SetMaxLength(st, GWEN_DB_GetIntValue(db, "maxLength", 0, 0));
   LC_PinInfo_SetAllowChange(st, GWEN_DB_GetIntValue(db, "allowChange", 0, 0));
@@ -150,13 +152,13 @@ void LC_PinInfo_SetId(LC_PININFO *st, uint32_t d) {
 
 
 
-GWEN_CRYPT_PINENCODING LC_PinInfo_GetEncoding(const LC_PININFO *st) {
+int LC_PinInfo_GetEncoding(const LC_PININFO *st) {
   assert(st);
   return st->encoding;
 }
 
 
-void LC_PinInfo_SetEncoding(LC_PININFO *st, GWEN_CRYPT_PINENCODING d) {
+void LC_PinInfo_SetEncoding(LC_PININFO *st, int d) {
   assert(st);
   st->encoding=d;
   st->_modified=1;

@@ -95,108 +95,47 @@ int rdpd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (v>1)
     fprintf(stderr, "Connected.\n");
 
-  if (cardId==0) {
-    for (i=0;;i++) {
-      if (v>0)
-	fprintf(stderr, "Waiting for card...\n");
-      res=LC_Client_GetNextCard(cl, &card, 20);
-      if (res!=LC_Client_ResultOk) {
-	showError(card, res, "GetNextCard");
-	if (dobeep)
-	  errorBeep();
-	return RETURNVALUE_WORK;
-      }
-      if (v>0)
-	fprintf(stderr, "Found a card.\n");
+  for (i=0;;i++) {
+    if (v>0)
+      fprintf(stderr, "Waiting for card...\n");
+    res=LC_Client_GetNextCard(cl, &card, 20);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "GetNextCard");
+      if (dobeep)
+	errorBeep();
+      return RETURNVALUE_WORK;
+    }
+    if (v>0)
+      fprintf(stderr, "Found a card.\n");
 
-      rv=readPD(card, dbArgs);
+    rv=readPD(card, dbArgs);
 
-      if (v>0)
-	fprintf(stderr, "Releasing card.\n");
-      res=LC_Client_ReleaseCard(cl, card);
-      if (res!=LC_Client_ResultOk) {
-	showError(card, res, "ReleaseCard");
-	if (dobeep)
-	  errorBeep();
-	LC_Card_free(card);
-	return RETURNVALUE_WORK;
-      }
+    if (v>0)
+      fprintf(stderr, "Releasing card.\n");
+    res=LC_Client_ReleaseCard(cl, card);
+    if (res!=LC_Client_ResultOk) {
+      showError(card, res, "ReleaseCard");
+      if (dobeep)
+	errorBeep();
       LC_Card_free(card);
+      return RETURNVALUE_WORK;
+    }
+    LC_Card_free(card);
 
 #if 1
-      break;
+    break;
 #else
-      if (rv!=RETURNVALUE_CARD_NOT_SUPP)
-	break;
+    if (rv!=RETURNVALUE_CARD_NOT_SUPP)
+      break;
 
-      if (i>15) {
-	fprintf(stderr, "ERROR: No card found.\n");
-	if (dobeep)
-	  errorBeep();
-	return RETURNVALUE_WORK;
-      }
+    if (i>15) {
+      fprintf(stderr, "ERROR: No card found.\n");
+      if (dobeep)
+	errorBeep();
+      return RETURNVALUE_WORK;
+    }
 #endif
-    } /* for */
-  }
-  else {
-    for (i=0;;i++) {
-      if (v>0)
-	fprintf(stderr, "Waiting for card...\n");
-      res=LC_Client_GetNextCard(cl, &card, 2);
-      if (res!=LC_Client_ResultOk) {
-	showError(card, res, "GetNextCard");
-	if (dobeep)
-	  errorBeep();
-	LC_Client_Stop(cl);
-	return RETURNVALUE_WORK;
-      }
-      if (v>0)
-	fprintf(stderr, "Found a card.\n");
-
-      if (LC_Card_GetCardId(card)!=cardId) {
-	if (v>0)
-	  fprintf(stderr, "Not the wanted card (%08x), releasing.\n",
-		  cardId);
-	if (v>0)
-	  fprintf(stderr, "Releasing card.\n");
-	res=LC_Client_ReleaseCard(cl, card);
-	if (res!=LC_Client_ResultOk) {
-	  showError(card, res, "ReleaseCard");
-	  if (dobeep)
-	    errorBeep();
-	  LC_Card_free(card);
-	  LC_Client_Stop(cl);
-	  return RETURNVALUE_WORK;
-	}
-	LC_Card_free(card);
-      }
-      else {
-	rv=handleCard(card, dbArgs);
-
-	if (v>0)
-	  fprintf(stderr, "Releasing card.\n");
-	res=LC_Client_ReleaseCard(cl, card);
-	if (res!=LC_Client_ResultOk) {
-	  showError(card, res, "ReleaseCard");
-	  if (dobeep)
-	    errorBeep();
-	  LC_Card_free(card);
-	  LC_Client_Stop(cl);
-	  return RETURNVALUE_WORK;
-	}
-	LC_Card_free(card);
-        break;
-      }
-  
-      if (i>15) {
-	fprintf(stderr, "ERROR: No card found.\n");
-	if (dobeep)
-	  errorBeep();
-	LC_Client_Stop(cl);
-	return RETURNVALUE_WORK;
-      }
-    } /* for */
-  }
+  } /* for */
 
   /* stop waiting */
   if (v>1)

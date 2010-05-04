@@ -6,7 +6,7 @@ AM_CFLAGS=$(visibility_cflags)
 
 EXTRA_DIST=app.xml card.xml types.xml
 
-INCLUDES=@all_includes@ -I../
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 typefiles=types.xml
 
@@ -22,7 +22,7 @@ noinst_HEADERS=\
   geldkarte_values_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=@libchipcard_headerdir_am@/cards
 iheader_HEADERS=\
   geldkarte.h \
   geldkarte_blog.h \

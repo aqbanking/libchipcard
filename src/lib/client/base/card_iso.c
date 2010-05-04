@@ -33,8 +33,7 @@ LC_CLIENT_RESULT CHIPCARD_CB
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "lr", size);
 
-  res=LC_Card_ExecCommand(card, "IsoReadBinary", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoReadBinary", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -98,8 +97,7 @@ LC_Card__IsoUpdateBinary(LC_CARD *card,
     }
   }
 
-  res=LC_Card_ExecCommand(card, "IsoUpdateBinary", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoUpdateBinary", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -149,8 +147,7 @@ LC_Card__IsoWriteBinary(LC_CARD *card,
     }
   }
 
-  res=LC_Card_ExecCommand(card, "IsoWriteBinary", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoWriteBinary", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -196,8 +193,7 @@ LC_Card__IsoEraseBinary(LC_CARD *card,
     GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "len", size);
 
-  res=LC_Card_ExecCommand(card, "IsoEraseBinary", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoEraseBinary", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -241,8 +237,7 @@ LC_Card__IsoReadRecord(LC_CARD *card,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "p2", p2);
 
-  res=LC_Card_ExecCommand(card, "IsoReadRecord", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoReadRecord", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -293,8 +288,7 @@ LC_Card__IsoWriteRecord(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "data", ptr, size);
   }
-  res=LC_Card_ExecCommand(card, "IsoWriteRecord", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoWriteRecord", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -331,8 +325,7 @@ LC_Card__IsoUpdateRecord(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "data", ptr, size);
   }
-  res=LC_Card_ExecCommand(card, "IsoUpdateRecord", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoUpdateRecord", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -365,8 +358,7 @@ LC_Card__IsoAppendRecord(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "data", ptr, size);
   }
-  res=LC_Card_ExecCommand(card, "IsoAppendRecord", dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoAppendRecord", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -427,8 +419,7 @@ LC_Card__IsoVerifyPin(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "pin", ptr, size);
   }
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -504,8 +495,7 @@ LC_Card__IsoModifyPin(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "newpin", newptr, newsize);
   }
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -569,8 +559,7 @@ LC_Card__IsoPerformVerification(LC_CARD *card,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "pid", LC_PinInfo_GetId(pi));
 
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
   DBG_DEBUG(LC_LOGDOMAIN, "ExecCommand returned %d", res);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
@@ -636,8 +625,7 @@ LC_Card__IsoPerformModification(LC_CARD *card,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
                       "pid", LC_PinInfo_GetId(pi));
 
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp,
-                          LC_Client_GetLongTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -701,8 +689,7 @@ LC_Card__IsoManageSe(LC_CARD *card,
   GWEN_Buffer_free(dbuf);
 
   dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, "IsoManageSE", dbReq, dbResp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoManageSE", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
@@ -736,8 +723,7 @@ LC_Card__IsoEncipher(LC_CARD *card,
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card, "IsoEncipher", dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoEncipher", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
@@ -782,8 +768,7 @@ LC_Card__IsoDecipher(LC_CARD *card,
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card, "IsoDecipher", dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "IsoDecipher", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);

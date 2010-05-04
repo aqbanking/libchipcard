@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -15,8 +12,8 @@
 #define CHIPCARD_CARD_DDVCARD_P_H
 
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/ddvcard.h>
+#include <chipcard/card_imp.h>
+#include <chipcard/cards/ddvcard.h>
 
 
 typedef struct LC_DDVCARD LC_DDVCARD;

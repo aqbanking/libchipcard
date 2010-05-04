@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: ddvcard.c 378 2007-05-02 08:41:05Z martin $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -25,9 +22,9 @@
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
 
-#include <chipcard/client/cards/ddvcard.h>
-#include <chipcard/client/cards/processorcard.h>
-#include <chipcard/client/ct/ct_card.h>
+#include <chipcard/cards/ddvcard.h>
+#include <chipcard/cards/processorcard.h>
+#include <chipcard/ct/ct_card.h>
 
 #define I18N(message) GWEN_I18N_Translate("libchipcard", message)
 
@@ -407,8 +404,7 @@ int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         LC_Card_free(hcard);
         hcard=0;
 
-	res=LC_Client_GetNextCard(lct->client, &hcard,
-				  LC_CLIENT_TIMEOUT_NONE);
+	res=LC_Client_GetNextCard(lct->client, &hcard, GWEN_TIMEOUT_NONE);
 	if (res!=LC_Client_ResultOk) {
 	  int mres;
 

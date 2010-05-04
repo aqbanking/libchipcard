@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: card.c 187 2006-06-15 16:13:23Z martin $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -27,6 +24,9 @@
 #include <gwenhywfar/gwentime.h>
 #include <chipcard/chipcard.h>
 
+#include <PCSC/reader.h>
+
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -38,22 +38,22 @@ GWEN_LIST2_FUNCTIONS(LC_CARD, LC_Card)
 
 
 LC_CARD *LC_Card_new(LC_CLIENT *cl,
-                     uint32_t cardId,
-                     const char *cardType,
+		     SCARDHANDLE scardHandle,
+		     const char *readerName,
+		     DWORD protocol,
+		     const char *cardType,
                      uint32_t rflags,
                      const unsigned char *atrBuf,
                      unsigned int atrLen) {
   LC_CARD *cd;
 
   assert(cl);
-  assert(cardId);
   assert(cardType);
 
   GWEN_NEW_OBJECT(LC_CARD, cd);
   GWEN_LIST_INIT(LC_CARD, cd);
   GWEN_INHERIT_INIT(LC_CARD, cd);
   cd->client=cl;
-  cd->cardId=cardId;
   cd->cardType=strdup(cardType);
   cd->readerFlags=rflags;
   cd->cardTypes=GWEN_StringList_new();
@@ -81,6 +81,10 @@ LC_CARD *LC_Card_new(LC_CLIENT *cl,
       }
     }
   }
+
+  cd->readerName=strdup(readerName);
+  cd->scardHandle=scardHandle;
+  cd->protocol=protocol;
 
   return cd;
 }
@@ -131,6 +135,13 @@ void LC_Card_List2_freeAll(LC_CARD_LIST2 *l){
     }
     LC_Card_List2_free(l);
   }
+}
+
+
+
+SCARDHANDLE LC_Card_GetSCardHandle(const LC_CARD *card) {
+  assert(card);
+  return card->scardHandle;
 }
 
 
@@ -254,13 +265,6 @@ LC_CLIENT *LC_Card_GetClient(const LC_CARD *cd){
 
 
 
-uint32_t LC_Card_GetCardId(const LC_CARD *cd){
-  assert(cd);
-  return cd->cardId;
-}
-
-
-
 uint32_t LC_Card_GetReaderFlags(const LC_CARD *cd){
   assert(cd);
   return cd->readerFlags;
@@ -301,9 +305,24 @@ unsigned int LC_Card_GetAtr(const LC_CARD *cd, const unsigned char **pbuf){
 
 
 
-void LC_Card_ResetCardId(LC_CARD *cd){
+uint32_t LC_Card_GetFeatureCode(const LC_CARD *cd, int idx) {
   assert(cd);
-  cd->cardId=0;
+  assert(idx<LC_PCSC_MAX_FEATURES);
+  return cd->featureCode[idx];
+}
+
+
+
+const char *LC_Card_GetReaderName(const LC_CARD *card) {
+  assert(card);
+  return card->readerName;
+}
+
+
+
+DWORD LC_Card_GetProtocol(const LC_CARD *card) {
+  assert(card);
+  return card->protocol;
 }
 
 
@@ -324,9 +343,6 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
           "==================="
           "==================="
           "==================\n");
-  for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Card id       : %08x\n", cd->cardId);
   for (k=0; k<insert; k++)
     fprintf(f, " ");
   fprintf(f, "Card type     : %s\n", cd->cardType);
@@ -395,8 +411,68 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
 
 
 
-LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card) {
+LC_CLIENT_RESULT LC_Card_ReadFeatures(LC_CARD *card) {
+  LONG rv;
+  uint32_t assumedRFlags=0;
+  unsigned char rbuffer[300];
+  DWORD rblen;
+
   assert(card);
+
+  /* get control codes */
+  DBG_INFO(LC_LOGDOMAIN, "Reading control codes for CCID features");
+  rv=SCardControl(card->scardHandle,
+		  CM_IOCTL_GET_FEATURE_REQUEST,
+                  NULL,
+                  0,
+                  rbuffer,
+                  sizeof(rbuffer),
+                  &rblen);
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_INFO(LC_LOGDOMAIN,
+	     "SCardControl: %04lx", rv);
+  }
+  else {
+    int cnt;
+    PCSC_TLV_STRUCTURE *tlv;
+    int i;
+
+    cnt=rblen/sizeof(PCSC_TLV_STRUCTURE);
+    tlv=(PCSC_TLV_STRUCTURE*)rbuffer;
+    for (i=0; i<cnt; i++) {
+      uint32_t v;
+
+      v=tlv[i].value;
+#ifdef LC_ENDIAN_LITTLE
+      v=((v & 0xff000000)>>24) |
+        ((v & 0x00ff0000)>>8) |
+        ((v & 0x0000ff00)<<8) |
+        ((v & 0x000000ff)<<24);
+#endif
+      DBG_INFO(LC_LOGDOMAIN, "Feature %d: %08x", tlv[i].tag, v);
+      if (tlv[i].tag==FEATURE_VERIFY_PIN_DIRECT)
+	assumedRFlags|=LC_READER_FLAGS_KEYPAD;
+      if (tlv[i].tag<LC_PCSC_MAX_FEATURES) {
+	card->featureCode[tlv[i].tag]=v;
+      }
+    }
+  }
+
+  /* done */
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card) {
+  LONG rv;
+
+  assert(card);
+
+  rv=LC_Card_ReadFeatures(card);
+  if (rv!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", (int) rv);
+  }
 
   LC_Card_SetLastResult(card, 0, 0, -1, -1);
   if (!card->openFn) {
@@ -440,8 +516,7 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
                                   const char *apdu,
                                   unsigned int len,
                                   GWEN_BUFFER *rbuf,
-                                  LC_CLIENT_CMDTARGET t,
-                                  int timeout) {
+                                  LC_CLIENT_CMDTARGET t) {
   assert(card);
   assert(card->client);
   LC_Card_SetLastResult(card, 0, 0, -1, -1);
@@ -450,8 +525,7 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
                             apdu,
                             len,
                             rbuf,
-                            t,
-                            timeout);
+                            t);
 }
 
 
@@ -459,8 +533,7 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                                      const char *commandName,
                                      GWEN_DB_NODE *cmdData,
-                                     GWEN_DB_NODE *rspData,
-                                     int timeout) {
+                                     GWEN_DB_NODE *rspData) {
   LC_CLIENT_RESULT res;
 
   assert(card);
@@ -470,8 +543,7 @@ LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                             card,
                             commandName,
                             cmdData,
-                            rspData,
-                            timeout);
+                            rspData);
   return res;
 }
 
@@ -622,8 +694,7 @@ LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card) {
 
   dbReq=GWEN_DB_Group_new("request");
   dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, "SelectMF", dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, "SelectMF", dbReq, dbRsp);
   GWEN_DB_Group_free(dbRsp);
   GWEN_DB_Group_free(dbReq);
   if (res!=LC_Client_ResultOk) {
@@ -690,8 +761,7 @@ LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname) {
   }
 
   dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
   GWEN_DB_Group_free(dbRsp);
   GWEN_DB_Group_free(dbReq);
   if (res!=LC_Client_ResultOk) {
@@ -766,8 +836,7 @@ LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname) {
   }
 
   dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(card->client));
+  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
   GWEN_DB_Group_free(dbRsp);
   GWEN_DB_Group_free(dbReq);
   if (res!=LC_Client_ResultOk) {

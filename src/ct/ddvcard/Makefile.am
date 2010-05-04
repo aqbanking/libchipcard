@@ -1,4 +1,4 @@
-INCLUDES=@all_includes@ -I../../ -I../../client -I../../cards
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=ddvcard.xml
@@ -12,6 +12,6 @@ noinst_HEADERS=ddvcard_p.h
 ddvcard_la_SOURCES=dummy.c
 
 ddvcard_la_LDFLAGS=-module -no-undefined -avoid-version
-ddvcard_la_LIBADD=libct_ddvcard.la ../../lib/client/libchipcardc.la $(mingw_ldflags) $(gwenhywfar_libs)
+ddvcard_la_LIBADD=libct_ddvcard.la ../../lib/client/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

@@ -16,7 +16,7 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=99
-CHIPCARD_VERSION_PATCHLEVEL=1
+CHIPCARD_VERSION_PATCHLEVEL=2
 CHIPCARD_VERSION_BUILD=0
 CHIPCARD_VERSION_TAG="beta"
 
@@ -26,9 +26,9 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 # SO version
 #
-LIBCHIPCARD_SO_CURRENT=4
-LIBCHIPCARD_SO_AGE=2
-LIBCHIPCARD_SO_REVISION=11
+LIBCHIPCARD_SO_CURRENT=5
+LIBCHIPCARD_SO_AGE=0
+LIBCHIPCARD_SO_REVISION=0
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -231,9 +231,12 @@ all_includes="$all_includes $gwenhywfar_includes"
 # OS dependent settings
 #
 
-libchipcard_includes="-I\${prefix}/include"
-libchipcardc_libs="-L\${libdir} -lchipcardc"
-libchipcardi_libs="-L\${libdir} -lchipcardi"
+libchipcard_includes="-I\${prefix}/include/libchipcard5"
+libchipcardc_libs="-L\${libdir} -lchipcard"
+
+libchipcard_headerdir_am="\$(includedir)/libchipcard5"
+libchipcard_headerdir="\${includedir}/libchipcard5"
+libchipcard_symlinkdir="\$(top_builddir)/libchipcard5"
 
 case "$OS_TYPE" in
     posix)
@@ -265,7 +268,12 @@ AC_SUBST(lc_client_xml_dir)
 AC_SUBST(libchipcardc_libs)
 AC_SUBST(libchipcard_includes)
 
+AC_SUBST(libchipcard_headerdir_am)
+AC_SUBST(libchipcard_headerdir)
+
 AC_SUBST(lc_os_driver_dir)
+
+AC_SUBST(libchipcard_symlinkdir)
 
 AC_SUBST(all_includes)
 AC_SUBST(all_libraries)
@@ -373,27 +381,12 @@ AC_MSG_RESULT($lc_cfg_searchdir)
 # check for PC/SC
 #
 
-if test "$OS_TYPE" != "windows"; then
-  AC_CHECK_LIB(pcsclite, SCardDisconnect, [pcsc_libs="-lpcsclite"])
-  AC_MSG_CHECKING(whether PC/SC is to be used)
-  if test -z "$pcsc_libs"; then
-      AC_MSG_ERROR(
+AQ_CHECK_PCSC
+if test "$have_pcsc" != "yes"; then
+      AC_MSG_ERROR([
 *** No pcsc libraries found.
-*** Please install the pcsclite package including development packages.)
-  else
-      AC_DEFINE(HAVE_PCSC, 1, [whether PC/SC is to be used])
-      have_pcsc="yes"
-      AC_MSG_RESULT(yes)
-  fi
-else
-  AC_MSG_CHECKING(whether PC/SC is to be used)
-  AC_DEFINE(HAVE_PCSC, 1, [whether PC/SC is to be used])
-  have_pcsc="yes"
-  AC_MSG_RESULT([yes, using SCard])
+*** Please install the pcsclite package including development packages.])
 fi
-AM_CONDITIONAL(USE_PCSC, [test "$have_pcsc" = "yes"])
-AC_SUBST(pcsc_libs)
-
 
 
 # ---------------------------------------------------------------------------
@@ -589,6 +582,7 @@ fi
 
 
 
+
 ###-------------------------------------------------------------------------
 # Create output files
 #
@@ -615,8 +609,6 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/Makefile
                  src/lib/client/ressource.rc
                  src/lib/client/base/Makefile
-                 src/lib/client/io/Makefile
-                 src/lib/client/io/pcsc/Makefile
                  src/lib/client/cards/Makefile
                  src/lib/client/cards/ddvcard/Makefile
                  src/lib/client/cards/egkcard/Makefile
@@ -625,7 +617,6 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/cards/kvkcard/Makefile
                  src/lib/client/cards/processorcard/Makefile
                  src/lib/client/cards/starcos/Makefile
-                 src/lib/client/mon/Makefile
                  src/lib/client/ct/Makefile
                  src/ct/Makefile
                  src/ct/ddvcard/Makefile
@@ -649,15 +640,16 @@ AC_OUTPUT
 # create header directory for all, make symlinks
 #
 
-rm -Rf chipcard
-mkdir chipcard
+rm -Rf libchipcard5
+mkdir libchipcard5
+mkdir libchipcard5/chipcard
 
 # These two headers here are generated and hence reside in builddir,
 # not in srcdir!
 lprefix=`pwd`
 AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard.h"
-ln -s "${lprefix}/src/lib/version.h" chipcard/version.h
-ln -s "${lprefix}/src/lib/chipcard.h" chipcard/chipcard.h
+ln -s "${lprefix}/src/lib/version.h" libchipcard5/chipcard/version.h
+ln -s "${lprefix}/src/lib/chipcard.h" libchipcard5/chipcard/chipcard.h
 
 
 
@@ -669,7 +661,7 @@ lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
 
 # symlink all headers from src/lib/sharedstuff/*
-mkdir chipcard/sharedstuff
+mkdir libchipcard5/chipcard/sharedstuff
 hfiles=`( cd "${srcdir}/src/lib/sharedstuff" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
   AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/sharedstuff/${f}"
@@ -679,7 +671,7 @@ for f in ${hfiles}; do
     *_l.h)
           ;;
     *)   
-          ln -s "${lprefix}/src/lib//sharedstuff/${f}" "chipcard/sharedstuff/${f}"
+          ln -s "${lprefix}/src/lib/sharedstuff/${f}" "libchipcard5/chipcard/sharedstuff/${f}"
           ;;
   esac
 done
@@ -690,18 +682,12 @@ done
 # create header directory for client, make symlinks
 #
 
-lc_modules="io cards ct mon service"
-#client cards mon fs
-lc_client_io_modules="pcsc"
-
+lc_modules="cards ct"
 lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard processorcard"
 
 
 lprefix="${srcdir}"
 lprefix=`( cd ${lprefix} ; pwd )`
-
-rm -Rf chipcard/client
-mkdir chipcard/client
 
 # symlink all headers from src/lib/client
 hfiles=`( cd "${srcdir}/src/lib/client" && ls *.h 2>/dev/null )`
@@ -711,7 +697,7 @@ for f in ${hfiles}; do
     *_p.h | *version.h | *chipcard.h)
               ;;
     *)
-              ln -s "${lprefix}/src/lib/client/${f}" "chipcard/client/${f}"
+              ln -s "${lprefix}/src/lib/client/${f}" "libchipcard5/chipcard/${f}"
               ;;
   esac
 done
@@ -725,7 +711,7 @@ for f in ${hfiles}; do
     *_p.h | *_l.h)
       ;;
     *)   
-      ln -s "${lprefix}/src/lib/client/base/${f}" "chipcard/client/${f}"
+      ln -s "${lprefix}/src/lib/client/base/${f}" "libchipcard5/chipcard/${f}"
       ;;
   esac
 done
@@ -733,7 +719,7 @@ done
 
 # symlink all headers from src/lib/client/*
 for sm in $lc_modules; do
-  mkdir chipcard/client/${sm}
+  mkdir libchipcard5/chipcard/${sm}
   hfiles=`( cd "${srcdir}/src/lib/client/${sm}" && ls *.h 2>/dev/null )`
   for f in ${hfiles}; do
     AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${sm}/${f}"
@@ -741,29 +727,25 @@ for sm in $lc_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "chipcard/client/${sm}/${f}"
+        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "libchipcard5/chipcard/${sm}/${f}"
         ;;
     esac
   done
 done
 
 
-# symlink all headers from src/lib/client/io/*
-for sm in $lc_client_io_modules; do
-  mkdir chipcard/client/io/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/client/io/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/io/${sm}/${f}"
-    case ${f} in
-      *_p.h | *_l.h)
-        ;;
-      *)   
-        ln -s "${lprefix}/src/lib/client/io/${sm}/${f}" "chipcard/client/io/${sm}/${f}"
-        ;;
-    esac
-  done
+# symlink all headers from src/lib/client/cards
+hfiles=`( cd "${srcdir}/src/lib/client/cards" && ls *.h 2>/dev/null )`
+for f in ${hfiles}; do
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/base/${f}"
+  case ${f} in
+    *_p.h | *_l.h)
+      ;;
+    *)   
+      ln -s "${lprefix}/src/lib/client/cards/${f}" "libchipcard5/chipcard/cards/${f}"
+      ;;
+  esac
 done
-
 
 # symlink all headers from src/lib/client/cards/*
 for sm in $lc_client_card_modules; do
@@ -774,7 +756,7 @@ for sm in $lc_client_card_modules; do
       *_p.h | *_l.h)
         ;;
       *)   
-        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "chipcard/client/cards/${f}"
+        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "libchipcard5/chipcard/cards/${f}"
         ;;
     esac
   done
@@ -791,7 +773,6 @@ echo "Summary:"
 echo "================================="
 echo "Libchipcard version     : $CHIPCARD_VERSION_FULL_STRING"
 echo "System                  : $OSYSTEM"
-echo "Support for HAL         : $have_hal"
 echo "Cfg Installation Folder : $lc_client_config_dir"
 echo "Cfg Search Folder       : $lc_cfg_searchdir"
 echo "Data Installation Folder: $lc_client_xml_dir"

@@ -15,13 +15,12 @@ struct LC_PININFO {
 
   char *name;
   uint32_t id;
-  GWEN_CRYPT_PINENCODING encoding;
+  int encoding;
   int minLength;
   int maxLength;
   int allowChange;
   int filler;
 };
-
 
 
 

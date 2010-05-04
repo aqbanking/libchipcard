@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -77,17 +74,6 @@ const GWEN_ARGS prg_args[]={
   "filename",                   /* long option */
   "File to write to (stdout if omitted)",    /* short description */
   "File to write to. If omitted stdout will be used."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, 
-  GWEN_ArgsType_Int,            
-  "cardid",                     
-  0,                            
-  1,                            
-  "c",                          
-  "cardid",                     
-  "Set the ID of the card to read",
-  "Set the ID of the card to read."
 },
 {
   0,                            /* flags */
@@ -171,7 +157,6 @@ void usage(const char *name, const char *ustr) {
                "\n"
                "Available commands:\n"
                "  read   : read data from a German medical card\n"
-               "  daemon : wait for cards and call a program on them\n"
                "\n"
                "Available options:\n"
                "%s\n"),
@@ -338,12 +323,8 @@ int main(int argc, char **argv) {
     rv=kvkRead(cl, db);
   }
   else if (strcasecmp(s, "daemon")==0) {
-#ifdef OS_WIN32
-    fprintf(stderr, "KVK daemon not yet supported on WIN32 platforms\n");
+    fprintf(stderr, "KVK daemon no longer supported.\n");
     return RETURNVALUE_SETUP;
-#else
-    rv=kvkDaemon(cl, db);
-#endif
   }
   else if (strcasecmp(s, "rdvd")==0) {
     rv=rdvd(cl, db);
@@ -369,7 +350,6 @@ int main(int argc, char **argv) {
 
 
 #include "read.c"
-#include "daemon.c"
 #include "rdvd.c"
 #include "rdpd.c"
 #include "psvd.c"

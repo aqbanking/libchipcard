@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: card.h 163 2006-02-15 19:31:45Z aquamaniac $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -32,7 +29,7 @@ typedef struct LC_CARD LC_CARD;
 #endif
 
 #include <chipcard/chipcard.h>
-#include <chipcard/client/client.h>
+#include <chipcard/client.h>
 #include <chipcard/sharedstuff/pininfo.h>
 
 
@@ -133,8 +130,7 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
                                   const char *apdu,
                                   unsigned int len,
                                   GWEN_BUFFER *rbuf,
-                                  LC_CLIENT_CMDTARGET t,
-                                  int timeout);
+                                  LC_CLIENT_CMDTARGET t);
 
 /**
  * Executes a command referenced by name.
@@ -150,8 +146,7 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
                                      const char *commandName,
                                      GWEN_DB_NODE *cmdData,
-                                     GWEN_DB_NODE *rspData,
-                                     int timeout);
+                                     GWEN_DB_NODE *rspData);
 
 /**
  * This function is used internally by @ref LC_Card_ExecCommand to create

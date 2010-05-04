@@ -1,12 +1,12 @@
 bin_PROGRAMS=geldkarte
 
-INCLUDES=@all_includes@
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) 
 
 noinst_HEADERS=global.h
 
 geldkarte_SOURCES=\
   main.c
-geldkarte_LDADD=../../lib/client/libchipcardc.la $(mingw_ldflags) @gwenhywfar_libs@
+geldkarte_LDADD=../../lib/client/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
 geldkarte_LDFLAGS=@STRIPALL@
 
 if IS_WINDOWS

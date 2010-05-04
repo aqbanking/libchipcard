@@ -1,10 +1,8 @@
-INCLUDES=-I.. -I../.. -I../../.. -I$(top_builddir) @all_includes@
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I../.. -I../../.. -I$(top_builddir)
 
 typefiles=pininfo.xml
 
-DEFS += \
-  -DBUILDING_CHIPCARD \
-  -DLC_LOWLEVELDRIVER_PATH=\"@lc_server_lowlevel_driver_dir@\"
+DEFS += -DBUILDING_CHIPCARD
 
 #AM_CFLAGS=$(visibility_cflags)
 
@@ -12,7 +10,7 @@ EXTRA_DIST=$(typefiles)
 
 noinst_LTLIBRARIES=libsharedstuff.la
 
-iheaderdir=${includedir}/chipcard/sharedstuff
+iheaderdir=@libchipcard_headerdir_am@/sharedstuff
 iheader_HEADERS=\
   driverinfo.h \
   msgengine.h \

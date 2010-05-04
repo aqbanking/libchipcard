@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Sun Jun 13 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -24,7 +21,7 @@
 
 
 #include "examplecard.h"
-#include <chipcard/client/card_imp.h>
+#include <chipcard/card_imp.h>
 
 
 /**

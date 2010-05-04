@@ -1,5 +1,6 @@
 <typedefs>
   <type id="uint32_t" dbtype="int" />
+  <type id="GWEN_CRYPT_PINENCODING" dbtype="int" />
 </typedefs>
 
 
@@ -16,12 +17,12 @@
     <headers>
       <header type="sys" >gwenhywfar/types.h</header>
       <header type="sys" >gwenhywfar/cryptdefs.h</header>
-      <header type="sys" >chipcard3/chipcard3.h</header>
+      <header type="sys" >chipcard/chipcard.h</header>
     </headers>
     
     <elem name="name" type="char" ptr="1" />
     <elem name="id" type="uint32_t" />
-    <elem name="encoding" type="GWEN_CRYPT_PINENCODING" />
+    <elem name="encoding" type="int" />
     <elem name="minLength" type="int" />
     <elem name="maxLength" type="int" />
     <elem name="allowChange" type="int" />

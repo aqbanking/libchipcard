@@ -7,7 +7,7 @@ AM_CFLAGS=$(visibility_cflags)
 EXTRA_DIST=app.xml card.xml
 
 
-INCLUDES=@all_includes@ -I../
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 
 noinst_LTLIBRARIES=libcards-kvk.la
@@ -15,7 +15,7 @@ noinst_HEADERS=\
   kvkcard_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=@libchipcard_headerdir_am@/cards
 iheader_HEADERS=\
   kvkcard.h
 

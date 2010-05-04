@@ -64,7 +64,7 @@ typedef struct LC_STARCOS_KEYDESCR LC_STARCOS_KEYDESCR;
 
 #include <gwenhywfar/db.h>
 /* headers */
-#include <chipcard/client/cards/starcos.h>
+#include <chipcard/cards/starcos.h>
 #include <chipcard/chipcard.h>
 
 #ifdef __cplusplus

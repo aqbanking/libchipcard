@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: client_p.h 137 2005-11-03 13:07:50Z aquamaniac $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -15,51 +12,48 @@
 #define CHIPCARD_CLIENT_CLIENT_P_H
 
 #include "client_l.h"
-#include "client_imp.h"
 
 #include <gwenhywfar/msgengine.h>
+
+#include <winscard.h>
+
 
 
 #define LCC_PM_LIBNAME    "libchipcard"
 #define LCC_PM_SYSCONFDIR "sysconfdir"
 #define LCC_PM_DATADIR    "datadir"
 
-#define LCC_REGKEY_PATHS       "Software\\Libchipcard\\Paths"
-#define LCC_REGKEY_DATADIR     "pkgdatadir"
-#define LCC_REGKEY_SYSCONFDIR  "sysconfdir"
+
+#define MAX_READERS 32
 
 
 
 struct LC_CLIENT {
   GWEN_INHERIT_ELEMENT(LC_CLIENT)
-  char *ioTypeName;
   char *programName;
   char *programVersion;
 
   GWEN_DB_NODE *dbConfig;
-  int shortTimeout;
-  int longTimeout;
-  int veryLongTimeout;
 
   GWEN_MSGENGINE *msgEngine;
   GWEN_XMLNODE *cardNodes;
   GWEN_XMLNODE *appNodes;
 
-  int openCardCount;
+  SCARDCONTEXT scardContext;
 
-  LC_CLIENT_RECV_NOTIFICATION_FN recvNotificationFn;
-
-  LC_CLIENT_INIT_FN initFn;
-  LC_CLIENT_FINI_FN finiFn;
-  LC_CLIENT_SETNOTIFY_FN setNotifyFn;
-  LC_CLIENT_START_FN startFn;
-  LC_CLIENT_STOP_FN stopFn;
-  LC_CLIENT_GETNEXTCARD_FN getNextCardFn;
-  LC_CLIENT_RELEASECARD_FN releaseCardFn;
-  LC_CLIENT_EXECAPDU_FN execApduFn;
-
-  LCM_MONITOR *monitor;
+  int pnpAvailable;
+  SCARD_READERSTATE_A readerStates[MAX_READERS];
+  int readerCount;
+  int lastUsedReader;
+  LPSTR readerList;
 };
+
+
+static int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
+					    const char *readerName,
+					    GWEN_BUFFER *driverType,
+					    GWEN_BUFFER *readerType,
+					    uint32_t *pReaderFlags);
 
 
 static void LC_Client__SampleXmlFiles(const char *where,
@@ -136,6 +130,12 @@ static int LC_Client_ParseAnswer(LC_CLIENT *cl,
 
 
 
+static int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName);
+
+
+static LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
+					      const char *readerName,
+					      LC_CARD **pCard);
 
 
 #endif /* CHIPCARD_CLIENT_CLIENT_P_H */

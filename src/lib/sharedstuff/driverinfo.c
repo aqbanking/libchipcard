@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -378,12 +375,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
       }
   
       slDirs=GWEN_StringList_new();
-      /* always add common lowlevel driver path to search list */
-      nbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      GWEN_Directory_OsifyPath(LC_LOWLEVELDRIVER_PATH, nbuf, 1);
-      GWEN_StringList_AppendString(slDirs, GWEN_Buffer_GetStart(nbuf), 0, 1);
-      GWEN_Buffer_free(nbuf);
-  
+
       n=GWEN_XMLNode_FindFirstTag(n, "loc", 0, 0);
       while(n) {
 	GWEN_XMLNODE *nData;

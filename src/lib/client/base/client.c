@@ -15,7 +15,6 @@
 
 #include "client_p.h"
 #include "card_l.h"
-#include "mon/monitor_l.h"
 #include <chipcard/sharedstuff/msgengine.h>
 #include <chipcard/sharedstuff/driverinfo.h>
 
@@ -27,6 +26,7 @@
 #include <gwenhywfar/xml.h>
 #include <gwenhywfar/stringlist.h>
 #include <gwenhywfar/pathmanager.h>
+#include <gwenhywfar/gui.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -42,6 +42,9 @@
 #else
 # define DIRSEP "/"
 #endif
+
+
+#define I18N(msg) msg
 
 
 static int lc_client__initcounter=0;
@@ -103,11 +106,6 @@ int LC_Client_InitCommon() {
 
     /* define sysconf path */
     GWEN_PathManager_DefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
-    GWEN_PathManager_AddPathFromWinReg(LCC_PM_LIBNAME,
-				       LCC_PM_LIBNAME,
-				       LCC_PM_SYSCONFDIR,
-				       LCC_REGKEY_PATHS,
-				       LCC_REGKEY_SYSCONFDIR);
 #if defined(OS_WIN32) || defined(ENABLE_LOCAL_INSTALL)
     /* add folder relative to EXE */
     GWEN_PathManager_AddRelPath(LCC_PM_LIBNAME,
@@ -125,11 +123,6 @@ int LC_Client_InitCommon() {
 
     /* define data path */
     GWEN_PathManager_DefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
-    GWEN_PathManager_AddPathFromWinReg(LCC_PM_LIBNAME,
-				       LCC_PM_LIBNAME,
-				       LCC_PM_DATADIR,
-				       LCC_REGKEY_PATHS,
-				       LCC_REGKEY_DATADIR);
 #if defined(OS_WIN32) || defined(ENABLE_LOCAL_INSTALL)
     /* add folder relative to EXE */
     GWEN_PathManager_AddRelPath(LCC_PM_LIBNAME,
@@ -326,9 +319,7 @@ void LC_Client_FiniCommon() {
 
 
 
-LC_CLIENT *LC_BaseClient_new(const char *ioTypeName,
-                             const char *programName,
-                             const char *programVersion) {
+LC_CLIENT *LC_Client_new(const char *programName, const char *programVersion) {
   LC_CLIENT *cl;
 
   assert(programName);
@@ -341,14 +332,12 @@ LC_CLIENT *LC_BaseClient_new(const char *ioTypeName,
 
   GWEN_NEW_OBJECT(LC_CLIENT, cl);
   GWEN_INHERIT_INIT(LC_CLIENT, cl);
-  cl->ioTypeName=strdup(ioTypeName);
   cl->programName=strdup(programName);
   cl->programVersion=strdup(programVersion);
 
   cl->cardNodes=lc_client__card_nodes;
   cl->appNodes=lc_client__app_nodes;
   cl->msgEngine=LC_MsgEngine_new();
-  cl->monitor=LCM_Monitor_new();
 
   cl->dbConfig=lc_client__config;
 
@@ -359,17 +348,10 @@ LC_CLIENT *LC_BaseClient_new(const char *ioTypeName,
 
 void LC_Client_free(LC_CLIENT *cl) {
   if (cl) {
-    if (cl->openCardCount) {
-      DBG_ERROR(LC_LOGDOMAIN, "Still %d cards in use at LC_Client_free!",
-                cl->openCardCount);
-    }
-
     GWEN_INHERIT_FINI(LC_CLIENT, cl);
     free(cl->programVersion);
     free(cl->programName);
-    free(cl->ioTypeName);
     GWEN_MsgEngine_free(cl->msgEngine);
-    LCM_Monitor_free(cl->monitor);
 
     GWEN_FREE_OBJECT(cl);
 
@@ -383,250 +365,159 @@ void LC_Client_free(LC_CLIENT *cl) {
 
 /* _________________________________________________________________________
  * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
- * I                    Setters for virtual functions                      I
- * YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
- */
-
-
-LC_CLIENT_INIT_FN LC_Client_SetInitFn(LC_CLIENT *cl, LC_CLIENT_INIT_FN fn) {
-  LC_CLIENT_INIT_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->initFn;
-  cl->initFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_FINI_FN LC_Client_SetFiniFn(LC_CLIENT *cl, LC_CLIENT_FINI_FN fn) {
-  LC_CLIENT_FINI_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->finiFn;
-  cl->finiFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_SETNOTIFY_FN
-LC_Client_SetSetNotifyFn(LC_CLIENT *cl, LC_CLIENT_SETNOTIFY_FN fn) {
-  LC_CLIENT_SETNOTIFY_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->setNotifyFn;
-  cl->setNotifyFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_START_FN LC_Client_SetStartFn(LC_CLIENT *cl, LC_CLIENT_START_FN fn){
-  LC_CLIENT_START_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->startFn;
-  cl->startFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_STOP_FN LC_Client_SetStopFn(LC_CLIENT *cl, LC_CLIENT_STOP_FN fn) {
-  LC_CLIENT_STOP_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->stopFn;
-  cl->stopFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_GETNEXTCARD_FN
-LC_Client_SetGetNextCardFn(LC_CLIENT *cl, LC_CLIENT_GETNEXTCARD_FN fn) {
-  LC_CLIENT_GETNEXTCARD_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->getNextCardFn;
-  cl->getNextCardFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_RELEASECARD_FN
-LC_Client_SetReleaseCardFn(LC_CLIENT *cl, LC_CLIENT_RELEASECARD_FN fn) {
-  LC_CLIENT_RELEASECARD_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->releaseCardFn;
-  cl->releaseCardFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_EXECAPDU_FN
-LC_Client_SetExecApduFn(LC_CLIENT *cl, LC_CLIENT_EXECAPDU_FN fn) {
-  LC_CLIENT_EXECAPDU_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->execApduFn;
-  cl->execApduFn=fn;
-  return oldFn;
-}
-
-
-
-LC_CLIENT_RECV_NOTIFICATION_FN
-LC_Client_SetRecvNotificationFn(LC_CLIENT *cl,
-                                LC_CLIENT_RECV_NOTIFICATION_FN fn) {
-  LC_CLIENT_RECV_NOTIFICATION_FN oldFn;
-
-  assert(cl);
-  oldFn=cl->recvNotificationFn;
-  cl->recvNotificationFn=fn;
-  return oldFn;
-}
-
-
-
-
-
-
-/* _________________________________________________________________________
- * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
  * I                         Virtual functions                             I
  * YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
  */
 
 
 LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl) {
-  LC_CLIENT_RESULT res;
+  LONG rv;
 
   assert(cl);
-  /* read my own stuff from the config file */
-  cl->shortTimeout=GWEN_DB_GetIntValue(cl->dbConfig, "shortTimeout", 0,
-                                       LC_DEFAULT_SHORT_TIMEOUT);
-  cl->longTimeout=GWEN_DB_GetIntValue(cl->dbConfig, "longTimeout", 0,
-                                      LC_DEFAULT_LONG_TIMEOUT);
-  cl->veryLongTimeout=GWEN_DB_GetIntValue(cl->dbConfig, "veryLongTimeout", 0,
-					  LC_DEFAULT_VERY_LONG_TIMEOUT);
+  if (LC_Client_InitCommon()) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error on init");
+    return LC_Client_ResultInternal;
+  }
 
-  /* let higher level init from DB */
-  if (cl->initFn)
-    res=cl->initFn(cl, cl->dbConfig);
-  else
-    res=LC_Client_ResultOk;
+  /* establish context */
+  rv=SCardEstablishContext(SCARD_SCOPE_SYSTEM,    /* scope */
+			   NULL,                  /* reserved1 */
+			   NULL,                  /* reserved2 */
+			   &(cl->scardContext));  /* ptr to context */
+  if (rv!=SCARD_S_SUCCESS) {
+    if (rv == SCARD_E_NO_SERVICE) {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"SCardEstablishContext: "
+		"Error SCARD_E_NO_SERVICE: "
+		"The Smartcard resource manager is not running. "
+		"Maybe you have to start the Smartcard service manually?");
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"SCardEstablishContext: %ld (%04lx)", rv,
+		rv);
+    }
+    LC_Client_FiniCommon();
+    return LC_Client_ResultIoError;
+  }
 
-  return res;
+  return LC_Client_ResultOk;
 }
 
 
 
 LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl) {
-  LC_CLIENT_RESULT res;
+  LONG rv;
 
-  assert(cl);
-  if (cl->openCardCount) {
-    DBG_WARN(LC_LOGDOMAIN, "Still %d cards in use at LC_Client_Fini!",
-             cl->openCardCount);
-  }
-  if (cl->finiFn)
-    res=cl->finiFn(cl);
-  else
-    res=LC_Client_ResultOk;
-
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Client_SetNotify(LC_CLIENT *cl,
-                                     uint32_t flags) {
-  LC_CLIENT_RESULT res;
-
-  assert(cl);
-  if (cl->setNotifyFn)
-    res=cl->setNotifyFn(cl, flags);
-  else
-    res=LC_Client_ResultNotSupported;
-
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Client_Start(LC_CLIENT *cl) {
-  LC_CLIENT_RESULT res;
-
-  assert(cl);
-  if (cl->startFn)
-    res=cl->startFn(cl);
-  else
-    res=LC_Client_ResultOk;
-
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Client_Stop(LC_CLIENT *cl) {
-  LC_CLIENT_RESULT res;
-
-  assert(cl);
-  if (cl->stopFn)
-    res=cl->stopFn(cl);
-  else
-    res=LC_Client_ResultOk;
-
-  return res;
-}
-
-
-
-LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl,
-                                       LC_CARD **pCard,
-                                       int timeout) {
-  LC_CLIENT_RESULT res;
-
-  assert(cl);
-  if (cl->getNextCardFn)
-    res=cl->getNextCardFn(cl, pCard, timeout);
-  else
-    res=LC_Client_ResultNotSupported;
-
-  if (res==LC_Client_ResultOk && *pCard) {
-    cl->openCardCount++;
-    LC_Card_SetConnected(*pCard, 1);
+  rv=SCardReleaseContext(cl->scardContext);
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "SCardReleaseContext: %04lx", rv);
+    LC_Client_FiniCommon();
+    return LC_Client_ResultIoError;
   }
 
-  return res;
+  LC_Client_FiniCommon();
+  return LC_Client_ResultOk;
 }
 
 
 
-LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card) {
+LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
+				       const char *rname,
+				       LC_CARD **pCard) {
   LC_CLIENT_RESULT res;
+  LONG rv;
+  SCARDHANDLE scardHandle;
+  DWORD dwActiveProtocol;
+  LC_CARD *card;
+  char readerName[256];
+  DWORD pcchReaderLen;
+  BYTE pbAtr[MAX_ATR_SIZE];
+  DWORD dwAtrLen;
+  DWORD dwState;
+  GWEN_BUFFER *bDriverType;
+  GWEN_BUFFER *bReaderType;
+  uint32_t rflags=0;
 
   assert(cl);
-  assert(card);
-  if (cl->openCardCount<1) {
-    DBG_ERROR(LC_LOGDOMAIN, "Released more cards then in use, aborting.");
-    assert(0);
+
+  rv=SCardConnect(cl->scardContext,
+		  rname,
+                  SCARD_SHARE_EXCLUSIVE,
+                  SCARD_PROTOCOL_T1,
+                  &scardHandle,
+                  &dwActiveProtocol);
+  if (rv!=SCARD_S_SUCCESS)
+    rv=SCardConnect(cl->scardContext,
+		    rname,
+                    SCARD_SHARE_EXCLUSIVE,
+                    SCARD_PROTOCOL_T0,
+                    &scardHandle,
+                    &dwActiveProtocol);
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_INFO(LC_LOGDOMAIN,
+	     "SCardConnect: %04lx", rv);
+    return LC_Client_ResultIoError;
   }
-  if (cl->releaseCardFn)
-    res=cl->releaseCardFn(cl, card);
-  else
-    res=LC_Client_ResultOk;
 
-  if (res==LC_Client_ResultOk)
-    cl->openCardCount--;
+  /* get protocol and ATR */
+  DBG_INFO(LC_LOGDOMAIN, "Reading protocol and ATR");
+  pcchReaderLen=sizeof(readerName);
+  dwAtrLen=sizeof(pbAtr);
+  rv=SCardStatus(scardHandle,
+                 readerName,
+                 &pcchReaderLen,
+                 &dwState,
+                 &dwActiveProtocol,
+                 pbAtr,
+                 &dwAtrLen);
 
-  LC_Card_SetConnected(card, 0);
-  return res;
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "SCardStatus: %04lx", rv);
+    SCardDisconnect(scardHandle, SCARD_UNPOWER_CARD);
+    return LC_Client_ResultIoError;
+  }
+
+  /* derive reader and driver type from name */
+  DBG_INFO(LC_LOGDOMAIN, "Getting reader- and driver type");
+  bDriverType=GWEN_Buffer_new(0, 32, 0, 1);
+  bReaderType=GWEN_Buffer_new(0, 32, 0, 1);
+  res=LC_Client_GetReaderAndDriverType(cl,
+				       readerName,
+				       bDriverType,
+				       bReaderType,
+				       &rflags);
+  if (res) {
+    DBG_INFO(LC_LOGDOMAIN,
+	     "Unable to determine type of reader [%s] (%d), assuming generic pcsc",
+	     readerName,
+	     res);
+    GWEN_Buffer_AppendString(bDriverType, "generic_pcsc");
+    GWEN_Buffer_AppendString(bReaderType, "generic_pcsc");
+  }
+
+  /* create new card */
+  card=LC_Card_new(cl,
+		   scardHandle,
+		   readerName,
+		   dwActiveProtocol,
+		   "processor",      /* cardType */
+		   rflags,
+		   dwAtrLen?pbAtr:0, /* atrBuf */
+		   dwAtrLen);        /* atrLen */
+
+  /* complete card data */
+  LC_Card_SetDriverType(card, GWEN_Buffer_GetStart(bDriverType));
+  LC_Card_SetReaderType(card, GWEN_Buffer_GetStart(bReaderType));
+
+  GWEN_Buffer_free(bReaderType);
+  GWEN_Buffer_free(bDriverType);
+
+  *pCard=card;
+
+  return LC_Client_ResultOk;
 }
 
 
@@ -634,30 +525,105 @@ LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card) {
 LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                                     LC_CARD *card,
                                     const char *apdu,
-                                    unsigned int len,
+				    unsigned int apdulen,
                                     GWEN_BUFFER *rbuf,
-                                    LC_CLIENT_CMDTARGET t,
-                                    int timeout) {
-  LC_CLIENT_RESULT res;
+                                    LC_CLIENT_CMDTARGET t) {
+  LONG rv;
+  unsigned char rbuffer[300];
+  DWORD rblen;
 
   assert(cl);
+  assert(card);
+  assert(apdu);
+  assert(apdulen>3);
 
-  DBG_INFO(LC_LOGDOMAIN, "Sending:");
-  GWEN_Text_LogString(apdu, len, LC_LOGDOMAIN,
-                      GWEN_LoggerLevel_Info);
+  if (t==LC_Client_CmdTargetReader) {
+    int feature;
+    uint32_t controlCode;
 
-  if (cl->execApduFn)
-    res=cl->execApduFn(cl, card, apdu, len, rbuf, t, timeout);
-  else
-    res=LC_Client_ResultNotSupported;
-  if (res==LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "Received:");
-    GWEN_Text_LogString(GWEN_Buffer_GetStart(rbuf),
-                        GWEN_Buffer_GetUsedBytes(rbuf),
+    feature=apdu[0];
+    controlCode=
+        (apdu[1]<<24)+
+        (apdu[2]<<16)+
+        (apdu[3]<<8)+
+      apdu[4];
+    if (feature && controlCode==0)
+      controlCode=LC_Card_GetFeatureCode(card, feature);
+
+    if (controlCode==0) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "Bad control code for feature %d of reader \"%s\"",
+                feature,
+		LC_Card_GetReaderName(card));
+      return LC_Client_ResultInvalid;
+    }
+
+    DBG_DEBUG(LC_LOGDOMAIN, "Sending command to reader (control: %08x):",
+              controlCode);
+    GWEN_Text_LogString((const char*)apdu+5, apdulen-5,
                         LC_LOGDOMAIN,
-                        GWEN_LoggerLevel_Info);
+			GWEN_LoggerLevel_Debug);
+
+    rblen=sizeof(rbuffer);
+    rv=SCardControl(LC_Card_GetSCardHandle(card),
+		    controlCode,
+		    apdu+5,
+		    apdulen-5,
+		    rbuffer,
+		    sizeof(rbuffer),
+                    &rblen);
+    if (rv!=SCARD_S_SUCCESS) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "SCardControl: %04lx", rv);
+      return LC_Client_ResultIoError;
+    }
+    if (rblen) {
+      GWEN_Buffer_AppendBytes(rbuf, (const char*)rbuffer, rblen);
+      if (rblen>1) {
+	LC_Card_SetLastResult(card, "ok",
+			      "SCardControl succeeded",
+			      rbuffer[rblen-2],
+			      rbuffer[rblen-1]);
+      }
+    }
+    return LC_Client_ResultOk;
   }
-  return res;
+  else {
+    SCARD_IO_REQUEST txHeader;
+    SCARD_IO_REQUEST rxHeader;
+
+    DBG_DEBUG(LC_LOGDOMAIN, "Sending command to card:");
+    GWEN_Text_LogString((const char*)apdu, apdulen,
+                        LC_LOGDOMAIN,
+                        GWEN_LoggerLevel_Debug);
+    txHeader.dwProtocol=LC_Card_GetProtocol(card);
+    //txHeader.dwProtocol=1;
+    txHeader.cbPciLength=sizeof(txHeader);
+    rxHeader.cbPciLength=sizeof(rxHeader);
+    rblen=sizeof(rbuffer);
+    rv=SCardTransmit(LC_Card_GetSCardHandle(card),
+                     &txHeader,
+                     (LPCBYTE) apdu,
+                     apdulen,
+                     &rxHeader,
+                     rbuffer,
+                     &rblen);
+    if (rv!=SCARD_S_SUCCESS) {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "SCardControl: %04lx", rv);
+      return LC_Client_ResultIoError;
+    }
+    if (rblen) {
+      GWEN_Buffer_AppendBytes(rbuf, (const char*)rbuffer, rblen);
+      if (rblen>1) {
+	LC_Card_SetLastResult(card, "ok",
+			      "SCardTransmit succeeded",
+			      rbuffer[rblen-2],
+			      rbuffer[rblen-1]);
+      }
+    }
+    return LC_Client_ResultOk;
+  }
 }
 
 
@@ -682,27 +648,6 @@ const char *LC_Client_GetProgramName(const LC_CLIENT *cl) {
 const char *LC_Client_GetProgramVersion(const LC_CLIENT *cl) {
   assert(cl);
   return cl->programVersion;
-}
-
-
-
-int LC_Client_GetShortTimeout(const LC_CLIENT *cl) {
-  assert(cl);
-  return cl->shortTimeout;
-}
-
-
-
-int LC_Client_GetLongTimeout(const LC_CLIENT *cl) {
-  assert(cl);
-  return cl->longTimeout;
-}
-
-
-
-int LC_Client_GetVeryLongTimeout(const LC_CLIENT *cl) {
-  assert(cl);
-  return cl->veryLongTimeout;
 }
 
 
@@ -789,30 +734,333 @@ GWEN_DB_NODE *LC_Client_GetConfig(const LC_CLIENT *cl) {
 
 
 
-LCM_MONITOR *LC_Client_GetMonitor(const LC_CLIENT *cl) {
+int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName) {
+  int i;
+
   assert(cl);
-  return cl->monitor;
+  for (i=0; i<cl->readerCount; i++) {
+    if (strcasecmp(cl->readerStates[i].szReader, readerName)==0)
+      return i;
+  }
+
+  return -1;
 }
 
 
 
-int LC_Client_HandleNotification(LC_CLIENT *cl, const LC_NOTIFICATION *n) {
-  int rv;
+int LC_Client_UpdateReaderStates(LC_CLIENT *cl) {
+  LONG rv;
+  LPSTR mszGroups=0;
+  LPSTR mszReaders=0;
+  DWORD dwReaders=0;
+  const char *p;
+  int i, j;
 
   assert(cl);
-  assert(cl->monitor);
-  rv=LCM_Monitor_HandleNotification(cl->monitor, n);
-  if (rv!=-1 && cl->recvNotificationFn)
-    cl->recvNotificationFn(cl, n);
-  return rv;
+
+  /* allocate buffer for reader list */
+  rv=SCardListReaders(cl->scardContext,   /* context */
+		      NULL,               /* mszGroups */
+		      NULL,               /* mszReaders */
+		      &dwReaders);
+  if (rv!=SCARD_S_SUCCESS) {
+    if (rv==SCARD_E_NO_READERS_AVAILABLE) {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"No readers available");
+    }
+    else {
+      DBG_ERROR(LC_LOGDOMAIN,
+		"SCardListReaders(1): %08lx", rv);
+    }
+    return LC_Client_ResultIoError;
+  }
+  mszReaders=(LPSTR)malloc(sizeof(char)*dwReaders);
+  if (mszReaders==0) {
+    return LC_Client_ResultInternal;
+  }
+
+  /* list readers */
+  rv=SCardListReaders(cl->scardContext,   /* context */
+                      mszGroups,          /* mszGroups */
+                      mszReaders,         /* mszReaders */
+                      &dwReaders);
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "SCardListReaders(2): %04lx", rv);
+    return LC_Client_ResultIoError;
+  }
+
+  /* delete removed readers */
+  for (i=0; i<cl->readerCount; i++) {
+    int found=0;
+
+    /* find reader */
+    p=(const char*)mszReaders;
+    while(*p) {
+      if (strcasecmp(cl->readerStates[i].szReader, p)==0) {
+	/* re-assign reader name, because we are about to exchange the readerList string */
+        cl->readerStates[i].szReader=p;
+	found=1;
+        break;
+      }
+      while(*p)
+	p++;
+      p++;
+    } /* while */
+
+    if (!found) {
+      /* not in the reader list, remove */
+      for (j=i; j<(cl->readerCount-1); j++)
+	cl->readerStates[j]=cl->readerStates[j+1];
+      cl->readerCount--;
+    }
+  }
+
+  /* add new readers  */
+  p=(const char*)mszReaders;
+  while(*p) {
+
+    i=LC_Client_FindReaderState(cl, p);
+    if (i!=-1) {
+      DBG_INFO(LC_LOGDOMAIN, "Reader \"%s\" already listed", p);
+    }
+    else {
+      if (cl->readerCount<MAX_READERS) {
+	DBG_INFO(LC_LOGDOMAIN, "Creating reader \"%s\"", p);
+	i=cl->readerCount;
+        /* preset */
+	memset((void*) &(cl->readerStates[i]), 0, sizeof(SCARD_READERSTATE_A));
+	cl->readerStates[i].szReader=p;
+	cl->readerStates[i].dwCurrentState=SCARD_STATE_UNAWARE;
+	/* reader added */
+	cl->readerCount++;
+      }
+      else {
+	DBG_ERROR(LC_LOGDOMAIN, "Too many readers (%d)",
+		  cl->readerCount);
+      }
+    }
+    /* next reader */
+    while(*p)
+      p++;
+    p++;
+  } /* while */
+
+  if (cl->pnpAvailable) {
+    if (-1==LC_Client_FindReaderState(cl, "\\\\?PnP?\\Notification")) {
+      /* add pnp reader */
+      if (cl->readerCount<MAX_READERS) {
+	cl->readerStates[cl->readerCount].szReader = "\\\\?PnP?\\Notification";
+	cl->readerStates[cl->readerCount].dwCurrentState = SCARD_STATE_UNAWARE;
+	cl->readerCount++;
+      }
+      else {
+	DBG_ERROR(LC_LOGDOMAIN, "Too many readers (%d)",
+		  cl->readerCount);
+      }
+    }
+  }
+
+  /* replace reader string */
+  free(cl->readerList);
+  cl->readerList=mszReaders;
+
+  return 0;
 }
 
 
 
-const char *LC_Client_GetIoTypeName(const LC_CLIENT *cl) {
+LC_CLIENT_RESULT LC_Client_Start(LC_CLIENT *cl) {
+  LONG rv;
+
   assert(cl);
-  return cl->ioTypeName;
+
+#if 0
+  /* check whether pnp pseudo reader is available */
+  cl->readerStates[0].szReader = "\\\\?PnP?\\Notification";
+  cl->readerStates[0].dwCurrentState = SCARD_STATE_UNAWARE;
+  rv=SCardGetStatusChange(cl->scardContext, 0, cl->readerStates, 1);
+
+  if (cl->readerStates[0].dwEventState && SCARD_STATE_UNKNOWN) {
+    DBG_INFO(LC_LOGDOMAIN, "PnP not supported");
+    cl->pnpAvailable=0;
+  }
+  else
+    cl->pnpAvailable=1;
+#endif
+
+  rv=LC_Client_UpdateReaderStates(cl);
+  if (rv<0) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", (int) rv);
+    return LC_Client_ResultGeneric;
+  }
+  cl->lastUsedReader=-1;
+
+  return LC_Client_ResultOk;
 }
+
+
+
+LC_CLIENT_RESULT LC_Client_Stop(LC_CLIENT *cl) {
+  assert(cl);
+
+  /* clear reader list and reader status list */
+  memset((void*) &cl->readerStates, 0, sizeof(SCARD_READERSTATE_A)*MAX_READERS);
+  cl->readerCount=0;
+  free(cl->readerList);
+  cl->readerList=NULL;
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeout) {
+  LONG rv;
+  int i;
+  uint32_t progressId;
+  time_t startt;
+  uint64_t to;
+  int distance;
+
+  assert(cl);
+
+  startt=time(0);
+  if (timeout==GWEN_TIMEOUT_NONE ||
+      timeout==GWEN_TIMEOUT_FOREVER)
+    to=0;
+  else
+    to=timeout;
+
+  progressId=GWEN_Gui_ProgressStart(GWEN_GUI_PROGRESS_DELAY |
+				    GWEN_GUI_PROGRESS_ALLOW_EMBED |
+				    GWEN_GUI_PROGRESS_SHOW_PROGRESS |
+				    GWEN_GUI_PROGRESS_SHOW_ABORT,
+				    I18N("Waiting for card to be inserted"),
+				    NULL,
+				    to,
+				    0);
+
+  distance=GWEN_GUI_CHECK_PERIOD;
+  if (distance>timeout)
+    distance=timeout;
+
+  for (;;) {
+    double d;
+    int err;
+
+    /* continue checking */
+    for (i=cl->lastUsedReader+1; i<cl->readerCount; i++) {
+      /* we have a change here */
+      if (cl->readerStates[i].dwEventState & SCARD_STATE_CHANGED)
+	cl->readerStates[i].dwCurrentState=cl->readerStates[i].dwEventState;
+
+      DBG_ERROR(0, "Status changed on reader [%s]",
+		cl->readerStates[i].szReader);
+
+      if (cl->pnpAvailable && i==cl->readerCount-1) {
+	/* pnp pseudo reader: a reader has been added or removed */
+	DBG_ERROR(0, "Pseudo reader, updating reader list (%08x, %08x)",
+		  (unsigned int)(cl->readerStates[i].dwCurrentState),
+		  (unsigned int)(cl->readerStates[i].dwEventState));
+	LC_Client_UpdateReaderStates(cl);
+	cl->lastUsedReader=-1;
+	break;
+      }
+      else {
+	if ((cl->readerStates[i].dwEventState & SCARD_STATE_PRESENT) &&
+	    !(cl->readerStates[i].dwEventState & SCARD_STATE_EXCLUSIVE) &&
+	    !(cl->readerStates[i].dwEventState & SCARD_STATE_INUSE)) {
+	  LC_CLIENT_RESULT res;
+	  LC_CARD *card=NULL;
+
+	  /* card inserted and not used by another application */
+	  DBG_ERROR(0, "Found usable card in reader [%s]", cl->readerStates[i].szReader);
+	  res=LC_Client_ConnectCard(cl, cl->readerStates[i].szReader, &card);
+	  if (res==LC_Client_ResultOk) {
+	    /* card csuccessfully connected, return */
+	    *pCard=card;
+	    cl->lastUsedReader=i;
+	    GWEN_Gui_ProgressEnd(progressId);
+	    return LC_Client_ResultOk;
+	  }
+	  else {
+	    DBG_ERROR(0,
+		      "Error connecting to card in reader [%s]",
+		      cl->readerStates[i].szReader);
+	  }
+	}
+	else {
+	  DBG_ERROR(0, "Either no card in reader or card unavailable in reader [%s]",
+		    cl->readerStates[i].szReader);
+	}
+      }
+    }
+
+    if (i>=cl->readerCount) {
+      /* there was no relevant change in a reader, wait for status change */
+      cl->lastUsedReader=-1;
+      rv=SCardGetStatusChange(cl->scardContext, distance, cl->readerStates, cl->readerCount);
+      if (rv==SCARD_E_TIMEOUT) {
+	/* timeout, just repeat next loop */
+	if (timeout==GWEN_TIMEOUT_NONE) {
+	  GWEN_Gui_ProgressEnd(progressId);
+	  return LC_Client_ResultWait;
+	}
+      }
+      else if (rv!=SCARD_S_SUCCESS) {
+	DBG_ERROR(LC_LOGDOMAIN, "SCardGetStatusChange: %d", (int) rv);
+	GWEN_Gui_ProgressEnd(progressId);
+        return LC_Client_ResultIoError;
+      }
+    }
+
+    /* check timeout */
+    d=difftime(time(0), startt);
+    if (timeout!=GWEN_TIMEOUT_FOREVER) {
+      if (timeout==GWEN_TIMEOUT_NONE ||
+	  d>timeout) {
+	DBG_INFO(GWEN_LOGDOMAIN,
+		 "Timeout (%d) while waiting, giving up",
+		 timeout);
+	GWEN_Gui_ProgressEnd(progressId);
+	return LC_Client_ResultWait;
+      }
+    }
+
+    /* check for user abort */
+    err=GWEN_Gui_ProgressAdvance(progressId, (uint64_t)(d*1000));
+    if (err==GWEN_ERROR_USER_ABORTED) {
+      DBG_ERROR(GWEN_LOGDOMAIN, "User aborted");
+      GWEN_Gui_ProgressEnd(progressId);
+      return LC_Client_ResultAborted;
+    }
+  }
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card) {
+  LONG rv;
+
+  assert(cl);
+  assert(card);
+
+  rv=SCardDisconnect(LC_Card_GetSCardHandle(card), SCARD_UNPOWER_CARD);
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_ERROR(LC_LOGDOMAIN,
+	      "SCardDisconnect: %04lx", rv);
+    return LC_Client_ResultIoError;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+
+
+
 
 
 

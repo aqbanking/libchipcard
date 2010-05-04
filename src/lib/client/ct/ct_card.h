@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: ct_card.h 378 2007-05-02 08:41:05Z martin $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,7 +11,7 @@
 #ifndef LC_CT_CARD_H
 #define LC_CT_CARD_H
 
-#include <chipcard/client/card.h>
+#include <chipcard/card.h>
 #include <gwenhywfar/ct.h>
 
 

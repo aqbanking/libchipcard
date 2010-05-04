@@ -19,12 +19,15 @@
 #include <gwenhywfar/inherit.h>
 
 
+#define LC_PCSC_MAX_FEATURES 32
+
+
+
 struct LC_CARD {
   GWEN_LIST_ELEMENT(LC_CARD)
   GWEN_INHERIT_ELEMENT(LC_CARD)
   LC_CLIENT *client;
 
-  uint32_t cardId;
   char *readerType;
   char *driverType;
   uint32_t readerFlags;
@@ -47,6 +50,12 @@ struct LC_CARD {
   GWEN_XMLNODE *appNode;
   GWEN_XMLNODE *dfNode;
   GWEN_XMLNODE *efNode;
+
+  /* SCard stuff */
+  SCARDHANDLE scardHandle;
+  uint32_t featureCode[LC_PCSC_MAX_FEATURES];
+  DWORD protocol;
+  char *readerName;
 
   /* ISO stuff */
   LC_CARD_GETPINSTATUS_FN getPinStatusFn;

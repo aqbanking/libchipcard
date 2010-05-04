@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -22,7 +19,7 @@
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
-#include <chipcard/client/cards/processorcard.h>
+#include <chipcard/cards/processorcard.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_STARCOS)
@@ -380,10 +377,7 @@ LC_Starcos_GetPinStatus(LC_CARD *card,
   dbResp=GWEN_DB_Group_new("response");
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "pid", pid);
-  res=LC_Card_ExecCommand(card,
-                          "PinStatus",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "PinStatus", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing PinStatus");
     GWEN_DB_Group_free(dbReq);
@@ -726,10 +720,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
                       "kid", kid);
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "bits", bits);
-  res=LC_Card_ExecCommand(card,
-                          "GenerateKeyPair",
-                          dbReq, dbResp,
-                          LC_Client_GetVeryLongTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "GenerateKeyPair", dbReq, dbResp);
   scos->keyLogInfo=0;
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
@@ -808,10 +799,7 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN, "Internal error");
     abort();
   }
-  res=LC_Card_ExecCommand(card,
-                          "ActivateKeyPair",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "ActivateKeyPair", dbReq, dbResp);
   scos->keyLogInfo=0;
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
@@ -1310,10 +1298,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card,
-                          "PutHash",
-                          dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "PutHash", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbRsp);
@@ -1326,10 +1311,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   dbReq=GWEN_DB_Group_new("Sign");
   dbRsp=GWEN_DB_Group_new("response");
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card,
-                          "Sign",
-                          dbReq, dbRsp,
-                          LC_Client_GetLongTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "Sign", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
@@ -1377,10 +1359,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
   GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card,
-                          "PutHash",
-                          dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "PutHash", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
@@ -1397,10 +1376,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                       "signature",
                       sigptr, sigsize);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
-  res=LC_Card_ExecCommand(card,
-                          "Verify",
-                          dbReq, dbRsp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "Verify", dbReq, dbRsp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
@@ -1435,10 +1411,7 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
                       "lr", 8);
 
   dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card,
-                          "Challenge",
-                          dbReq, dbResp,
-                          LC_Client_GetShortTimeout(LC_Card_GetClient(card)));
+  res=LC_Card_ExecCommand(card, "Challenge", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);

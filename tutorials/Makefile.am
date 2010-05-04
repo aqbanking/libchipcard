@@ -1,8 +1,8 @@
-INCLUDES=@all_includes@
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) 
 
 EXTRA_DIST=README examplecard.xml tutorials.h
 
-CLIENT_LIB=../src/lib/client/libchipcardc.la
+CLIENT_LIB=../src/lib/client/libchipcard.la
 
 noinst_PROGRAMS=\
  tutorial1a tutorial1b tutorial1c \

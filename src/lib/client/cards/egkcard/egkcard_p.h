@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: egkcard_p.h 325 2006-10-09 15:29:02Z martin $
     begin       : Tue Feb 20 2007
-    copyright   : (C) 2007 by Martin Preuss
+    copyright   : (C) 2007-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -15,8 +12,8 @@
 #define CHIPCARD_CARD_EGKCARD_P_H
 
 
-#include <chipcard/client/card_imp.h>
-#include <chipcard/client/cards/egkcard.h>
+#include <chipcard/card_imp.h>
+#include <chipcard/cards/egkcard.h>
 
 
 typedef struct LC_EGKCARD LC_EGKCARD;

@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: egkcard.c 346 2007-01-24 15:22:22Z martin $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -24,7 +21,7 @@
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
-#include <chipcard/client/cards/processorcard.h>
+#include <chipcard/cards/processorcard.h>
 
 #include <zlib.h>
 

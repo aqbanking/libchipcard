@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -20,8 +17,7 @@
 #include "global.h"
 #include <time.h>
 #include <assert.h>
-#include <chipcard/client/mon/monitor.h>
-#include <chipcard/client/client.h>
+#include <chipcard/client.h>
 #include <gwenhywfar/debug.h>
 
 

@@ -10,7 +10,7 @@ typefiles=hidata.xml
 
 EXTRA_DIST=card.xml $(typefiles)
 
-INCLUDES=@all_includes@ -I../ -I../client -I$(srcdir)/../ -I$(srcdir)/../client
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../ -I../client -I$(srcdir)/../ -I$(srcdir)/../client
 
 noinst_LTLIBRARIES=libcards.la
 
@@ -18,7 +18,7 @@ libcards_la_SOURCES=\
   hiinsurancedata.c \
   hipersonaldata.c
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=@libchipcard_headerdir_am@/cards
 iheader_HEADERS=\
   hiinsurancedata.h \
   hipersonaldata.h

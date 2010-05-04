@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id: client_p.h 137 2005-11-03 13:07:50Z aquamaniac $
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -25,8 +22,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                                     const char *apdu,
                                     unsigned int len,
                                     GWEN_BUFFER *rbuf,
-                                    LC_CLIENT_CMDTARGET t,
-                                    int timeout);
+                                    LC_CLIENT_CMDTARGET t);
 
 LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
                                      LC_CARD *card,
@@ -39,8 +35,7 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
                                        LC_CARD *card,
                                        const char *commandName,
                                        GWEN_DB_NODE *cmdData,
-                                       GWEN_DB_NODE *rspData,
-                                       int timeout);
+                                       GWEN_DB_NODE *rspData);
 
 
 GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl,

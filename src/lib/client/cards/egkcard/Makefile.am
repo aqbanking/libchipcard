@@ -5,7 +5,7 @@ DEFS += \
 AM_CFLAGS=$(visibility_cflags)
 
 
-INCLUDES=@all_includes@ -I../
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 EXTRA_DIST=app.xml card.xml
 
@@ -15,7 +15,7 @@ noinst_HEADERS=\
   egkcard_p.h
 
 
-iheaderdir=${includedir}/chipcard/client/cards
+iheaderdir=@libchipcard_headerdir_am@/cards
 iheader_HEADERS=\
   egkcard.h
 

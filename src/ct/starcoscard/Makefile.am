@@ -1,4 +1,4 @@
-INCLUDES=@all_includes@ -I../../ -I../../client -I../../cards
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=starcoscard.xml
@@ -14,6 +14,6 @@ noinst_HEADERS=\
 starcoscard_la_SOURCES=dummy.c
 
 starcoscard_la_LDFLAGS=-module -no-undefined -avoid-version
-starcoscard_la_LIBADD=libct_starcoscard.la ../../lib/client/libchipcardc.la $(mingw_ldflags) $(gwenhywfar_libs)
+starcoscard_la_LIBADD=libct_starcoscard.la ../../lib/client/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

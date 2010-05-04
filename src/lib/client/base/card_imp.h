@@ -20,7 +20,7 @@
 /*@{*/
 
 
-#include <chipcard/client/card.h>
+#include <chipcard/card.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -166,18 +166,6 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                             GWEN_BUFFER *codeBuf);
 
 /*@}*/
-
-
-#ifdef LC_CARD_EXTEND_CLIENT
-CHIPCARD_API
-LC_CARD *LC_Card_new(LC_CLIENT *cl,
-                     uint32_t cardId,
-                     const char *cardType,
-                     uint32_t rflags,
-                     const unsigned char *atrBuf,
-                     unsigned int atrLen);
-
-#endif
 
 
 CHIPCARD_API

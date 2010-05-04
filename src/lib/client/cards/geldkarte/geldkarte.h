@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,10 +11,10 @@
 #ifndef CHIPCARD_CARD_GELDKARTE_H
 #define CHIPCARD_CARD_GELDKARTE_H
 
-#include <chipcard/client/card.h>
-#include <chipcard/client/cards/geldkarte_blog.h>
-#include <chipcard/client/cards/geldkarte_llog.h>
-#include <chipcard/client/cards/geldkarte_values.h>
+#include <chipcard/card.h>
+#include <chipcard/cards/geldkarte_blog.h>
+#include <chipcard/cards/geldkarte_llog.h>
+#include <chipcard/cards/geldkarte_values.h>
 
 
 #ifdef __cplusplus
@@ -58,23 +55,6 @@ CHIPCARD_API int LC_GeldKarte_UnextendCard(LC_CARD *card);
 CHIPCARD_API LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card);
 /*@}*/
 
-
-/** @name Pin Verification
- *
- */
-/*@{*/
-/**
- * Verify the given pin.
- */
-CHIPCARD_API LC_CLIENT_RESULT LC_GeldKarte_VerifyPin(LC_CARD *card,
-                                                     const char *pin);
-
-/**
- * Secure pin verification. This can be used if the card's reader flags
- * indicate that the reader has a keypad.
- */
-CHIPCARD_API LC_CLIENT_RESULT LC_GeldKarte_SecureVerifyPin(LC_CARD *card);
-/*@}*/
 
 /** @name General Card Data
  *

@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,7 +11,7 @@
 #ifndef CHIPCARD_CARD_PROCESSORCARD_H
 #define CHIPCARD_CARD_PROCESSORCARD_H
 
-#include <chipcard/client/card.h>
+#include <chipcard/card.h>
 
 #ifdef __cplusplus
 extern "C" {

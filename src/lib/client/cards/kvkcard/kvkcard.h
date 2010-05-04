@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
-                             -------------------
-    cvs         : $Id$
     begin       : Sun Jun 13 2004
-    copyright   : (C) 2004 by Martin Preuss
+    copyright   : (C) 2004-2010 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,9 +11,9 @@
 #ifndef CHIPCARD_CARD_KVKCARD_H
 #define CHIPCARD_CARD_KVKCARD_H
 
-#include <chipcard/client/card.h>
-#include <chipcard/client/cards/hipersonaldata.h>
-#include <chipcard/client/cards/hiinsurancedata.h>
+#include <chipcard/card.h>
+#include <chipcard/cards/hipersonaldata.h>
+#include <chipcard/cards/hiinsurancedata.h>
 
 
 #ifdef __cplusplus
