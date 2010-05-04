@@ -54,6 +54,13 @@
 #endif
 
 
+#ifndef OS_WIN32
+# ifndef SCARD_E_NO_READERS_AVAILABLE
+#  define SCARD_E_NO_READERS_AVAILABLE 0x8010002e
+# endif
+#endif
+
+
 
 static int lc_client__initcounter=0;
 static GWEN_XMLNODE *lc_client__card_nodes=NULL;
