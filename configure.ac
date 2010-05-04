@@ -234,8 +234,8 @@ all_includes="$all_includes $gwenhywfar_includes"
 libchipcard_includes="-I\${prefix}/include/libchipcard5"
 libchipcardc_libs="-L\${libdir} -lchipcard"
 
-libchipcard_headerdir_am="\$(includedir)/libchipcard5"
-libchipcard_headerdir="\${includedir}/libchipcard5"
+libchipcard_headerdir_am="\$(includedir)/libchipcard5/chipcard"
+libchipcard_headerdir="\${includedir}/libchipcard5/chipcard"
 libchipcard_symlinkdir="\$(top_builddir)/libchipcard5"
 
 case "$OS_TYPE" in

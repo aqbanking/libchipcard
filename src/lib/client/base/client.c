@@ -962,9 +962,13 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
       /* we have a change here */
       if (cl->readerStates[i].dwEventState & SCARD_STATE_CHANGED)
 	cl->readerStates[i].dwCurrentState=cl->readerStates[i].dwEventState;
+      else
+        continue;
 
-      DBG_ERROR(0, "Status changed on reader [%s]",
-		cl->readerStates[i].szReader);
+      DBG_ERROR(0, "Status changed on reader [%s] (%08x, %08x)",
+		cl->readerStates[i].szReader,
+		(unsigned int)(cl->readerStates[i].dwCurrentState),
+		(unsigned int)(cl->readerStates[i].dwEventState));
 
       if (cl->pnpAvailable && i==cl->readerCount-1) {
 	/* pnp pseudo reader: a reader has been added or removed */
@@ -1054,7 +1058,7 @@ LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card) {
   assert(cl);
   assert(card);
 
-  rv=SCardDisconnect(LC_Card_GetSCardHandle(card), SCARD_UNPOWER_CARD);
+  rv=SCardDisconnect(LC_Card_GetSCardHandle(card), SCARD_RESET_CARD);
   if (rv!=SCARD_S_SUCCESS) {
     DBG_ERROR(LC_LOGDOMAIN,
 	      "SCardDisconnect: %04lx", rv);
