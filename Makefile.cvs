@@ -12,6 +12,7 @@ WIN32_OPTIONS=\
   --disable-win32-registry
 
 MINGW32_PREFIX=/usr/i586-mingw32msvc
+WIN32_INSTALL_DIR=/home/martin/install/win32
 
 default: all
 
@@ -74,8 +75,12 @@ mp-priv:
 	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" ./configure --prefix=/opt/devel/4 --enable-maintainer-mode --with-gwen-dir=/opt/devel/4
 
 mp-w32:
-	PATH="$(MINGW32_PREFIX)/bin:$(PATH)"
-	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="-ggdb -Wall" \
+	libtoolize -f --automake
+	aclocal -I ./m4
+	autoheader
+	automake --add-missing
+	autoconf
+	CFLAGS="$(MY_CFLAGS) -I$(WIN32_INSTALL_DIR)/include" CXXFLAGS="-ggdb -Wall -I$(WIN32_INSTALL_DIR)/include" \
         DLLTOOL=i586-mingw32msvc-dlltool \
 	OBJDUMP=i586-mingw32msvc-objdump \
 	LD=i586-mingw32msvc-ld \
@@ -88,8 +93,8 @@ mp-w32:
 	RC=i586-mingw32msvc-windres \
 	./configure \
 	  --enable-maintainer-mode \
-	  --prefix=$(MINGW32_PREFIX) $(WIN32_OPTIONS) \
+	  --prefix=$(WIN32_INSTALL_DIR) $(WIN32_OPTIONS) \
 	  --enable-release \
-	  --with-gwen-dir=$(MINGW32_PREFIX)
+	  --with-gwen-dir=$(WIN32_INSTALL_DIR)
 
 

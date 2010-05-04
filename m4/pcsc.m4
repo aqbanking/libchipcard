@@ -83,6 +83,10 @@ if test "$OSYSTEM" != "windows" ; then
   # end of "if enable-pcsc"
   fi
 #end of if windows
+else
+  pcsc_libraries=""
+  pcsc_lib="-lwinscard"
+  have_pcsc="yes"
 fi
 AC_SUBST(pcsc_includes)
 AC_SUBST(pcsc_libraries)

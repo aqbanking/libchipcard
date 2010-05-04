@@ -24,7 +24,46 @@
 #include <gwenhywfar/gwentime.h>
 #include <chipcard/chipcard.h>
 
-#include <PCSC/reader.h>
+#ifdef OS_WIN32
+# define CM_IOCTL_GET_FEATURE_REQUEST SCARD_CTL_CODE(3400)
+
+# define FEATURE_VERIFY_PIN_START  0x01 /* OMNIKEY Proposal */
+# define FEATURE_VERIFY_PIN_FINISH 0x02 /* OMNIKEY Proposal */
+# define FEATURE_MODIFY_PIN_START  0x03 /* OMNIKEY Proposal */
+# define FEATURE_MODIFY_PIN_FINISH 0x04 /* OMNIKEY Proposal */
+# define FEATURE_GET_KEY_PRESSED   0x05 /* OMNIKEY Proposal */
+# define FEATURE_VERIFY_PIN_DIRECT 0x06 /* USB CCID PIN Verify */
+# define FEATURE_MODIFY_PIN_DIRECT 0x07 /* USB CCID PIN Modify */
+# define FEATURE_MCT_READERDIRECT  0x08 /* KOBIL Proposal */
+# define FEATURE_MCT_UNIVERSAL     0x09 /* KOBIL Proposal */
+# define FEATURE_IFD_PIN_PROP      0x0A /* Gemplus Proposal */
+# define FEATURE_ABORT             0x0B /* SCM Proposal */
+
+/* Set structure elements aligment on bytes
+ * http://gcc.gnu.org/onlinedocs/gcc/Structure_002dPacking-Pragmas.html */
+#ifdef __APPLE__
+#pragma pack(1)
+#else
+#pragma pack(push, 1)
+#endif
+
+/* the structure must be 6-bytes long */
+typedef struct {
+  uint8_t tag;
+  uint8_t length;
+  uint32_t value;
+} PCSC_TLV_STRUCTURE;
+
+#ifdef __APPLE__
+#pragma pack()
+#else
+#pragma pack(pop)
+#endif
+
+
+#else
+# include <PCSC/reader.h>
+#endif
 
 
 #include <stdlib.h>

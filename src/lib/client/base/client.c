@@ -37,6 +37,9 @@
 #include <errno.h>
 #include <ctype.h>
 
+#include <winscard.h>
+
+
 #ifdef OS_WIN32
 # define DIRSEP "\\"
 #else
@@ -45,6 +48,11 @@
 
 
 #define I18N(msg) msg
+
+#ifndef MAX_ATR_SIZE
+# define MAX_ATR_SIZE 33
+#endif
+
 
 
 static int lc_client__initcounter=0;
