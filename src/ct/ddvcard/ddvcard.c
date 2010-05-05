@@ -41,7 +41,10 @@ GWEN_PLUGIN *ct_ddvcard_factory(GWEN_PLUGIN_MANAGER *pm,
   GWEN_PLUGIN *pl;
 
   pl=LC_Crypt_TokenDDV_Plugin_new(pm, modName, fileName);
-  assert(pl);
+  if (pl==NULL) {
+    DBG_ERROR(LC_LOGDOMAIN, "No plugin created");
+    return NULL;
+  }
 
   return pl;
 }
@@ -67,9 +70,10 @@ GWEN_PLUGIN *LC_Crypt_TokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
   res=LC_Client_Init(cpl->client);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "Error reading libchipcard3 client configuration (%d).", res);
+	      "Error initialising libchipcard (%d), chipcards will not be available",
+	      res);
     GWEN_Plugin_free(pl);
-    return 0;
+    return NULL;
   }
 
   /* set virtual functions */
