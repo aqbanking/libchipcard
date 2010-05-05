@@ -452,7 +452,6 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
 
 LC_CLIENT_RESULT LC_Card_ReadFeatures(LC_CARD *card) {
   LONG rv;
-  uint32_t assumedRFlags=0;
   unsigned char rbuffer[300];
   DWORD rblen;
 
@@ -476,6 +475,9 @@ LC_CLIENT_RESULT LC_Card_ReadFeatures(LC_CARD *card) {
     PCSC_TLV_STRUCTURE *tlv;
     int i;
 
+    /* clear keypad flag; if there is TLV indicating the reader has a keypad and
+     * the driver supports it we set the flag upon encounter of the tlv */
+    card->readerFlags&=~LC_READER_FLAGS_KEYPAD;
     cnt=rblen/sizeof(PCSC_TLV_STRUCTURE);
     tlv=(PCSC_TLV_STRUCTURE*)rbuffer;
     for (i=0; i<cnt; i++) {
@@ -490,7 +492,7 @@ LC_CLIENT_RESULT LC_Card_ReadFeatures(LC_CARD *card) {
 #endif
       DBG_INFO(LC_LOGDOMAIN, "Feature %d: %08x", tlv[i].tag, v);
       if (tlv[i].tag==FEATURE_VERIFY_PIN_DIRECT)
-	assumedRFlags|=LC_READER_FLAGS_KEYPAD;
+	card->readerFlags|=LC_READER_FLAGS_KEYPAD;
       if (tlv[i].tag<LC_PCSC_MAX_FEATURES) {
 	card->featureCode[tlv[i].tag]=v;
       }
