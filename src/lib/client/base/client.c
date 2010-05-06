@@ -406,6 +406,25 @@ LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl) {
 		"Error SCARD_E_NO_SERVICE: "
 		"The Smartcard resource manager is not running. "
 		"Maybe you have to start the Smartcard service manually?");
+      GWEN_Gui_ProgressLog(0, GWEN_LoggerLevel_Error,
+			   I18N("The PC/SC service is not running.\n"
+				"Please make sure that the package \"pcscd\" is\n"
+				"installed along with the appropriate driver.\n"
+				"For cyberJack devices you will need to install\n"
+				"the package \"ifd-cyberjack\" (Debian) or\n"
+				"\"cyberjack-ifd\" (SuSE).\n"
+				"For most other readers the package \"libccid\"\n"
+				"needs to be installed."
+				"<html>"
+				"<p>The PC/SC service is not running.</p>"
+				"<p>Please make sure that the package <b>pcscd</b> is "
+				"installed along with the appropriate driver.</p>"
+				"<p>For cyberJack devices you will need to install "
+				"the package <b>ifd-cyberjack</b> (Debian) or "
+				"<b>cyberjack-ifd</b> (SuSE).</p>"
+				"<p>For most other readers the package <b>libccid</b> "
+				"needs to be installed.</p>"
+                                "</html>"));
     }
     else {
       DBG_ERROR(LC_LOGDOMAIN,
