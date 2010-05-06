@@ -27,6 +27,7 @@
 #include <gwenhywfar/stringlist.h>
 #include <gwenhywfar/pathmanager.h>
 #include <gwenhywfar/gui.h>
+#include <gwenhywfar/i18n.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -47,7 +48,8 @@
 #endif
 
 
-#define I18N(msg) msg
+#define I18N(msg) GWEN_I18N_Translate(PACKAGE, msg)
+
 
 #ifndef MAX_ATR_SIZE
 # define MAX_ATR_SIZE 33
