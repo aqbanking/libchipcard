@@ -1,5 +1,5 @@
-# $Id$
-# (c) 2002 Martin Preuss<martin@libchipcard.de>
+# pcsc.m4
+# (c) 2010 Martin Preuss<martin@libchipcard.de>
 # This function checks if PC/SC is wanted
 
 AC_DEFUN([AQ_CHECK_PCSC],[
@@ -15,8 +15,17 @@ dnl     pcsc_includes: Path to the PC/SC includes
 dnl     have_pcsc: "yes" if pc/sc is available
 dnl   Defines:
 
-dnl check if pcsc is desired
-if test "$OSYSTEM" != "windows" ; then
+
+if test "$OSYSTEM" = "windows" ; then
+  pcsc_libraries=""
+  pcsc_lib="-lwinscard"
+  have_pcsc="yes"
+elif test "$OSYSTEM" = "osx" ; then
+  pcsc_includes="-I/System/Library/Frameworks/PCSC.framework"
+  pcsc_libraries=""
+  pcsc_lib="-framework PCSC"
+  have_pcsc="yes"
+else
   AC_MSG_CHECKING(if PC/SC should be used)
   AC_ARG_ENABLE(pcsc,
     [  --enable-pcsc             enable PC/SC driver (default=yes)],
@@ -28,24 +37,20 @@ if test "$OSYSTEM" != "windows" ; then
 
     dnl ******* pcsc includes ***********
     AC_MSG_CHECKING(for pcsc includes)
-    if test "$OSYSTEM" != "windows" ; then
-      AC_ARG_WITH(pcsc-includes, [  --with-pcsc-includes=DIR adds pcsc include path],
-        [pcsc_search_inc_dirs="$withval"],
-        [pcsc_search_inc_dirs="/usr/include/PCSC\
-               	       /usr/local/include/PCSC\
-          	       /usr/local/pcsc/include/PCSC\
-  		       /usr/pcsc/include/PCSC\
-                       "])
+    AC_ARG_WITH(pcsc-includes, [  --with-pcsc-includes=DIR adds pcsc include path],
+      [pcsc_search_inc_dirs="$withval"],
+      [pcsc_search_inc_dirs="/usr/include\
+                     /usr/local/include\
+                     /usr/local/pcsc/include\
+                     /usr/pcsc/include\
+                     "])
 
-      dnl search for pcsc
-      AQ_SEARCH_FOR_PATH([winscard.h],[$pcsc_search_inc_dirs])
-      if test -n "$found_dir" ; then
-        pcsc_includes="-I$found_dir"
-      fi
-      AC_MSG_RESULT($pcsc_includes)
-    else
-      AC_MSG_RESULT(builtin winscard.h)
+    dnl search for pcsc
+    AQ_SEARCH_FOR_PATH([PCSC/winscard.h],[$pcsc_search_inc_dirs])
+    if test -n "$found_dir" ; then
+      pcsc_includes="-I$found_dir -I$found_dir/PCSC"
     fi
+    AC_MSG_RESULT($pcsc_includes)
 
 
     dnl ******* pcsc lib ***********
@@ -82,12 +87,9 @@ if test "$OSYSTEM" != "windows" ; then
     fi
   # end of "if enable-pcsc"
   fi
-#end of if windows
-else
-  pcsc_libraries=""
-  pcsc_lib="-lwinscard"
-  have_pcsc="yes"
+# end of "if linux"
 fi
+
 AC_SUBST(pcsc_includes)
 AC_SUBST(pcsc_libraries)
 AC_SUBST(pcsc_lib)
