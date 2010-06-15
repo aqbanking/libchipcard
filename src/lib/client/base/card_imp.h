@@ -19,7 +19,6 @@
  */
 /*@{*/
 
-
 #include <chipcard/card.h>
 
 #ifdef __cplusplus

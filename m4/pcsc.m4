@@ -21,9 +21,13 @@ if test "$OSYSTEM" = "windows" ; then
   pcsc_lib="-lwinscard"
   have_pcsc="yes"
 elif test "$OSYSTEM" = "osx" ; then
-  pcsc_includes="-I/System/Library/Frameworks/PCSC.framework"
+  AC_MSG_CHECKING(for pcsc includes)
+  pcsc_includes="-I/System/Library/Frameworks/PCSC.framework/Headers"
+  AC_MSG_RESULT($pcsc_includes)
+  AC_MSG_CHECKING(for pcsc libs)
   pcsc_libraries=""
   pcsc_lib="-framework PCSC"
+  AC_MSG_RESULT($pcsc_libraries ${pcsc_lib})
   have_pcsc="yes"
 else
   AC_MSG_CHECKING(if PC/SC should be used)

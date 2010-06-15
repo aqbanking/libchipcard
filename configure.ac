@@ -381,12 +381,18 @@ AC_MSG_RESULT($lc_cfg_searchdir)
 # check for PC/SC
 #
 
+
 AQ_CHECK_PCSC
 if test "$have_pcsc" != "yes"; then
       AC_MSG_ERROR([
-*** No pcsc libraries found.
-*** Please install the pcsclite package including development packages.])
+***** No pcsc libraries found.
+***** Please install the pcsclite package including development packages.])
 fi
+
+if test "$OSYSTEM" = "osx" ; then
+  pcsc_includes="-I\$(top_srcdir)/src -I\$(top_srcdir)/src/PCSC"
+fi
+
 
 
 # ---------------------------------------------------------------------------
@@ -602,6 +608,7 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  etc/Makefile
                  src/Makefile
+                 src/PCSC/Makefile
                  src/lib/Makefile
                  src/lib/version.h
                  src/lib/chipcard.h
