@@ -310,6 +310,12 @@ AC_ARG_WITH(data-searchdir, [  --with-data-searchdir=DIR where to search for dat
 if test -z "${lc_data_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_data_searchdir="share/chipcard"
+  elif test "$OSYSTEM" = "osx"; then
+    if test "$enable_local_install" != "no"; then
+      lc_data_searchdir="Frameworks/AqBanking/share/chipcard"
+    else
+      lc_data_searchdir="\$(datadir)"
+    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_data_searchdir="share/chipcard"
@@ -318,6 +324,7 @@ if test -z "${lc_data_searchdir}"; then
     fi
   fi
 fi
+
 
 AC_SUBST(lc_data_searchdir)
 AC_MSG_RESULT($lc_data_searchdir)
@@ -336,6 +343,12 @@ AC_ARG_WITH(locale-searchdir, [  --with-locale-searchdir=DIR where to search for
 if test -z "${lc_locale_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_locale_searchdir="share/locale"
+  elif test "$OSYSTEM" = "osx"; then
+    if test "$enable_local_install" != "no"; then
+      lc_locale_searchdir="Frameworks/AqBanking/share/locale"
+    else
+      lc_locale_searchdir="\$(localedir)"
+    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_locale_searchdir="share/locale"
@@ -359,9 +372,15 @@ AC_ARG_WITH(cfg-searchdir, [  --with-cfg-searchdir=DIR where to search for cfg f
   [lc_cfg_searchdir="$withval"],
   [lc_cfg_searchdir=""])
 
-if test -z "$lc_cfg_searchdir"; then
+if test -z "${lc_cfg_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_cfg_searchdir="etc/chipcard"
+  elif test "$OSYSTEM" = "osx"; then
+    if test "$enable_local_install" != "no"; then
+      lc_cfg_searchdir="Frameworks/AqBanking/etc/chipcard"
+    else
+      lc_cfg_searchdir="$lc_client_config_dir"
+    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_cfg_searchdir="etc/chipcard"
