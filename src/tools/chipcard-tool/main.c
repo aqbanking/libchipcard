@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
     rv=RETURNVALUE_PARAM;
   }
   else {
-    fprintf(stderr, "Unknown command \"%s\"", s);
+    fprintf(stderr, "Unknown command \"%s\"\n", s);
     rv=RETURNVALUE_PARAM;
   }
 
