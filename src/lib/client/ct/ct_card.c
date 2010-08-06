@@ -449,7 +449,8 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
   }
 
   if ((pt!=GWEN_Crypt_PinType_Manage) &&
-      (LC_Card_GetReaderFlags(hcard) & LC_READER_FLAGS_KEYPAD)) {
+      (LC_Card_GetReaderFlags(hcard) & LC_READER_FLAGS_KEYPAD) &&
+      !(GWEN_Crypt_Token_GetModes(ct) & GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)) {
     uint32_t bid;
     int triesLeft=-1;
 
