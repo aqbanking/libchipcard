@@ -945,7 +945,7 @@ LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN, "UC_allgemeineVersicherungsdatenXML not found, data follows:");
-    GWEN_XMLNode_Dump(root, stderr, 2);
+    GWEN_XMLNode_Dump(root, 2);
     return LC_Client_ResultNotFound;
   }
 

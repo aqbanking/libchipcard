@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 
   LC_Card_Open(card);
 
-  LC_Card_Dump(card, stderr, 0);
+  LC_Card_Dump(card, 0);
 
   LC_Card_Close(card);
   LC_Client_ReleaseCard(cl, card);

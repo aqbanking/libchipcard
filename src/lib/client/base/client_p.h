@@ -16,7 +16,7 @@
 #include <gwenhywfar/msgengine.h>
 
 #include <winscard.h>
-
+#include <wintypes.h>
 
 
 #define LCC_PM_LIBNAME    "libchipcard"

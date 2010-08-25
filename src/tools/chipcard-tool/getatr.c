@@ -45,7 +45,7 @@ int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     return 2;
   }
   fprintf(stderr, "INFO: We got this card:\n");
-  LC_Card_Dump(card, stderr, 2);
+  LC_Card_Dump(card, 2);
 
   res=LC_Client_ReleaseCard(cl, card);
   if (res!=LC_Client_ResultOk) {

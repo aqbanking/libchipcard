@@ -388,7 +388,7 @@ int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                                             0);
 	if (!currCardNumber) {
 	  DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
-          GWEN_DB_Dump(dbCardData, stderr, 2);
+          GWEN_DB_Dump(dbCardData, 2);
           abort();
         }
 

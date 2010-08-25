@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
    * a GWEN_DB, search for GWEN_DB_NODE).
    */
   fprintf(stderr, "INFO: I got this card:\n");
-  GWEN_DB_Dump(dbData, stderr, 2);
+  GWEN_DB_Dump(dbData, 2);
 
   /* ====================================================================== */
 

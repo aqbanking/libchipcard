@@ -41,6 +41,36 @@
 
 /* Set structure elements aligment on bytes
  * http://gcc.gnu.org/onlinedocs/gcc/Structure_002dPacking-Pragmas.html */
+#pragma pack(push, 1)
+
+/* the structure must be 6-bytes long */
+typedef struct {
+  uint8_t tag;
+  uint8_t length;
+  uint32_t value;
+} PCSC_TLV_STRUCTURE;
+
+#pragma pack(pop)
+
+
+#elif defined (OS_DARWIN)
+# define SCARD_CTL_CODE(code) (0x42000000 + (code))
+# define CM_IOCTL_GET_FEATURE_REQUEST SCARD_CTL_CODE(3400)
+
+# define FEATURE_VERIFY_PIN_START  0x01 /* OMNIKEY Proposal */
+# define FEATURE_VERIFY_PIN_FINISH 0x02 /* OMNIKEY Proposal */
+# define FEATURE_MODIFY_PIN_START  0x03 /* OMNIKEY Proposal */
+# define FEATURE_MODIFY_PIN_FINISH 0x04 /* OMNIKEY Proposal */
+# define FEATURE_GET_KEY_PRESSED   0x05 /* OMNIKEY Proposal */
+# define FEATURE_VERIFY_PIN_DIRECT 0x06 /* USB CCID PIN Verify */
+# define FEATURE_MODIFY_PIN_DIRECT 0x07 /* USB CCID PIN Modify */
+# define FEATURE_MCT_READERDIRECT  0x08 /* KOBIL Proposal */
+# define FEATURE_MCT_UNIVERSAL     0x09 /* KOBIL Proposal */
+# define FEATURE_IFD_PIN_PROP      0x0A /* Gemplus Proposal */
+# define FEATURE_ABORT             0x0B /* SCM Proposal */
+
+/* Set structure elements aligment on bytes
+ * http://gcc.gnu.org/onlinedocs/gcc/Structure_002dPacking-Pragmas.html */
 #ifdef __APPLE__
 #pragma pack(1)
 #else
@@ -59,7 +89,6 @@ typedef struct {
 #else
 #pragma pack(pop)
 #endif
-
 
 #else
 # include <PCSC/reader.h>
@@ -366,47 +395,47 @@ DWORD LC_Card_GetProtocol(const LC_CARD *card) {
 
 
 
-void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
+void LC_Card_Dump(const LC_CARD *cd, int insert) {
   int k;
   GWEN_STRINGLISTENTRY *se;
   GWEN_DB_NODE *dbT;
 
   assert(cd);
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Card\n");
+    fprintf(stderr, " ");
+  fprintf(stderr, "Card\n");
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f,
+    fprintf(stderr, " ");
+  fprintf(stderr,
           "==================="
           "==================="
           "==================="
           "==================\n");
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Card type     : %s\n", cd->cardType);
+    fprintf(stderr, " ");
+  fprintf(stderr, "Card type     : %s\n", cd->cardType);
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Driver type   : %s\n", cd->driverType);
+    fprintf(stderr, " ");
+  fprintf(stderr, "Driver type   : %s\n", cd->driverType);
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Reader type   : %s\n", cd->readerType);
+    fprintf(stderr, " ");
+  fprintf(stderr, "Reader type   : %s\n", cd->readerType);
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Card types    :");
+    fprintf(stderr, " ");
+  fprintf(stderr, "Card types    :");
   se=GWEN_StringList_FirstEntry(cd->cardTypes);
   while(se) {
     const char *s;
 
     s=GWEN_StringListEntry_Data(se);
     assert(s);
-    fprintf(f, " %s", s);
+    fprintf(stderr, " %s", s);
     se=GWEN_StringListEntry_Next(se);
   } /* while */
-  fprintf(f, "\n");
+  fprintf(stderr, "\n");
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f, "Reader flags  : ");
+    fprintf(stderr, " ");
+  fprintf(stderr, "Reader flags  : ");
 
   dbT=GWEN_DB_Group_new("flags");
   LC_ReaderFlags_toDb(dbT, "flags", cd->readerFlags);
@@ -417,31 +446,30 @@ void LC_Card_Dump(const LC_CARD *cd, FILE *f, int insert) {
     if (!s)
       break;
     if (k)
-      fprintf(f, ", ");
-    fprintf(f, "%s", s);
+      fprintf(stderr, ", ");
+    fprintf(stderr, "%s", s);
   }
-  fprintf(f, "\n");
+  fprintf(stderr, "\n");
   GWEN_DB_Group_free(dbT);
 
   if (cd->atr) {
     for (k=0; k<insert; k++)
-      fprintf(f, " ");
-    fprintf(f, "ATR\n");
+      fprintf(stderr, " ");
+    fprintf(stderr, "ATR\n");
     for (k=0; k<insert; k++)
-      fprintf(f, " ");
-    fprintf(f,
+      fprintf(stderr, " ");
+    fprintf(stderr,
             "-------------------"
             "-------------------"
             "-------------------"
             "------------------\n");
     GWEN_Text_DumpString(GWEN_Buffer_GetStart(cd->atr),
                          GWEN_Buffer_GetUsedBytes(cd->atr),
-                         f,
                          insert+2);
   }
   for (k=0; k<insert; k++)
-    fprintf(f, " ");
-  fprintf(f,
+    fprintf(stderr, " ");
+  fprintf(stderr,
           "==================="
           "==================="
           "==================="
@@ -468,7 +496,7 @@ LC_CLIENT_RESULT LC_Card_ReadFeatures(LC_CARD *card) {
                   &rblen);
   if (rv!=SCARD_S_SUCCESS) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "SCardControl: %04lx", rv);
+	     "SCardControl: %04lx", (long unsigned int) rv);
   }
   else {
     int cnt;

@@ -242,7 +242,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
   }
   else {
     DBG_ERROR(0, "Got this version data:");
-    GWEN_DB_Dump(dbVersion, stderr, 2);
+    GWEN_DB_Dump(dbVersion, 2);
   
     x=GWEN_DB_GetIntValue(dbVersion, "publisherId", 0, 0x44);
     GWEN_DB_Group_free(dbVersion);
@@ -1263,7 +1263,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
   seq=(uint32_t)GWEN_DB_GetIntValue(dbData, "seq", 0, 0);
   if (seq==0) {
     DBG_ERROR(LC_LOGDOMAIN, "No signature counter in data");
-    GWEN_DB_Dump(dbData, stderr, 2);
+    GWEN_DB_Dump(dbData, 2);
     GWEN_DB_Group_free(dbData);
     return LC_Client_ResultInternal;
   }
@@ -1323,7 +1323,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   p=GWEN_DB_GetBinValue(dbRsp, "response/signature", 0, 0, 0, &bs);
   if (!p || !bs) {
     DBG_ERROR(LC_LOGDOMAIN, "No signature returned by card");
-    GWEN_DB_Dump(dbRsp, stderr, 2);
+    GWEN_DB_Dump(dbRsp, 2);
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
     return res;
@@ -1422,7 +1422,7 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
   p=GWEN_DB_GetBinValue(dbResp, "response/random", 0, 0, 0, &bs);
   if (!p || !bs) {
     DBG_ERROR(LC_LOGDOMAIN, "No data returned by card");
-    GWEN_DB_Dump(dbResp, stderr, 2);
+    GWEN_DB_Dump(dbResp, 2);
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;

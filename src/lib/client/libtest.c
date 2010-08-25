@@ -273,7 +273,7 @@ int testPcsc5(int argc, char **argv) {
   }
 
   fprintf(stderr, "Got this card:\n");
-  LC_Card_Dump(card, stderr, 2);
+  LC_Card_Dump(card, 2);
 
   res=LC_Client_ReleaseCard(cl, card);
   if (res!=LC_Client_ResultOk) {
@@ -337,7 +337,7 @@ int testPcsc6(int argc, char **argv) {
   }
 
   fprintf(stderr, "Got this card:\n");
-  LC_Card_Dump(card, stderr, 2);
+  LC_Card_Dump(card, 2);
 
 
   if (LC_DDVCard_ExtendCard(card)) {
@@ -371,7 +371,7 @@ int testPcsc6(int argc, char **argv) {
   }
   fprintf(stderr, "Response was %d\n", res);
   GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf),
-                       GWEN_Buffer_GetUsedBytes(mbuf), stderr, 2);
+                       GWEN_Buffer_GetUsedBytes(mbuf), 2);
   GWEN_Buffer_Rewind(mbuf);
 
   dbRecord=GWEN_DB_Group_new("record");
@@ -380,7 +380,7 @@ int testPcsc6(int argc, char **argv) {
   }
   else {
     fprintf(stderr, "Parsed record is:\n");
-    GWEN_DB_Dump(dbRecord, stderr, 2);
+    GWEN_DB_Dump(dbRecord, 2);
   }
 
   GWEN_Buffer_Reset(mbuf);
@@ -389,7 +389,7 @@ int testPcsc6(int argc, char **argv) {
   }
   else {
     fprintf(stderr, "Created record is:\n");
-    GWEN_Buffer_Dump(mbuf, stderr, 2);
+    GWEN_Buffer_Dump(mbuf, 2);
   }
 
 
@@ -463,7 +463,7 @@ int testPcsc7(int argc, char **argv) {
   }
 
   fprintf(stderr, "Got this card:\n");
-  LC_Card_Dump(card, stderr, 2);
+  LC_Card_Dump(card, 2);
 
   if (LC_ProcessorCard_ExtendCard(card)) {
     fprintf(stderr, "ERROR: Could not extend card as Processor card\n");
@@ -499,7 +499,7 @@ int testPcsc7(int argc, char **argv) {
       else {
 	fprintf(stdout, "SFI=%d, Record=%d:\n", i, j);
 	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
-			     stdout, 2);
+                             2);
       }
       GWEN_Buffer_Reset(mbuf);
     }
@@ -575,7 +575,7 @@ int testPcsc8(int argc, char **argv) {
   }
 
   fprintf(stderr, "Got this card:\n");
-  LC_Card_Dump(card, stderr, 2);
+  LC_Card_Dump(card, 2);
 
   if (LC_ProcessorCard_ExtendCard(card)) {
     fprintf(stderr, "ERROR: Could not extend card as Processor card\n");
@@ -608,8 +608,7 @@ int testPcsc8(int argc, char **argv) {
     }
     else {
 	fprintf(stdout, "Record=%d:\n", i);
-	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
-			     stdout, 2);
+	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf), 2);
     }
     GWEN_Buffer_Reset(mbuf);
   }

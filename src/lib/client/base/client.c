@@ -430,7 +430,7 @@ LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl) {
     }
     else {
       DBG_ERROR(LC_LOGDOMAIN,
-		"SCardEstablishContext: %ld (%04lx)", rv,
+		"SCardEstablishContext: %ld (%04lx)", (long int) rv,
 		rv);
     }
     LC_Client_FiniCommon();
@@ -448,7 +448,7 @@ LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl) {
   rv=SCardReleaseContext(cl->scardContext);
   if (rv!=SCARD_S_SUCCESS) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "SCardReleaseContext: %04lx", rv);
+	      "SCardReleaseContext: %04lx", (long unsigned int) rv);
     LC_Client_FiniCommon();
     return LC_Client_ResultIoError;
   }
@@ -493,7 +493,7 @@ LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
                     &dwActiveProtocol);
   if (rv!=SCARD_S_SUCCESS) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "SCardConnect: %04lx", rv);
+	     "SCardConnect: %04lx", (long unsigned int) rv);
     return LC_Client_ResultIoError;
   }
 
@@ -511,7 +511,7 @@ LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
 
   if (rv!=SCARD_S_SUCCESS) {
     DBG_ERROR(LC_LOGDOMAIN,
-	      "SCardStatus: %04lx", rv);
+	      "SCardStatus: %04lx", (long unsigned int) rv);
     SCardDisconnect(scardHandle, SCARD_UNPOWER_CARD);
     return LC_Client_ResultIoError;
   }
@@ -610,7 +610,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                     &rblen);
     if (rv!=SCARD_S_SUCCESS) {
       DBG_ERROR(LC_LOGDOMAIN,
-                "SCardControl: %04lx", rv);
+                "SCardControl: %04lx", (long unsigned int) rv);
       return LC_Client_ResultIoError;
     }
     if (rblen) {
@@ -646,7 +646,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                      &rblen);
     if (rv!=SCARD_S_SUCCESS) {
       DBG_ERROR(LC_LOGDOMAIN,
-                "SCardControl: %04lx", rv);
+                "SCardControl: %04lx", (long unsigned int) rv);
       return LC_Client_ResultIoError;
     }
     if (rblen) {
@@ -806,7 +806,7 @@ int LC_Client_UpdateReaderStates(LC_CLIENT *cl) {
     }
     else {
       DBG_ERROR(LC_LOGDOMAIN,
-		"SCardListReaders(1): %08lx", rv);
+		"SCardListReaders(1): %08lx", (long unsigned int) rv);
     }
     return LC_Client_ResultIoError;
   }
@@ -822,7 +822,7 @@ int LC_Client_UpdateReaderStates(LC_CLIENT *cl) {
                       &dwReaders);
   if (rv!=SCARD_S_SUCCESS) {
     DBG_ERROR(LC_LOGDOMAIN,
-              "SCardListReaders(2): %04lx", rv);
+              "SCardListReaders(2): %04lx", (long unsigned int) rv);
     return LC_Client_ResultIoError;
   }
 
@@ -993,14 +993,14 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
       else
         continue;
 
-      DBG_ERROR(0, "Status changed on reader [%s] (%08x, %08x)",
+      DBG_DEBUG(LC_LOGDOMAIN, "Status changed on reader [%s] (%08x, %08x)",
 		cl->readerStates[i].szReader,
 		(unsigned int)(cl->readerStates[i].dwCurrentState),
 		(unsigned int)(cl->readerStates[i].dwEventState));
 
       if (cl->pnpAvailable && i==cl->readerCount-1) {
 	/* pnp pseudo reader: a reader has been added or removed */
-	DBG_ERROR(0, "Pseudo reader, updating reader list (%08x, %08x)",
+	DBG_DEBUG(LC_LOGDOMAIN, "Pseudo reader, updating reader list (%08x, %08x)",
 		  (unsigned int)(cl->readerStates[i].dwCurrentState),
 		  (unsigned int)(cl->readerStates[i].dwEventState));
 	LC_Client_UpdateReaderStates(cl);
@@ -1015,7 +1015,7 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
 	  LC_CARD *card=NULL;
 
 	  /* card inserted and not used by another application */
-	  DBG_ERROR(0, "Found usable card in reader [%s]", cl->readerStates[i].szReader);
+	  DBG_DEBUG(LC_LOGDOMAIN, "Found usable card in reader [%s]", cl->readerStates[i].szReader);
 	  res=LC_Client_ConnectCard(cl, cl->readerStates[i].szReader, &card);
 	  if (res==LC_Client_ResultOk) {
 	    /* card csuccessfully connected, return */
@@ -1025,13 +1025,13 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
 	    return LC_Client_ResultOk;
 	  }
 	  else {
-	    DBG_ERROR(0,
+	    DBG_ERROR(LC_LOGDOMAIN,
 		      "Error connecting to card in reader [%s]",
 		      cl->readerStates[i].szReader);
 	  }
 	}
 	else {
-	  DBG_ERROR(0, "Either no card in reader or card unavailable in reader [%s]",
+	  DBG_INFO(LC_LOGDOMAIN, "Either no card in reader or card unavailable in reader [%s]",
 		    cl->readerStates[i].szReader);
 	}
       }
@@ -1088,8 +1088,7 @@ LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card) {
 
   rv=SCardDisconnect(LC_Card_GetSCardHandle(card), SCARD_RESET_CARD);
   if (rv!=SCARD_S_SUCCESS) {
-    DBG_ERROR(LC_LOGDOMAIN,
-	      "SCardDisconnect: %04lx", rv);
+    DBG_ERROR(LC_LOGDOMAIN, "SCardDisconnect: %04lx", (long unsigned int) rv);
     return LC_Client_ResultIoError;
   }
 

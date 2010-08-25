@@ -414,7 +414,7 @@ LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
   iData=LC_HIInsuranceData_new();
 
   if (GWEN_Logger_GetLevel(LC_LOGDOMAIN)>GWEN_LoggerLevel_Info)
-    GWEN_DB_Dump(kvk->dbData, stderr, 2);
+    GWEN_DB_Dump(kvk->dbData, 2);
 
   s=GWEN_DB_GetCharValue(kvk->dbData, "insuranceCompanyName", 0, NULL);
   LC_HIInsuranceData_SetInstitutionName(iData, s);

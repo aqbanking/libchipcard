@@ -15,6 +15,7 @@
 #include "card_imp.h"
 
 #include <winscard.h>
+#include <wintypes.h>
 
 
 

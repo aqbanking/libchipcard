@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 
   /* Show the generic information available for this card
    */
-  LC_Card_Dump(card, stderr, 0);
+  LC_Card_Dump(card, 0);
 
   /* Performs some internal card type specific functions.
    */

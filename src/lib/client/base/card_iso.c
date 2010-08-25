@@ -735,7 +735,7 @@ LC_Card__IsoEncipher(LC_CARD *card,
   p=GWEN_DB_GetBinValue(dbRsp, "response/data", 0, 0, 0, &bs);
   if (!p || !bs) {
     DBG_ERROR(LC_LOGDOMAIN, "No data returned by card");
-    GWEN_DB_Dump(dbRsp, stderr, 2);
+    GWEN_DB_Dump(dbRsp, 2);
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
     return res;

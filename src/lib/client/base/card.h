@@ -332,7 +332,7 @@ void LC_Card_CreateResultString(const LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-void LC_Card_Dump(const LC_CARD *cd, FILE *f, int indent);
+void LC_Card_Dump(const LC_CARD *cd, int indent);
 /*@}*/
 
 

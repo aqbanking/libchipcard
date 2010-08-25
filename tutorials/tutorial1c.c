@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 
   /* show card information */
   fprintf(stderr, "INFO: I got this card:\n");
-  LC_Card_Dump(card, stderr, 0);
+  LC_Card_Dump(card, 0);
 
   /* close card */
   fprintf(stderr, "INFO: Closing card.\n");

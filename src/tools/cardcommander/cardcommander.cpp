@@ -232,7 +232,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
       return 3;
     }
     fprintf(stdout, I18N("Card is open, info follows:\n"));
-    LC_Card_Dump(*card, stderr, 2);
+    LC_Card_Dump(*card, 2);
   }
   else if (strcasecmp(cm.c_str(), "close")==0) {
     if (!*card) {
@@ -295,7 +295,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     }
     GWEN_Text_DumpString(GWEN_Buffer_GetStart(abuf),
 			 GWEN_Buffer_GetUsedBytes(abuf),
-			 stdout, 2);
+			 2);
 
     lastAPDU=string(GWEN_Buffer_GetStart(abuf),
 		    GWEN_Buffer_GetUsedBytes(abuf));
@@ -316,7 +316,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 	    LC_Card_GetLastSW2(*card));
     GWEN_Text_DumpString(GWEN_Buffer_GetStart(rbuf),
 			 GWEN_Buffer_GetUsedBytes(rbuf),
-			 stdout, 2);
+			 2);
     GWEN_Buffer_free(rbuf);
   }
   else if (strcasecmp(cm.c_str(), "rapdu")==0) {
@@ -344,7 +344,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     }
     GWEN_Text_DumpString(GWEN_Buffer_GetStart(abuf),
 			 GWEN_Buffer_GetUsedBytes(abuf),
-			 stdout, 2);
+			 2);
 
     lastAPDU=string(GWEN_Buffer_GetStart(abuf),
 		    GWEN_Buffer_GetUsedBytes(abuf));
@@ -365,7 +365,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 	    LC_Card_GetLastSW2(*card));
     GWEN_Text_DumpString(GWEN_Buffer_GetStart(rbuf),
 			 GWEN_Buffer_GetUsedBytes(rbuf),
-			 stdout, 2);
+			 2);
     GWEN_Buffer_free(rbuf);
   }
   else if (strcasecmp(cm.c_str(), "info")==0) {
@@ -373,7 +373,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
       fprintf(stderr, I18N("Card is not open, try \"open\" first.\n"));
       return 3;
     }
-    LC_Card_Dump(*card, stderr, 2);
+    LC_Card_Dump(*card, 2);
   }
   else if (strcasecmp(cm.c_str(), "quit")==0 ||
 	   strcasecmp(cm.c_str(), "exit")==0 ||
