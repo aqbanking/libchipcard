@@ -16,9 +16,9 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=4
 CHIPCARD_VERSION_MINOR=99
-CHIPCARD_VERSION_PATCHLEVEL=7
+CHIPCARD_VERSION_PATCHLEVEL=9
 CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="beta"
+CHIPCARD_VERSION_TAG="rc"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -28,7 +28,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=5
 LIBCHIPCARD_SO_AGE=0
-LIBCHIPCARD_SO_REVISION=7
+LIBCHIPCARD_SO_REVISION=9
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -222,7 +222,7 @@ AQ_DISTRIBUTION
 # check for Gwenhywfar
 #
 
-AC_GWENHYWFAR(3,99,0,0)
+AC_GWENHYWFAR(3,99,24,0)
 
 all_includes="$all_includes $gwenhywfar_includes"
 
@@ -409,7 +409,7 @@ if test "$have_pcsc" != "yes"; then
 fi
 
 if test "$OSYSTEM" = "osx" ; then
-  pcsc_includes="-I\$(top_srcdir)/src -I\$(top_srcdir)/src/PCSC"
+  pcsc_includes="-I\$(libchipcard_symlinkdir)/PCSC"
 fi
 
 
@@ -678,6 +678,14 @@ ln -s "${lprefix}/src/lib/version.h" libchipcard5/chipcard/version.h
 ln -s "${lprefix}/src/lib/chipcard.h" libchipcard5/chipcard/chipcard.h
 
 
+###-------------------------------------------------------------------------
+# create symlinks for PC/SC on MacOSX
+#
+if test "$OSYSTEM" = "osx" ; then
+  ln -s /System/Library/Frameworks/PCSC.framework/Headers "libchipcard5/PCSC"
+fi
+
+
 
 ###-------------------------------------------------------------------------
 # create header directory for server, make symlinks
@@ -701,6 +709,7 @@ for f in ${hfiles}; do
           ;;
   esac
 done
+
 
 
 
