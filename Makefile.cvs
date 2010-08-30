@@ -66,6 +66,17 @@ mp:
 	autoconf
 	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" ./configure --enable-maintainer-mode
 
+clang:
+	libtoolize -f --automake
+	aclocal -I ./m4
+	autoheader
+	automake --add-missing
+	autoconf
+	CFLAGS="$(MY_CFLAGS)" CXXFLAGS="$(MY_CFLAGS)" \
+	  CC=clang \
+	  CXX=clang \
+	  ./configure --enable-maintainer-mode
+
 mp-priv:
 	libtoolize -f --automake
 	aclocal -I ./m4
