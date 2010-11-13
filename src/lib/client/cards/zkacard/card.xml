@@ -53,7 +53,7 @@
         <!-- Select DF by application-id -->
       <command name="SelectDFL" >
         <send>
-                <APDU lr="0" >
+                <APDU lr="-1" >
                 <ELEM type="dword">0x00a4040c</ELEM>
                 </APDU>
                 <DATA>
@@ -68,7 +68,7 @@
       <!-- Select EF by id -->
       <command name="SelectEFS" >
         <send>
-                <APDU lr="0" >
+                <APDU lr="-1" >
                 <ELEM type="dword">0x00a4020c</ELEM>
                 </APDU>
                 <DATA>
@@ -83,7 +83,7 @@
       <!-- Select Master File -->
       <command name="SelectMF" >
         <send>
-                <APDU lr="0" >
+                <APDU lr="-1" >
                 <ELEM type="dword">0x00a4000c</ELEM>
                 </APDU>
                 <DATA>
