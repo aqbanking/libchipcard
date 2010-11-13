@@ -719,7 +719,7 @@ done
 #
 
 lc_modules="cards ct"
-lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos memorycard processorcard"
+lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard memorycard processorcard"
 
 
 lprefix="${srcdir}"

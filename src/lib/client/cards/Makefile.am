@@ -35,6 +35,7 @@ libcards_la_LIBADD=\
   geldkarte/libcards-geldkarte.la \
   kvkcard/libcards-kvk.la \
   starcos/libcards-starcos.la \
+  zkacard/libcards-zkacard.la \
   memorycard/libcards-memorycard.la \
   processorcard/libcards-processorcard.la
 
