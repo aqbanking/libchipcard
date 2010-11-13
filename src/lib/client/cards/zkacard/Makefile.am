@@ -34,11 +34,11 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/zkacardcard.xml
+	cp app.xml $(DESTDIR)$(appdatadir)/zkacard.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/zkacardcard.xml
+	cp card.xml $(DESTDIR)$(carddatadir)/zkacard.xml
 
 install-data-local: install-app-data install-card-data
 
