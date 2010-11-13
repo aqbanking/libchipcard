@@ -649,6 +649,10 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                 "SCardControl: %04lx", (long unsigned int) rv);
       return LC_Client_ResultIoError;
     }
+    DBG_DEBUG(LC_LOGDOMAIN, "Received response:");
+    GWEN_Text_LogString((const char*)rbuffer, rblen,
+			LC_LOGDOMAIN,
+			GWEN_LoggerLevel_Debug);
     if (rblen) {
       GWEN_Buffer_AppendBytes(rbuf, (const char*)rbuffer, rblen);
       if (rblen>1) {
@@ -657,6 +661,9 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
 			      rbuffer[rblen-2],
 			      rbuffer[rblen-1]);
       }
+    }
+    else {
+      DBG_DEBUG(LC_LOGDOMAIN, "Empty response");
     }
     return LC_Client_ResultOk;
   }
