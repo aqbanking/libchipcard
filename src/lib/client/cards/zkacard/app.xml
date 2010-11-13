@@ -106,6 +106,21 @@
           
         </files>  
       </df>
+
+
+      <df name="DF_NOTEPAD" lid="d2760000254e500100" >
+
+        <files>
+          <ef name="EF_NOTEPAD" sid="0xa611"
+              type="record" mode="linear" 
+              size="0" minnum="1" >
+              <descr>
+                This file contains user setup records.
+              </descr>
+          </ef>
+
+        </files>  
+      </df>
       
     </files>
   </app>

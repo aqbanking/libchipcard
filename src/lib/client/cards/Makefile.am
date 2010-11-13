@@ -1,4 +1,4 @@
-SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos
+SUBDIRS=memorycard processorcard ddvcard geldkarte kvkcard egkcard starcos zkacard
 
 DEFS += \
   -DBUILDING_CHIPCARD
