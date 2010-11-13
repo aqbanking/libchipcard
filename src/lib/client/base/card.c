@@ -1414,6 +1414,9 @@ LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
   LC_CLIENT_RESULT res;
 
   while(size>0) {
+    int sw1;
+    int sw2;
+
     if (size>252)
       t=252;
     else
@@ -1429,6 +1432,14 @@ LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
     size-=t;
     offset+=t;
     bytesRead+=t;
+
+    /* check for EOF */
+    sw1=LC_Card_GetLastSW1(card);
+    sw2=LC_Card_GetLastSW2(card);
+    if (sw1==0x62 && sw2==0x82) {
+      DBG_DEBUG(LC_LOGDOMAIN, "EOF met after %d bytes (asked for %d bytes more)", bytesRead, size);
+      break;
+    }
   } /* while still data to read */
 
   return LC_Client_ResultOk;
