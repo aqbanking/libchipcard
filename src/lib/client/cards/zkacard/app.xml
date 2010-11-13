@@ -24,6 +24,17 @@
 
     </formats>
 
+
+    <pins>
+      <pin name="ch_pin" encoding="ascii" id="0x03" 
+           minlen="4" maxlen="8" allowChange="1" filler="32" />
+<!--
+      <pin name="eg_pin" encoding="ascii" id="0x91" 
+           minlen="4" maxlen="8" allowChange="1" filler="32" />
+-->
+    </pins>
+
+
     <files>
       <ef name="EF_ID" sid="0x0003"
           type="record" mode="linear" 
@@ -109,7 +120,7 @@
 
 
       <df name="DF_NOTEPAD" lid="d2760000254e500100" >
-
+        <!-- verify ASCII pin 0x03 before accessing EF_NOTEPAD -->
         <files>
           <ef name="EF_NOTEPAD" sid="0xa611"
               type="record" mode="linear" 
