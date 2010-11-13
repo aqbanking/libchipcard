@@ -50,7 +50,21 @@
       <image>cyberjack_ecom_a.jpg</image>
     </reader>
 
+   <!-- Cyberjack 0x400, after change of friendly name -->
+    <reader name="cyberjack3n" 
+            devicePathTmpl="REINER SCT cyberJack ecom_a *"
+    >
+      <short>Cyberjack ecom a</short>
+      <flags>
+        <flag>keypad</flag>
+        <flag>display</flag>
+      </flags>
+      <image>cyberjack_ecom_a.jpg</image>
+    </reader>
+
+
   </readers>
+
 
 </driver>
 
