@@ -42,7 +42,7 @@ struct LC_CLIENT {
   SCARDCONTEXT scardContext;
 
   int pnpAvailable;
-  SCARD_READERSTATE_A readerStates[MAX_READERS];
+  SCARD_READERSTATE readerStates[MAX_READERS];
   int readerCount;
   int lastUsedReader;
   LPSTR readerList;
