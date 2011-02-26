@@ -647,7 +647,6 @@ int testPcsc9(int argc, char **argv) {
   LC_CLIENT_RESULT res;
   LC_CARD *card;
   GWEN_BUFFER *mbuf;
-  GWEN_DB_NODE *dbRecord;
   LC_PININFO *pi;
   int triesLeft=-1;
 
