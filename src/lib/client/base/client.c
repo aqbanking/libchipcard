@@ -478,19 +478,34 @@ LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
 
   assert(cl);
 
+  DBG_INFO(LC_LOGDOMAIN, "Trying protocol T1");
   rv=SCardConnect(cl->scardContext,
 		  rname,
                   SCARD_SHARE_EXCLUSIVE,
                   SCARD_PROTOCOL_T1,
                   &scardHandle,
                   &dwActiveProtocol);
-  if (rv!=SCARD_S_SUCCESS)
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_INFO(LC_LOGDOMAIN, "Trying protocol T0");
     rv=SCardConnect(cl->scardContext,
 		    rname,
-                    SCARD_SHARE_EXCLUSIVE,
-                    SCARD_PROTOCOL_T0,
+		    SCARD_SHARE_EXCLUSIVE,
+		    SCARD_PROTOCOL_T0,
                     &scardHandle,
                     &dwActiveProtocol);
+  }
+#ifdef SCARD_PROTOCOL_RAW
+  if (rv!=SCARD_S_SUCCESS) {
+    DBG_INFO(LC_LOGDOMAIN, "Trying protocol RAW");
+    rv=SCardConnect(cl->scardContext,
+		    rname,
+		    SCARD_SHARE_EXCLUSIVE,
+		    SCARD_PROTOCOL_RAW,
+		    &scardHandle,
+		    &dwActiveProtocol);
+  }
+#endif
+
   if (rv!=SCARD_S_SUCCESS) {
     DBG_INFO(LC_LOGDOMAIN,
 	     "SCardConnect: %04lx", (long unsigned int) rv);
