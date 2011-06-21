@@ -915,7 +915,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     }
 
     DBG_VERBOUS(LC_LOGDOMAIN, "Entering BinTypeRead with this:");
-    if (GWEN_Logger_GetLevel(0)>=GWEN_LoggerLevel_Verbous)
+    if (GWEN_Logger_GetLevel(LC_LOGDOMAIN)>=GWEN_LoggerLevel_Verbous)
       GWEN_Buffer_Dump(vbuf, 2);
 
     p=GWEN_Buffer_GetStart(vbuf);
@@ -1017,24 +1017,20 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
           DBG_DEBUG(LC_LOGDOMAIN, "Tag %02x found in XML file", ltagType);
           name=GWEN_XMLNode_GetProperty(node, "name", 0);
           ngr=gr;
-          if (name) {
-            if (*name) {
-	      ngr=GWEN_DB_GetGroup(gr,
-				   GWEN_DB_FLAGS_DEFAULT,
-				   name);
-              assert(ngr);
-            }
-          }
+          if (name && *name) {
+	    ngr=GWEN_DB_GetGroup(gr,
+				 GWEN_DB_FLAGS_DEFAULT,
+				 name);
+	    assert(ngr);
+	  }
           name=GWEN_XMLNode_GetProperty(tlvNode, "name", 0);
-          if (name) {
-            if (*name) {
-	      ngr=GWEN_DB_GetGroup(ngr,
-				   GWEN_DB_FLAGS_DEFAULT |
-                                   GWEN_PATH_FLAGS_CREATE_GROUP,
-				   name);
-              assert(ngr);
-            }
-          }
+	  if (name && *name) {
+	    ngr=GWEN_DB_GetGroup(ngr,
+				 GWEN_DB_FLAGS_DEFAULT |
+				 GWEN_PATH_FLAGS_CREATE_GROUP,
+				 name);
+	    assert(ngr);
+	  }
 	  if (tagLength) {
             if (GWEN_MsgEngine_ParseMessage(e,
                                             tlvNode,
@@ -1044,6 +1040,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
               DBG_INFO(LC_LOGDOMAIN, "here");
               return -1;
             }
+	    DBG_VERBOUS(LC_LOGDOMAIN, "Done parsing subnodes");
 	  }
           return 0;
         } /* if tag id matches */
@@ -1054,13 +1051,11 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     DBG_INFO(LC_LOGDOMAIN, "Tag \"%02x\" not found", tagType);
     name=GWEN_XMLNode_GetProperty(node, "name", 0);
     ngr=gr;
-    if (name) {
-      if (*name) {
-        ngr=GWEN_DB_GetGroup(gr,
-                             GWEN_DB_FLAGS_DEFAULT,
-                             name);
-        assert(ngr);
-      }
+    if (name && *name) {
+      ngr=GWEN_DB_GetGroup(gr,
+                           GWEN_DB_FLAGS_DEFAULT,
+                           name);
+      assert(ngr);
     }
     ngr=GWEN_DB_GetGroup(ngr,
                          GWEN_PATH_FLAGS_CREATE_GROUP,
