@@ -128,6 +128,112 @@
               <descr>
                 This file contains user setup records.
               </descr>
+            <record>
+              <ELEM name="entry" type="tlv" minnum="1" maxnum="0" >
+                <tlv id="0x00">
+                  <DESCR>
+                    Empty record
+                  </DESCR>
+                  <ELEM name="emptyData" type="bytes" />
+                </tlv>
+                <tlv id="0xf0">
+                  <DESCR>
+                    HBCI parameter record
+                  </DESCR>
+                    <ELEM name="hbciData" type="tlv" minnum="0" maxnum="0" >
+                      <tlv id="0xe0">
+                        <ELEM name="version" type="ascii" size="3"/>
+                      </tlv>
+                      <tlv id="0xc0">
+                        <ELEM name="version" type="ascii" size="3"/>
+                      </tlv>
+                      <tlv id="0xe1">
+                        <ELEM name="institute" type="tlv" maxnum="0" >
+                          <tlv id="0xc1">
+                            <ELEM name="bankName" type="ascii" maxsize="20"/>
+                          </tlv>
+                          <tlv id="0xc2">
+                            <ELEM name="country" type="ascii" maxsize="3"/>
+                          </tlv>
+                          <tlv id="0xc3">
+                            <ELEM name="bankCode" type="ascii" maxsize="30"/>
+                          </tlv>
+                          <tlv id="0xc4">
+                            <ELEM name="keyNum"  type="ascii" size="3"/>
+                            <ELEM name="keyVer"  type="ascii" size="3"/>
+                            <ELEM name="hashAlgo" type="byte" size="1"/>
+                            <ELEM name="keyHash" type="bytes" size="20"/>
+                          </tlv>
+                          <tlv id="0xc5">
+                            <ELEM name="keyStatus" type="byte" size="1">
+                              <DESCR>
+                                1  : erstmalige Uebermittlung Kundenschluessel noetig
+                                2  : ISO9796 plusAnnexA
+                                4  : Bankschluessel validiert
+                                8  : ausstehende Uebermittlung des neuen CryptKeys
+                                16 : ausstehende Uebermittlung des neuen SignKeys
+                                32 : erfolgreiche Schluesselsperrung
+                                64 : Leitungsprobleme bei Uebermittlung neuer Schluessel
+                                128: reserviert
+                              </DESCR>
+                            </ELEM>
+                          </tlv>
+                        </ELEM>
+                      </tlv>
+      
+                      <tlv id="0xe2">
+                        <ELEM name="commData" type="tlv" maxnum="0" >
+                          <tlv id="0xc6">
+                            <ELEM name="commType" type="byte" size="1">
+                              <DESCR>
+                                2: TCP
+                              </DESCR>
+                            </ELEM>
+                          </tlv>
+                          <tlv id="0xc7">
+                            <ELEM name="address" type="ascii" maxsize="50"/>
+                          </tlv>
+                        </ELEM>
+                      </tlv>
+      
+                      <tlv id="0xe3">
+                        <ELEM name="user" type="tlv" maxnum="0" >
+                          <tlv id="0xc8">
+                            <ELEM name="userId" type="ascii" maxsize="30"/>
+                          </tlv>
+                          <tlv id="0xc9">
+                            <ELEM name="customerId" type="ascii" maxsize="30"/>
+                          </tlv>
+                          <tlv id="0xca">
+                            <ELEM name="signKeyNum"  type="ascii" size="3"/>
+                            <ELEM name="signKeyVer"  type="ascii" size="3"/>
+                            <ELEM name="cryptKeyNum" type="ascii" size="3"/>
+                            <ELEM name="cryptKeyVer" type="ascii" size="3"/>
+                            <ELEM name="authKeyNum"  type="ascii" size="3" minnum="0" />
+                            <ELEM name="authKeyVer"  type="ascii" size="3" minnum="0" />
+                          </tlv>
+                        </ELEM>
+                      </tlv>
+                      
+                    </ELEM>
+                </tlv>
+                
+                <tlv id="0xf1">
+                  <DESCR>
+                    Record for external app
+                  </DESCR>
+                  <ELEM name="app1Data" type="bin" maxnum="0" />
+                </tlv>
+      
+                <tlv id="0xf2">
+                  <DESCR>
+                    Record for external app
+                  </DESCR>
+                  <ELEM name="app2Data" type="bin" maxnum="0" />
+                </tlv>
+                
+              </ELEM>
+            </record>
           </ef>
 
         </files>  

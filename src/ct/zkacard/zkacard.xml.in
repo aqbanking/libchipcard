@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf8"?>
+
+<plugin type="ct" name="zkacard" device="card" >
+  <version>@CHIPCARD_VERSION_STRING@</version>
+  <author>Martin Preuss (martin@libchipcard.de)</author>
+  <short>ZKACard Chipcard Medium</short>
+
+  <descr>
+    This plugins provides support for ZKA RSA chipcards.
+
+    <text format="html" >
+      <p>
+        This plugins provides support for ZKA RSA chipcards.
+      </p>
+    </text>
+
+    <text format="html" lang="de" >
+      <p>
+        Dieses Modul unterstuetzt ZKA RSA-Chipkarten.
+      </p>
+    </text>
+
+  </descr>
+
+</plugin>
+
+

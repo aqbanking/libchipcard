@@ -650,6 +650,8 @@ AC_CONFIG_FILES([Makefile
                  src/ct/ddvcard/ddvcard.xml
                  src/ct/starcoscard/Makefile
                  src/ct/starcoscard/starcoscard.xml
+                 src/ct/zkacard/Makefile
+                 src/ct/zkacard/zkacard.xml
                  src/tools/Makefile
                  src/tools/geldkarte/Makefile
                  src/tools/memcard/Makefile

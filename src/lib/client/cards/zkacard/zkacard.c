@@ -78,8 +78,10 @@ void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p){
   assert(p);
   xc=(LC_ZKACARD*)p;
 
-  GWEN_Buffer_free(xc->bin_ef_gd_0);
   GWEN_Buffer_free(xc->bin_ef_id);
+  GWEN_DB_Group_free(xc->db_ef_id);
+
+  GWEN_Buffer_free(xc->bin_ef_gd_0);
   GWEN_Buffer_free(xc->bin_ef_ssd);
 
   GWEN_FREE_OBJECT(xc);
@@ -91,6 +93,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   LC_CLIENT_RESULT res;
   LC_ZKACARD *xc;
   GWEN_BUFFER *mbuf;
+  GWEN_DB_NODE *dbRecord;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening ZkaCard card");
 
@@ -105,22 +108,27 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   GWEN_Buffer_free(xc->bin_ef_id);
   xc->bin_ef_id=NULL;
 
+  GWEN_DB_Group_free(xc->db_ef_id);
+  xc->db_ef_id=NULL;
+
   GWEN_Buffer_free(xc->bin_ef_ssd);
   xc->bin_ef_ssd=NULL;
 
+  /* select ZKA card */
   res=LC_Card_SelectCard(card, "zkacard");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  /* first select generic app for all ZKACARD HBCI cards */
+  /* select ZKA app */
   res=LC_Card_SelectApp(card, "zkacard");
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
+  /* select MF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
   if (res!=LC_Client_ResultOk) {
@@ -136,6 +144,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
     return res;
   }
 
+  /* parse EF_ID */
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 32, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
@@ -145,6 +154,18 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
     return res;
   }
   xc->bin_ef_id=mbuf;
+
+  DBG_INFO(LC_LOGDOMAIN, "Parsing record...");
+  GWEN_Buffer_Rewind(mbuf);
+  dbRecord=GWEN_DB_Group_new("record");
+  if (LC_Card_ParseRecord(card, 1, mbuf, dbRecord)) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error in EF_ID");
+    GWEN_DB_Group_free(dbRecord);
+    GWEN_Buffer_free(mbuf);
+    return LC_Client_ResultDataError;
+  }
+
+  xc->db_ef_id=dbRecord;
 
 
   /* read EG_GD0 */
@@ -259,6 +280,33 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card){
 
   return res;
 }
+
+
+
+GWEN_DB_NODE *LC_ZkaCard_GetCardDataAsDb(const LC_CARD *card) {
+  LC_ZKACARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  return xc->db_ef_id;
+}
+
+
+
+GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card) {
+  LC_ZKACARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  return xc->bin_ef_id;
+}
+
+
+
 
 
 

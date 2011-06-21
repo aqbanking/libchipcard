@@ -21,8 +21,10 @@ struct LC_ZKACARD {
   LC_CARD_OPEN_FN openFn;
   LC_CARD_CLOSE_FN closeFn;
 
-  GWEN_BUFFER *bin_ef_gd_0;
   GWEN_BUFFER *bin_ef_id;
+  GWEN_DB_NODE *db_ef_id;
+
+  GWEN_BUFFER *bin_ef_gd_0;
   GWEN_BUFFER *bin_ef_ssd;
 
   int len_modus_sk_ch_ds;
