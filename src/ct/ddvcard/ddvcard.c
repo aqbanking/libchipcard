@@ -210,38 +210,38 @@ LC_Crypt_TokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
     else {
       GWEN_DB_NODE *dbCardData;
 
-        dbCardData=LC_DDVCard_GetCardDataAsDb(hcard);
-	assert(dbCardData);
+      dbCardData=LC_DDVCard_GetCardDataAsDb(hcard);
+      assert(dbCardData);
 
-        currCardNumber=GWEN_DB_GetCharValue(dbCardData,
-                                            "cardNumber",
-                                            0,
-                                            0);
-	if (!currCardNumber) {
-          DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
-          abort();
+      currCardNumber=GWEN_DB_GetCharValue(dbCardData,
+                                          "cardNumber",
+                                          0,
+                                          0);
+      if (!currCardNumber) {
+        DBG_ERROR(LC_LOGDOMAIN, "INTERNAL: No card number in card data.");
+        abort();
+      }
+
+      DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
+
+      if (GWEN_Buffer_GetUsedBytes(name)==0) {
+          DBG_NOTICE(LC_LOGDOMAIN, "No or empty token name");
+          GWEN_Buffer_AppendString(name, currCardNumber);
+      }
+      else {
+        if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
+          DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
+          LC_Card_Close(hcard);
+          LC_Client_ReleaseCard(cpl->client, hcard);
+          LC_Card_free(hcard);
+          return GWEN_ERROR_BAD_NAME;
         }
+      }
 
-        DBG_NOTICE(LC_LOGDOMAIN, "Card number: %s", currCardNumber);
-
-	if (GWEN_Buffer_GetUsedBytes(name)==0) {
-	  DBG_NOTICE(LC_LOGDOMAIN, "No or empty token name");
-	  GWEN_Buffer_AppendString(name, currCardNumber);
-	}
-	else {
-	  if (strcasecmp(GWEN_Buffer_GetStart(name), currCardNumber)!=0) {
-	    DBG_ERROR(LC_LOGDOMAIN, "Card supported, but bad name");
-	    LC_Card_Close(hcard);
-            LC_Client_ReleaseCard(cpl->client, hcard);
-            LC_Card_free(hcard);
-	    return GWEN_ERROR_BAD_NAME;
-	  }
-	}
-
-        LC_Card_Close(hcard);
-        LC_Client_ReleaseCard(cpl->client, hcard);
-        LC_Card_free(hcard);
-        hcard=0;
+      LC_Card_Close(hcard);
+      LC_Client_ReleaseCard(cpl->client, hcard);
+      LC_Card_free(hcard);
+      hcard=0;
     } /* if card is open */
     return 0;
   } /* if there is a card */
