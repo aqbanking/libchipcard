@@ -910,6 +910,7 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
       if (GWEN_Buffer_GetBytesLeft(mbuf)) {
         DBG_INFO(LC_LOGDOMAIN, "Parsing entry %d", i);
         dbEntry=GWEN_DB_Group_new("entry");
+        GWEN_Buffer_Rewind(mbuf);
         res=LC_Card_ParseRecord(lct->card, i, mbuf, dbEntry);
         if (res!=LC_Client_ResultOk) {
           DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d of EF_NOTEPAD (%d)", i, res);
