@@ -27,7 +27,7 @@
 
     <pins>
       <pin name="ch_pin" encoding="ascii" id="0x03" 
-           minlen="4" maxlen="8" allowChange="1" filler="32" />
+           minlen="4" maxlen="8" allowChange="1"/>
 <!--
       <pin name="eg_pin" encoding="ascii" id="0x91" 
            minlen="4" maxlen="8" allowChange="1" filler="32" />
