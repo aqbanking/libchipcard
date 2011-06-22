@@ -781,6 +781,28 @@
         </responses>
       </command>
 
+      <!-- InternalAuth -->
+      <command name="IsoInternalAuth" >
+        <DESCR>
+          This Internal authentication
+        </DESCR>
+        <send>
+          <APDU lr="0" >
+            <ELEM type="dword">0x008800</ELEM>
+            <ELEM name="kid" type="byte" />
+          </APDU>
+          <DATA>
+            <ELEM name="data" type="bytes" />
+          </DATA>
+        </send>
+
+        <responses>
+          <response type="success">
+            <ELEM name="data" type="bytes" />
+          </response>
+        </responses>
+      </command>
+
 
     </commands>
 

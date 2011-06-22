@@ -703,6 +703,56 @@ LC_Card__IsoManageSe(LC_CARD *card,
 
 
 
+LC_CLIENT_RESULT CHIPCARD_CB
+LC_Card__IsoInternalAuth(LC_CARD *card,
+                         int kid,
+                         const unsigned char *ptr,
+                         unsigned int size,
+                         GWEN_BUFFER *rBuf) {
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+
+  dbReq=GWEN_DB_Group_new("request");
+  dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS, "kid", kid);
+
+  if (ptr && size) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                        "data", ptr, size);
+  }
+  res=LC_Card_ExecCommand(card, "IsoInternalAuth", dbReq, dbResp);
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    return res;
+  }
+
+
+  if (rBuf) {
+    unsigned int bs;
+    const void *p;
+
+    p=GWEN_DB_GetBinValue(dbResp,
+			  "response/data",
+			  0,
+			  0, 0,
+			  &bs);
+    if (p && bs) {
+      GWEN_Buffer_AppendBytes(rBuf, p, bs);
+    }
+    else {
+      DBG_WARN(LC_LOGDOMAIN, "No data in response");
+    }
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+}
+
+
+
 
 LC_CLIENT_RESULT CHIPCARD_CB
 LC_Card__IsoEncipher(LC_CARD *card,
@@ -1042,6 +1092,20 @@ LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
 
 
 
+LC_CLIENT_RESULT LC_Card_IsoInternalAuth(LC_CARD *card,
+					 int kid,
+					 const unsigned char *ptr,
+					 unsigned int size,
+					 GWEN_BUFFER *rBuf) {
+  assert(card);
+  if (card->internalAuthFn)
+    return card->internalAuthFn(card, kid, ptr, size, rBuf);
+  else
+    return LC_Client_ResultNotSupported;
+}
+
+
+
 
 
 
@@ -1166,6 +1230,13 @@ void LC_Card_SetIsoEncipherFn(LC_CARD *card, LC_CARD_ISOENCIPHER_FN f) {
 void LC_Card_SetIsoDecipherFn(LC_CARD *card, LC_CARD_ISODECIPHER_FN f) {
   assert(card);
   card->decipherFn=f;
+}
+
+
+
+void LC_Card_SetIsoInternalAuthFn(LC_CARD *card, LC_CARD_ISOINTERNALAUTH_FN f) {
+  assert(card);
+  card->internalAuthFn=f;
 }
 
 

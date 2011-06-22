@@ -164,6 +164,13 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                             unsigned int size,
                             GWEN_BUFFER *codeBuf);
 
+typedef LC_CLIENT_RESULT CHIPCARD_CB
+  (*LC_CARD_ISOINTERNALAUTH_FN)(LC_CARD *card,
+                                int kid,
+                                const unsigned char *ptr,
+                                unsigned int size,
+                                GWEN_BUFFER *rBuf);
+
 /*@}*/
 
 
@@ -277,6 +284,9 @@ void LC_Card_SetIsoEncipherFn(LC_CARD *card, LC_CARD_ISOENCIPHER_FN f);
 
 CHIPCARD_API
 void LC_Card_SetIsoDecipherFn(LC_CARD *card, LC_CARD_ISODECIPHER_FN f);
+
+CHIPCARD_API
+void LC_Card_SetIsoInternalAuthFn(LC_CARD *card, LC_CARD_ISOINTERNALAUTH_FN f);
 /*@}*/
 
 

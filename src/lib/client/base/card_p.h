@@ -77,6 +77,7 @@ struct LC_CARD {
   LC_CARD_ISOVERIFY_FN verifyFn;
   LC_CARD_ISOENCIPHER_FN encipherFn;
   LC_CARD_ISODECIPHER_FN decipherFn;
+  LC_CARD_ISOINTERNALAUTH_FN internalAuthFn;
 
   int usage;
 };

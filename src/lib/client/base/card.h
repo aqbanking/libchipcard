@@ -521,6 +521,12 @@ LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
                                    const char *sigptr,
                                    unsigned int sigsize);
 
+LC_CLIENT_RESULT
+LC_Card_IsoInternalAuth(LC_CARD *card,
+                        int kid,
+                        const unsigned char *ptr,
+                        unsigned int size,
+                        GWEN_BUFFER *rBuf);
 
 /*@}*/
 
