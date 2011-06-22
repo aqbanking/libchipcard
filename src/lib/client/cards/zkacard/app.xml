@@ -150,6 +150,15 @@
           </record>
       </ef>
 
+      <ef name="EF_FBZ" sid="0x0016"
+          type="record" mode="linear" 
+          size="0" minnum="1" maxnum="1">
+        <record>
+          <ELEM name="initialValue" type="byte" />
+          <ELEM name="currentValue" type="byte" />
+        </record>
+      </ef>
+
 
       <df name="DF_SIG" lid="d27600006601" >
 

@@ -47,6 +47,8 @@ int LC_ZkaCard_ExtendCard(LC_CARD *card) {
   LC_Card_SetOpenFn(card, LC_ZkaCard_Open);
   LC_Card_SetCloseFn(card, LC_ZkaCard_Close);
 
+  LC_Card_SetGetPinStatusFn(card, LC_ZkaCard_GetPinStatus);
+
   return 0;
 }
 
@@ -157,6 +159,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
 
   LC_PinInfo_free(xc->pinInfo);
   xc->pinInfo=NULL;
+  xc->pinRecordNum=-1;
 
   /* select ZKA card */
   res=LC_Card_SelectCard(card, "zkacard");
@@ -267,11 +270,17 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
     const uint8_t *p;
     uint32_t bs;
     LC_PININFO *pi;
+    int i;
 
     GWEN_Buffer_free(mbuf);
+    i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdRecord", 0, -1);
+    if (i>0)
+      xc->pinRecordNum=i;
     pi=LC_PinInfo_new();
     LC_PinInfo_SetAllowChange(pi, 1);
-    LC_PinInfo_SetId(pi, 3);
+    i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdId", 0, -1);
+    if (i>0)
+      LC_PinInfo_SetId(pi, i);
     p=GWEN_DB_GetBinValue(dbRecord, "entry/format", 0, NULL, 0, &bs);
     if (p && bs) {
       GWEN_BUFFER *obuf;
@@ -548,6 +557,66 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
 
 
 
+LC_CLIENT_RESULT CHIPCARD_CB 
+LC_ZkaCard_GetPinStatus(LC_CARD *card,
+                        unsigned int pid,
+                        int *maxErrors,
+                        int *currentErrors) {
+  LC_ZKACARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  if (xc->pinRecordNum>0) {
+    LC_CLIENT_RESULT res;
+    GWEN_BUFFER *mbuf;
+    const uint8_t *p;
+
+    /* select MF */
+    DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
+    res=LC_Card_SelectMf(card);
+    if (res!=LC_Client_ResultOk) {
+      DBG_INFO(LC_LOGDOMAIN, "here");
+      return res;
+    }
+
+    /* read EF_ID */
+    DBG_INFO(LC_LOGDOMAIN, "Selecting EF_FBZ...");
+    res=LC_Card_SelectEf(card, "EF_FBZ");
+    if (res!=LC_Client_ResultOk) {
+      DBG_INFO(LC_LOGDOMAIN, "here");
+      return res;
+    }
+
+    /* read EF_FBZ */
+    DBG_INFO(LC_LOGDOMAIN, "Reading record...");
+    mbuf=GWEN_Buffer_new(0, 32, 0, 1);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, xc->pinRecordNum, mbuf);
+    if (res!=LC_Client_ResultOk) {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+      GWEN_Buffer_free(mbuf);
+      return res;
+    }
+
+    if (GWEN_Buffer_GetUsedBytes(mbuf)<2) {
+      DBG_ERROR(LC_LOGDOMAIN, "Too few bytes returned (%d)", GWEN_Buffer_GetUsedBytes(mbuf));
+      GWEN_Buffer_free(mbuf);
+      return LC_Client_ResultDataError;
+    }
+
+    p=(const uint8_t*) GWEN_Buffer_GetStart(mbuf);
+    if (maxErrors)
+      *maxErrors=p[0];
+    if (currentErrors)
+      *currentErrors=p[1];
+    return LC_Client_ResultOk;
+  }
+  else {
+    DBG_ERROR(LC_LOGDOMAIN, "Invalid record number for PIN (%d)", xc->pinRecordNum);
+    return LC_Client_ResultInternal;
+  }
+}
 
 
 
