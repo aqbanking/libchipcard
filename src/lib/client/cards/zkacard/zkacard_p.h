@@ -32,12 +32,16 @@ struct LC_ZKACARD {
   int len_modus_sk_ch_ke;
   int min_len_csa_password;
 
+  LC_PININFO *pinInfo;
 };
 
 
-void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p);
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card);
+static void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p);
+static LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card);
+static LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card);
+
+static LC_CLIENT_RESULT LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);
+static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf);
 
 
 

@@ -78,6 +78,8 @@ void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p){
   assert(p);
   xc=(LC_ZKACARD*)p;
 
+  LC_PinInfo_free(xc->pinInfo);
+
   GWEN_Buffer_free(xc->bin_ef_id);
   GWEN_DB_Group_free(xc->db_ef_id);
 
@@ -85,6 +87,45 @@ void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p){
   GWEN_Buffer_free(xc->bin_ef_ssd);
 
   GWEN_FREE_OBJECT(xc);
+}
+
+
+int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf) {
+  GWEN_BUFFER *xbuf;
+
+  xbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  while(p && bs) {
+    uint8_t x;
+
+    x=*p;
+    GWEN_Buffer_AppendByte(xbuf, (x>>4) & 0xf);
+    GWEN_Buffer_AppendByte(xbuf, x & 0xf);
+
+    p++;
+    bs--;
+  }
+
+  p=(const uint8_t*)GWEN_Buffer_GetStart(xbuf);
+  bs=GWEN_Buffer_GetUsedBytes(xbuf);
+  while(p && bs) {
+    uint32_t v=0;
+    uint8_t x;
+
+    x=*p;
+    v<<=3;
+    v|=x & 7;
+    if ((x & 8)==0) {
+      GWEN_Buffer_AppendByte(mbuf, (v>>24) & 0xff);
+      GWEN_Buffer_AppendByte(mbuf, (v>>16) & 0xff);
+      GWEN_Buffer_AppendByte(mbuf, (v>>8) & 0xff);
+      GWEN_Buffer_AppendByte(mbuf, v & 0xff);
+    }
+    p++;
+    bs--;
+  }
+
+  GWEN_Buffer_free(xbuf);
+  return 0;
 }
 
 
@@ -113,6 +154,9 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
 
   GWEN_Buffer_free(xc->bin_ef_ssd);
   xc->bin_ef_ssd=NULL;
+
+  LC_PinInfo_free(xc->pinInfo);
+  xc->pinInfo=NULL;
 
   /* select ZKA card */
   res=LC_Card_SelectCard(card, "zkacard");
@@ -191,6 +235,110 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   }
   xc->bin_ef_gd_0=mbuf;
 
+  /* read EF_PWDD */
+  DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PWDD...");
+  res=LC_Card_SelectEf(card, "EF_PWDD");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  /* read EF_PWDD */
+  DBG_INFO(LC_LOGDOMAIN, "Reading record...");
+  mbuf=GWEN_Buffer_new(0, 32, 0, 1);
+  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    GWEN_Buffer_free(mbuf);
+    return res;
+  }
+
+  /* parse EF_PWDD */
+  DBG_INFO(LC_LOGDOMAIN, "Parsing record...");
+  GWEN_Buffer_Rewind(mbuf);
+  dbRecord=GWEN_DB_Group_new("record");
+  if (LC_Card_ParseRecord(card, 1, mbuf, dbRecord)) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error in EF_PWDD");
+    GWEN_DB_Group_free(dbRecord);
+    GWEN_Buffer_free(mbuf);
+    return LC_Client_ResultDataError;
+  }
+  else {
+    const uint8_t *p;
+    uint32_t bs;
+    LC_PININFO *pi;
+
+    GWEN_Buffer_free(mbuf);
+    pi=LC_PinInfo_new();
+    LC_PinInfo_SetAllowChange(pi, 1);
+    LC_PinInfo_SetId(pi, 3);
+    p=GWEN_DB_GetBinValue(dbRecord, "entry/format", 0, NULL, 0, &bs);
+    if (p && bs) {
+      GWEN_BUFFER *obuf;
+      int rv;
+      uint32_t v;
+
+      obuf=GWEN_Buffer_new(0, 64, 0, 1);
+      rv=LC_ZkaCard__ParsePseudoOids(p, bs, obuf);
+      if (rv<0) {
+        GWEN_Buffer_free(obuf);
+        LC_PinInfo_free(pi);
+        GWEN_DB_Group_free(dbRecord);
+        return rv;
+      }
+      GWEN_Buffer_Dump(obuf, 2);
+      p=(const uint8_t*) GWEN_Buffer_GetStart(obuf);
+      bs=GWEN_Buffer_GetUsedBytes(obuf);
+      if (bs>=8) {
+        uint32_t v2;
+
+        v=(uint32_t)(p[0])<<24;
+        v+=(uint32_t)(p[1])<<16;
+        v+=(uint32_t)(p[2])<<8;
+        v+=(uint32_t)(p[3]);
+
+        v2=(uint32_t)(p[4])<<24;
+        v2+=(uint32_t)(p[5])<<16;
+        v2+=(uint32_t)(p[6])<<8;
+        v2+=(uint32_t)(p[7]);
+
+        if (v==2 && v2==1)
+          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
+        else if (v==1 && v2==1)
+          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_FPin2);
+        else {
+          DBG_WARN(LC_LOGDOMAIN, "Unexpected encoding info (%d/%d), assuming Ascii",
+                   (int) v, (int) v2);
+          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
+        }
+      }
+
+      if (bs>=12) {
+        v=(uint32_t)(p[8])<<24;
+        v+=(uint32_t)(p[9])<<16;
+        v+=(uint32_t)(p[10])<<8;
+        v+=(uint32_t)(p[11]);
+
+        DBG_ERROR(0, "Setting minlength %d", (int) v);
+        LC_PinInfo_SetMinLength(pi, v);
+      }
+
+      GWEN_Buffer_free(obuf);
+      xc->pinInfo=pi;
+
+      if (1) {
+        GWEN_DB_NODE *dbD;
+
+        DBG_ERROR(LC_LOGDOMAIN, "Got this pininfo:");
+        dbD=GWEN_DB_Group_new("debug");
+        LC_PinInfo_toDb(xc->pinInfo, dbD);
+        GWEN_DB_Dump(dbD, 2);
+        GWEN_DB_Group_free(dbD);
+      }
+    }
+    GWEN_DB_Group_free(dbRecord);
+  }
+
 
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
@@ -236,6 +384,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card){
   assert(xc);
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
+
   GWEN_Buffer_free(xc->bin_ef_gd_0);
   xc->bin_ef_gd_0=NULL;
 
@@ -283,6 +432,18 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card){
 
 
 
+const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card) {
+  LC_ZKACARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  return xc->pinInfo;
+}
+
+
+
 GWEN_DB_NODE *LC_ZkaCard_GetCardDataAsDb(const LC_CARD *card) {
   LC_ZKACARD *xc;
 
@@ -305,6 +466,85 @@ GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card) {
   return xc->bin_ef_id;
 }
 
+
+
+
+LC_CLIENT_RESULT LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion) {
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *dbuf;
+
+  assert(card);
+
+  LC_Card_SetLastResult(card, 0, 0, 0, 0);
+
+  dbuf=GWEN_Buffer_new(0, 32, 0, 1);
+  GWEN_Buffer_AppendByte(dbuf, 0x84);
+  GWEN_Buffer_AppendByte(dbuf, 3);
+  GWEN_Buffer_AppendByte(dbuf, globalKey?0x00:0x80);
+  GWEN_Buffer_AppendByte(dbuf, keyId);
+  GWEN_Buffer_AppendByte(dbuf, (keyVersion>=0)?keyVersion:0xff);
+
+  GWEN_Buffer_AppendByte(dbuf, 0x89);
+  GWEN_Buffer_AppendByte(dbuf, 3);
+  GWEN_Buffer_AppendByte(dbuf, 23);
+  GWEN_Buffer_AppendByte(dbuf, 53);
+  GWEN_Buffer_AppendByte(dbuf, 30);
+
+  dbReq=GWEN_DB_Group_new("request");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "template", 0x41);
+  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "data",
+                      GWEN_Buffer_GetStart(dbuf),
+                      GWEN_Buffer_GetUsedBytes(dbuf));
+  GWEN_Buffer_free(dbuf);
+
+  dbResp=GWEN_DB_Group_new("response");
+  res=LC_Card_ExecCommand(card, "IsoManageSE", dbReq, dbResp);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    return res;
+  }
+  GWEN_DB_Group_free(dbReq);
+  GWEN_DB_Group_free(dbResp);
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
+                                 int globalKey,
+                                 int keyId,
+                                 int keyVersion,
+                                 const uint8_t *ptr,
+                                 unsigned int size,
+                                 GWEN_BUFFER *sigBuf) {
+  LC_CLIENT_RESULT res;
+  int combinedKid;
+
+  assert(card);
+
+  combinedKid=keyId;
+  if (globalKey)
+    combinedKid|=0x80;
+  res=LC_ZkaCard__PrepareSign(card, globalKey, keyId, keyVersion);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  res=LC_Card_IsoInternalAuth(card, combinedKid, ptr, size, sigBuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
 
 
 

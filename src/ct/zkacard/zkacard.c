@@ -450,6 +450,7 @@ int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
 int LC_Crypt_TokenZka__EnsureAccessPin(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
   LC_CT_ZKA *lct;
+  const LC_PININFO *pi;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
@@ -460,51 +461,27 @@ int LC_Crypt_TokenZka__EnsureAccessPin(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
     return GWEN_ERROR_NOT_OPEN;
   }
 
+  pi=LC_ZkaCard_GetPinInfo(lct->card);
+
   while(!lct->haveAccessPin) {
     int rv;
 
     /* enter pin */
-    rv=LC_Crypt_Token_VerifyPin(ct, lct->card,
-				GWEN_Crypt_PinType_Access,
-				guiid);
+    if (pi)
+      rv=LC_Crypt_Token_VerifyPinWithPinInfo(ct, lct->card,
+                                             GWEN_Crypt_PinType_Access,
+                                             pi,
+                                             guiid);
+    else
+      rv=LC_Crypt_Token_VerifyPin(ct, lct->card,
+                                  GWEN_Crypt_PinType_Access,
+                                  guiid);
     if (rv) {
       DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
       return rv;
     }
     else
       lct->haveAccessPin=1;
-  } /* while !havepin */
-
-  return 0;
-}
-
-
-
-int LC_Crypt_TokenZka__EnsureAdminPin(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
-  LC_CT_ZKA *lct;
-
-  assert(ct);
-  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
-  assert(lct);
-
-  if (lct->card==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "No card.");
-    return GWEN_ERROR_NOT_OPEN;
-  }
-
-  while(!lct->haveAdminPin) {
-    int rv;
-
-    /* enter pin */
-    rv=LC_Crypt_Token_VerifyPin(ct, lct->card,
-				GWEN_Crypt_PinType_Manage,
-				guiid);
-    if (rv) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
-    }
-    else
-      lct->haveAdminPin=1;
   } /* while !havepin */
 
   return 0;
@@ -806,6 +783,35 @@ LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
 			   uint32_t *pSignatureLen,
 			   uint32_t *pSeqCounter,
 			   uint32_t gid) {
+  LC_CT_ZKA *lct;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *tbuf;
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+  assert(lct);
+
+  res=LC_Card_SelectMf(lct->card);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  res=LC_Card_SelectDf(lct->card, "DF_SIG");
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_SIG (%d)", res);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  tbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_ZkaCard_Sign(lct->card, 1, 2, -1, pInData, inLen, tbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(tbuf);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 

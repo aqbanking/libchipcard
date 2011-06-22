@@ -93,6 +93,61 @@
           <descr>
             This file contains information about a PIN.
           </descr>
+          <record>
+            <ELEM name="entry" type="tlv" minnum="1" maxnum="0">
+              <tlv id="0x83">
+                <ELEM name="pwdId" type="byte" size="1"/>
+                <ELEM name="pwdRecord" type="byte" size="1"/>
+              </tlv>
+
+              <tlv id="0x93">
+                <ELEM name="pwdId" type="byte" size="1"/>
+                <ELEM name="pwdRecord" type="byte" size="1"/>
+              </tlv>
+
+              <tlv id="0x84">
+                <ELEM name="pwdId" type="byte" size="1"/>
+              </tlv>
+
+              <tlv id="0x94">
+                <ELEM name="pwdId" type="byte" size="1"/>
+              </tlv>
+
+              <tlv id="0x89">
+                <ELEM name="format" type="bytes"/>
+              </tlv>
+
+              <tlv id="0xa1">
+                <ELEM name="zrrue" type="bytes"/>
+              </tlv>
+
+              <tlv id="0x7b">
+                <ELEM name="rules" type="bytes"/>
+<!--                
+                <ELEM name="rules" type="tlv">
+                  <tlv id="0x80">
+                    <ELEM name="refObject" type="bytes" minsize="0" />
+                  </tlv>
+
+                  <tlv id="0xa1">
+                    <ELEM name="rules" type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0x89">
+                    <ELEM name="format" type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0x84">
+                    <ELEM name="keyNum" type="byte" size="1"/>
+                    <ELEM name="keyVer" type="byte" size="1"/>
+                  </tlv>
+                
+                </ELEM>
+-->
+              </tlv>
+            
+            </ELEM>
+          </record>
       </ef>
 
 
