@@ -388,23 +388,16 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
 
 
 static
-int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pt,
-			     uint32_t guiid) {
+int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
+					LC_CARD *hcard,
+					GWEN_CRYPT_PINTYPE pt,
+					const LC_PININFO *pi,
+					uint32_t guiid) {
   LC_CLIENT_RESULT res;
-  LC_PININFO *pi;
   int maxErrors;
   int currentErrors;
 
   assert(hcard);
-
-  if (pt==GWEN_Crypt_PinType_Manage) {
-    pi=LC_Card_GetPinInfoByName(hcard, "eg_pin");
-  }
-  else {
-    pi=LC_Card_GetPinInfoByName(hcard, "ch_pin");
-  }
   assert(pi);
 
 #if 0
@@ -428,7 +421,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
                 res);
-      LC_PinInfo_free(pi);
       return LC_Crypt_Token_ResultToError(res);
     }
 
@@ -438,7 +430,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
        ){
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad pin entered at least once before, aborting");
-      LC_PinInfo_free(pi);
       return GWEN_ERROR_ABORTED;
     }
   }
@@ -459,7 +450,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
     bid=GWEN_Crypt_Token_BeginEnterPin(ct, pt, guiid);
     if (bid==0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction");
-      LC_PinInfo_free(pi);
       return GWEN_ERROR_GENERIC;
     }
 
@@ -472,7 +462,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),
                 LC_Card_GetLastText(hcard));
-      LC_PinInfo_free(pi);
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
 	switch (LC_Card_GetLastSW2(hcard)) {
@@ -554,7 +543,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
     if (mres!=0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
       memset(pinBuffer, 0, sizeof(pinBuffer));
-      LC_PinInfo_free(pi);
       return mres;
     }
     origPinLength=pinLength;
@@ -581,8 +569,6 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),
                 LC_Card_GetLastText(hcard));
-
-      LC_PinInfo_free(pi);
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
         /* set pin status */
@@ -663,21 +649,65 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
 				    guiid);
     }
   } // if no keyPad
-  LC_PinInfo_free(pi);
 
   return 0;
 }
 
 
 
-int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
+static
+int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
 			     LC_CARD *hcard,
 			     GWEN_CRYPT_PINTYPE pt,
 			     uint32_t guiid) {
+  LC_PININFO *pi;
+  int rv;
+
+  assert(hcard);
+
+  if (pt==GWEN_Crypt_PinType_Manage) {
+    pi=LC_Card_GetPinInfoByName(hcard, "eg_pin");
+  }
+  else {
+    pi=LC_Card_GetPinInfoByName(hcard, "ch_pin");
+  }
+  assert(pi);
+
+  rv=LC_Crypt_Token__EnterPinWithPinInfo(ct, hcard, pt, pi, guiid);
+  LC_PinInfo_free(pi);
+
+  return rv;
+}
+
+
+
+int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
+                             LC_CARD *hcard,
+                             GWEN_CRYPT_PINTYPE pt,
+                             uint32_t guiid) {
   int rv;
 
   /* enter pin */
   rv=LC_Crypt_Token__EnterPin(ct, hcard, pt, guiid);
+  if (rv) {
+    DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
+    return rv;
+  }
+
+  return 0;
+}
+
+
+
+int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
+                                        LC_CARD *hcard,
+                                        GWEN_CRYPT_PINTYPE pt,
+                                        const LC_PININFO *pi,
+                                        uint32_t guiid) {
+  int rv;
+
+  /* enter pin */
+  rv=LC_Crypt_Token__EnterPinWithPinInfo(ct, hcard, pt, pi, guiid);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "Error in pin input");
     return rv;

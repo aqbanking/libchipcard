@@ -12,6 +12,8 @@
 #define LC_CT_CARD_H
 
 #include <chipcard/card.h>
+#include <chipcard/sharedstuff/pininfo.h>
+
 #include <gwenhywfar/ct.h>
 
 
@@ -48,6 +50,14 @@ int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
 			     LC_CARD *hcard,
 			     GWEN_CRYPT_PINTYPE pt,
 			     uint32_t guiid);
+
+CHIPCARD_API
+int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
+                                        LC_CARD *hcard,
+                                        GWEN_CRYPT_PINTYPE pt,
+                                        const LC_PININFO *pi,
+                                        uint32_t guiid);
+
 
 /**
  * Let the chipcard change a pin. If the card reader has a keypad then
