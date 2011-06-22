@@ -178,6 +178,143 @@
               This file contains the ICCSN according to ISO-7812-1
             </DESCR>
           </ef>
+
+          <ef name="EF_KEYD" sid="0x0013"
+              type="record" mode="linear" 
+              size="0" minnum="1" maxnum="0">
+              <descr>
+                This file contains information about keys.
+              </descr>
+              <record>
+                <ELEM name="keyRef" type="tlv" minnum="1" maxnum="1" >
+                  <tlv id="0x83" name="publicKey" >
+                    <ELEM name="keyNum"  type="byte" size="1"/>
+                    <ELEM name="keyVer"  type="byte" size="1"/>
+                    <ELEM name="ef"      type="word" size="2" minnum="0" />
+                    <ELEM name="ef2"     type="word" size="2" minnum="0" />
+                  </tlv>
+
+                  <tlv id="0x84" name="privateKey" >
+                    <ELEM name="keyNum"  type="byte" size="1"/>
+                    <ELEM name="keyVer"  type="byte" size="1"/>
+                    <ELEM name="ef"      type="word" size="2" minnum="0" />
+                    <ELEM name="ef2"     type="word" size="2" minnum="0" />
+                  </tlv>
+
+                  <tlv id="0x93" name="publicKey" >
+                    <ELEM name="keyNum"  type="byte" size="1"/>
+                    <ELEM name="keyVer"  type="byte" size="1"/>
+                    <ELEM name="ef"      type="word" size="2" minnum="0" />
+                    <ELEM name="ef2"     type="word" size="2" minnum="0" />
+                  </tlv>
+
+                  <tlv id="0x94" name="privateKey" >
+                    <ELEM name="keyNum"  type="byte" size="1"/>
+                    <ELEM name="keyVer"  type="byte" size="1"/>
+                    <ELEM name="ef"      type="word" size="2" minnum="0" />
+                    <ELEM name="ef2"     type="word" size="2" minnum="0" />
+                  </tlv>
+                </ELEM>
+
+                <ELEM name="keyInfo" type="tlv" minnum="0" maxnum="0">
+                  <tlv id="0x83">
+                    <ELEM name="keyName"  type="bytes" maxsize="16"/>
+                  </tlv>
+
+                  <tlv id="0x84">
+                    <ELEM name="keyName"  type="bytes" maxsize="16"/>
+                  </tlv>
+
+                  <tlv id="0xc0" name="symKeyDirect">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0xc1" name="symKeyOneStep">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0xc2" name="symKeyTwoStep">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0xd0" name="asymKeyDirect">
+                    <ELEM name="keyData"  type="bytes"/>
+<!--                    
+                    <ELEM name="keyData" type="tlv" minnum="1" maxnum="0" >
+                      <tlv id="0x81">
+                        <ELEM name="n"  type="bytes"/>
+                      </tlv>
+
+                      <tlv id="0x82">
+                        <ELEM name="e"  type="bytes"/>
+                      </tlv>
+
+                      <tlv id="0x82">
+                        <ELEM name="e"  type="bytes"/>
+                      </tlv>
+
+                      <tlv id="0x83">
+                        <ELEM name="e"  type="bytes"/>
+                      </tlv>
+                      
+                      <tlv id="0x84">
+                        <ELEM name="e"  type="bytes"/>
+                      </tlv>
+
+                      <tlv id="0x91">
+                        <ELEM name="d"  type="bytes"/>
+                      </tlv>
+
+                      <tlv id="0x92">
+                        <ELEM name="crt"  type="bytes"/>
+                      </tlv>
+                    </ELEM>
+-->
+                  </tlv>
+
+                  <tlv id="0xd1" name="asymKeyOneStep">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0xd2" name="asymKeyTwoStep">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0xd8" name="asymCertKey">
+                    <ELEM name="keyData"  type="bytes"/>
+                  </tlv>
+
+                  <tlv id="0x8a">
+                    <ELEM name="lifeCycleStatus"  type="byte" size="1"/>
+                  </tlv>
+
+                  <tlv id="0x90">
+                    <ELEM name="errorCounter"  type="uint" />
+                  </tlv>
+
+                  <tlv id="0x91">
+                    <ELEM name="keyGenCounter"  type="uint"  />
+                  </tlv>
+
+                  <tlv id="0x92">
+                    <ELEM name="sigCounter"  type="uint"/>
+                  </tlv>
+
+                  <tlv id="0x22"> <!-- 9f22 -->
+                    <ELEM name="initialCounterValue"  type="uint" />
+                  </tlv>
+
+                  <tlv id="0xa1">
+                    <ELEM name="zrrue"  type="bytes" />
+                  </tlv>
+
+                  <tlv id="0x7b">
+                    <ELEM name="rules" type="bytes"/>
+                  </tlv>
+
+                </ELEM>
+              </record>
+          </ef>
           
         </files>  
       </df>

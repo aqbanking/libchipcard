@@ -53,6 +53,7 @@ struct LC_CT_ZKA {
   int haveAccessPin;
   int haveAdminPin;
   int contextListIsValid;
+  int keyListIsValid;
 };
 
 static GWEN_CRYPT_TOKEN *LC_Crypt_TokenZka_new(GWEN_PLUGIN_MANAGER *pm,
@@ -177,7 +178,16 @@ static int GWENHYWFAR_CB
 static int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad, uint32_t guiid);
 static int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid);
 
+static int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys);
+static int LC_TokenZkaCard__ParseKeyData(const uint8_t *p, uint32_t bs, int *pModLen, int *pExpLen);
+static int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
+                                            GWEN_CRYPT_TOKEN_KEYINFO **pKi);
+static int LC_TokenZkaCard__ReadKeys(GWEN_CRYPT_TOKEN *ct);
+
+
 static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN *ct, uint32_t id);
+static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(GWEN_CRYPT_TOKEN *ct, int num, int ver);
+
 static int LC_Crypt_TokenZka__AddKeyInfo(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_KEYINFO *ki);
 
 

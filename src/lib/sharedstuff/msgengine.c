@@ -465,8 +465,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     j=(unsigned char)(p[pos]);
     if (isBerTlv) {
       if ((j & 0x1f)==0x1f) {
-        DBG_ERROR(0, "here");
-        pos++;
+	/* we should read here all following bytes until bit 7 is clear */
+	pos++;
         if (pos>=size) {
           DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
           return -1;
@@ -546,6 +546,94 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
 
     return 0;
   }
+  else if (strcasecmp(type, "uint")==0) {
+    int bigEndian;
+    int isBCD;
+    uint32_t value;
+    int c;
+    char numbuf[32];
+
+    bigEndian=atoi(GWEN_XMLNode_GetProperty(node, "bigEndian", "1"));
+    isBCD=atoi(GWEN_XMLNode_GetProperty(node, "bcd", "0"));
+    value=0;
+    if (bigEndian) {
+      switch(GWEN_Buffer_GetBytesLeft(msgbuf)) {
+      case 4:
+	c=GWEN_Buffer_ReadByte(msgbuf);
+	if (c>=0) {
+	  value=(((unsigned char)(c&0xff)<<24));
+	  c=GWEN_Buffer_ReadByte(msgbuf);
+	  if (c>=0) {
+	    value|=(((unsigned char)(c&0xff)<<16));
+	    c=GWEN_Buffer_ReadByte(msgbuf);
+	    if (c>=0) {
+	      value|=(((unsigned char)(c&0xff)<<8));
+	      c=GWEN_Buffer_ReadByte(msgbuf);
+	      if (c>=0)
+		value|=(unsigned char)((c&0xff));
+	    }
+	  }
+	}
+	break;
+      case 3:
+	c=GWEN_Buffer_ReadByte(msgbuf);
+	if (c>=0) {
+	  value|=(((unsigned char)(c&0xff)<<16));
+	  c=GWEN_Buffer_ReadByte(msgbuf);
+	  if (c>=0) {
+	    value|=(((unsigned char)(c&0xff)<<8));
+	    c=GWEN_Buffer_ReadByte(msgbuf);
+	    if (c>=0)
+	      value|=(unsigned char)((c&0xff));
+	  }
+	}
+	break;
+      case 2:
+	c=GWEN_Buffer_ReadByte(msgbuf);
+	if (c>=0) {
+	  value|=(((unsigned char)(c&0xff)<<8));
+	  c=GWEN_Buffer_ReadByte(msgbuf);
+	  if (c>=0)
+	    value|=(unsigned char)((c&0xff));
+	}
+	break;
+      case 1:
+	c=GWEN_Buffer_ReadByte(msgbuf);
+	if (c>=0)
+	  value|=(unsigned char)((c&0xff));
+	break;
+      default:
+	DBG_ERROR(LC_LOGDOMAIN, "Invalid number of bytes for type \"uint\" (%d)",
+		  GWEN_Buffer_GetBytesLeft(msgbuf));
+	return GWEN_ERROR_INVALID;
+      }
+    } /* if bigEndian */
+    else {
+      c=GWEN_Buffer_ReadByte(msgbuf);
+      if (c>=0) {
+	value=(unsigned char)((c&0xff));
+	c=GWEN_Buffer_ReadByte(msgbuf);
+	if (c>=0) {
+	  value|=(unsigned char)(((c&0xff)<<8));
+	  c=GWEN_Buffer_ReadByte(msgbuf);
+	  if (c>=0) {
+	    value|=(unsigned char)(((c&0xff)<<16));
+	    c=GWEN_Buffer_ReadByte(msgbuf);
+	    if (c>=0)
+	      value|=(unsigned char)(((c&0xff)<<24));
+	  }
+	}
+      }
+    }
+    if (isBCD)
+      value=LC_MsgEngine__FromBCD(value);
+    snprintf(numbuf, sizeof(numbuf), "%d", (unsigned int)value);
+    if (GWEN_Buffer_AppendString(vbuf, numbuf)) {
+      DBG_INFO(LC_LOGDOMAIN, "here");
+      return -1;
+    }
+    return 0;
+  } /* if word */
   else {
     DBG_DEBUG(LC_LOGDOMAIN, "Type \"%s\" not supported by LC_MsgEngine", type);
     return 1;
@@ -846,7 +934,8 @@ GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
 
   if (strcasecmp(tname, "byte")==0 ||
       strcasecmp(tname, "word")==0 ||
-      strcasecmp(tname, "dword")==0)
+      strcasecmp(tname, "dword")==0 ||
+      strcasecmp(tname, "uint")==0)
     return GWEN_DB_NodeType_ValueInt;
   else if (strcasecmp(tname, "bytes")==0 ||
            strcasecmp(tname, "tlv")==0)

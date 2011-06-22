@@ -13,6 +13,7 @@
 
 #include <chipcard/card.h>
 #include <chipcard/sharedstuff/pininfo.h>
+#include <gwenhywfar/db.h>
 
 
 CHIPCARD_API
@@ -50,13 +51,15 @@ CHIPCARD_API const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card);
  *
  */
 /*@{*/
-CHIPCARD_API LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
-                                              int globalKey,
-                                              int keyId,
-                                              int keyVersion,
-                                              const uint8_t *ptr,
-                                              unsigned int size,
-                                              GWEN_BUFFER *sigBuf);
+CHIPCARD_API
+LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
+                                 int globalKey,
+                                 int keyId,
+                                 int keyVersion,
+                                 const uint8_t *ptr,
+                                 unsigned int size,
+                                 GWEN_BUFFER *sigBuf);
+
 /*@}*/
 
 #endif

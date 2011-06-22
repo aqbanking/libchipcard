@@ -295,7 +295,6 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
         GWEN_DB_Group_free(dbRecord);
         return rv;
       }
-      GWEN_Buffer_Dump(obuf, 2);
       p=(const uint8_t*) GWEN_Buffer_GetStart(obuf);
       bs=GWEN_Buffer_GetUsedBytes(obuf);
       if (bs>=8) {
@@ -328,13 +327,13 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
         v+=(uint32_t)(p[10])<<8;
         v+=(uint32_t)(p[11]);
 
-        DBG_ERROR(0, "Setting minlength %d", (int) v);
         LC_PinInfo_SetMinLength(pi, v);
       }
 
       GWEN_Buffer_free(obuf);
       xc->pinInfo=pi;
 
+#if 1
       if (1) {
         GWEN_DB_NODE *dbD;
 
@@ -344,6 +343,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
         GWEN_DB_Dump(dbD, 2);
         GWEN_DB_Group_free(dbD);
       }
+#endif
     }
     GWEN_DB_Group_free(dbRecord);
   }
@@ -610,6 +610,7 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
       *maxErrors=p[0];
     if (currentErrors)
       *currentErrors=p[1];
+    GWEN_Buffer_free(mbuf);
     return LC_Client_ResultOk;
   }
   else {
@@ -617,6 +618,7 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
     return LC_Client_ResultInternal;
   }
 }
+
 
 
 
