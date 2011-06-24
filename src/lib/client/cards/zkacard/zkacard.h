@@ -42,7 +42,7 @@ CHIPCARD_API GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card);
 /**
  * Returns the pin information read from EF_PWDD
  */
-CHIPCARD_API const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card);
+CHIPCARD_API const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card, int pid);
 
 /*@}*/
 

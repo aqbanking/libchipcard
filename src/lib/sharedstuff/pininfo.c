@@ -25,7 +25,7 @@ GWEN_LIST2_FUNCTIONS(LC_PININFO, LC_PinInfo)
 
 
 
-LC_PININFO *LC_PinInfo_new() {
+LC_PININFO *LC_PinInfo_new(void) {
   LC_PININFO *st;
 
   GWEN_NEW_OBJECT(LC_PININFO, st)
@@ -64,6 +64,7 @@ LC_PININFO *LC_PinInfo_dup(const LC_PININFO *d) {
   st->maxLength=d->maxLength;
   st->allowChange=d->allowChange;
   st->filler=d->filler;
+  st->recordNum=d->recordNum;
   return st;
 }
 
@@ -86,6 +87,8 @@ int LC_PinInfo_toDb(const LC_PININFO *st, GWEN_DB_NODE *db) {
     return -1;
   if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "filler", st->filler))
     return -1;
+  if (GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, "recordNum", st->recordNum))
+    return -1;
   return 0;
 }
 
@@ -100,6 +103,7 @@ int LC_PinInfo_ReadDb(LC_PININFO *st, GWEN_DB_NODE *db) {
   LC_PinInfo_SetMaxLength(st, GWEN_DB_GetIntValue(db, "maxLength", 0, 0));
   LC_PinInfo_SetAllowChange(st, GWEN_DB_GetIntValue(db, "allowChange", 0, 0));
   LC_PinInfo_SetFiller(st, GWEN_DB_GetIntValue(db, "filler", 0, 0));
+  LC_PinInfo_SetRecordNum(st, GWEN_DB_GetIntValue(db, "recordNum", 0, 0));
   return 0;
 }
 
@@ -221,6 +225,21 @@ int LC_PinInfo_GetFiller(const LC_PININFO *st) {
 void LC_PinInfo_SetFiller(LC_PININFO *st, int d) {
   assert(st);
   st->filler=d;
+  st->_modified=1;
+}
+
+
+
+
+int LC_PinInfo_GetRecordNum(const LC_PININFO *st) {
+  assert(st);
+  return st->recordNum;
+}
+
+
+void LC_PinInfo_SetRecordNum(LC_PININFO *st, int d) {
+  assert(st);
+  st->recordNum=d;
   st->_modified=1;
 }
 

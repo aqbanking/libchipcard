@@ -6,7 +6,7 @@ AM_CFLAGS=$(visibility_cflags)
 
 EXTRA_DIST=app.xml card.xml
 
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
+INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../ -I$(top_srcdir)/src/lib/sharedstuff
 
 typefiles=types.xml
 

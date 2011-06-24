@@ -473,7 +473,7 @@ int LC_Crypt_TokenZka__EnsureAccessPin(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
     return GWEN_ERROR_NOT_OPEN;
   }
 
-  pi=LC_ZkaCard_GetPinInfo(lct->card);
+  pi=LC_ZkaCard_GetPinInfo(lct->card, 3);
 
   while(!lct->haveAccessPin) {
     int rv;

@@ -27,6 +27,7 @@
     <elem name="maxLength" type="int" />
     <elem name="allowChange" type="int" />
     <elem name="filler" type="int" />
+    <elem name="recordNum" type="int" access="lib" />
     
   </type>
 </types>

@@ -20,7 +20,9 @@ struct LC_PININFO {
   int maxLength;
   int allowChange;
   int filler;
+  int recordNum;
 };
+
 
 
 

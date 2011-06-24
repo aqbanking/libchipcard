@@ -102,7 +102,7 @@ CHIPCARD_API void LC_PinInfo_List2_freeAll(LC_PININFO_LIST2 *stl);
 
 /** Creates a new object.
 */
-CHIPCARD_API LC_PININFO *LC_PinInfo_new();
+CHIPCARD_API LC_PININFO *LC_PinInfo_new(void);
 /** Creates an object from the data in the given GWEN_DB_NODE
 */
 CHIPCARD_API LC_PININFO *LC_PinInfo_fromDb(GWEN_DB_NODE *db);
@@ -190,6 +190,7 @@ CHIPCARD_API int LC_PinInfo_GetFiller(const LC_PININFO *el);
 * Set the property @ref LC_PININFO_Filler
 */
 CHIPCARD_API void LC_PinInfo_SetFiller(LC_PININFO *el, int d);
+
 
 
 #ifdef __cplusplus

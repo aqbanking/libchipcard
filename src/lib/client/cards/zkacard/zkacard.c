@@ -49,6 +49,8 @@ int LC_ZkaCard_ExtendCard(LC_CARD *card) {
 
   LC_Card_SetGetPinStatusFn(card, LC_ZkaCard_GetPinStatus);
 
+  xc->pinInfoList=LC_PinInfo_List_new();
+
   return 0;
 }
 
@@ -64,10 +66,13 @@ int LC_ZkaCard_UnextendCard(LC_CARD *card) {
   LC_Card_SetCloseFn(card, xc->closeFn);
   GWEN_INHERIT_UNLINK(LC_CARD, LC_ZKACARD, card);
 
+  LC_PinInfo_List_free(xc->pinInfoList);
+
   rv=LC_ProcessorCard_UnextendCard(card);
   if (rv) {
     DBG_INFO(LC_LOGDOMAIN, "here");
   }
+
   return rv;
 }
 
@@ -79,8 +84,6 @@ void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p){
   assert(bp);
   assert(p);
   xc=(LC_ZKACARD*)p;
-
-  LC_PinInfo_free(xc->pinInfo);
 
   GWEN_Buffer_free(xc->bin_ef_id);
   GWEN_DB_Group_free(xc->db_ef_id);
@@ -157,9 +160,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   GWEN_Buffer_free(xc->bin_ef_ssd);
   xc->bin_ef_ssd=NULL;
 
-  LC_PinInfo_free(xc->pinInfo);
-  xc->pinInfo=NULL;
-  xc->pinRecordNum=-1;
+  LC_PinInfo_List_Clear(xc->pinInfoList);
 
   /* select ZKA card */
   res=LC_Card_SelectCard(card, "zkacard");
@@ -299,6 +300,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card){
   GWEN_Buffer_free(xc->bin_ef_ssd);
   xc->bin_ef_ssd=NULL;
 
+  LC_PinInfo_List_Clear(xc->pinInfoList);
+
   res=xc->openFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
@@ -326,6 +329,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card){
   assert(xc);
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
+  LC_PinInfo_List_Clear(xc->pinInfoList);
   res=xc->closeFn(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
@@ -337,14 +341,22 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card){
 
 
 
-const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card) {
+const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card, int pid) {
   LC_ZKACARD *xc;
+  const LC_PININFO *pi;
 
   assert(card);
   xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
   assert(xc);
 
-  return xc->pinInfo;
+  pi=LC_PinInfo_List_First(xc->pinInfoList);
+  while(pi) {
+    if (LC_PinInfo_GetId(pi)==pid)
+      return pi;
+    pi=LC_PinInfo_List_Next(pi);
+  }
+
+  return NULL;
 }
 
 
@@ -459,12 +471,14 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
                         int *maxErrors,
                         int *currentErrors) {
   LC_ZKACARD *xc;
+  const LC_PININFO *pi;
 
   assert(card);
   xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
   assert(xc);
 
-  if (xc->pinRecordNum>0) {
+  pi=LC_ZkaCard_GetPinInfo(card, pid);
+  if (pi && LC_PinInfo_GetRecordNum(pi)>0) {
     LC_CLIENT_RESULT res;
     GWEN_BUFFER *mbuf;
     const uint8_t *p;
@@ -488,7 +502,7 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
     /* read EF_FBZ */
     DBG_INFO(LC_LOGDOMAIN, "Reading record...");
     mbuf=GWEN_Buffer_new(0, 32, 0, 1);
-    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, xc->pinRecordNum, mbuf);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, LC_PinInfo_GetRecordNum(pi), mbuf);
     if (res!=LC_Client_ResultOk) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       GWEN_Buffer_free(mbuf);
@@ -510,7 +524,7 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
     return LC_Client_ResultOk;
   }
   else {
-    DBG_ERROR(LC_LOGDOMAIN, "Invalid record number for PIN (%d)", xc->pinRecordNum);
+    DBG_ERROR(LC_LOGDOMAIN, "No pin or invalid record number for PIN %d", pid);
     return LC_Client_ResultInternal;
   }
 }
@@ -525,6 +539,8 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
   assert(card);
   xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
   assert(xc);
+
+  LC_PinInfo_List_Clear(xc->pinInfoList);
 
   /* select EF_PWDD */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PWDD...");
@@ -574,10 +590,9 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
 
       GWEN_Buffer_free(mbuf);
       i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdRecord", 0, -1);
-      if (i>0)
-	xc->pinRecordNum=i;
       pi=LC_PinInfo_new();
       LC_PinInfo_SetAllowChange(pi, 1);
+      LC_PinInfo_SetRecordNum(pi, i);
       i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdId", 0, -1);
       if (i>0)
 	LC_PinInfo_SetId(pi, i);
@@ -631,15 +646,14 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
 	}
 
 	GWEN_Buffer_free(obuf);
-	xc->pinInfo=pi;
-
+	LC_PinInfo_List_Add(pi, xc->pinInfoList);
 #if 1
 	if (1) {
 	  GWEN_DB_NODE *dbD;
 
 	  DBG_ERROR(LC_LOGDOMAIN, "Got this pininfo:");
 	  dbD=GWEN_DB_Group_new("debug");
-	  LC_PinInfo_toDb(xc->pinInfo, dbD);
+	  LC_PinInfo_toDb(pi, dbD);
 	  GWEN_DB_Dump(dbD, 2);
 	  GWEN_DB_Group_free(dbD);
 	}

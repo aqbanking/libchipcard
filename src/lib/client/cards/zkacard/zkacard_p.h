@@ -12,8 +12,10 @@
 #define CHIPCARD_CARD_ZKACARD_P_H
 
 #include "zkacard.h"
+#include "pininfo_l.h"
 
 #include <chipcard/card_imp.h>
+
 
 
 typedef struct LC_ZKACARD LC_ZKACARD;
@@ -32,8 +34,7 @@ struct LC_ZKACARD {
   int len_modus_sk_ch_ke;
   int min_len_csa_password;
 
-  LC_PININFO *pinInfo;
-  int pinRecordNum;
+  LC_PININFO_LIST *pinInfoList;
 };
 
 
