@@ -239,115 +239,11 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   xc->bin_ef_gd_0=mbuf;
 
   /* read EF_PWDD */
-  DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PWDD...");
-  res=LC_Card_SelectEf(card, "EF_PWDD");
+  res=LC_ZkaCard__ReadPwdd(card);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
-
-  /* read EF_PWDD */
-  DBG_INFO(LC_LOGDOMAIN, "Reading record...");
-  mbuf=GWEN_Buffer_new(0, 32, 0, 1);
-  res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    GWEN_Buffer_free(mbuf);
-    return res;
-  }
-
-  /* parse EF_PWDD */
-  DBG_INFO(LC_LOGDOMAIN, "Parsing record...");
-  GWEN_Buffer_Rewind(mbuf);
-  dbRecord=GWEN_DB_Group_new("record");
-  if (LC_Card_ParseRecord(card, 1, mbuf, dbRecord)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error in EF_PWDD");
-    GWEN_DB_Group_free(dbRecord);
-    GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
-  }
-  else {
-    const uint8_t *p;
-    uint32_t bs;
-    LC_PININFO *pi;
-    int i;
-
-    GWEN_Buffer_free(mbuf);
-    i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdRecord", 0, -1);
-    if (i>0)
-      xc->pinRecordNum=i;
-    pi=LC_PinInfo_new();
-    LC_PinInfo_SetAllowChange(pi, 1);
-    i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdId", 0, -1);
-    if (i>0)
-      LC_PinInfo_SetId(pi, i);
-    p=GWEN_DB_GetBinValue(dbRecord, "entry/format", 0, NULL, 0, &bs);
-    if (p && bs) {
-      GWEN_BUFFER *obuf;
-      int rv;
-      uint32_t v;
-
-      obuf=GWEN_Buffer_new(0, 64, 0, 1);
-      rv=LC_ZkaCard__ParsePseudoOids(p, bs, obuf);
-      if (rv<0) {
-        GWEN_Buffer_free(obuf);
-        LC_PinInfo_free(pi);
-        GWEN_DB_Group_free(dbRecord);
-        return rv;
-      }
-      p=(const uint8_t*) GWEN_Buffer_GetStart(obuf);
-      bs=GWEN_Buffer_GetUsedBytes(obuf);
-      if (bs>=8) {
-        uint32_t v2;
-
-        v=(uint32_t)(p[0])<<24;
-        v+=(uint32_t)(p[1])<<16;
-        v+=(uint32_t)(p[2])<<8;
-        v+=(uint32_t)(p[3]);
-
-        v2=(uint32_t)(p[4])<<24;
-        v2+=(uint32_t)(p[5])<<16;
-        v2+=(uint32_t)(p[6])<<8;
-        v2+=(uint32_t)(p[7]);
-
-        if (v==2 && v2==1)
-          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
-        else if (v==1 && v2==1)
-          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_FPin2);
-        else {
-          DBG_WARN(LC_LOGDOMAIN, "Unexpected encoding info (%d/%d), assuming Ascii",
-                   (int) v, (int) v2);
-          LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
-        }
-      }
-
-      if (bs>=12) {
-        v=(uint32_t)(p[8])<<24;
-        v+=(uint32_t)(p[9])<<16;
-        v+=(uint32_t)(p[10])<<8;
-        v+=(uint32_t)(p[11]);
-
-        LC_PinInfo_SetMinLength(pi, v);
-      }
-
-      GWEN_Buffer_free(obuf);
-      xc->pinInfo=pi;
-
-#if 1
-      if (1) {
-        GWEN_DB_NODE *dbD;
-
-        DBG_ERROR(LC_LOGDOMAIN, "Got this pininfo:");
-        dbD=GWEN_DB_Group_new("debug");
-        LC_PinInfo_toDb(xc->pinInfo, dbD);
-        GWEN_DB_Dump(dbD, 2);
-        GWEN_DB_Group_free(dbD);
-      }
-#endif
-    }
-    GWEN_DB_Group_free(dbRecord);
-  }
-
 
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
@@ -620,5 +516,140 @@ LC_ZkaCard_GetPinStatus(LC_CARD *card,
 }
 
 
+
+int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
+  LC_ZKACARD *xc;
+  LC_CLIENT_RESULT res;
+  int rec;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  /* select EF_PWDD */
+  DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PWDD...");
+  res=LC_Card_SelectEf(card, "EF_PWDD");
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  /* read EF_PWDD */
+  for (rec=1; rec<32; rec++) {
+    GWEN_BUFFER *mbuf;
+    GWEN_DB_NODE *dbRecord;
+
+    DBG_INFO(LC_LOGDOMAIN, "Reading record %d", rec);
+    mbuf=GWEN_Buffer_new(0, 32, 0, 1);
+    res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, rec, mbuf);
+    if (res!=LC_Client_ResultOk) {
+      if (LC_Card_GetLastSW1(card)==0x6a &&
+	  LC_Card_GetLastSW2(card)==0x83) {
+	DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", rec-1);
+	break;
+      }
+      DBG_INFO(LC_LOGDOMAIN, "here");
+      GWEN_Buffer_free(mbuf);
+      return res;
+    }
+
+    /* parse EF_PWDD */
+    DBG_INFO(LC_LOGDOMAIN, "Parsing record...");
+    GWEN_Buffer_Rewind(mbuf);
+    dbRecord=GWEN_DB_Group_new("record");
+    if (LC_Card_ParseRecord(card, rec, mbuf, dbRecord)) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error in EF_PWDD");
+      GWEN_DB_Group_free(dbRecord);
+      GWEN_Buffer_free(mbuf);
+      return LC_Client_ResultDataError;
+    }
+    else {
+      const uint8_t *p;
+      uint32_t bs;
+      LC_PININFO *pi;
+      int i;
+
+      DBG_ERROR(GWEN_LOGDOMAIN, "PWDD entry %d:", rec);
+      GWEN_DB_Dump(dbRecord, 2);
+
+      GWEN_Buffer_free(mbuf);
+      i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdRecord", 0, -1);
+      if (i>0)
+	xc->pinRecordNum=i;
+      pi=LC_PinInfo_new();
+      LC_PinInfo_SetAllowChange(pi, 1);
+      i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdId", 0, -1);
+      if (i>0)
+	LC_PinInfo_SetId(pi, i);
+      p=GWEN_DB_GetBinValue(dbRecord, "entry/format", 0, NULL, 0, &bs);
+      if (p && bs) {
+	GWEN_BUFFER *obuf;
+	int rv;
+	uint32_t v;
+
+	obuf=GWEN_Buffer_new(0, 64, 0, 1);
+	rv=LC_ZkaCard__ParsePseudoOids(p, bs, obuf);
+	if (rv<0) {
+	  GWEN_Buffer_free(obuf);
+	  LC_PinInfo_free(pi);
+	  GWEN_DB_Group_free(dbRecord);
+	  return rv;
+	}
+	p=(const uint8_t*) GWEN_Buffer_GetStart(obuf);
+	bs=GWEN_Buffer_GetUsedBytes(obuf);
+	if (bs>=8) {
+	  uint32_t v2;
+
+	  v=(uint32_t)(p[0])<<24;
+	  v+=(uint32_t)(p[1])<<16;
+	  v+=(uint32_t)(p[2])<<8;
+	  v+=(uint32_t)(p[3]);
+
+	  v2=(uint32_t)(p[4])<<24;
+	  v2+=(uint32_t)(p[5])<<16;
+	  v2+=(uint32_t)(p[6])<<8;
+	  v2+=(uint32_t)(p[7]);
+
+	  if (v==2 && v2==1)
+	    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
+	  else if (v==1 && v2==1)
+	    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_FPin2);
+	  else {
+	    DBG_WARN(LC_LOGDOMAIN, "Unexpected encoding info (%d/%d), assuming Ascii",
+		     (int) v, (int) v2);
+	    LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_Ascii);
+	  }
+	}
+
+	if (bs>=12) {
+	  v=(uint32_t)(p[8])<<24;
+	  v+=(uint32_t)(p[9])<<16;
+	  v+=(uint32_t)(p[10])<<8;
+	  v+=(uint32_t)(p[11]);
+
+	  LC_PinInfo_SetMinLength(pi, v);
+	}
+
+	GWEN_Buffer_free(obuf);
+	xc->pinInfo=pi;
+
+#if 1
+	if (1) {
+	  GWEN_DB_NODE *dbD;
+
+	  DBG_ERROR(LC_LOGDOMAIN, "Got this pininfo:");
+	  dbD=GWEN_DB_Group_new("debug");
+	  LC_PinInfo_toDb(xc->pinInfo, dbD);
+	  GWEN_DB_Dump(dbD, 2);
+	  GWEN_DB_Group_free(dbD);
+	}
+#endif
+      }
+      GWEN_DB_Group_free(dbRecord);
+    }
+  }
+
+  return LC_Client_ResultOk;
+}
 
 

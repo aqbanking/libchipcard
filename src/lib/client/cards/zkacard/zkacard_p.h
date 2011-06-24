@@ -50,6 +50,7 @@ static LC_CLIENT_RESULT LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, in
 static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf);
 
 
+static int LC_ZkaCard__ReadPwdd(LC_CARD *card);
 
 
 #endif
