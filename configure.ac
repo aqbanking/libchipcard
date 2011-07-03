@@ -17,8 +17,8 @@ AC_CONFIG_HEADER([config.h])
 CHIPCARD_VERSION_MAJOR=5
 CHIPCARD_VERSION_MINOR=0
 CHIPCARD_VERSION_PATCHLEVEL=2
-CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_BUILD=1
+CHIPCARD_VERSION_TAG="svn"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -310,12 +310,6 @@ AC_ARG_WITH(data-searchdir, [  --with-data-searchdir=DIR where to search for dat
 if test -z "${lc_data_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_data_searchdir="share/chipcard"
-  elif test "$OSYSTEM" = "osx"; then
-    if test "$enable_local_install" != "no"; then
-      lc_data_searchdir="Frameworks/AqBanking/share/chipcard"
-    else
-      lc_data_searchdir="\$(datadir)"
-    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_data_searchdir="share/chipcard"
@@ -343,12 +337,6 @@ AC_ARG_WITH(locale-searchdir, [  --with-locale-searchdir=DIR where to search for
 if test -z "${lc_locale_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_locale_searchdir="share/locale"
-  elif test "$OSYSTEM" = "osx"; then
-    if test "$enable_local_install" != "no"; then
-      lc_locale_searchdir="Frameworks/AqBanking/share/locale"
-    else
-      lc_locale_searchdir="\$(localedir)"
-    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_locale_searchdir="share/locale"
@@ -375,12 +363,6 @@ AC_ARG_WITH(cfg-searchdir, [  --with-cfg-searchdir=DIR where to search for cfg f
 if test -z "${lc_cfg_searchdir}"; then
   if test "$OSYSTEM" = "windows"; then
     lc_cfg_searchdir="etc/chipcard"
-  elif test "$OSYSTEM" = "osx"; then
-    if test "$enable_local_install" != "no"; then
-      lc_cfg_searchdir="Frameworks/AqBanking/etc/chipcard"
-    else
-      lc_cfg_searchdir="$lc_client_config_dir"
-    fi
   else
     if test "$enable_local_install" != "no"; then
       lc_cfg_searchdir="etc/chipcard"
