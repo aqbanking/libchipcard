@@ -63,6 +63,31 @@
     </reader>
 
 
+
+
+    <!-- Cyberjack 0x300 using new name -->
+    <reader name="cyberjack_ppa" 
+            devicePathTmpl="REINER SCT cyberJack pp_a *"
+    >
+      <short>Cyberjack pinpad(a)</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      <image>cyberjack_pinpad_a.jpg</image>
+    </reader>
+
+    <!-- Cyberjack 0x401 using new name -->
+    <reader name="cyberjack_ppa2" 
+            devicePathTmpl="REINER SCT cyberJack pp_a2 *"
+    >
+      <short>Cyberjack pinpad(a)</short>
+      <flags>
+        <flag>keypad</flag>
+      </flags>
+      <image>cyberjack_pinpad_a.jpg</image>
+    </reader>
+
+
   </readers>
 
 
