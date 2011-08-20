@@ -661,7 +661,7 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
                      &rblen);
     if (rv!=SCARD_S_SUCCESS) {
       DBG_ERROR(LC_LOGDOMAIN,
-                "SCardControl: %04lx", (long unsigned int) rv);
+                "SCardTransmit: %04lx", (long unsigned int) rv);
       return LC_Client_ResultIoError;
     }
     DBG_DEBUG(LC_LOGDOMAIN, "Received response:");
