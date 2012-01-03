@@ -29,14 +29,14 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/ddv.xml
-	cp app-ddv0.xml $(DESTDIR)$(appdatadir)/ddv0.xml
-	cp app-ddv1.xml $(DESTDIR)$(appdatadir)/ddv1.xml
+	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/ddv.xml
+	cp $(srcdir)/app-ddv0.xml $(DESTDIR)$(appdatadir)/ddv0.xml
+	cp $(srcdir)/app-ddv1.xml $(DESTDIR)$(appdatadir)/ddv1.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card-ddv0.xml $(DESTDIR)$(carddatadir)/ddv0.xml
-	cp card-ddv1.xml $(DESTDIR)$(carddatadir)/ddv1.xml
+	cp $(srcdir)/card-ddv0.xml $(DESTDIR)$(carddatadir)/ddv0.xml
+	cp $(srcdir)/card-ddv1.xml $(DESTDIR)$(carddatadir)/ddv1.xml
 
 install-data-local: install-app-data install-card-data
 

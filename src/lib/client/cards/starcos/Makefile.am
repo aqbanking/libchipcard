@@ -38,13 +38,13 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/starcoscard.xml
-	cp app-hvb.xml $(DESTDIR)$(appdatadir)/starcoscard-hvb.xml
-	cp app-vr.xml $(DESTDIR)$(appdatadir)/starcoscard-vr.xml
+	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/starcoscard.xml
+	cp $(srcdir)/app-hvb.xml $(DESTDIR)$(appdatadir)/starcoscard-hvb.xml
+	cp $(srcdir)/app-vr.xml $(DESTDIR)$(appdatadir)/starcoscard-vr.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/starcoscard.xml
+	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/starcoscard.xml
 
 install-data-local: install-app-data install-card-data
 

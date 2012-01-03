@@ -38,11 +38,11 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp README.apps $(DESTDIR)$(appdatadir)/README
+	cp $(srcdir)/README.apps $(DESTDIR)$(appdatadir)/README
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp README.cards $(DESTDIR)$(carddatadir)/README
+	cp $(srcdir)/README.cards $(DESTDIR)$(carddatadir)/README
 
 install-data-local: install-app-data install-card-data
 

@@ -43,11 +43,11 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/geldkarte.xml
+	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/geldkarte.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/geldkarte.xml
+	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/geldkarte.xml
 
 install-data-local: install-app-data install-card-data
 

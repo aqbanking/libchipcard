@@ -27,11 +27,11 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/memorycard.xml
+	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/memorycard.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/memorycard.xml
+	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/memorycard.xml
 
 install-data-local: install-app-data install-card-data
 

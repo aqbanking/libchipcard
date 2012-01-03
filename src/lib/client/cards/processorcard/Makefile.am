@@ -27,11 +27,11 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-app-data:
 	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp app.xml $(DESTDIR)$(appdatadir)/processorcard.xml
+	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/processorcard.xml
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/processorcard.xml
+	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/processorcard.xml
 
 install-data-local: install-app-data install-card-data
 

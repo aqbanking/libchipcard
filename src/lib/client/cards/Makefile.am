@@ -45,7 +45,7 @@ carddatadir=@lc_client_xml_dir@/cards
 
 install-card-data:
 	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp card.xml $(DESTDIR)$(carddatadir)/card.xml
+	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/card.xml
 
 install-data-local: install-card-data
 
