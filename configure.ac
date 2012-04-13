@@ -378,6 +378,28 @@ AC_MSG_RESULT($lc_cfg_searchdir)
 
 
 
+# ----------------------------------------------------------------------------
+# check for Debian Multiarch paths (see also http://wiki.debian.org/Multiarch)
+#
+AC_PATH_TOOL([DPKG_ARCH], [dpkg-architecture])
+AC_MSG_CHECKING([for multiarch paths])
+multiarch_triplet=""
+DEBIAN_MULTIARCH_DIRS=""
+if test -n "$DPKG_ARCH"; then
+  multiarch_triplet=$($DPKG_ARCH -qDEB_HOST_MULTIARCH 2> /dev/null)
+  if test -z "$multiarch_triplet"; then
+    multiarch_triplet=$($DPKG_ARCH -qDEB_HOST_GNU_TYPE)
+  fi
+fi
+if test -n "$multiarch_triplet"; then
+  DEBIAN_MULTIARCH_DIRS="/lib/$multiarch_triplet /usr/lib/$multiarch_triplet"
+  AC_MSG_RESULT([$DEBIAN_MULTIARCH_DIRS])
+else
+  AC_MSG_RESULT([not found])
+fi
+
+
+
 # ---------------------------------------------------------------------------
 # check for PC/SC
 #

@@ -68,6 +68,7 @@ else
     AC_ARG_WITH(pcsc-libs, [  --with-pcsc-libs=DIR  adds pcsc library path],
       [pcsc_search_lib_dirs="$withval"],
       [pcsc_search_lib_dirs="/usr/lib \
+                          $DEBIAN_MULTIARCH_DIRS \
             	          /usr/local/lib \
                           /usr/lib/pcsc/lib \
 	                  /usr/local/pcsc/lib \
