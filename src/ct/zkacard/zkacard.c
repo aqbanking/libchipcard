@@ -656,7 +656,8 @@ LC_Crypt_TokenZka_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
 
 
-int LC_Crypt_TokenZka_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
+int GWENHYWFAR_CB
+LC_Crypt_TokenZka_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
                                  uint32_t id,
                                  const GWEN_CRYPT_TOKEN_KEYINFO *ki,
                                  uint32_t gid) {
