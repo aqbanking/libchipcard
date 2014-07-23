@@ -28,6 +28,7 @@ Makefile.palm
 aclocal.m4
 apidoc
 autom4te.cache
+compile
 conf.uint32
 config.guess
 config.h
