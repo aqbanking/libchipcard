@@ -405,16 +405,33 @@ fi
 #
 
 
-AQ_CHECK_PCSC
-if test "$have_pcsc" != "yes"; then
-      AC_MSG_ERROR([
-***** No pcsc libraries found.
-***** Please install the pcsclite package including development packages.])
+
+if test "$OSYSTEM" = "windows" ; then
+  pcsc_libraries=""
+  pcsc_lib="-lwinscard"
+  have_pcsc="yes"
+elif test "$OSYSTEM" = "osx" ; then
+  AC_MSG_CHECKING(for pcsc includes)
+#  pcsc_includes="-I\$(libchipcard_symlinkdir)/PCSC"
+  pcsc_includes="-I/System/Library/Frameworks/PCSC.framework/Headers"
+  AC_MSG_RESULT($pcsc_includes)
+  AC_MSG_CHECKING(for pcsc libs)
+  pcsc_libraries=""
+  pcsc_lib="-framework PCSC"
+  AC_MSG_RESULT($pcsc_libraries ${pcsc_lib})
+  have_pcsc="yes"
+else
+  PKG_CHECK_MODULES([PCSCLITE], [libpcsclite])
+  # check for 1.6 or higher
+  LIBS="${LIBGNUTLS_LIBS}"
+  pcsc_includes="${PCSCLITE_CFLAGS}"
+  pcsc_libraries=""
+  pcsc_lib="${PCSCLITE_LIBS}"
 fi
 
-if test "$OSYSTEM" = "osx" ; then
-  pcsc_includes="-I\$(libchipcard_symlinkdir)/PCSC"
-fi
+AC_SUBST(pcsc_includes)
+AC_SUBST(pcsc_libraries)
+AC_SUBST(pcsc_lib)
 
 
 
