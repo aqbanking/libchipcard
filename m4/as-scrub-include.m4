@@ -20,13 +20,13 @@ dnl will remove all system include dirs from the given CFLAGS
 AC_DEFUN([AS_SCRUB_INCLUDE],
 [
   GIVEN_CFLAGS=$[$1]
-  INCLUDE_DIRS=`echo | cpp -v 2>&1`
+  INCLUDE_DIRS=`echo | ${CPP} -v 2>&1`
 
   dnl remove everything from this output between the "starts here" and "End of"
   dnl line
   INCLUDE_DIRS=`echo $INCLUDE_DIRS | sed -e 's/.*<...> search starts here://' | sed -e 's/End of search list.*//'`
   for dir in $INCLUDE_DIRS; do
-    GIVEN_CFLAGS=$(echo $GIVEN_CFLAGS | sed -e "s;-I$dir ;;" | sed -e "s;-I$dir$;;")
+    GIVEN_CFLAGS=$(echo $GIVEN_CFLAGS | sed -e 's;-I$dir ;;' | sed -e 's;-I$dir$;;')
   done
   [$1]=$GIVEN_CFLAGS
 ])
