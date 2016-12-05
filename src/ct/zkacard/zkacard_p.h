@@ -174,6 +174,9 @@ static int GWENHYWFAR_CB
 				    const GWEN_CRYPT_CRYPTALGO *a,
 				    uint32_t gid);
 
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_ChangePin(GWEN_CRYPT_TOKEN *ct, int admin, uint32_t gid);
+
 
 static int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad, uint32_t guiid);
 static int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid);

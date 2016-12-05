@@ -765,18 +765,18 @@
           This command deciphers the given data.
         </DESCR>
         <send>
-                <APDU lr="0" >
+          <APDU lr="0" >
             <ELEM type="dword">0x002a8086</ELEM>
-                </APDU>
-                <DATA>
+          </APDU>
+          <DATA>
             <ELEM type="byte">0x00</ELEM>
             <ELEM name="data" type="bytes" />
-                </DATA>
-                </send>
-
-                <responses>
-                <response type="success">
-                    <ELEM name="data" type="bytes" />
+          </DATA>
+        </send>
+	
+        <responses>
+          <response type="success">
+            <ELEM name="data" type="bytes" />
           </response>
         </responses>
       </command>
@@ -788,8 +788,9 @@
         </DESCR>
         <send>
           <APDU lr="0" >
-            <ELEM type="dword">0x008800</ELEM>
-            <ELEM name="kid" type="byte" />
+            <ELEM type="dword">0x00880000</ELEM>
+            <!-- <ELEM type="dword">0x008800</ELEM>
+		 <ELEM name="kid" type="byte" /> -->
           </APDU>
           <DATA>
             <ELEM name="data" type="bytes" />

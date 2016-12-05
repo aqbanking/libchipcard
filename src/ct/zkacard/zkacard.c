@@ -286,6 +286,8 @@ GWEN_CRYPT_TOKEN *LC_Crypt_TokenZka_new(GWEN_PLUGIN_MANAGER *pm,
 
   GWEN_Crypt_Token_SetGenerateKeyFn(ct, LC_Crypt_TokenZka_GenerateKey);
 
+  GWEN_Crypt_Token_SetChangePinFn(ct, LC_Crypt_TokenZka_ChangePin);
+
   return ct;
 }
 
@@ -661,6 +663,7 @@ LC_Crypt_TokenZka_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
                                  uint32_t id,
                                  const GWEN_CRYPT_TOKEN_KEYINFO *ki,
                                  uint32_t gid) {
+  DBG_ERROR(LC_LOGDOMAIN, "Function LC_Crypt_TokenZka_SetKeyInfo not implemented!");
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -745,6 +748,20 @@ LC_Crypt_TokenZka_GetContext(GWEN_CRYPT_TOKEN *ct,
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
   assert(lct);
 
+
+  lct->keyListIsValid=0;   // necessary in order to get latest Usage Counters
+  
+  if (!(lct->keyListIsValid)) {
+    int rv;
+
+    /* read keys */
+    rv=LC_TokenZkaCard__ReadKeys(ct);
+    if (rv<0) {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+      return NULL;
+    }
+  }
+
   if (!(lct->contextListIsValid)) {
     int rv;
 
@@ -772,6 +789,7 @@ LC_Crypt_TokenZka_SetContext(GWEN_CRYPT_TOKEN *ct,
 			     uint32_t id,
 			     const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
 			     uint32_t gid) {
+  DBG_ERROR(LC_LOGDOMAIN, "Function LC_Crypt_TokenZka_SetContext not implemented!");
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -782,6 +800,7 @@ LC_Crypt_TokenZka_GenerateKey(GWEN_CRYPT_TOKEN *ct,
 				  uint32_t kid,
 				  const GWEN_CRYPT_CRYPTALGO *a,
 				  uint32_t gid) {
+  DBG_ERROR(LC_LOGDOMAIN, "Function LC_Crypt_TokenZka_GenerateKey not implemented!");
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -801,6 +820,7 @@ LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *tbuf;
 
+  DBG_INFO(LC_LOGDOMAIN, "LC_Crypt_TokenZka_Sign called with kid=%d (%s)!", kid, GWEN_Crypt_PaddAlgoId_toString(GWEN_Crypt_PaddAlgo_GetId(a)));
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
   assert(lct);
@@ -817,16 +837,18 @@ LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
     return GWEN_ERROR_NOT_OPEN;
   }
 
-  tbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_ZkaCard_Sign(lct->card, 1, 2, -1, pInData, inLen, tbuf);
+  tbuf=GWEN_Buffer_new(0, 512, 0, 1);
+  res=LC_ZkaCard_Sign(lct->card, 1, kid, -1, pInData, inLen, tbuf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(tbuf);
     return GWEN_ERROR_NOT_OPEN;
   }
 
+  *pSignatureLen = GWEN_Buffer_GetUsedBytes(tbuf);
+  memcpy(pSignatureData, GWEN_Buffer_GetStart(tbuf), *pSignatureLen);
 
-  return GWEN_ERROR_NOT_IMPLEMENTED;
+  return GWEN_SUCCESS;
 }
 
 
@@ -841,6 +863,7 @@ LC_Crypt_TokenZka_Verify(GWEN_CRYPT_TOKEN *ct,
 			     uint32_t signatureLen,
 			     uint32_t seqCounter,
 			     uint32_t gid) {
+  DBG_ERROR(LC_LOGDOMAIN, "Function LC_Crypt_TokenZka_Verify not implemented!");
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -855,6 +878,7 @@ LC_Crypt_TokenZka_Encipher(GWEN_CRYPT_TOKEN *ct,
 			       uint8_t *pOutData,
 			       uint32_t *pOutLen,
 			       uint32_t gid) {
+  DBG_INFO(LC_LOGDOMAIN, "LC_Crypt_TokenZka_Encipher called with kid=%d (%s)!", kid, GWEN_Crypt_PaddAlgoId_toString(GWEN_Crypt_PaddAlgo_GetId(a)));
   return GWEN_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -869,9 +893,60 @@ LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
 			       uint8_t *pOutData,
 			       uint32_t *pOutLen,
 			       uint32_t gid) {
-  return GWEN_ERROR_NOT_IMPLEMENTED;
+
+  LC_CT_ZKA *lct;
+  LC_CLIENT_RESULT res;
+  GWEN_BUFFER *tbuf;
+
+  DBG_INFO(LC_LOGDOMAIN, "LC_Crypt_TokenZka_Decipher called with kid=%d (%s)!\n", kid, GWEN_Crypt_PaddAlgoId_toString(GWEN_Crypt_PaddAlgo_GetId(a)));
+
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+  assert(lct);
+
+  res=LC_Card_SelectMf(lct->card);
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  res=LC_Card_SelectDf(lct->card, "DF_SIG");
+  if (res!=LC_Client_ResultOk) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_SIG (%d)", res);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  tbuf=GWEN_Buffer_new(0, 1024, 0, 1);
+  res=LC_ZkaCard_Decipher(lct->card, 1, kid, -1, pInData, inLen, tbuf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(tbuf);
+    return GWEN_ERROR_NOT_OPEN;
+  }
+
+  *pOutLen = GWEN_Buffer_GetUsedBytes(tbuf);
+  memcpy(pOutData, GWEN_Buffer_GetStart(tbuf), *pOutLen);
+
+  return GWEN_SUCCESS;
 }
 
+int GWENHYWFAR_CB
+LC_Crypt_TokenZka_ChangePin(GWEN_CRYPT_TOKEN *ct, int admin,
+			   uint32_t gid) {
+  LC_CT_ZKA *lct;
+  LC_CLIENT_RESULT res;
+
+  DBG_ERROR(LC_LOGDOMAIN, "LC_Crypt_TokenZka_ChangePin not implemented!");
+  assert(ct);
+  lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+  assert(lct);
+
+  //res=LC_Crypt_Token_ChangePin(ct, lct->card,
+  //		       GWEN_Crypt_PinType_Access,
+  //			       0, 0);
+
+  return GWEN_ERROR_NOT_IMPLEMENTED;
+}
 
 
 
@@ -909,6 +984,7 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
     /* read record */
     DBG_INFO(LC_LOGDOMAIN, "Reading entry %d", i);
     res=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
+    GWEN_Buffer_Rewind(mbuf);
     if (res!=LC_Client_ResultOk) {
       if (LC_Card_GetLastSW1(lct->card)==0x6a &&
           LC_Card_GetLastSW2(lct->card)==0x83) {
@@ -1059,6 +1135,7 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
       keyVer=GWEN_DB_GetIntValue(dbT, "keyVer", 0, 0);
       ef1=GWEN_DB_GetIntValue(dbT, "ef", 0, 0);
       ef2=GWEN_DB_GetIntValue(dbT, "ef2", 0, 0);
+      kid=GWEN_DB_GetIntValue(dbT, "recnum", 0, 0);
     }
 
     p=GWEN_DB_GetBinValue(dbKeyInfo, "keyData", 0, NULL, 0, &bs);
@@ -1072,7 +1149,6 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
       }
     }
 
-    kid=(keyNum<<8) | keyVer;
     ki=GWEN_Crypt_Token_KeyInfo_new(kid, GWEN_Crypt_CryptAlgoId_Rsa, modLen);
     GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki, keyNum);
     GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, keyVer);
@@ -1084,10 +1160,13 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANDECIPHER |
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANSIGN |
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANVERIFY);
+
+    dbKeyInfo=GWEN_DB_GetGroup(dbKey, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "keyInfo");
     if (GWEN_DB_VariableExists(dbKeyInfo, "sigCounter")) {
       int j;
 
       j=GWEN_DB_GetIntValue(dbKeyInfo, "sigCounter", 0, 65535);
+      j=(~j) & 0xffff;      // negate Usage Counter UC to get Signature ID
       GWEN_Crypt_Token_KeyInfo_SetSignCounter(ki, j);
       GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASSIGNCOUNTER);
     }
@@ -1108,6 +1187,9 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys) {
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
   int i;
+  int recnum;
+
+  recnum=1;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
@@ -1175,12 +1257,13 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys) {
       return GWEN_ERROR_BAD_DATA;
     }
 
+    GWEN_DB_SetIntValue(dbRecord, GWEN_DB_FLAGS_OVERWRITE_VARS, "keyRef/privateKey/recnum", recnum++);
+
     GWEN_DB_AddGroup(dbKeys, dbRecord);
 
     GWEN_Buffer_Reset(mbuf);
   }
   GWEN_Buffer_free(mbuf);
-
 
   return 0;
 }
@@ -1246,7 +1329,7 @@ int LC_TokenZkaCard__ReadKeys(GWEN_CRYPT_TOKEN *ct) {
 GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN *ct, uint32_t id) {
   LC_CT_ZKA *lct;
   int i;
-
+ 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
   assert(lct);
@@ -1408,7 +1491,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         if (ki)
           GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
       }
-
+      
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "commData");
       if (dbT) {
         s=GWEN_DB_GetCharValue(dbT, "address", 0, NULL);
@@ -1452,8 +1535,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         if (ki)
           GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
 
-
-
+	
 	/* update auth key info */
         s=GWEN_DB_GetCharValue(dbT, "authKeyNum", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
@@ -1466,6 +1548,16 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
           GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+
+	// fields in EF_NOTEPAD contain invalid data (keynum=9, keyver=1)
+	// Override existing mechanism:
+	// 1) Signing     in RDH9 always with key #2 in EK_KEYD;
+	// 2) Deciphering in RDH9 always with key #3 in EK_KEYD;
+	GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 2);
+	GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 3);
+
+	// ToDo: if signKeyNum == cryptKeyNum == authKeyNum, then this value denotes the
+	//       RDH version of the card. Use this info to set card RDH version automatically
       }
 
       lct->contexts[cnt]=ctx;

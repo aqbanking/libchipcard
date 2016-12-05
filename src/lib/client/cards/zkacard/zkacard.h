@@ -51,6 +51,7 @@ CHIPCARD_API const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card, int pi
  *
  */
 /*@{*/
+
 CHIPCARD_API
 LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
                                  int globalKey,
@@ -59,6 +60,16 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
                                  const uint8_t *ptr,
                                  unsigned int size,
                                  GWEN_BUFFER *sigBuf);
+
+
+CHIPCARD_API
+LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
+				     int globalKey,
+				     int keyId,
+				     int keyVersion,
+				     const uint8_t *ptr,
+				     unsigned int size,
+				     GWEN_BUFFER *outBuf);
 
 /*@}*/
 

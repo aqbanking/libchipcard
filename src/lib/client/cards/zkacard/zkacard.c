@@ -141,7 +141,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
 
-  DBG_INFO(LC_LOGDOMAIN, "Opening ZkaCard card");
+  DBG_INFO(LC_LOGDOMAIN, "Re-Opening ZkaCard card");
 
   assert(card);
   xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
@@ -254,7 +254,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
     return res;
   }
 
-  /* read EG_SSD */
+  /* read EF_SSD */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_SSD...");
   res=LC_Card_SelectEf(card, "EF_SSD");
   if (res!=LC_Client_ResultOk) {
@@ -385,54 +385,6 @@ GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card) {
 
 
 
-
-LC_CLIENT_RESULT LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion) {
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
-  GWEN_BUFFER *dbuf;
-
-  assert(card);
-
-  LC_Card_SetLastResult(card, 0, 0, 0, 0);
-
-  dbuf=GWEN_Buffer_new(0, 32, 0, 1);
-  GWEN_Buffer_AppendByte(dbuf, 0x84);
-  GWEN_Buffer_AppendByte(dbuf, 3);
-  GWEN_Buffer_AppendByte(dbuf, globalKey?0x00:0x80);
-  GWEN_Buffer_AppendByte(dbuf, keyId);
-  GWEN_Buffer_AppendByte(dbuf, (keyVersion>=0)?keyVersion:0xff);
-
-  GWEN_Buffer_AppendByte(dbuf, 0x89);
-  GWEN_Buffer_AppendByte(dbuf, 3);
-  GWEN_Buffer_AppendByte(dbuf, 23);
-  GWEN_Buffer_AppendByte(dbuf, 53);
-  GWEN_Buffer_AppendByte(dbuf, 30);
-
-  dbReq=GWEN_DB_Group_new("request");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "template", 0x41);
-  GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
-                      "data",
-                      GWEN_Buffer_GetStart(dbuf),
-                      GWEN_Buffer_GetUsedBytes(dbuf));
-  GWEN_Buffer_free(dbuf);
-
-  dbResp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, "IsoManageSE", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here");
-    GWEN_DB_Group_free(dbReq);
-    GWEN_DB_Group_free(dbResp);
-    return res;
-  }
-  GWEN_DB_Group_free(dbReq);
-  GWEN_DB_Group_free(dbResp);
-  return LC_Client_ResultOk;
-}
-
-
-
 LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
                                  int globalKey,
                                  int keyId,
@@ -442,19 +394,142 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
                                  GWEN_BUFFER *sigBuf) {
   LC_CLIENT_RESULT res;
   int combinedKid;
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+
 
   assert(card);
+
+  uint8_t *jptr;
+  jptr= (uint8_t *) ptr;
 
   combinedKid=keyId;
   if (globalKey)
     combinedKid|=0x80;
-  res=LC_ZkaCard__PrepareSign(card, globalKey, keyId, keyVersion);
+
+  res=LC_Card_IsoManageSe(card, 0xA4, combinedKid, 0, 0x46);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  res=LC_Card_IsoInternalAuth(card, combinedKid, ptr, size, sigBuf);
+  dbReq=GWEN_DB_Group_new("request");
+  dbResp=GWEN_DB_Group_new("response");
+
+  if (ptr && size) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                        "data", ptr, size);
+  }
+
+  res=LC_Card_ExecCommand(card, "IsoInternalAuth", dbReq, dbResp);
+
+  //GWEN_DB_Dump(dbReq, 2);
+  //GWEN_DB_Dump(dbResp, 2);
+
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    return res;
+  }
+
+
+  if (sigBuf) {
+    unsigned int bs;
+    const void *p;
+
+    p=GWEN_DB_GetBinValue(dbResp,
+                          "response/data",
+                          0,
+                          0, 0,
+                          &bs);
+    if (p && bs) {
+      GWEN_Buffer_AppendBytes(sigBuf, p, bs);
+    }
+    else {
+      DBG_WARN(LC_LOGDOMAIN, "No data in response");
+    }
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
+				     int globalKey,
+				     int keyId,
+				     int keyVersion,
+				     const uint8_t *ptr,
+				     unsigned int size,
+				     GWEN_BUFFER *outBuf) {
+  LC_CLIENT_RESULT res;
+  int combinedKid;
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+
+
+  assert(card);
+
+  uint8_t *jptr;
+  jptr= (uint8_t *) ptr;
+
+  combinedKid=keyId;
+  if (globalKey)
+    combinedKid|=0x80;
+
+  res=LC_Card_IsoManageSe(card, 0xB8, combinedKid, 0, 0x1a);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here");
+    return res;
+  }
+
+  dbReq=GWEN_DB_Group_new("request");
+  dbResp=GWEN_DB_Group_new("response");
+
+  if (ptr && size) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+			"data", ptr, size);
+  }
+
+  res=LC_Card_ExecCommand(card, "IsoDecipher", dbReq, dbResp);
+
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    return res;
+  }
+
+
+  if (outBuf) {
+    unsigned int bs;
+    const void *p;
+
+    p=GWEN_DB_GetBinValue(dbResp,
+                          "response/data",
+                          0,
+                          0, 0,
+                          &bs);
+    if (p && bs) {
+      GWEN_Buffer_AppendBytes(outBuf, p, bs);
+    }
+    else {
+      DBG_WARN(LC_LOGDOMAIN, "No data in response");
+    }
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
@@ -585,8 +660,8 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
       LC_PININFO *pi;
       int i;
 
-      DBG_ERROR(GWEN_LOGDOMAIN, "PWDD entry %d:", rec);
-      GWEN_DB_Dump(dbRecord, 2);
+      DBG_INFO(GWEN_LOGDOMAIN, "PWDD entry %d:", rec);
+      //GWEN_DB_Dump(dbRecord, 2);
 
       GWEN_Buffer_free(mbuf);
       i=GWEN_DB_GetIntValue(dbRecord, "entry/pwdRecord", 0, -1);
@@ -651,10 +726,10 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
 	if (1) {
 	  GWEN_DB_NODE *dbD;
 
-	  DBG_ERROR(LC_LOGDOMAIN, "Got this pininfo:");
+	  DBG_INFO(LC_LOGDOMAIN, "Got this pininfo:");
 	  dbD=GWEN_DB_Group_new("debug");
 	  LC_PinInfo_toDb(pi, dbD);
-	  GWEN_DB_Dump(dbD, 2);
+	  //GWEN_DB_Dump(dbD, 2);
 	  GWEN_DB_Group_free(dbD);
 	}
 #endif

@@ -594,7 +594,7 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
     abort();
   }
 
-  dataBuffer=GWEN_Buffer_new(0, 256, 0, 1);
+  dataBuffer=GWEN_Buffer_new(0, 2048, 0, 1);
   dataNode=GWEN_XMLNode_FindNode(sendNode,
                                  GWEN_XMLNodeTypeTag, "data");
   if (dataNode) {
@@ -622,7 +622,14 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
 
   i=GWEN_Buffer_GetUsedBytes(dataBuffer);
   if (i) {
-    GWEN_Buffer_AppendByte(gbuf, (unsigned char)i);
+    if (i>255) {
+      // hm: add long length coding if data > 255 bytes
+      int ih=i>>8;
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char) 0 );
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char) ih );
+    }
+    GWEN_Buffer_AppendByte(gbuf, (unsigned char) (i&0xFF) );
+
     GWEN_Buffer_AppendBuffer(gbuf, dataBuffer);
   }
   GWEN_Buffer_free(dataBuffer);
@@ -642,7 +649,10 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
   }
   if (j>=0)
     GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
-
+    // long addressing mode
+    if (i>255) {
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
+    }
   return 0;
 }
 
