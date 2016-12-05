@@ -51,6 +51,7 @@ stamp-h1
 i18nsources
 
 libchipcard5/*
+libchipcard6/*
 *.rc
 src/lib/chipcard.h
 src/lib/version.h
@@ -84,3 +85,4 @@ src/drivers/ifd/ifd.xml
 src/drivers/skeleton/SKEL1.xml
 src/services/kvks/kvks.xml
 core
+patches/
