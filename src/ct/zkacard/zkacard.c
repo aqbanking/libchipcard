@@ -934,7 +934,7 @@ int GWENHYWFAR_CB
 LC_Crypt_TokenZka_ChangePin(GWEN_CRYPT_TOKEN *ct, int admin,
 			   uint32_t gid) {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+//  LC_CLIENT_RESULT res;
 
   DBG_ERROR(LC_LOGDOMAIN, "LC_Crypt_TokenZka_ChangePin not implemented!");
   assert(ct);
@@ -1120,21 +1120,21 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
   if (dbKeyInfo) {
     GWEN_DB_NODE *dbT;
     const uint8_t *p;
-    uint32_t kid;
+    uint32_t kid=0;
     uint32_t bs;
     int keyNum=0;
     int keyVer=0;
     int modLen=256;
     int expLen=0;
-    uint32_t ef1=0;
-    uint32_t ef2=0;
+    /* uint32_t ef1=0; */
+    /* uint32_t ef2=0; */
 
     dbT=GWEN_DB_GetGroup(dbKey, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "keyRef/privateKey");
     if (dbT) {
       keyNum=GWEN_DB_GetIntValue(dbT, "keyNum", 0, 0);
       keyVer=GWEN_DB_GetIntValue(dbT, "keyVer", 0, 0);
-      ef1=GWEN_DB_GetIntValue(dbT, "ef", 0, 0);
-      ef2=GWEN_DB_GetIntValue(dbT, "ef2", 0, 0);
+      /* ef1=GWEN_DB_GetIntValue(dbT, "ef", 0, 0); */
+      /* ef2=GWEN_DB_GetIntValue(dbT, "ef2", 0, 0); */
       kid=GWEN_DB_GetIntValue(dbT, "recnum", 0, 0);
     }
 
