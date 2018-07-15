@@ -654,6 +654,7 @@ AC_CONFIG_FILES([Makefile
                  src/tools/chipcard-tool/Makefile
                  src/tools/kvkcard/Makefile
                  src/tools/cardcommander/Makefile
+                 src/tools/zkacard/Makefile
                  tutorials/Makefile
                  m4/Makefile
                 ])
