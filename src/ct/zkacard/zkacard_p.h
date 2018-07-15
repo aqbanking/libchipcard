@@ -192,7 +192,12 @@ static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN
 static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(GWEN_CRYPT_TOKEN *ct, int num, int ver);
 
 static int LC_Crypt_TokenZka__AddKeyInfo(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_KEYINFO *ki);
-
+static int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
+                                                  GWEN_CRYPT_TOKEN_KEYINFO *ki,
+                                                  const int modLen,
+                                                  const int expLen);
+static int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct,
+                                        GWEN_CRYPT_TOKEN_KEYINFO *ki);
 
 #endif
 

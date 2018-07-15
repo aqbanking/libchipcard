@@ -34,6 +34,9 @@
         <atr>
 	  3b ff 18 00 ff 81 31 fe 45 65 63 0d 0c 76 01 56 00 0d 92 94 15 00 07 30
         </atr>
+         <atr>
+          3b ff 96 00 ff 81 31 fe 45 65 63 0d 11 78 01 56 00 1f 00 00 73 21 07 60 82  
+        </atr>
       </atrs>
     </cardinfo>
     
@@ -126,6 +129,26 @@
           </responses>
 	</command>
 
+      
+      <command name="SeccosSearchRecord" >
+        <send>
+          <APDU lr="0" >
+            <ELEM type="word">0x00a2</ELEM>
+            <ELEM name="recNum" type="byte" />
+            <ELEM name="p2" type="byte" />
+          </APDU>
+        </send>
+       <results>
+         <result sw1="0x62" sw2="0x82" type="warning" >
+           Search Pattern not found
+         </result>
+       </results>
+        <responses>
+          <response type="success">
+            <ELEM name="data" type="bytes" />
+          </response>
+        </responses>
+      </command>
  
     </commands>
 

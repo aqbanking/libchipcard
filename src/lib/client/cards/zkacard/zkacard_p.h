@@ -28,11 +28,13 @@ struct LC_ZKACARD {
 
   GWEN_BUFFER *bin_ef_gd_0;
   GWEN_BUFFER *bin_ef_ssd;
+  GWEN_DB_NODE *db_ef_ssd;
 
   int len_modus_sk_ch_ds;
   int len_modus_sk_ch_aut;
   int len_modus_sk_ch_ke;
   int min_len_csa_password;
+  int key_flag;
 
   LC_PININFO_LIST *pinInfoList;
 };
@@ -52,7 +54,7 @@ static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFE
 
 
 static int LC_ZkaCard__ReadPwdd(LC_CARD *card);
-
+static LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card);
 
 #endif
 

@@ -272,6 +272,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card) {
   }
   xc->bin_ef_ssd=mbuf;
 
+  LC_ZkaCard__ParseDfSigSSD(card);
 
 
   return LC_Client_ResultOk;
@@ -373,6 +374,18 @@ GWEN_DB_NODE *LC_ZkaCard_GetCardDataAsDb(const LC_CARD *card) {
 
 
 
+GWEN_DB_NODE *LC_ZkaCard_GetDfSigSsdDataAsDb(const LC_CARD *card) {
+  LC_ZKACARD *xc;
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+
+  return xc->db_ef_ssd;
+}
+
+
+
 GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card) {
   LC_ZKACARD *xc;
 
@@ -382,6 +395,7 @@ GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card) {
 
   return xc->bin_ef_id;
 }
+
 
 
 
@@ -739,6 +753,248 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card) {
   }
 
   return LC_Client_ResultOk;
+}
+
+LC_CLIENT_RESULT CHIPCARD_CB
+LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
+                       uint32_t flags,
+                       int recNum,
+                       const char *searchPattern,
+                       unsigned int searchPatternSize,
+                       GWEN_BUFFER *buf){
+  GWEN_DB_NODE *dbReq;
+  GWEN_DB_NODE *dbResp;
+  LC_CLIENT_RESULT res;
+  unsigned int bs;
+  const void *p;
+  unsigned char p2;
+
+  p2=(flags & LC_CARD_ISO_FLAGS_EFID_MASK)<<3;
+  if ((flags & LC_CARD_ISO_FLAGS_RECSEL_MASK)!=
+      LC_CARD_ISO_FLAGS_RECSEL_GIVEN) {
+    DBG_ERROR(LC_LOGDOMAIN,
+              "Invalid flags %u"
+          " (only RECSEL_GIVEN is allowed)", flags)
+      return LC_Client_ResultInvalid;
+  }
+  p2|=0x04;
+
+  dbReq=GWEN_DB_Group_new("request");
+  dbResp=GWEN_DB_Group_new("response");
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "recNum", recNum);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                      "p2", p2);
+  if (searchPattern && searchPatternSize) {
+    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
+                        "data", searchPattern, searchPatternSize);
+  }
+  res=LC_Card_ExecCommand(card, "SeccosSearchRecord", dbReq, dbResp);
+  if (res!=LC_Client_ResultOk) {
+    GWEN_DB_Group_free(dbReq);
+    GWEN_DB_Group_free(dbResp);
+    return res;
+  }
+
+  /* successful */
+  if (buf) {
+    p=GWEN_DB_GetBinValue(dbResp,
+                          "response/data",
+                          0,
+                          0, 0,
+                          &bs);
+    if (p && bs) {
+      GWEN_Buffer_AppendBytes(buf, p, bs);
+    }
+    else {
+      DBG_WARN(LC_LOGDOMAIN, "No data in response");
+    }
+  }
+
+  GWEN_DB_Group_free(dbResp);
+  GWEN_DB_Group_free(dbReq);
+  return res;
+}
+
+static void __hex2char(char byte, char* character)
+{
+    uint8_t nibbles[2];
+    int i;
+    nibbles[0]=(byte>>4) &0x0f;
+    nibbles[1]=byte & 0x0f;
+
+    for ( i = 0 ; i < 2 ; i++ )
+    {
+        switch (nibbles[i])
+        {
+        case 0:
+            character[i]='0';
+            break;
+        case 1:
+            character[i]='1';
+            break;
+        case 2:
+            character[i]='2';
+            break;
+        case 3:
+            character[i]='3';
+            break;
+        case 4:
+            character[i]='4';
+            break;
+        case 5:
+            character[i]='5';
+            break;
+        case 6:
+            character[i]='6';
+            break;
+        case 7:
+            character[i]='7';
+            break;
+        case 8:
+            character[i]='8';
+            break;
+        case 9:
+            character[i]='9';
+            break;
+        case 10:
+            character[i]='A';
+            break;
+        case 11:
+            character[i]='B';
+            break;
+        case 12:
+            character[i]='C';
+            break;
+        case 13:
+            character[i]='D';
+            break;
+        case 14:
+            character[i]='E';
+            break;
+        case 15:
+            character[i]='F';
+            break;
+        }
+    }
+}
+
+#define BER_TLV_TAG_FIRST_BYTE_BYTE_FOLLOWS 0b00010000
+#define BER_TLV_TAG_SECOND_BYTE_BYTE_FOLLOWS 0b10000000
+#define BER_TLV_TAG_IS_CONSTRUCTED 0b00100000
+static int __parse_ber_tlv(GWEN_DB_NODE *dbRecord, GWEN_BUFFER *mbuf, int len)
+{
+
+    int tlv_len=0;
+    unsigned int tag_len;
+    unsigned int data_len;
+    char byte;
+    int isConstructed;
+    int anotherByte;
+    char tag[7]="\0\0\0\0\0\0\0";
+    GWEN_DB_NODE *dbTLV;
+
+    /* get first byte */
+    while (tlv_len < len)
+    {
+
+        byte = GWEN_Buffer_ReadByte(mbuf);
+        isConstructed = byte & BER_TLV_TAG_IS_CONSTRUCTED;
+        tlv_len++;
+        __hex2char(byte,&tag[0]);
+        anotherByte=byte & BER_TLV_TAG_FIRST_BYTE_BYTE_FOLLOWS;
+        if (anotherByte)
+        {
+            byte = GWEN_Buffer_ReadByte(mbuf);
+            tlv_len++;
+            __hex2char(byte,&tag[2]);
+            anotherByte= byte > 127;
+            if (anotherByte)
+            {
+                byte = GWEN_Buffer_ReadByte(mbuf);
+                tlv_len++;
+                __hex2char(byte,&tag[4]);
+            }
+        }
+        dbTLV=GWEN_DB_Group_new(tag);
+        byte = GWEN_Buffer_ReadByte(mbuf);
+        tlv_len++;
+        if ( byte == 0x81)
+        {
+            data_len=127;
+            byte = GWEN_Buffer_ReadByte(mbuf);
+            tlv_len++;
+            if ( byte == 0x82 )
+            {
+                data_len=255;
+                byte = GWEN_Buffer_ReadByte(mbuf);
+                tlv_len++;
+                data_len+= (uint8_t) byte;
+            }
+            else
+            {
+                data_len+= (uint8_t) byte;
+            }
+
+        }
+        else
+        {
+            data_len= (uint8_t) byte;
+        }
+        GWEN_DB_SetIntValue(dbTLV,0,"length",data_len);
+        if (isConstructed)
+        {
+            tlv_len+=__parse_ber_tlv(dbTLV,mbuf,data_len);
+        }
+
+
+        else
+        {
+            char *buffer;
+
+            buffer=(char*)GWEN_Memory_malloc((data_len*2)+1);
+            assert(buffer);
+            GWEN_Text_ToHex(GWEN_Buffer_GetPosPointer(mbuf), data_len,
+                    buffer, data_len*2+1);
+            GWEN_DB_SetCharValue(dbTLV,0,"data",buffer);
+            GWEN_DB_SetBinValue(dbTLV,0,"dataBin",GWEN_Buffer_GetPosPointer(mbuf),data_len);
+            GWEN_Memory_dealloc(buffer);
+            GWEN_Buffer_IncrementPos(mbuf,data_len);
+            tlv_len+=data_len;
+
+        }
+        GWEN_DB_AddGroup(dbRecord,dbTLV);
+    }
+    assert(len==tlv_len);
+    return tlv_len;
+}
+
+LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
+{
+  LC_CLIENT_RESULT res= LC_Client_ResultOk;
+  LC_ZKACARD *xc;
+  GWEN_BUFFER *mbuf;
+  GWEN_DB_NODE *dbRecord;
+  int remLen;
+
+  DBG_INFO(LC_LOGDOMAIN, "Parsing ");
+
+  assert(card);
+  xc=GWEN_INHERIT_GETDATA(LC_CARD, LC_ZKACARD, card);
+  assert(xc);
+  GWEN_Buffer_Rewind(xc->bin_ef_ssd);
+  dbRecord=GWEN_DB_Group_new("SSD");
+  remLen=__parse_ber_tlv(dbRecord,xc->bin_ef_ssd,GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd));
+
+  if (remLen!=GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd))
+  {
+      DBG_WARN(LC_LOGDOMAIN, "tlv buffer not completely parsed!");
+  }
+
+  xc->db_ef_ssd=dbRecord;
+  /*GWEN_DB_Dump(dbRecord,4);
+  GWEN_DB_Group_free(dbRecord);*/
+  return res;
 }
 
 

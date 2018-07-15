@@ -22,6 +22,18 @@
         </ELEM>
       </format>
 
+    <format name="PublicKeyModulusAndExponent">
+      <ELEM name="KeyAndModulus" type="tlv">
+                <tlv id="0x81">
+                <ELEM name="modulus" type="bytes" minnum="1" maxnum="1" />
+            </tlv>
+            <tlv id="0x82">
+                <ELEM name="exponent" type="bytes" minnum="1" maxnum="1" />
+            </tlv> 
+            </ELEM>
+    </format>
+    
+
     </formats>
 
 
@@ -51,7 +63,7 @@
             </DESCR>
           </ELEM>
           <ELEM name="cardNumber" type="bcd" size="5" />
-          <ELEM name="checksum" type="byte" bcd="1" />
+          <ELEM name="checksum" type="byte" />
           <ELEM name="validUntil" type="bytes" size="2">
             <DESCR> YYMM (BSD)</DESCR>
           </ELEM>
@@ -292,8 +304,108 @@
               This file contains the modulus and the public
               exponent of the key pair PK.CH.AUT and SK.CH.AUT.
             </DESCR>
+            <FORMAT type="PublicKeyModulusAndExponent"/>
+          </ef>
+          
+          <ef name="EF_PK.CH.DS" sid="0x0e04" 
+              type="transparent"
+              size="0" >
+            <DESCR>
+              This file contains the modulus and the public
+              exponent of the key pair PK.CH.DS and SK.CH.DS.
+            </DESCR>
+            <FORMAT type="PublicKeyModulusAndExponent"/>
+          </ef>
+          
+          <ef name="EF_PK.CH.KE" sid="0x0e03" 
+              type="transparent"
+              size="0">
+            <DESCR>
+              This file contains the modulus and the public
+              exponent of the key pair PK.CH.KE and SK.CH.KE.
+            </DESCR>
+            <FORMAT type="PublicKeyModulusAndExponent"/>           
+          </ef>
+          
+          <ef name="EF_ZERT_REF_DS" sid="0x1c00" 
+              type="transparent"
+              size="0">
+             <DESCR>
+              This file contains the certificate reference for the certificate
+              C_X509.CH.DS
+            </DESCR>          
+          </ef>
+          
+          <ef name="EF_ZERT_REF_AUT" sid="0x1c50" 
+              type="transparent"
+              size="0">
+            <DESCR>
+              This file contains the certificate reference for the certificate
+              C_X509.CH.AUT
+            </DESCR>
+
           </ef>
 
+          <ef name="EF_ZERT_REF_KE" sid="0x1c20" 
+              type="transparent"
+              size="0">
+            <DESCR>
+              This file contains the certificate reference for the certificate
+              C_X509.CH.KE
+            </DESCR>
+          </ef>
+          
+          <ef name="EF_C_X509.CH.DS" sid="0xc000"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate C_X509.CH.DS
+            </DESCR>
+          </ef>
+
+          <ef name="EF_C_X509.CH.AUT" sid="0xc500"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate C_X509.CH.AUT
+            </DESCR>
+          </ef>
+
+          <ef name="EF_C_X509.CH.KE" sid="0xc200"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate C_X509.CH.KE
+            </DESCR>
+          </ef>
+          
+           <ef name="EF_C_X509.CA.CS-DS" sid="0xc608"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate of the certification authority that
+              has created C_X509.CH.DS
+            </DESCR>
+          </ef>
+
+          <ef name="EF_C_X509.CA.CS-AUT" sid="0xc708"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate of the certification authority that
+              has created C_X509.CH.AUT
+            </DESCR>
+          </ef>
+
+          <ef name="EF_C_X509.CA.CS-KE" sid="0xc709"
+              type="transparent"
+              size="0">
+           <DESCR>
+              This file contains the certificate of the certification authority that
+              has created C_X509.CH.KE
+            </DESCR>
+          </ef>
+          
         </files>  
       </df>
 
@@ -340,8 +452,8 @@
                           <tlv id="0xc4">
                             <ELEM name="keyNum"  type="ascii" size="3"/>
                             <ELEM name="keyVer"  type="ascii" size="3"/>
-                            <ELEM name="hashAlgo" type="byte" size="1"/>
-                            <ELEM name="keyHash" type="bytes" size="20"/>
+                            <ELEM name="hashAlgo" type="bytes" size="1"/>
+                            <ELEM name="keyHash" type="bytes" maxsize="32"/>
                           </tlv>
                           <tlv id="0xc5">
                             <ELEM name="keyStatus" type="byte" size="1">

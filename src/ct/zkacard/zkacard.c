@@ -1100,7 +1100,15 @@ int LC_TokenZkaCard__ParseKeyData(const uint8_t *p, uint32_t bs, int *pModLen, i
     bs--;
     tagLen=j;
     if (tagType>=0x82 && tagType<=0x84 && pExpLen)
+		    if ( tagType == 0x83 || tagType == 0x84 )
+		    {
+		        /* Exponent is 3 or F4, has length 3 */
+		        *pExpLen=3;
+		    }
+		    else
+		    {
       *pExpLen=tagLen;
+		    }
     else if (tagType==0x81 && pModLen)
       *pModLen=tagLen;
   } /* while */
@@ -1160,6 +1168,17 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey,
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANDECIPHER |
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANSIGN |
                                       GWEN_CRYPT_TOKEN_KEYFLAGS_CANVERIFY);
+
+		/* RDH7 block start */
+		/* :TODO: read modulus and exponent from the correct file within DF_SIG,
+		 * possibly also read the corresponding certificate
+		 */
+
+		LC_TokenZkaCard__ReadKeyModulusAndExponent(ct,ki,modLen,expLen);
+		LC_TokenZkaCard__ReadKeyCertificate(ct,ki);
+
+		/* RDH7 block end */
+
 
     dbKeyInfo=GWEN_DB_GetGroup(dbKey, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "keyInfo");
     if (GWEN_DB_VariableExists(dbKeyInfo, "sigCounter")) {
@@ -1268,7 +1287,296 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys) {
   return 0;
 }
 
+int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
+		                                          GWEN_CRYPT_TOKEN_KEYINFO *ki,
+												  const int modLen,
+												  const int expLen)
+{
+	LC_CT_ZKA *lct;
+	LC_CLIENT_RESULT res;
+	GWEN_BUFFER *mbuf;
+	GWEN_BUFFER *scratchBuf;
+	GWEN_DB_NODE *dbRecord;
+	int i;
+	int recnum;
+	uint8_t *modData;
+	uint8_t *expData;
+    int locModLen;
+    int locExpLen;
+    int keyNum;
+    uint8_t byte;
+	recnum=1;
+	char keyChar[4]="\0";
 
+	assert(ct);
+	lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+	assert(lct);
+
+	/* select MF */
+	DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
+	res=LC_Card_SelectMf(lct->card);
+	if (res!=LC_Client_ResultOk) {
+		DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+		return GWEN_ERROR_IO;
+	}
+
+	/* select DF_SIG */
+	DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
+	res=LC_Card_SelectDf(lct->card, "DF_SIG");
+	if (res!=LC_Client_ResultOk) {
+		DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+		return GWEN_ERROR_IO;
+	}
+	keyNum=GWEN_Crypt_Token_KeyInfo_GetKeyNumber(ki);
+	/* read EF_PK_CH.* */
+	switch (keyNum)
+	{
+	case 2:
+		DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PK.CH.AUT...");
+		res=LC_Card_SelectEf(lct->card, "EF_PK.CH.AUT");
+		sprintf(keyChar,"AUT");
+		break;
+	case 3:
+		DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PK.CH.KE...");
+		res=LC_Card_SelectEf(lct->card, "EF_PK.CH.KE");
+		sprintf(keyChar,"KE");
+		break;
+	case 4:
+		DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PK.CH.DS...");
+		res=LC_Card_SelectEf(lct->card, "EF_PK.CH.DS");
+		sprintf(keyChar,"DS");
+		break;
+	default:
+		res=LC_Client_ResultDontExecute;
+	}
+	if (res!=LC_Client_ResultOk) {
+		DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+		return GWEN_ERROR_IO;
+	}
+
+	/* read EF_KEYD */
+	mbuf=GWEN_Buffer_new(0, 256, 0, 1);
+
+	/* read record */
+	DBG_INFO(LC_LOGDOMAIN, "Reading record...");
+	res=LC_Card_ReadBinary(lct->card, 0, 32768, mbuf);
+	if (res!=LC_Client_ResultOk) {
+	    if (LC_Card_GetLastSW1(lct->card)==0x6a &&
+	            LC_Card_GetLastSW2(lct->card)==0x83) {
+	        DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
+
+	    }
+	    else {
+	        DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_KEYD (%d)", i, res);
+	        if (i>1)
+
+	        GWEN_Buffer_free(mbuf);
+	        return LC_Client_ResultIoError;
+	    }
+
+	    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+	    GWEN_Buffer_free(mbuf);
+	    return res;
+	}
+
+	/* parse record */
+	DBG_INFO(LC_LOGDOMAIN, "Parsing record...");
+	GWEN_Buffer_Rewind(mbuf);
+	dbRecord=GWEN_DB_Group_new("record");
+
+	/* Parse manually */
+	byte = GWEN_Buffer_ReadByte(mbuf);
+	if ( byte != 0x81)
+	{
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+	}
+	byte = GWEN_Buffer_ReadByte(mbuf);
+    if ( byte != 0x82)
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    locModLen = byte << 8;
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    locModLen += byte;
+    if ( locModLen != modLen)
+    {
+        DBG_ERROR(LC_LOGDOMAIN, "modulus length of EF_KEYD info #%d and EF_SK.CH.%s do not match",keyNum,keyChar)
+        return GWEN_ERROR_BAD_DATA;
+    }
+    scratchBuf=GWEN_Buffer_new(0, modLen, 0, 1);
+    for ( i = 0 ; i < modLen ; i++)
+    {
+        GWEN_Buffer_AppendByte(scratchBuf,GWEN_Buffer_ReadByte(mbuf));
+    }
+    GWEN_DB_SetBinValue(dbRecord,0,"modulus",GWEN_Buffer_GetStart(scratchBuf),modLen);
+    GWEN_Crypt_Token_KeyInfo_SetModulus(ki,GWEN_Buffer_GetStart(scratchBuf),modLen);
+    GWEN_Crypt_Token_KeyInfo_AddFlags(ki,GWEN_CRYPT_TOKEN_KEYFLAGS_HASMODULUS);
+    GWEN_Buffer_Reset(scratchBuf);
+    byte= GWEN_Buffer_ReadByte(mbuf);
+    if ( byte != 0x82)
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    if ( byte != 0x82)
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    locExpLen = byte << 8;
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    locExpLen += byte;
+
+    if ( locExpLen != expLen)
+    {
+        DBG_ERROR(LC_LOGDOMAIN, "exponent length of EF_KEYD info #%d and EF_SK.CH.%s do not match",keyNum,keyChar)
+        return GWEN_ERROR_BAD_DATA;
+    }
+
+    for ( i = 0 ; i < expLen ; i++)
+    {
+        GWEN_Buffer_AppendByte(scratchBuf,GWEN_Buffer_ReadByte(mbuf));
+    }
+    GWEN_DB_SetBinValue(dbRecord,0,"exponent",GWEN_Buffer_GetStart(scratchBuf),expLen);
+    GWEN_Crypt_Token_KeyInfo_SetExponent(ki,GWEN_Buffer_GetStart(scratchBuf),expLen);
+    GWEN_Crypt_Token_KeyInfo_AddFlags(ki,GWEN_CRYPT_TOKEN_KEYFLAGS_HASEXPONENT);
+	/*GWEN_DB_Dump(dbRecord,2);*/
+	GWEN_Buffer_free(mbuf);
+	GWEN_Buffer_free(scratchBuf);
+
+	return 0;
+}
+
+int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct,
+                                        GWEN_CRYPT_TOKEN_KEYINFO *ki)
+{
+    LC_CT_ZKA *lct;
+    LC_CLIENT_RESULT res;
+    GWEN_BUFFER *mbuf;
+    GWEN_BUFFER *scratchBuf;
+    GWEN_DB_NODE *dbSsd;
+    GWEN_DB_NODE *dbTemplate;
+    GWEN_DB_NODE *dbFileId;
+    int i;
+    int recnum;
+    uint8_t *modData;
+    uint8_t *expData;
+    int locModLen;
+    int locExpLen;
+    int keyNum;
+    uint8_t byte;
+    recnum=1;
+    char keyChar[4]="\0";
+    const char *ssd_tag;
+    int sid;
+
+    assert(ct);
+    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+    assert(lct);
+
+    /* select MF */
+    DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
+    res=LC_Card_SelectMf(lct->card);
+    if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+
+    /* select DF_SIG */
+    DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
+    res=LC_Card_SelectDf(lct->card, "DF_SIG");
+    if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+    keyNum=GWEN_Crypt_Token_KeyInfo_GetKeyNumber(ki);
+    /* find correct certificate file from EF_SSD */
+    switch (keyNum)
+    {
+    case 2:
+        ssd_tag="A1\0";
+        sprintf(keyChar,"AUT");
+        break;
+    case 3:
+        ssd_tag="AA\0";
+        sprintf(keyChar,"KE");
+        break;
+    case 4:
+        ssd_tag="A4\0";
+        sprintf(keyChar,"DS");
+        break;
+    default:
+        res=LC_Client_ResultDontExecute;
+        return res;
+    }
+
+    dbSsd = LC_ZkaCard_GetDfSigSsdDataAsDb(lct->card);
+
+    dbTemplate = GWEN_DB_FindFirstGroup(dbSsd,ssd_tag);
+    dbFileId=GWEN_DB_FindFirstGroup(dbTemplate,"85");
+
+    {
+        unsigned int bs;
+        const char *p;
+        sid=0;
+
+
+        p=(char*)GWEN_DB_GetBinValue(dbFileId,
+                "dataBin",
+                0,
+                0, 0,
+                &bs);
+
+
+        if (p && bs) {
+            assert(bs == 2);
+            sid=(uint16_t)(p[0]<<8)+(uint16_t)p[1];
+        }
+        else {
+            DBG_WARN(LC_LOGDOMAIN, "No data in response");
+        }
+    }
+
+    /* open corresponding certificate EF */
+    res = LC_Card_SelectEfById(lct->card,sid);
+    if (res!=LC_Client_ResultOk) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        return GWEN_ERROR_IO;
+    }
+    /* read certificate EF */
+    mbuf=GWEN_Buffer_new(0, 4096, 0, 1);
+
+    /* read record */
+    DBG_INFO(LC_LOGDOMAIN, "Reading record...");
+    res=LC_Card_ReadBinary(lct->card, 0, 32768, mbuf);
+    if (res!=LC_Client_ResultOk) {
+#if 0
+        if (LC_Card_GetLastSW1(lct->card)==0x6a &&
+                LC_Card_GetLastSW2(lct->card)==0x83) {
+            DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
+
+        }
+        else {
+            DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_KEYD (%d)", i, res);
+            if (i>1)
+
+            GWEN_Buffer_free(mbuf);
+            return LC_Client_ResultIoError;
+        }
+#endif
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+        GWEN_Buffer_free(mbuf);
+        return res;
+    }
+    GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),GWEN_Buffer_GetUsedBytes(mbuf));
+    GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
+    return 0;
+}
 
 int LC_TokenZkaCard__ReadKeys(GWEN_CRYPT_TOKEN *ct) {
   LC_CT_ZKA *lct;
@@ -1460,15 +1768,31 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
       const char *s;
       GWEN_CRYPT_TOKEN_KEYINFO *ki;
       int j;
+			int version;
       int keyNum=-1;
       int keyVer=-1;
+			int numKeys=0;
+			int signKeyNum=-1;
+			int signKeyVer=-1;
+			int cryptKeyVer=-1;
+			int cryptKeyNum=-1;
+			int authKeyNum=-1;
+			int authKeyVer=-1;
 
       ctx=GWEN_Crypt_Token_Context_new();
       GWEN_Crypt_Token_Context_SetId(ctx, cnt+1);
 
+			/* get version number of the entry */
+			s=GWEN_DB_GetCharValue(dbCtx, "version", 0, NULL);
+			if (s && 1==sscanf(s, "%d", &j))
+				version=j;
+
       /* read institute info */
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "institute");
       if (dbT) {
+				uint32_t hashAlgo=0;
+				int      keyStatus=0;
+
         s=GWEN_DB_GetCharValue(dbT, "bankName", 0, NULL);
         if (s)
           GWEN_Crypt_Token_Context_SetPeerName(ctx, s);
@@ -1479,6 +1803,10 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         }
 
 	/* update sign key info */
+				/* not sure this is correct, depending on which case the key hash could
+				 * be either for the sign key or the crypt key, anyway these fields describe which
+				 * key the hash belongs to, setting the sign key to it look anyways not correct */
+
         s=GWEN_DB_GetCharValue(dbT, "keyNum", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
           keyNum=j;
@@ -1487,11 +1815,97 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
         if (s && 1==sscanf(s, "%d", &j))
           keyVer=j;
 
+				GWEN_Crypt_Token_Context_SetKeyStatus(ctx,GWEN_DB_GetIntValue(dbT, "keyStatus", 0 , 0));
+#if 0
+				/* not correct, could also be the crypt key if the bank does not sign its messages */
+
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
           GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+#endif
+
+/**** RDH7 Block Start******/
+				if ( keyNum != -1 && keyVer != -1 )
+				{
+					GWEN_Crypt_Token_Context_SetKeyHashNum(ctx,keyNum);
+					GWEN_Crypt_Token_Context_SetKeyHashVer(ctx,keyVer);
+				}
+
+				{
+					const void *b;
+					uint32_t binDataLen;
+
+					b=GWEN_DB_GetBinValue(dbT, "hashAlgo", 0, NULL,0,&binDataLen);
+					if (b)
+					{
+						char* c = (char*) b;
+
+						switch (c[0]) {
+						case 0x02:
+							hashAlgo=GWEN_Crypt_HashAlgoId_Rmd160;
+							break;
+						case 0x03:
+							hashAlgo=GWEN_Crypt_HashAlgoId_Sha256;
+							break;
+						default:
+							DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+							GWEN_DB_Group_free(dbNotePad);
+							return GWEN_ERROR_BAD_DATA;
+
+						}
+						GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,hashAlgo);
+
+					}
+
+					b=GWEN_DB_GetBinValue(dbT, "keyHash", 0, NULL,0,&binDataLen);
+					if (b)
+					{
+						char* c = (char*) b;
+						char hash[33];
+						switch ( version )
+						{
+						case 1:
+							assert(hashAlgo==GWEN_Crypt_HashAlgoId_Rmd160);
+							assert(binDataLen==20);
+							/* 20 byte Hashwert */
+							memcpy(hash,c,20*sizeof(char));
+							hash[21]='\0';
+
+							break;
+						case 2:
+							assert(binDataLen==32);
+							if (hashAlgo==GWEN_Crypt_HashAlgoId_Rmd160)
+							{
+								/*12bytes 00 20 bytes Hashwert*/
+								memcpy(hash,c+12,20*sizeof(char));
+								hash[21]='\0';
+							}
+							else if ( hashAlgo==GWEN_Crypt_HashAlgoId_Sha256)
+							{
+								memcpy(hash,c,32*sizeof(char));
+								hash[33]='\0';
+
+							}
+							else
+							{
+								DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+								GWEN_DB_Group_free(dbNotePad);
+								return GWEN_ERROR_BAD_DATA;
+							}
+							break;
+						default:
+							DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+							GWEN_DB_Group_free(dbNotePad);
+							return GWEN_ERROR_BAD_DATA;
       }
+						GWEN_Crypt_Token_Context_SetKeyHash(ctx,hash);
       
+					}
+				}
+/**** RDH7 Block End******/
+
+			}
+
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "commData");
       if (dbT) {
         s=GWEN_DB_GetCharValue(dbT, "address", 0, NULL);
@@ -1501,23 +1915,26 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "user");
       if (dbT) {
+
+			    int rdhVersion = -1;
+
         s=GWEN_DB_GetCharValue(dbT, "userId", 0, NULL);
         if (s)
           GWEN_Crypt_Token_Context_SetUserId(ctx, s);
-        s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
-        if (s)
-          GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
 
+
+				/**** RDH7 Block start******/
 	/* update user sign key info */
         s=GWEN_DB_GetCharValue(dbT, "signKeyNum", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyNum=j;
-
+				{
+					signKeyNum=j;
+					numKeys++;
+				}
 	s=GWEN_DB_GetCharValue(dbT, "signKeyVer", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyVer=j;
-
-        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
+					signKeyVer=j;
+                ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, signKeyNum, signKeyVer);
         if (ki)
           GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
 
@@ -1525,13 +1942,14 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 	/* update crypt key info */
         s=GWEN_DB_GetCharValue(dbT, "cryptKeyNum", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyNum=j;
-
+				{
+					cryptKeyNum=j;
+					numKeys++;
+				}
 	s=GWEN_DB_GetCharValue(dbT, "cryptKeyVer", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyVer=j;
-
-        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
+					cryptKeyVer=j;
+                ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, cryptKeyNum, cryptKeyVer);
         if (ki)
           GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
 
@@ -1539,27 +1957,152 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 	/* update auth key info */
         s=GWEN_DB_GetCharValue(dbT, "authKeyNum", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyNum=j;
-
+				{
+					authKeyNum=j;
+					numKeys++;
+				}
 	s=GWEN_DB_GetCharValue(dbT, "authKeyVer", 0, NULL);
         if (s && 1==sscanf(s, "%d", &j))
-          keyVer=j;
-
-        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
+					authKeyVer=j;
+                ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, authKeyNum, authKeyVer);
         if (ki)
           GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
 
-	// fields in EF_NOTEPAD contain invalid data (keynum=9, keyver=1)
+
+				// fields in EF_NOTEPAD contain data not directly related to the real key number (keynum=RHD version, keyver=1)
 	// Override existing mechanism:
 	// 1) Signing     in RDH9 always with key #2 in EK_KEYD;
 	// 2) Deciphering in RDH9 always with key #3 in EK_KEYD;
-	GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 2);
-	GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 3);
+				// GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 2);
+				// GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 3);
 
 	// ToDo: if signKeyNum == cryptKeyNum == authKeyNum, then this value denotes the
 	//       RDH version of the card. Use this info to set card RDH version automatically
-      }
 
+				if (numKeys >= 2)
+				{
+					/* check for identical keynums, identifies the RHD profile # */
+					if (signKeyNum == cryptKeyNum )
+					{
+						// 1) Signing     in RDH9 always with key #2 in EK_KEYD;
+						// 2) Deciphering in RDH9 always with key #3 in EK_KEYD;
+						DBG_INFO(LC_LOGDOMAIN, "RHD version %d", signKeyNum);
+						rdhVersion = signKeyNum;
+
+				        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
+				        if (ki)
+				        {
+				            GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+				            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,signKeyNum);
+				            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,signKeyVer);
+      }
+			            ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 3, 0);
+ 	                    if (ki)
+ 	                    {
+			                GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+                            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,cryptKeyNum);
+                            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,cryptKeyVer);
+ 	                    }
+ 	                    GWEN_Crypt_Token_Context_SetRdhVersion(ctx,signKeyNum);
+					}
+				}
+				if (numKeys==3)
+				{
+					/* check for identical keynums, identifies the RHD profile # */
+					if (signKeyNum==authKeyNum && signKeyNum==cryptKeyNum )
+					{
+                        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
+                        if (ki)
+                        {
+                            GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+                            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,authKeyNum);
+                            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,authKeyVer);
+                        }
+                        GWEN_Crypt_Token_Context_SetRdhVersion(ctx,signKeyNum);
+					}
+				}
+				if ( numKeys != 2 && numKeys != 3 )
+				{
+					/* error, we need two or three keys */
+					DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+					GWEN_DB_Group_free(dbNotePad);
+					return GWEN_ERROR_BAD_DATA;
+				}
+
+
+                s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
+                if (s)
+                {
+                    GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                }
+                else if ( rdhVersion >= 3 )
+                {
+                    /* CID is in EF_ID */
+                    LC_CT_ZKA *lct;
+                    LC_CLIENT_RESULT res;
+                    GWEN_DB_NODE *ef_id_db;
+
+                    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+                    assert(lct);
+#if 0
+                    ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
+                    if ( ef_id_db )
+                    {
+                        /* standard is very ambigous on this topic, try with the institute card number */
+                        s=GWEN_DB_GetCharValue(ef_id_db,"cardNumber", 0 , NULL);
+                        if (s)
+                        {
+                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                        }
+                    }
+#endif
+                    if ( rdhVersion == 7 )
+                    {
+                        GWEN_BUFFER *ef_id_bin;
+                        GWEN_BUFFER *cid_str;
+                        GWEN_DB_NODE *ef_id_db;
+                        char branchKeyChar[3]="\0\0\0";
+                        char checkSumChar[2]="\0\0";
+                        int           i_val;
+
+                        ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
+                        GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin));
+
+                        ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
+                        cid_str=GWEN_Buffer_new(NULL,20,0,0);
+                        i_val=GWEN_DB_GetIntValue(ef_id_db, "branchKey", 0, 0);
+                        sprintf(branchKeyChar,"%2d",i_val);
+                        GWEN_Buffer_AppendString(cid_str,branchKeyChar);
+                        s=GWEN_DB_GetCharValue(ef_id_db, "shortBankCode", 0, NULL);
+                        GWEN_Buffer_AppendString(cid_str,s);
+                        s=GWEN_DB_GetCharValue(ef_id_db, "cardNumber", 0, NULL);
+                        GWEN_Buffer_AppendString(cid_str,s);
+                        i_val=GWEN_DB_GetIntValue(ef_id_db, "checkSum", 0, 0);
+                        i_val>>=4; /* checksum is in the left nibble */
+                        sprintf(checkSumChar,"%1d",i_val);
+                        GWEN_Buffer_AppendString(cid_str,checkSumChar);
+                        GWEN_Crypt_Token_Context_SetSystemId(ctx, GWEN_Buffer_GetStart(cid_str));
+                        s=GWEN_DB_GetCharValue(dbT, "userId", 0, NULL);
+                        if (s)
+                        {
+                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                        }
+                        GWEN_Buffer_free(cid_str);
+
+                    }
+                    else
+                    {
+                        dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "user");
+                        s=GWEN_DB_GetCharValue(dbT, "userId", 0, NULL);
+                        if (s)
+                        {
+                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                            GWEN_Crypt_Token_Context_SetSystemId(ctx, s);
+                        }
+                    }
+                }
+			}
+			/**** RDH7 Block start******/
       lct->contexts[cnt]=ctx;
       cnt++;
     }

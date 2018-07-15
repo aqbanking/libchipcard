@@ -217,6 +217,17 @@ CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname);
 /*@}*/
 
+/**
+ * Select an elementary file below the currently selected DF (or MF).
+ * An EF can be thought of as a file in a filesystem.
+ * Libchipcard looks this EF up in the XML description files of the current
+ * card and application an creates the appropriate APDU to select the EF
+ * either by short or long id (as determined by the XML files).
+ */
+CHIPCARD_API
+LC_CLIENT_RESULT LC_Card_SelectEfById(LC_CARD *card, const int sid);
+/*@}*/
+
 
 /** @name XML Descriptions
  *
