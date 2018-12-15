@@ -391,10 +391,6 @@ LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl) {
   LONG rv;
 
   assert(cl);
-  if (LC_Client_InitCommon()) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error on init");
-    return LC_Client_ResultInternal;
-  }
 
   /* establish context */
   rv=SCardEstablishContext(SCARD_SCOPE_SYSTEM,    /* scope */
@@ -453,7 +449,6 @@ LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl) {
     return LC_Client_ResultIoError;
   }
 
-  LC_Client_FiniCommon();
   return LC_Client_ResultOk;
 }
 

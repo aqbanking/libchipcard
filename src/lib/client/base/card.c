@@ -169,6 +169,7 @@ void LC_Card_free(LC_CARD *cd){
         DBG_WARN(LC_LOGDOMAIN,
                  "Card to be deleted is still connected");
       }
+      free(cd->readerName);
       free(cd->cardType);
       free(cd->lastResult);
       free(cd->lastText);

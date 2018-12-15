@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
   cl=LC_Client_new("chipcard-tool", PROGRAM_VERSION);
   res=LC_Client_Init(cl);
   if (res!=LC_Client_ResultOk) {
-    fprintf(stderr, "ERROR: Could not initialize libchipcard3.\n");
+    fprintf(stderr, "ERROR: Could not initialize libchipcard.\n");
     LC_Client_free(cl);
     GWEN_DB_Group_free(db);
     return RETURNVALUE_SETUP;
@@ -266,6 +266,14 @@ int main(int argc, char **argv) {
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", s);
     rv=RETURNVALUE_PARAM;
+  }
+
+  res=LC_Client_Fini(cl);
+  if (res!=LC_Client_ResultOk) {
+    fprintf(stderr, "ERROR: Could not deinitialize libchipcard.\n");
+    LC_Client_free(cl);
+    GWEN_DB_Group_free(db);
+    return RETURNVALUE_SETUP;
   }
 
   LC_Client_free(cl);

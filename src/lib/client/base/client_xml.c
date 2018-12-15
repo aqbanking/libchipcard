@@ -218,6 +218,7 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
   }
 
   /* cleanup */
+  GWEN_Buffer_free(buf);
   GWEN_StringList_free(sl);
 
   /* done */
