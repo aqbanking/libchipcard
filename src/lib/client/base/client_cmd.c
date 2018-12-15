@@ -649,10 +649,10 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
   }
   if (j>=0)
     GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
-    // long addressing mode
-    if (i>255) {
+  // long addressing mode
+  if (i>255) {
       GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
-    }
+  }
   return 0;
 }
 
