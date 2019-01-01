@@ -17,6 +17,7 @@
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
+#include <gwenhywfar/tlv.h>
 #include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 #include <chipcard/chipcard.h>
@@ -984,7 +985,7 @@ LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
   assert(xc);
   GWEN_Buffer_Rewind(xc->bin_ef_ssd);
   dbRecord=GWEN_DB_Group_new("SSD");
-  remLen=__parse_ber_tlv(dbRecord,xc->bin_ef_ssd,GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd));
+  remLen=GWEN_TLV_Buffer_To_DB(dbRecord,xc->bin_ef_ssd,GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd));
 
   if (remLen!=GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd))
   {
