@@ -21,6 +21,7 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/ct_keyinfo.h>
+#include <gwenhywfar/gui.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -33,7 +34,7 @@ int getPublicKey(GWEN_CRYPT_TOKEN *ct,
                  char **argv)
 {
 
-    GWEN_DB_NODE *db;
+    GWEN_DB_NODE *db=NULL;
     int rv;
     int keyNumber;
     int j;
@@ -150,10 +151,16 @@ int getPublicKey(GWEN_CRYPT_TOKEN *ct,
       DBG_INFO(GWEN_LOGDOMAIN, "No key id");
   }
 
+
   if (keyInfo)
   {
-      GWEN_Crypt_Token_KeyInfo_Dump(keyInfo);
+      GWEN_DB_NODE *db_ki=GWEN_DB_Group_new("ki");
+      GWEN_Crypt_Token_KeyInfo_toDb(keyInfo,db_ki);
+      GWEN_DB_Dump(db_ki,4);
+      GWEN_DB_Group_free(db_ki);
   }
+
+
 
   return 0;
 

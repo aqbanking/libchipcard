@@ -609,7 +609,7 @@ LC_Crypt_TokenZka_GetKeyIdList(GWEN_CRYPT_TOKEN *ct,
     for (i=0; i<LC_CT_ZKA_NUM_KEY; i++) {
       if (lct->keyInfos[i]!=NULL) {
         if (cnt<*pCount)
-	  pIdList[cnt]=GWEN_Crypt_Token_KeyInfo_GetKeyId(lct->keyInfos[i]);
+	  pIdList[cnt]=GWEN_Crypt_Token_KeyInfo_GetId(lct->keyInfos[i]);
         else {
           DBG_ERROR(LC_LOGDOMAIN, "Id buffer too small (at %d)", cnt);
           return GWEN_ERROR_BUFFER_OVERFLOW;
@@ -1643,7 +1643,7 @@ GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN *ct, u
   assert(lct);
 
   for (i=0; i<LC_CT_ZKA_NUM_KEY; i++) {
-    if (lct->keyInfos[i]!=NULL && GWEN_Crypt_Token_KeyInfo_GetKeyId(lct->keyInfos[i])==id)
+    if (lct->keyInfos[i]!=NULL && GWEN_Crypt_Token_KeyInfo_GetId(lct->keyInfos[i])==id)
       return lct->keyInfos[i];
   }
 
@@ -1834,6 +1834,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 				{
 					const void *b;
 					uint32_t binDataLen;
+					uint32_t hashLen;
 
 					b=GWEN_DB_GetBinValue(dbT, "hashAlgo", 0, NULL,0,&binDataLen);
 					if (b)
@@ -1870,7 +1871,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 							/* 20 byte Hashwert */
 							memcpy(hash,c,20*sizeof(char));
 							hash[21]='\0';
-
+							hashLen=20;
 							break;
 						case 2:
 							assert(binDataLen==32);
@@ -1879,11 +1880,13 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 								/*12bytes 00 20 bytes Hashwert*/
 								memcpy(hash,c+12,20*sizeof(char));
 								hash[21]='\0';
+								hashLen=20;
 							}
 							else if ( hashAlgo==GWEN_Crypt_HashAlgoId_Sha256)
 							{
 								memcpy(hash,c,32*sizeof(char));
 								hash[33]='\0';
+								hashLen=32;
 
 							}
 							else
@@ -1898,7 +1901,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 							GWEN_DB_Group_free(dbNotePad);
 							return GWEN_ERROR_BAD_DATA;
       }
-						GWEN_Crypt_Token_Context_SetKeyHash(ctx,hash);
+						GWEN_Crypt_Token_Context_SetKeyHash(ctx,hash,hashLen);
       
 					}
 				}
@@ -1936,7 +1939,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 					signKeyVer=j;
                 ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, signKeyNum, signKeyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 
 	/* update crypt key info */
@@ -1951,7 +1954,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 					cryptKeyVer=j;
                 ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, cryptKeyNum, cryptKeyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 	
 	/* update auth key info */
@@ -1966,7 +1969,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 					authKeyVer=j;
                 ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, authKeyNum, authKeyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 
 				// fields in EF_NOTEPAD contain data not directly related to the real key number (keynum=RHD version, keyver=1)
@@ -1992,18 +1995,18 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 				        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
 				        if (ki)
 				        {
-				            GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+				            GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 				            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,signKeyNum);
 				            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,signKeyVer);
       }
 			            ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 3, 0);
  	                    if (ki)
  	                    {
-			                GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+			                GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
                             GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,cryptKeyNum);
                             GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,cryptKeyVer);
  	                    }
- 	                    GWEN_Crypt_Token_Context_SetRdhVersion(ctx,signKeyNum);
+ 	                    GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
 					}
 				}
 				if (numKeys==3)
@@ -2014,11 +2017,11 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
                         if (ki)
                         {
-                            GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+                            GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
                             GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,authKeyNum);
                             GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,authKeyVer);
                         }
-                        GWEN_Crypt_Token_Context_SetRdhVersion(ctx,signKeyNum);
+                        GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
 					}
 				}
 				if ( numKeys != 2 && numKeys != 3 )
@@ -2045,14 +2048,17 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                     lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
                     assert(lct);
 #if 0
-                    ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
-                    if ( ef_id_db )
+                    if ( rdhVersion != 7)
                     {
-                        /* standard is very ambigous on this topic, try with the institute card number */
-                        s=GWEN_DB_GetCharValue(ef_id_db,"cardNumber", 0 , NULL);
-                        if (s)
+                        ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
+                        if ( ef_id_db )
                         {
-                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                            /* standard is very ambigous on this topic, try with the institute card number */
+                            s=GWEN_DB_GetCharValue(ef_id_db,"cardNumber", 0 , NULL);
+                            if (s)
+                            {
+                                GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
+                            }
                         }
                     }
 #endif
