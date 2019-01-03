@@ -24,74 +24,74 @@
 
 
 const GWEN_ARGS prg_args[]={
-        {
-                GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-                GWEN_ArgsType_Char,            /* type */
-                "file",                       /* name */
-                0,                            /* minnum */
-                1,                            /* maxnum */
-                "f",                          /* short option */
-                "file",                       /* long option */
-                "File name",                  /* short description */
-                "File name. \n"
-                "This filename is used when reading or writing data such as public keys,\n"
-                "bank information etc."
-        },
-        {
-                GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-                GWEN_ArgsType_Char,            /* type */
-                "logtype",                    /* name */
-                0,                            /* minnum */
-                1,                            /* maxnum */
-                0,                            /* short option */
-                "logtype",                    /* long option */
-                "Set the logtype",            /* short description */
-                "Set the logtype (console, file)."
-        },
-        {
-                GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-                GWEN_ArgsType_Char,            /* type */
-                "loglevel",                   /* name */
-                0,                            /* minnum */
-                1,                            /* maxnum */
-                0,                            /* short option */
-                "loglevel",                   /* long option */
-                "Set the log level",          /* short description */
-                "Set the log level (info, notice, warning, error)."
-        },
-        {
-                GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-                GWEN_ArgsType_Char,            /* type */
-                "logfile",                    /* name */
-                0,                            /* minnum */
-                1,                            /* maxnum */
-                0,                            /* short option */
-                "logfile",                   /* long option */
-                "Set the log file",          /* short description */
-                "Set the log file (if log type is \"file\")."
-        },
-        {
-                0,                            /* flags */
-                GWEN_ArgsType_Int,             /* type */
-                "verbosity",                  /* name */
-                0,                            /* minnum */
-                10,                           /* maxnum */
-                "v",                          /* short option */
-                "verbous",                    /* long option */
-                "Increase the verbosity",     /* short description */
-                "Every occurrence of this option increases the verbosity."
-        },
-        {
-                GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-                GWEN_ArgsType_Int,             /* type */
-                "help",                       /* name */
-                0,                            /* minnum */
-                0,                            /* maxnum */
-                "h",                          /* short option */
-                "help",                       /* long option */
-                "Show help",                  /* short description */
-                "Shows this help."            /* long description */
-        }
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "file",                       /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "f",                          /* short option */
+    "file",                       /* long option */
+    "File name",                  /* short description */
+    "File name. \n"
+    "This filename is used when reading or writing data such as public keys,\n"
+    "bank information etc."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logtype",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logtype",                    /* long option */
+    "Set the logtype",            /* short description */
+    "Set the logtype (console, file)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "loglevel",                   /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "loglevel",                   /* long option */
+    "Set the log level",          /* short description */
+    "Set the log level (info, notice, warning, error)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logfile",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logfile",                   /* long option */
+    "Set the log file",          /* short description */
+    "Set the log file (if log type is \"file\")."
+  },
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "verbosity",                  /* name */
+    0,                            /* minnum */
+    10,                           /* maxnum */
+    "v",                          /* short option */
+    "verbous",                    /* long option */
+    "Increase the verbosity",     /* short description */
+    "Every occurrence of this option increases the verbosity."
+  },
+  {
+    GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "help",                       /* name */
+    0,                            /* minnum */
+    0,                            /* maxnum */
+    "h",                          /* short option */
+    "help",                       /* long option */
+    "Show help",                  /* short description */
+    "Shows this help."            /* long description */
+  }
 };
 
 
@@ -101,138 +101,138 @@ const GWEN_ARGS prg_args[]={
 
 
 int main(int argc, char **argv) {
-    int rv;
-    GWEN_DB_NODE *db;
-    const char *s;
-    const char *cmd;
-    GWEN_LOGGER_LOGTYPE logType;
-    GWEN_LOGGER_LEVEL logLevel;
-    GWEN_GUI *gui;
-    GWEN_PLUGIN_MANAGER *pm;
-    GWEN_PLUGIN *pl;
-    GWEN_CRYPT_TOKEN *ct;
+  int rv;
+  GWEN_DB_NODE *db;
+  const char *s;
+  const char *cmd;
+  GWEN_LOGGER_LOGTYPE logType;
+  GWEN_LOGGER_LEVEL logLevel;
+  GWEN_GUI *gui;
+  GWEN_PLUGIN_MANAGER *pm;
+  GWEN_PLUGIN *pl;
+  GWEN_CRYPT_TOKEN *ct;
 
-    gui=GWEN_Gui_CGui_new();
-    GWEN_Gui_SetGui(gui);
+  gui=GWEN_Gui_CGui_new();
+  GWEN_Gui_SetGui(gui);
 
-    db=GWEN_DB_Group_new("arguments");
-    rv=GWEN_Args_Check(argc, argv, 1,
-               GWEN_ARGS_MODE_ALLOW_FREEPARAM |
-               GWEN_ARGS_MODE_STOP_AT_FREEPARAM,
-               prg_args,
-               db);
-    if (rv==GWEN_ARGS_RESULT_HELP) {
-        GWEN_BUFFER *ubuf;
+  db=GWEN_DB_Group_new("arguments");
+  rv=GWEN_Args_Check(argc, argv, 1,
+		     GWEN_ARGS_MODE_ALLOW_FREEPARAM |
+		     GWEN_ARGS_MODE_STOP_AT_FREEPARAM,
+		     prg_args,
+		     db);
+  if (rv==GWEN_ARGS_RESULT_HELP) {
+    GWEN_BUFFER *ubuf;
 
-        ubuf=GWEN_Buffer_new(0, 1024, 0, 1);
-        GWEN_Buffer_AppendString(ubuf,
-                I18N("Usage: "));
-        GWEN_Buffer_AppendString(ubuf, argv[0]);
-        GWEN_Buffer_AppendString(ubuf,
-                I18N(" [GLOBAL OPTIONS] COMMAND"
-                        " [LOCAL OPTIONS]\n"));
-        if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
-            fprintf(stderr, "Could not generate help string.\n");
-            GWEN_Buffer_free(ubuf);
-            return RETURNVALUE_PARAM;
-        }
-        GWEN_Buffer_AppendString(ubuf,
-                I18N("\nCommands:\n\n"));
-        GWEN_Buffer_AppendString(ubuf,
-                I18N("  getkey:\n"
-                        "    get public part of a rsa key\n\n"));
-        fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
-        GWEN_Buffer_free(ubuf);
-        return 0;
+    ubuf=GWEN_Buffer_new(0, 1024, 0, 1);
+    GWEN_Buffer_AppendString(ubuf,
+			     I18N("Usage: "));
+    GWEN_Buffer_AppendString(ubuf, argv[0]);
+    GWEN_Buffer_AppendString(ubuf,
+			     I18N(" [GLOBAL OPTIONS] COMMAND"
+				  " [LOCAL OPTIONS]\n"));
+    if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
+      fprintf(stderr, "Could not generate help string.\n");
+      GWEN_Buffer_free(ubuf);
+      return RETURNVALUE_PARAM;
     }
-    if (rv<1) {
-        fprintf(stderr, "ERROR: Error in argument list (%d)\n", rv);
-        return RETURNVALUE_PARAM;
-    }
-    /* get command */
-    if (rv) {
-      argc-=rv-1;
-      argv+=rv-1;
-    }
-
-    /*GWEN_Logger_SetLevel(AQHBCI_LOGDOMAIN, GWEN_LoggerLevelInfo); */
-    cmd=GWEN_DB_GetCharValue(db, "params", 0, 0);
-    if (!cmd) {
-      fprintf(stderr, "ERROR: Command needed.\n");
-      GWEN_DB_Group_free(db);
-      return 1;
-    }
-
-    /* setup logging */
-    s=GWEN_DB_GetCharValue(db, "loglevel", 0, "warning");
-    logLevel=GWEN_Logger_Name2Level(s);
-    if (logLevel==GWEN_LoggerLevel_Unknown) {
-        fprintf(stderr, "ERROR: Unknown log level (%s)\n", s);
-        return RETURNVALUE_PARAM;
-    }
-    s=GWEN_DB_GetCharValue(db, "logtype", 0, "console");
-    logType=GWEN_Logger_Name2Logtype(s);
-    if (logType==GWEN_LoggerType_Unknown) {
-        fprintf(stderr, "ERROR: Unknown log type (%s)\n", s);
-        return RETURNVALUE_PARAM;
-    }
-    rv=GWEN_Logger_Open(GWEN_LOGDOMAIN,
-            "zkacard-tool",
-            GWEN_DB_GetCharValue(db, "logfile", 0, "zkacard-tool.log"),
-            logType,
-            GWEN_LoggerFacility_User);
-    if (rv) {
-        fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
-        return RETURNVALUE_SETUP;
-    }
-    GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, logLevel);
-
-    /* open zka card */
-    /* get crypt token */
-    pm=GWEN_PluginManager_FindPluginManager("ct");
-    if (pm==0) {
-        DBG_ERROR(0, "Plugin manager not found");
-        return 3;
-    }
-
-    pl=GWEN_PluginManager_GetPlugin(pm, "zkacard");
-    if (pl==0) {
-        DBG_ERROR(0, "Plugin not found");
-        return 3;
-    }
-    DBG_INFO(0, "Plugin found");
-
-    ct=GWEN_Crypt_Token_Plugin_CreateToken(pl, "");
-    if (ct==0) {
-        DBG_ERROR(0, "Could not create crypt token");
-        return 3;
-    }
-
-    /* open crypt token */
-    rv=GWEN_Crypt_Token_Open(ct, 0, 0);
-    if (rv) {
-        DBG_ERROR(0, "Could not open token (%d)", rv);
-        GWEN_Crypt_Token_free(ct);
-        return 3;
-    }
-
-
-    /* handle command */
-
-    if (strcasecmp(cmd, "getkey")==0) {
-        rv=getPublicKey(ct, db,argc,argv);
-    }
-    else {
-        fprintf(stderr, "Unknown command \"%s\"\n", s);
-        rv=RETURNVALUE_PARAM;
-    }
-
-    /* open crypt token */
-    rv=GWEN_Crypt_Token_Close(ct, 0, 0);
-    GWEN_Crypt_Token_free(ct);
-
-    GWEN_DB_Group_free(db);
+    GWEN_Buffer_AppendString(ubuf,
+			     I18N("\nCommands:\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+			     I18N("  getkey:\n"
+				  "    get public part of a rsa key\n\n"));
+    fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
+    GWEN_Buffer_free(ubuf);
     return 0;
+  }
+  if (rv<1) {
+    fprintf(stderr, "ERROR: Error in argument list (%d)\n", rv);
+    return RETURNVALUE_PARAM;
+  }
+  /* get command */
+  if (rv) {
+    argc-=rv-1;
+    argv+=rv-1;
+  }
+
+  /*GWEN_Logger_SetLevel(AQHBCI_LOGDOMAIN, GWEN_LoggerLevelInfo); */
+  cmd=GWEN_DB_GetCharValue(db, "params", 0, 0);
+  if (!cmd) {
+    fprintf(stderr, "ERROR: Command needed.\n");
+    GWEN_DB_Group_free(db);
+    return 1;
+  }
+
+  /* setup logging */
+  s=GWEN_DB_GetCharValue(db, "loglevel", 0, "warning");
+  logLevel=GWEN_Logger_Name2Level(s);
+  if (logLevel==GWEN_LoggerLevel_Unknown) {
+    fprintf(stderr, "ERROR: Unknown log level (%s)\n", s);
+    return RETURNVALUE_PARAM;
+  }
+  s=GWEN_DB_GetCharValue(db, "logtype", 0, "console");
+  logType=GWEN_Logger_Name2Logtype(s);
+  if (logType==GWEN_LoggerType_Unknown) {
+    fprintf(stderr, "ERROR: Unknown log type (%s)\n", s);
+    return RETURNVALUE_PARAM;
+  }
+  rv=GWEN_Logger_Open(GWEN_LOGDOMAIN,
+		      "zkacard-tool",
+		      GWEN_DB_GetCharValue(db, "logfile", 0, "zkacard-tool.log"),
+		      logType,
+		      GWEN_LoggerFacility_User);
+  if (rv) {
+    fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
+    return RETURNVALUE_SETUP;
+  }
+  GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, logLevel);
+
+  /* open zka card */
+  /* get crypt token */
+  pm=GWEN_PluginManager_FindPluginManager("ct");
+  if (pm==0) {
+    DBG_ERROR(0, "Plugin manager not found");
+    return 3;
+  }
+
+  pl=GWEN_PluginManager_GetPlugin(pm, "zkacard");
+  if (pl==0) {
+    DBG_ERROR(0, "Plugin not found");
+    return 3;
+  }
+  DBG_INFO(0, "Plugin found");
+
+  ct=GWEN_Crypt_Token_Plugin_CreateToken(pl, "");
+  if (ct==0) {
+    DBG_ERROR(0, "Could not create crypt token");
+    return 3;
+  }
+
+  /* open crypt token */
+  rv=GWEN_Crypt_Token_Open(ct, 0, 0);
+  if (rv) {
+    DBG_ERROR(0, "Could not open token (%d)", rv);
+    GWEN_Crypt_Token_free(ct);
+    return 3;
+  }
+
+
+  /* handle command */
+
+  if (strcasecmp(cmd, "getkey")==0) {
+    rv=getPublicKey(ct, db,argc,argv);
+  }
+  else {
+    fprintf(stderr, "Unknown command \"%s\"\n", s);
+    rv=RETURNVALUE_PARAM;
+  }
+
+  /* open crypt token */
+  rv=GWEN_Crypt_Token_Close(ct, 0, 0);
+  GWEN_Crypt_Token_free(ct);
+
+  GWEN_DB_Group_free(db);
+  return 0;
 }
 
 

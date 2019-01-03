@@ -883,95 +883,82 @@ static void __hex2char(char byte, char* character)
 #define BER_TLV_TAG_FIRST_BYTE_BYTE_FOLLOWS 0b00010000
 #define BER_TLV_TAG_SECOND_BYTE_BYTE_FOLLOWS 0b10000000
 #define BER_TLV_TAG_IS_CONSTRUCTED 0b00100000
-static int __parse_ber_tlv(GWEN_DB_NODE *dbRecord, GWEN_BUFFER *mbuf, int len)
-{
+static int __parse_ber_tlv(GWEN_DB_NODE *dbRecord, GWEN_BUFFER *mbuf, int len) {
+  int tlv_len=0;
+  unsigned int tag_len;
+  unsigned int data_len;
+  char byte;
+  int isConstructed;
+  int anotherByte;
+  char tag[7]="\0\0\0\0\0\0\0";
+  GWEN_DB_NODE *dbTLV;
 
-    int tlv_len=0;
-    unsigned int tag_len;
-    unsigned int data_len;
-    char byte;
-    int isConstructed;
-    int anotherByte;
-    char tag[7]="\0\0\0\0\0\0\0";
-    GWEN_DB_NODE *dbTLV;
+  /* get first byte */
+  while (tlv_len < len) {
 
-    /* get first byte */
-    while (tlv_len < len)
-    {
-
-        byte = GWEN_Buffer_ReadByte(mbuf);
-        isConstructed = byte & BER_TLV_TAG_IS_CONSTRUCTED;
-        tlv_len++;
-        __hex2char(byte,&tag[0]);
-        anotherByte=byte & BER_TLV_TAG_FIRST_BYTE_BYTE_FOLLOWS;
-        if (anotherByte)
-        {
-            byte = GWEN_Buffer_ReadByte(mbuf);
-            tlv_len++;
-            __hex2char(byte,&tag[2]);
-            anotherByte= byte > 127;
-            if (anotherByte)
-            {
-                byte = GWEN_Buffer_ReadByte(mbuf);
-                tlv_len++;
-                __hex2char(byte,&tag[4]);
-            }
-        }
-        dbTLV=GWEN_DB_Group_new(tag);
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    isConstructed = byte & BER_TLV_TAG_IS_CONSTRUCTED;
+    tlv_len++;
+    __hex2char(byte,&tag[0]);
+    anotherByte=byte & BER_TLV_TAG_FIRST_BYTE_BYTE_FOLLOWS;
+    if (anotherByte) {
+      byte = GWEN_Buffer_ReadByte(mbuf);
+      tlv_len++;
+      __hex2char(byte,&tag[2]);
+      anotherByte= byte > 127;
+      if (anotherByte) {
         byte = GWEN_Buffer_ReadByte(mbuf);
         tlv_len++;
-        if ( byte == 0x81)
-        {
-            data_len=127;
-            byte = GWEN_Buffer_ReadByte(mbuf);
-            tlv_len++;
-            if ( byte == 0x82 )
-            {
-                data_len=255;
-                byte = GWEN_Buffer_ReadByte(mbuf);
-                tlv_len++;
-                data_len+= (uint8_t) byte;
-            }
-            else
-            {
-                data_len+= (uint8_t) byte;
-            }
-
-        }
-        else
-        {
-            data_len= (uint8_t) byte;
-        }
-        GWEN_DB_SetIntValue(dbTLV,0,"length",data_len);
-        if (isConstructed)
-        {
-            tlv_len+=__parse_ber_tlv(dbTLV,mbuf,data_len);
-        }
-
-
-        else
-        {
-            char *buffer;
-
-            buffer=(char*)GWEN_Memory_malloc((data_len*2)+1);
-            assert(buffer);
-            GWEN_Text_ToHex(GWEN_Buffer_GetPosPointer(mbuf), data_len,
-                    buffer, data_len*2+1);
-            GWEN_DB_SetCharValue(dbTLV,0,"data",buffer);
-            GWEN_DB_SetBinValue(dbTLV,0,"dataBin",GWEN_Buffer_GetPosPointer(mbuf),data_len);
-            GWEN_Memory_dealloc(buffer);
-            GWEN_Buffer_IncrementPos(mbuf,data_len);
-            tlv_len+=data_len;
-
-        }
-        GWEN_DB_AddGroup(dbRecord,dbTLV);
+        __hex2char(byte,&tag[4]);
+      }
     }
-    assert(len==tlv_len);
-    return tlv_len;
+    dbTLV=GWEN_DB_Group_new(tag);
+    byte = GWEN_Buffer_ReadByte(mbuf);
+    tlv_len++;
+    if ( byte == 0x81) {
+      data_len=127;
+      byte = GWEN_Buffer_ReadByte(mbuf);
+      tlv_len++;
+      if ( byte == 0x82 ) {
+        data_len=255;
+        byte = GWEN_Buffer_ReadByte(mbuf);
+        tlv_len++;
+        data_len+= (uint8_t) byte;
+      }
+      else {
+        data_len+= (uint8_t) byte;
+      }
+
+    }
+    else {
+      data_len= (uint8_t) byte;
+    }
+    GWEN_DB_SetIntValue(dbTLV,0,"length",data_len);
+    if (isConstructed) {
+      tlv_len+=__parse_ber_tlv(dbTLV,mbuf,data_len);
+    }
+    else {
+      char *buffer;
+
+      buffer=(char*)GWEN_Memory_malloc((data_len*2)+1);
+      assert(buffer);
+      GWEN_Text_ToHex(GWEN_Buffer_GetPosPointer(mbuf), data_len,
+                      buffer, data_len*2+1);
+      GWEN_DB_SetCharValue(dbTLV,0,"data",buffer);
+      GWEN_DB_SetBinValue(dbTLV,0,"dataBin",GWEN_Buffer_GetPosPointer(mbuf),data_len);
+      GWEN_Memory_dealloc(buffer);
+      GWEN_Buffer_IncrementPos(mbuf,data_len);
+      tlv_len+=data_len;
+
+    }
+    GWEN_DB_AddGroup(dbRecord,dbTLV);
+  }
+  assert(len==tlv_len);
+  return tlv_len;
 }
 
-LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
-{
+
+LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card) {
   LC_CLIENT_RESULT res= LC_Client_ResultOk;
   LC_ZKACARD *xc;
   GWEN_BUFFER *mbuf;
@@ -987,14 +974,13 @@ LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
   dbRecord=GWEN_DB_Group_new("SSD");
   remLen=GWEN_TLV_Buffer_To_DB(dbRecord,xc->bin_ef_ssd,GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd));
 
-  if (remLen!=GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd))
-  {
-      DBG_WARN(LC_LOGDOMAIN, "tlv buffer not completely parsed!");
+  if (remLen!=GWEN_Buffer_GetUsedBytes(xc->bin_ef_ssd)) {
+    DBG_WARN(LC_LOGDOMAIN, "tlv buffer not completely parsed!");
   }
 
   xc->db_ef_ssd=dbRecord;
   /*GWEN_DB_Dump(dbRecord,4);
-  GWEN_DB_Group_free(dbRecord);*/
+   GWEN_DB_Group_free(dbRecord);*/
   return res;
 }
 
