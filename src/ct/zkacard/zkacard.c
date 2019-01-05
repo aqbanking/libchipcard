@@ -1857,6 +1857,10 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 						GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,hashAlgo);
 
 					}
+					else
+					{
+					    GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,GWEN_Crypt_HashAlgoId_None);
+					}
 
 					b=GWEN_DB_GetBinValue(dbT, "keyHash", 0, NULL,0,&binDataLen);
 					if (b)
