@@ -609,7 +609,7 @@ LC_Crypt_TokenZka_GetKeyIdList(GWEN_CRYPT_TOKEN *ct,
     for (i=0; i<LC_CT_ZKA_NUM_KEY; i++) {
       if (lct->keyInfos[i]!=NULL) {
         if (cnt<*pCount)
-	  pIdList[cnt]=GWEN_Crypt_Token_KeyInfo_GetKeyId(lct->keyInfos[i]);
+	  pIdList[cnt]=GWEN_Crypt_Token_KeyInfo_GetId(lct->keyInfos[i]);
         else {
           DBG_ERROR(LC_LOGDOMAIN, "Id buffer too small (at %d)", cnt);
           return GWEN_ERROR_BUFFER_OVERFLOW;
@@ -1335,7 +1335,7 @@ GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN *ct, u
   assert(lct);
 
   for (i=0; i<LC_CT_ZKA_NUM_KEY; i++) {
-    if (lct->keyInfos[i]!=NULL && GWEN_Crypt_Token_KeyInfo_GetKeyId(lct->keyInfos[i])==id)
+    if (lct->keyInfos[i]!=NULL && GWEN_Crypt_Token_KeyInfo_GetId(lct->keyInfos[i])==id)
       return lct->keyInfos[i];
   }
 
@@ -1489,7 +1489,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
       }
       
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "commData");
@@ -1519,7 +1519,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 
 	/* update crypt key info */
@@ -1533,7 +1533,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 	
 	/* update auth key info */
@@ -1547,7 +1547,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 
         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, keyNum, keyVer);
         if (ki)
-          GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetKeyId(ki));
+          GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
 
 	// fields in EF_NOTEPAD contain invalid data (keynum=9, keyver=1)
 	// Override existing mechanism:
