@@ -2000,15 +2000,15 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 				        if (ki)
 				        {
 				            GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-				            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,signKeyNum);
-				            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,signKeyVer);
+				            //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,signKeyNum);
+				            //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,signKeyVer);
       }
 			            ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 3, 0);
  	                    if (ki)
  	                    {
 			                GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-                            GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,cryptKeyNum);
-                            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,cryptKeyVer);
+                            //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,cryptKeyNum);
+                            //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,cryptKeyVer);
  	                    }
  	                    GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
 					}
