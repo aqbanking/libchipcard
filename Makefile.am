@@ -77,7 +77,11 @@ install-srcdoc: srcdoc
 #	git-log --pretty="format:%ad %an%n%s%n%b" >ChangeLog
 
 ChangeLog:
-	git log -n 100 --pretty="format:------------------------------------------------------------------%n%ai %an%n%s%n%b" >ChangeLog
+	if test -d .git; then \
+	  git log --pretty="format:------------------------------------------------------------------%n%ai %an%n%s%n%b" -n 100 >ChangeLog ;\
+	else \
+	  touch ChangeLog; \
+	fi
 
 
 dist-hook:
