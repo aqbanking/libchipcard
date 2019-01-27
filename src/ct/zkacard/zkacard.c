@@ -1531,8 +1531,27 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
     GWEN_Buffer_free(mbuf);
     return res;
   }
-  GWEN_Crypt_Token_KeyInfo_SetCertificate(ki, (const uint8_t*) GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf));
-  GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
+
+  /* record might contain no certificate so check here */
+  {
+      char *certPtr=GWEN_Buffer_GetStart(mbuf);
+      uint32_t recordLen=GWEN_Buffer_GetUsedBytes(mbuf);
+      GWEN_Buffer_Rewind(mbuf);
+      /* certificate length should be TLV coded... */
+      if ( certPtr[0] != 0 ) {
+          uint32_t tag_len_len;
+          uint32_t data_len=GWEN_TLV_ParseLength(mbuf,&tag_len_len);
+          /*GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),data_len+tag_len_len);*/
+          GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),recordLen);
+          GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
+      }
+      else {
+          GWEN_Crypt_Token_KeyInfo_SubFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
+      }
+
+  }
+
+
   return 0;
 }
 
@@ -1955,8 +1974,8 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
 	    ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
 	    if (ki) {
 	      GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-	      GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,authKeyNum);
-	      GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,authKeyVer);
+	      //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,authKeyNum);
+	      //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,authKeyVer);
 	    }
 	    GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
 	  }
