@@ -2005,7 +2005,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                         int i_val;
 
                         ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
-                        GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin));
+                        GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin),GWEN_Buffer_GetUsedBytes(ef_id_bin));
 
                         ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
                         cid_str=GWEN_Buffer_new(NULL,20,0,0);
