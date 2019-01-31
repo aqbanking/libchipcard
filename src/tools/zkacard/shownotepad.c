@@ -403,10 +403,13 @@ int showNotepad(GWEN_DB_NODE *dbArgs,int argc,char **argv) {
             showError(hcard, res, "GetNextCard");
             return RETURNVALUE_WORK;
         }
-        if (v>0) {
-            fprintf(stderr, "Found a card.\n");
+        else {
+            if (v>0) {
+                fprintf(stderr, "Found a card.\n");
+            }
+            break;
         }
-
+#if 0
         sl=LC_Card_GetCardTypes(hcard);
         se=GWEN_StringList_FirstEntry(sl);
         while(se){
@@ -418,7 +421,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs,int argc,char **argv) {
             GWEN_StringListEntry_Next(se);
         }
         if (found) break;
-
+#endif
 
 
 
