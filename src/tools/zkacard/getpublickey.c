@@ -22,16 +22,15 @@
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/ct_keyinfo.h>
 #include <gwenhywfar/gui.h>
+#include <gwenhywfar/ct.h>
+#include <gwenhywfar/ctplugin.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 
-int getPublicKey(GWEN_CRYPT_TOKEN *ct,
-                 GWEN_DB_NODE *dbArgs,
-                 int argc,
-                 char **argv) {
+int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv) {
 
   GWEN_DB_NODE *db=NULL;
   int rv;
@@ -40,6 +39,9 @@ int getPublicKey(GWEN_CRYPT_TOKEN *ct,
   const char *s;
   uint32_t kid;
   const GWEN_CRYPT_TOKEN_KEYINFO *keyInfo=NULL;
+  GWEN_PLUGIN_MANAGER *pm;
+  GWEN_PLUGIN *pl;
+  GWEN_CRYPT_TOKEN *ct;
 
 
   const GWEN_ARGS args[]={
@@ -96,6 +98,35 @@ int getPublicKey(GWEN_CRYPT_TOKEN *ct,
     keyNumber=j;
 #endif
   keyNumber=GWEN_DB_GetIntValue(db, "keyNum", 0, 1);
+
+  /* open zka card */
+  /* get crypt token */
+  pm=GWEN_PluginManager_FindPluginManager("ct");
+  if (pm==0) {
+    DBG_ERROR(0, "Plugin manager not found");
+    return 3;
+  }
+
+  pl=GWEN_PluginManager_GetPlugin(pm, "zkacard");
+  if (pl==0) {
+    DBG_ERROR(0, "Plugin not found");
+    return 3;
+  }
+  DBG_INFO(0, "Plugin found");
+
+  ct=GWEN_Crypt_Token_Plugin_CreateToken(pl, "");
+  if (ct==0) {
+    DBG_ERROR(0, "Could not create crypt token");
+    return 3;
+  }
+
+  /* open crypt token */
+  rv=GWEN_Crypt_Token_Open(ct, 0, 0);
+  if (rv) {
+    DBG_ERROR(0, "Could not open token (%d)", rv);
+    GWEN_Crypt_Token_free(ct);
+    return 3;
+  }
 
   /* get public key info */
 
@@ -157,7 +188,8 @@ int getPublicKey(GWEN_CRYPT_TOKEN *ct,
     GWEN_DB_Group_free(db_ki);
   }
 
-
+  rv=GWEN_Crypt_Token_Close(ct, 0, 0);
+  GWEN_Crypt_Token_free(ct);
 
   return 0;
 }

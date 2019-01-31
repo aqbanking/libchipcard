@@ -97,7 +97,60 @@ const GWEN_ARGS prg_args[]={
 
 
 
+void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
+  const char *s;
 
+  switch(res) {
+  case LC_Client_ResultOk:
+    s="Ok.";
+    break;
+  case LC_Client_ResultWait:
+    s="Timeout.";
+    break;
+  case LC_Client_ResultIpcError:
+    s="IPC error.";
+    break;
+  case LC_Client_ResultCmdError:
+    s="Command error.";
+    break;
+  case LC_Client_ResultDataError:
+    s="Data error.";
+    break;
+  case LC_Client_ResultAborted:
+    s="Aborted.";
+    break;
+  case LC_Client_ResultInvalid:
+    s="Invalid argument to command.";
+    break;
+  case LC_Client_ResultInternal:
+    s="Internal error.";
+    break;
+  case LC_Client_ResultGeneric:
+    s="Generic error.";
+    break;
+  default:
+    s="Unknown error.";
+    break;
+  }
+
+  fprintf(stderr, "Error in \"%s\": %s\n", x, s);
+  if (card && res==LC_Client_ResultCmdError) {
+    int sw1;
+    int sw2;
+
+    sw1=LC_Card_GetLastSW1(card);
+    sw2=LC_Card_GetLastSW2(card);
+    fprintf(stderr, "  Last card command result:\n");
+    if (sw1!=-1 && sw2!=-1)
+      fprintf(stderr, "   SW1=%02x, SW2=%02x\n", sw1, sw2);
+    s=LC_Card_GetLastResult(card);
+    if (s)
+      fprintf(stderr, "   Result: %s\n", s);
+    s=LC_Card_GetLastText(card);
+    if (s)
+      fprintf(stderr, "   Text  : %s\n", s);
+  }
+}
 
 
 int main(int argc, char **argv) {
@@ -108,9 +161,7 @@ int main(int argc, char **argv) {
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
   GWEN_GUI *gui;
-  GWEN_PLUGIN_MANAGER *pm;
-  GWEN_PLUGIN *pl;
-  GWEN_CRYPT_TOKEN *ct;
+
 
   gui=GWEN_Gui_CGui_new();
   GWEN_Gui_SetGui(gui);
@@ -187,49 +238,21 @@ int main(int argc, char **argv) {
   }
   GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, logLevel);
 
-  /* open zka card */
-  /* get crypt token */
-  pm=GWEN_PluginManager_FindPluginManager("ct");
-  if (pm==0) {
-    DBG_ERROR(0, "Plugin manager not found");
-    return 3;
-  }
-
-  pl=GWEN_PluginManager_GetPlugin(pm, "zkacard");
-  if (pl==0) {
-    DBG_ERROR(0, "Plugin not found");
-    return 3;
-  }
-  DBG_INFO(0, "Plugin found");
-
-  ct=GWEN_Crypt_Token_Plugin_CreateToken(pl, "");
-  if (ct==0) {
-    DBG_ERROR(0, "Could not create crypt token");
-    return 3;
-  }
-
-  /* open crypt token */
-  rv=GWEN_Crypt_Token_Open(ct, 0, 0);
-  if (rv) {
-    DBG_ERROR(0, "Could not open token (%d)", rv);
-    GWEN_Crypt_Token_free(ct);
-    return 3;
-  }
-
-
   /* handle command */
 
   if (strcasecmp(cmd, "getkey")==0) {
-    rv=getPublicKey(ct, db,argc,argv);
+    rv=getPublicKey(db,argc,argv);
+  }
+  else if (strcasecmp(cmd, "shownotepad")==0) {
+      rv=showNotepad(db,argc,argv);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", s);
     rv=RETURNVALUE_PARAM;
   }
 
-  /* open crypt token */
-  rv=GWEN_Crypt_Token_Close(ct, 0, 0);
-  GWEN_Crypt_Token_free(ct);
+
+
 
   GWEN_DB_Group_free(db);
   return 0;
