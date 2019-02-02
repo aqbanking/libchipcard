@@ -104,7 +104,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
 
         DBG_INFO(LC_LOGDOMAIN,"Terminal has a keypad, will ask for pin.");
         /* tell the user about pin verification */
-        BeginEnterPin(pt, guiid);
+        bid=BeginEnterPin(pt, guiid);
         if (bid==0) {
             DBG_ERROR(LC_LOGDOMAIN, "Error in user interaction");
             return GWEN_ERROR_GENERIC;
