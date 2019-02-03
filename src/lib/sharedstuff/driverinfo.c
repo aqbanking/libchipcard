@@ -29,11 +29,12 @@
 
 int LC_DriverInfo_FindFile(GWEN_STRINGLIST *slDirs,
                            GWEN_STRINGLIST *slNames,
-                           GWEN_BUFFER *nbuf) {
+                           GWEN_BUFFER *nbuf)
+{
   GWEN_STRINGLISTENTRY *eDirs;
 
   eDirs=GWEN_StringList_FirstEntry(slDirs);
-  while(eDirs) {
+  while (eDirs) {
     uint32_t pos;
     GWEN_STRINGLISTENTRY *eNames;
 
@@ -44,7 +45,7 @@ int LC_DriverInfo_FindFile(GWEN_STRINGLIST *slDirs,
 
     eNames=GWEN_StringList_FirstEntry(slNames);
 
-    while(eNames) {
+    while (eNames) {
       GWEN_DIRECTORY *dDir;
 
       dDir=GWEN_Directory_new();
@@ -52,7 +53,7 @@ int LC_DriverInfo_FindFile(GWEN_STRINGLIST *slDirs,
         char nameBuf[256];
 
         /* search for name in this folder */
-        while(!GWEN_Directory_Read(dDir, nameBuf, sizeof(nameBuf))) {
+        while (!GWEN_Directory_Read(dDir, nameBuf, sizeof(nameBuf))) {
           if (strcmp(nameBuf, ".")!=0 &&
               strcmp(nameBuf, "..")!=0) {
             if (-1!=GWEN_Text_ComparePattern(nameBuf,
@@ -104,8 +105,9 @@ int LC_DriverInfo_FindFile(GWEN_STRINGLIST *slDirs,
 
 int LC_DriverInfo_ReadDriverFile(const char *fname,
                                  GWEN_DB_NODE *dbDrivers,
-				 int availOnly,
-				 int dontSearchDrivers) {
+                                 int availOnly,
+                                 int dontSearchDrivers)
+{
   GWEN_XMLNODE *nFile;
   int driverAdded=0;
 
@@ -124,18 +126,18 @@ int LC_DriverInfo_ReadDriverFile(const char *fname,
     }
     else {
       GWEN_DB_NODE *dbDriver;
-  
+
       dbDriver=LC_DriverInfo_DriverDbFromXml(nDriver,
-					     dontSearchDrivers);
+                                             dontSearchDrivers);
       if (!dbDriver) {
         DBG_INFO(0, "Could not create driver from file \"%s\"", fname);
       }
       else {
         if (GWEN_DB_GetCharValue(dbDriver, "libraryFile", 0, 0) ||
-	    !availOnly ||
-	    dontSearchDrivers) {
+            !availOnly ||
+            dontSearchDrivers) {
           GWEN_XMLNODE *nReader;
-  
+
           nReader=GWEN_XMLNode_FindFirstTag(nDriver, "readers",
                                             "osname", OS_SHORTNAME);
           if (!nReader)
@@ -143,7 +145,7 @@ int LC_DriverInfo_ReadDriverFile(const char *fname,
                                               "ostype", OS_TYPE);
           if (!nReader) {
             nReader=GWEN_XMLNode_FindFirstTag(nDriver, "readers", 0, 0);
-            while(nReader) {
+            while (nReader) {
               if (GWEN_XMLNode_GetProperty(nReader, "osname", 0)==0 &&
                   GWEN_XMLNode_GetProperty(nReader, "ostype", 0)==0)
                 break;
@@ -156,12 +158,12 @@ int LC_DriverInfo_ReadDriverFile(const char *fname,
           }
           else {
             int readers;
-  
+
             readers=0;
             nReader=GWEN_XMLNode_FindFirstTag(nReader, "reader", 0, 0);
-            while(nReader) {
+            while (nReader) {
               GWEN_DB_NODE *dbReader;
-  
+
               dbReader=LC_DriverInfo_ReaderDbFromXml(nReader);
               if (dbReader) {
                 GWEN_DB_AddGroup(dbDriver, dbReader);
@@ -194,8 +196,9 @@ int LC_DriverInfo_ReadDriverFile(const char *fname,
 
 int LC_DriverInfo_ReadDrivers(const char *dataDir,
                               GWEN_DB_NODE *dbDrivers,
-			      int availOnly,
-			      int dontSearchDrivers) {
+                              int availOnly,
+                              int dontSearchDrivers)
+{
   GWEN_BUFFER *buf;
   GWEN_DIRECTORY *d;
   unsigned int dpos;
@@ -210,7 +213,7 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
   if (!GWEN_Directory_Open(d, GWEN_Buffer_GetStart(buf))) {
     char buffer[256];
 
-    while (!GWEN_Directory_Read(d, buffer, sizeof(buffer))){
+    while (!GWEN_Directory_Read(d, buffer, sizeof(buffer))) {
       struct stat st;
       int flen;
 
@@ -231,9 +234,9 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
               DBG_DEBUG(0, "Reading driver file \"%s\"",
                         GWEN_Buffer_GetStart(buf));
               if (!LC_DriverInfo_ReadDriverFile(GWEN_Buffer_GetStart(buf),
-						dbDrivers,
-						availOnly,
-						dontSearchDrivers))
+                                                dbDrivers,
+                                                availOnly,
+                                                dontSearchDrivers))
                 drivers++;
             }
           }
@@ -243,8 +246,8 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
   } /* if open succeeded */
   else {
     DBG_INFO(LC_LOGDOMAIN,
-	     "Could not open folder [%s]",
-	     GWEN_Buffer_GetStart(buf));
+             "Could not open folder [%s]",
+             GWEN_Buffer_GetStart(buf));
   }
   GWEN_Directory_Close(d);
   GWEN_Directory_free(d);
@@ -256,7 +259,8 @@ int LC_DriverInfo_ReadDrivers(const char *dataDir,
 
 
 GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
-					    int dontSearchDrivers) {
+                                            int dontSearchDrivers)
+{
   GWEN_DB_NODE *db;
   GWEN_XMLNODE *n;
   GWEN_XMLNODE *nLib;
@@ -274,7 +278,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     return 0;
   }
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-		       "driverName", dname);
+                       "driverName", dname);
 
   n=GWEN_XMLNode_FindFirstTag(node, "manufacturer", 0, 0);
   if (n) {
@@ -296,7 +300,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     n=GWEN_XMLNode_FindFirstTag(node, "vars", "ostype", 0);
   if (!n) {
     n=GWEN_XMLNode_FindFirstTag(node, "vars", 0, 0);
-    while(n) {
+    while (n) {
       if (GWEN_XMLNode_GetProperty(n, "osname", 0)==0 &&
           GWEN_XMLNode_GetProperty(n, "ostype", 0)==0)
         break;
@@ -310,7 +314,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     dbVars=GWEN_DB_GetGroup(db, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "vars");
     assert(dbVars);
     nn=GWEN_XMLNode_FindFirstTag(n, "var", 0, 0);
-    while(nn) {
+    while (nn) {
       const char *name;
       const char *value;
       GWEN_XMLNODE *nd;
@@ -320,11 +324,11 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
 
       nd=GWEN_XMLNode_GetFirstData(nn);
       if (nd)
-	value=GWEN_XMLNode_GetData(nd);
+        value=GWEN_XMLNode_GetData(nd);
       else
-	value="";
+        value="";
       GWEN_DB_SetCharValue(dbVars, GWEN_DB_FLAGS_DEFAULT,
-			   name, value);
+                           name, value);
 
       nn=GWEN_XMLNode_FindNextTag(nn, "var", 0, 0);
     } /* while */
@@ -334,18 +338,18 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
   p=GWEN_XMLNode_GetProperty(node, "type", 0);
   if (!p) {
     DBG_ERROR(0, "Driver \"%s\" in XML file has no type",
-	      dname);
+              dname);
     GWEN_DB_Group_free(db);
     return 0;
   }
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-		       "driverType", p);
+                       "driverType", p);
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
-		      "maxReaders",
-		      atoi(GWEN_XMLNode_GetProperty(node,
-						    "maxReaders",
-						    "1")));
+                      "maxReaders",
+                      atoi(GWEN_XMLNode_GetProperty(node,
+                                                    "maxReaders",
+                                                    "1")));
 
   p=GWEN_XMLNode_GetCharValue(node, "short", 0);
   if (p)
@@ -358,66 +362,66 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
       nLib=GWEN_XMLNode_FindFirstTag(node, "lib", "ostype", OS_TYPE);
     if (!nLib) {
       nLib=GWEN_XMLNode_FindFirstTag(node, "lib", 0, 0);
-      while(nLib) {
-	if (GWEN_XMLNode_GetProperty(nLib, "osname", 0)==0 &&
-	    GWEN_XMLNode_GetProperty(nLib, "ostype", 0)==0)
-	  break;
-	nLib=GWEN_XMLNode_FindNextTag(nLib, "lib", 0, 0);
+      while (nLib) {
+        if (GWEN_XMLNode_GetProperty(nLib, "osname", 0)==0 &&
+            GWEN_XMLNode_GetProperty(nLib, "ostype", 0)==0)
+          break;
+        nLib=GWEN_XMLNode_FindNextTag(nLib, "lib", 0, 0);
       } /* while */
     }
     if (nLib) {
       /* fetch dirs */
       n=GWEN_XMLNode_FindFirstTag(nLib, "locations", 0, 0);
       if (!n) {
-	DBG_ERROR(0, "No locations given for driver \"%s\"", dname);
-	GWEN_DB_Group_free(db);
-	return 0;
+        DBG_ERROR(0, "No locations given for driver \"%s\"", dname);
+        GWEN_DB_Group_free(db);
+        return 0;
       }
-  
+
       slDirs=GWEN_StringList_new();
 
       n=GWEN_XMLNode_FindFirstTag(n, "loc", 0, 0);
-      while(n) {
-	GWEN_XMLNODE *nData;
-  
-	nData=GWEN_XMLNode_GetFirstData(n);
-	if (n) {
-	  p=GWEN_XMLNode_GetData(nData);
-	  if (p)
-	    GWEN_StringList_AppendString(slDirs,
-					 p, 0, 1);
-	}
-	n=GWEN_XMLNode_FindNextTag(n, "loc", 0, 0);
+      while (n) {
+        GWEN_XMLNODE *nData;
+
+        nData=GWEN_XMLNode_GetFirstData(n);
+        if (n) {
+          p=GWEN_XMLNode_GetData(nData);
+          if (p)
+            GWEN_StringList_AppendString(slDirs,
+                                         p, 0, 1);
+        }
+        n=GWEN_XMLNode_FindNextTag(n, "loc", 0, 0);
       } /* while */
-  
+
       /* fetch names */
       n=GWEN_XMLNode_FindFirstTag(nLib, "names", 0, 0);
       if (!n) {
-	DBG_ERROR(0, "No names given for driver \"%s\"", dname);
-	GWEN_StringList_free(slDirs);
-	GWEN_DB_Group_free(db);
-	return 0;
+        DBG_ERROR(0, "No names given for driver \"%s\"", dname);
+        GWEN_StringList_free(slDirs);
+        GWEN_DB_Group_free(db);
+        return 0;
       }
-  
+
       slNames=GWEN_StringList_new();
       n=GWEN_XMLNode_FindFirstTag(n, "name", 0, 0);
-      while(n) {
-	GWEN_XMLNODE *nData;
-  
-	nData=GWEN_XMLNode_GetFirstData(n);
-	if (n) {
-	  p=GWEN_XMLNode_GetData(nData);
-	  if (p)
-	    GWEN_StringList_AppendString(slNames,
-					 p, 0, 1);
-	}
-	n=GWEN_XMLNode_FindNextTag(n, "name", 0, 0);
+      while (n) {
+        GWEN_XMLNODE *nData;
+
+        nData=GWEN_XMLNode_GetFirstData(n);
+        if (n) {
+          p=GWEN_XMLNode_GetData(nData);
+          if (p)
+            GWEN_StringList_AppendString(slNames,
+                                         p, 0, 1);
+        }
+        n=GWEN_XMLNode_FindNextTag(n, "name", 0, 0);
       } /* while */
-  
+
       nbuf=GWEN_Buffer_new(0, 256, 0, 1);
       if (!LC_DriverInfo_FindFile(slDirs, slNames, nbuf)) {
-	GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			     "libraryFile", GWEN_Buffer_GetStart(nbuf));
+        GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                             "libraryFile", GWEN_Buffer_GetStart(nbuf));
       }
       GWEN_Buffer_free(nbuf);
       GWEN_StringList_free(slNames);
@@ -425,7 +429,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     }
     else {
       GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			   "libraryFile", "none");
+                           "libraryFile", "none");
     }
   }
 
@@ -437,7 +441,7 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     n=GWEN_XMLNode_FindFirstTag(node, "flags", "ostype", 0);
   if (!n) {
     n=GWEN_XMLNode_FindFirstTag(node, "flags", 0, 0);
-    while(n) {
+    while (n) {
       if (GWEN_XMLNode_GetProperty(n, "osname", 0)==0 &&
           GWEN_XMLNode_GetProperty(n, "ostype", 0)==0)
         break;
@@ -448,17 +452,17 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
     GWEN_XMLNODE *nn;
 
     nn=GWEN_XMLNode_FindFirstTag(n, "flag", 0, 0);
-    while(nn) {
+    while (nn) {
       const char *value;
       GWEN_XMLNODE *nd;
 
       nd=GWEN_XMLNode_GetFirstData(nn);
       if (nd)
-	value=GWEN_XMLNode_GetData(nd);
+        value=GWEN_XMLNode_GetData(nd);
       else
-	value="";
+        value="";
       GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			   "flags", value);
+                           "flags", value);
 
       nn=GWEN_XMLNode_FindNextTag(nn, "flag", 0, 0);
     } /* while */
@@ -469,7 +473,8 @@ GWEN_DB_NODE *LC_DriverInfo_DriverDbFromXml(GWEN_XMLNODE *node,
 
 
 
-GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
+GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node)
+{
   GWEN_DB_NODE *db;
   GWEN_XMLNODE *n;
   const char *rtype;
@@ -484,7 +489,7 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
     return 0;
   }
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-		       "readerType", rtype);
+                       "readerType", rtype);
 
   p=GWEN_XMLNode_GetCharValue(node, "short", rtype);
   GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
@@ -495,8 +500,8 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
                        "busType", p);
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
-		      "slots",
-		      atoi(GWEN_XMLNode_GetProperty(node, "slots", "1")));
+                      "slots",
+                      atoi(GWEN_XMLNode_GetProperty(node, "slots", "1")));
 
   GWEN_DB_SetIntValue(db, GWEN_DB_FLAGS_DEFAULT,
                       "ctn",
@@ -528,15 +533,15 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
   n=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "flags");
   if (n) {
     n=GWEN_XMLNode_FindFirstTag(n, "flag", 0, 0);
-    while(n) {
+    while (n) {
       GWEN_XMLNODE *nData;
 
       nData=GWEN_XMLNode_GetFirstData(n);
       if (nData) {
-	p=GWEN_XMLNode_GetData(nData);
-	if (p)
-	  GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			       "flags", p);
+        p=GWEN_XMLNode_GetData(nData);
+        if (p)
+          GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
+                               "flags", p);
       }
       n=GWEN_XMLNode_FindNextTag(n, "flag", 0, 0);
     } /* while */
@@ -549,28 +554,28 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
 
     dbPorts=GWEN_DB_GetGroup(db, GWEN_DB_FLAGS_OVERWRITE_GROUPS, "ports");
     n=GWEN_XMLNode_FindFirstTag(n, "port", 0, 0);
-    while(n) {
+    while (n) {
       const char *vp;
       int i;
 
       vp=GWEN_XMLNode_GetProperty(n, "value", "0");
       if (1!=sscanf(vp, "%i", &i)) {
-	DBG_ERROR(0, "Bad port value (%s), ignoring", vp);
+        DBG_ERROR(0, "Bad port value (%s), ignoring", vp);
       }
       else {
-	GWEN_XMLNODE *nData;
+        GWEN_XMLNODE *nData;
 
-	nData=GWEN_XMLNode_GetFirstData(n);
-	if (nData) {
-	  p=GWEN_XMLNode_GetData(nData);
-	  if (p)
-	    GWEN_DB_SetIntValue(dbPorts,
-				GWEN_DB_FLAGS_DEFAULT,
-				p, i);
-	}
-	else {
-	  DBG_WARN(0, "No port name for value %d, ignoring", i);
-	}
+        nData=GWEN_XMLNode_GetFirstData(n);
+        if (nData) {
+          p=GWEN_XMLNode_GetData(nData);
+          if (p)
+            GWEN_DB_SetIntValue(dbPorts,
+                                GWEN_DB_FLAGS_DEFAULT,
+                                p, i);
+        }
+        else {
+          DBG_WARN(0, "No port name for value %d, ignoring", i);
+        }
       }
       n=GWEN_XMLNode_FindNextTag(n, "port", 0, 0);
     } /* while */
@@ -603,7 +608,7 @@ GWEN_DB_NODE *LC_DriverInfo_ReaderDbFromXml(GWEN_XMLNODE *node) {
 
       psc=scopy;
 
-      while(psc && *psc) {
+      while (psc && *psc) {
         char *p;
 
         p=strchr(psc, ' ');

@@ -30,7 +30,8 @@
 #include <string.h>
 #include <errno.h>
 
-int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv) {
+int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv)
+{
 
   GWEN_DB_NODE *db=NULL;
   int rv;
@@ -44,29 +45,29 @@ int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv) {
   GWEN_CRYPT_TOKEN *ct;
 
 
-  const GWEN_ARGS args[]={
-  {
-    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-    GWEN_ArgsType_Int,            /* type */
-    "keyNum",                     /* name */
-    0,                            /* minnum */
-    1,                            /* maxnum */
-    "n",                          /* short option */
-    "keyNum",                       /* long option */
-    "Specify the key number",      /* short description */
-    "Specify the key number"       /* long description */
-  },
-  {
-    GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-    GWEN_ArgsType_Int,            /* type */
-    "help",                       /* name */
-    0,                            /* minnum */
-    0,                            /* maxnum */
-    "h",                          /* short option */
-    "help",                       /* long option */
-    "Show this help screen",      /* short description */
-    "Show this help screen"       /* long description */
-  }
+  const GWEN_ARGS args[]= {
+    {
+      GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+      GWEN_ArgsType_Int,            /* type */
+      "keyNum",                     /* name */
+      0,                            /* minnum */
+      1,                            /* maxnum */
+      "n",                          /* short option */
+      "keyNum",                       /* long option */
+      "Specify the key number",      /* short description */
+      "Specify the key number"       /* long description */
+    },
+    {
+      GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
+      GWEN_ArgsType_Int,            /* type */
+      "help",                       /* name */
+      0,                            /* minnum */
+      0,                            /* maxnum */
+      "h",                          /* short option */
+      "help",                       /* long option */
+      "Show this help screen",      /* short description */
+      "Show this help screen"       /* long description */
+    }
   };
 
   db=GWEN_DB_GetGroup(dbArgs, GWEN_DB_FLAGS_DEFAULT, "local");
@@ -142,7 +143,7 @@ int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv) {
       return GWEN_ERROR_NOT_FOUND;
     }
 
-    switch(keyNumber) {
+    switch (keyNumber) {
     case 2:
       /*AUT*/
       DBG_INFO(GWEN_LOGDOMAIN, "AUT Key");
@@ -183,8 +184,8 @@ int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv) {
 
   if (keyInfo) {
     GWEN_DB_NODE *db_ki=GWEN_DB_Group_new("ki");
-    GWEN_Crypt_Token_KeyInfo_toDb(keyInfo,db_ki);
-    GWEN_DB_Dump(db_ki,4);
+    GWEN_Crypt_Token_KeyInfo_toDb(keyInfo, db_ki);
+    GWEN_DB_Dump(db_ki, 4);
     GWEN_DB_Group_free(db_ki);
   }
 

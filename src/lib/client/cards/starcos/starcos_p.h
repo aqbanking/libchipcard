@@ -62,10 +62,10 @@ LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
 
 int LC_Starcos__FindKeyDescrOffset(int kid);
 LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
-					  LC_STARCOS_KEYDESCR **pDescr);
+                                          LC_STARCOS_KEYDESCR **pDescr);
 
 LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
-					   unsigned int *pResult);
+                                           unsigned int *pResult);
 LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card);
 
 int LC_Starcos__IsSignKey(int kid);
@@ -85,17 +85,17 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                                                 unsigned int sigsize);
 
 LC_CLIENT_RESULT CHIPCARD_CB
-  LC_Starcos_GetInitialPin(LC_CARD *card,
-                           int pid,
-                           unsigned char *buffer,
-                           unsigned int maxSize,
-                           unsigned int *pinLength);
+LC_Starcos_GetInitialPin(LC_CARD *card,
+                         int pid,
+                         unsigned char *buffer,
+                         unsigned int maxSize,
+                         unsigned int *pinLength);
 
 LC_CLIENT_RESULT CHIPCARD_CB
-  LC_Starcos_GetPinStatus(LC_CARD *card,
-                          unsigned int pid,
-                          int *maxErrors,
-                          int *currentErrors);
+LC_Starcos_GetPinStatus(LC_CARD *card,
+                        unsigned int pid,
+                        int *maxErrors,
+                        int *currentErrors);
 
 
 

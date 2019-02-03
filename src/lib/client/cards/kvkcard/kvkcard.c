@@ -28,7 +28,8 @@ GWEN_INHERIT(LC_CARD, LC_KVKCARD)
 
 
 
-int LC_KVKCard_ExtendCard(LC_CARD *card){
+int LC_KVKCard_ExtendCard(LC_CARD *card)
+{
   LC_KVKCARD *kvk;
   int rv;
 
@@ -52,7 +53,8 @@ int LC_KVKCard_ExtendCard(LC_CARD *card){
 
 
 
-int LC_KVKCard_UnextendCard(LC_CARD *card){
+int LC_KVKCard_UnextendCard(LC_CARD *card)
+{
   LC_KVKCARD *kvk;
   int rv;
 
@@ -71,19 +73,21 @@ int LC_KVKCard_UnextendCard(LC_CARD *card){
 
 
 
-void GWENHYWFAR_CB LC_KVKCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_KVKCard_freeData(void *bp, void *p)
+{
   LC_KVKCARD *kvk;
 
   assert(bp);
   assert(p);
-  kvk=(LC_KVKCARD*)p;
+  kvk=(LC_KVKCARD *)p;
   GWEN_DB_Group_free(kvk->dbData);
   GWEN_FREE_OBJECT(kvk);
 }
 
 
 
-LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
+LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   const char *p;
   unsigned int size;
@@ -148,17 +152,17 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
     if (j==0x81) {
       pos++;
       if (pos>=size) {
-	DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
-	GWEN_Buffer_free(mbuf);
-	return LC_Client_ResultDataError;
+        DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
+        GWEN_Buffer_free(mbuf);
+        return LC_Client_ResultDataError;
       }
       j=(unsigned char)(p[pos]);
     } /* 0x81 */
     else if (j==0x82) {
       if (pos+1>=size) {
-	DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
-	GWEN_Buffer_free(mbuf);
-	return LC_Client_ResultDataError;
+        DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
+        GWEN_Buffer_free(mbuf);
+        return LC_Client_ResultDataError;
       }
       pos++;
       j=((unsigned char)(p[pos]))<<8;
@@ -207,40 +211,40 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
       GWEN_Buffer_SetPos(mbuf,
                          LC_TLV_GetTagSize(tlv)-LC_TLV_GetTagLength(tlv));
 
-      while(GWEN_Buffer_GetBytesLeft(mbuf)) {
-	LC_TLV *tlvLoop;
+      while (GWEN_Buffer_GetBytesLeft(mbuf)) {
+        LC_TLV *tlvLoop;
 
-	tlvLoop=LC_TLV_fromBuffer(mbuf, 1);
-	if (!tlvLoop) {
-	  DBG_ERROR(LC_LOGDOMAIN, "Bad TLV in KVK data (pos=%d)",
-		    GWEN_Buffer_GetPos(mbuf));
-	  GWEN_DB_Group_free(dbData);
-	  GWEN_Buffer_free(mbuf);
-	  return LC_Client_ResultDataError;
+        tlvLoop=LC_TLV_fromBuffer(mbuf, 1);
+        if (!tlvLoop) {
+          DBG_ERROR(LC_LOGDOMAIN, "Bad TLV in KVK data (pos=%d)",
+                    GWEN_Buffer_GetPos(mbuf));
+          GWEN_DB_Group_free(dbData);
+          GWEN_Buffer_free(mbuf);
+          return LC_Client_ResultDataError;
         }
-	if (LC_TLV_GetTagType(tlvLoop)==0x0e) {
-	  unsigned int i;
+        if (LC_TLV_GetTagType(tlvLoop)==0x0e) {
+          unsigned int i;
           unsigned char checkSum;
 
-	  /* checksum tag */
-	  p=GWEN_Buffer_GetStart(mbuf);
-	  size=GWEN_Buffer_GetPos(mbuf);
-	  checkSum=0;
+          /* checksum tag */
+          p=GWEN_Buffer_GetStart(mbuf);
+          size=GWEN_Buffer_GetPos(mbuf);
+          checkSum=0;
           for (i=0; i<size; i++)
             checkSum^=(unsigned char)(*p++);
 
           if (checkSum) {
-	    DBG_ERROR(LC_LOGDOMAIN, "Bad checksum in kvk card (%02x)", checkSum);
-	    LC_TLV_free(tlvLoop);
-	    GWEN_DB_Group_free(dbData);
-	    GWEN_Buffer_free(mbuf);
-	    return LC_Client_ResultDataError;
-	  }
-	  DBG_INFO(LC_LOGDOMAIN, "Checksum ok");
+            DBG_ERROR(LC_LOGDOMAIN, "Bad checksum in kvk card (%02x)", checkSum);
+            LC_TLV_free(tlvLoop);
+            GWEN_DB_Group_free(dbData);
+            GWEN_Buffer_free(mbuf);
+            return LC_Client_ResultDataError;
+          }
+          DBG_INFO(LC_LOGDOMAIN, "Checksum ok");
           checksumOk=1;
           break;
-	}
-	LC_TLV_free(tlvLoop);
+        }
+        LC_TLV_free(tlvLoop);
       } /* while */
     }
     else {
@@ -266,7 +270,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
 
   /* store card data */
   kvk->dbData=GWEN_DB_GetGroup(dbData, GWEN_PATH_FLAGS_NAMEMUSTEXIST,
-			       "kvk/data");
+                               "kvk/data");
   if (kvk->dbData)
     GWEN_DB_UnlinkGroup(kvk->dbData);
   GWEN_DB_Group_free(dbData);
@@ -278,7 +282,8 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_KVKCARD *kvk;
 
@@ -306,7 +311,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_KVKCARD *kvk;
 
@@ -344,7 +350,7 @@ LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card){
   }
 
   res=LC_KVKCard_ReadCardData(card);
-  if (res!=LC_Client_ResultOk){
+  if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
@@ -355,7 +361,8 @@ LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_KVKCARD *kvk;
 
@@ -374,7 +381,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card){
 
 
 
-GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card){
+GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card)
+{
   LC_KVKCARD *kvk;
 
   assert(card);
@@ -386,7 +394,8 @@ GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card){
 
 
 
-const char *LC_KvkCard_GetCardNumber(const LC_CARD *card) {
+const char *LC_KvkCard_GetCardNumber(const LC_CARD *card)
+{
   LC_KVKCARD *kvk;
 
   assert(card);
@@ -399,8 +408,9 @@ const char *LC_KvkCard_GetCardNumber(const LC_CARD *card) {
 
 
 LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
-					 LC_HI_PERSONAL_DATA **pPersonal,
-					 LC_HI_INSURANCE_DATA **pInsurance) {
+                                         LC_HI_PERSONAL_DATA **pPersonal,
+                                         LC_HI_INSURANCE_DATA **pInsurance)
+{
   LC_KVKCARD *kvk;
   LC_HI_PERSONAL_DATA *pData;
   LC_HI_INSURANCE_DATA *iData;

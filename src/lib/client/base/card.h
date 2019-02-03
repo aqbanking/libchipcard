@@ -300,7 +300,7 @@ const GWEN_STRINGLIST *LC_Card_GetCardTypes(const LC_CARD *cd);
  */
 CHIPCARD_API
 unsigned int LC_Card_GetAtr(const LC_CARD *cd,
-			    const unsigned char **pbuf);
+                            const unsigned char **pbuf);
 
 
 /**
@@ -425,31 +425,31 @@ LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
 /*@{*/
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
-				       uint32_t flags,
-				       int offset,
-				       int size,
-				       GWEN_BUFFER *buf);
+                                       uint32_t flags,
+                                       int offset,
+                                       int size,
+                                       GWEN_BUFFER *buf);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
-					uint32_t flags,
-					int offset,
-					const char *ptr,
-					unsigned int size);
+                                        uint32_t flags,
+                                        int offset,
+                                        const char *ptr,
+                                        unsigned int size);
 
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
-					 uint32_t flags,
-					 int offset,
-					 const char *ptr,
-					 unsigned int size);
+                                         uint32_t flags,
+                                         int offset,
+                                         const char *ptr,
+                                         unsigned int size);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
-					uint32_t flags,
-					int offset,
-					unsigned int size);
+                                        uint32_t flags,
+                                        int offset,
+                                        unsigned int size);
 
 /**
  * This functions reads any number of bytes from an already selected file
@@ -458,9 +458,9 @@ LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
  */
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
-				    int offset,
-				    int size,
-				    GWEN_BUFFER *buf);
+                                    int offset,
+                                    int size,
+                                    GWEN_BUFFER *buf);
 
 /*@}*/
 
@@ -472,28 +472,28 @@ LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
-				       uint32_t flags,
-				       int recNum,
-				       GWEN_BUFFER *buf);
+                                       uint32_t flags,
+                                       int recNum,
+                                       GWEN_BUFFER *buf);
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
-					uint32_t flags,
-					int recNum,
-					const char *ptr,
-					unsigned int size);
+                                        uint32_t flags,
+                                        int recNum,
+                                        const char *ptr,
+                                        unsigned int size);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
-					 uint32_t flags,
-					 const char *ptr,
-					 unsigned int size);
+                                         uint32_t flags,
+                                         const char *ptr,
+                                         unsigned int size);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
-					 uint32_t flags,
-					 int recNum,
-					 const char *ptr,
-					 unsigned int size);
+                                         uint32_t flags,
+                                         int recNum,
+                                         const char *ptr,
+                                         unsigned int size);
 /*@}*/
 
 

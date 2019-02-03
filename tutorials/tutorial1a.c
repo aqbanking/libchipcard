@@ -24,7 +24,8 @@
  * Please go to the source of this for a crosslinked view (see link below).
  * @callgraph
  */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CARD *card;
 

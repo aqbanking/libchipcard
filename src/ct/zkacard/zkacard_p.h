@@ -57,122 +57,122 @@ struct LC_CT_ZKA {
 };
 
 static GWEN_CRYPT_TOKEN *LC_Crypt_TokenZka_new(GWEN_PLUGIN_MANAGER *pm,
-						   LC_CLIENT *lc,
-						   const char *name);
+                                               LC_CLIENT *lc,
+                                               const char *name);
 
 static void GWENHYWFAR_CB LC_Crypt_TokenZka_FreeData(void *bp, void *p);
 
 static int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct,
-					  uint32_t guiid);
+                                      uint32_t guiid);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_GetKeyIdList(GWEN_CRYPT_TOKEN *ct,
-				     uint32_t *pIdList,
-				     uint32_t *pCount,
-				     uint32_t gid);
+LC_Crypt_TokenZka_GetKeyIdList(GWEN_CRYPT_TOKEN *ct,
+                               uint32_t *pIdList,
+                               uint32_t *pCount,
+                               uint32_t gid);
 
-static const GWEN_CRYPT_TOKEN_KEYINFO* GWENHYWFAR_CB
-  LC_Crypt_TokenZka_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
-				   uint32_t id,
-				   uint32_t flags,
-				   uint32_t gid);
-
-static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
-				   uint32_t id,
-				   const GWEN_CRYPT_TOKEN_KEYINFO *ki,
-				   uint32_t gid);
+static const GWEN_CRYPT_TOKEN_KEYINFO *GWENHYWFAR_CB
+LC_Crypt_TokenZka_GetKeyInfo(GWEN_CRYPT_TOKEN *ct,
+                             uint32_t id,
+                             uint32_t flags,
+                             uint32_t gid);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_GetContextIdList(GWEN_CRYPT_TOKEN *ct,
-					 uint32_t *pIdList,
-					 uint32_t *pCount,
-					 uint32_t gid);
-
-static const GWEN_CRYPT_TOKEN_CONTEXT* GWENHYWFAR_CB
-  LC_Crypt_TokenZka_GetContext(GWEN_CRYPT_TOKEN *ct,
-				   uint32_t id,
-				   uint32_t gid);
+LC_Crypt_TokenZka_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
+                             uint32_t id,
+                             const GWEN_CRYPT_TOKEN_KEYINFO *ki,
+                             uint32_t gid);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_SetContext(GWEN_CRYPT_TOKEN *ct,
-				   uint32_t id,
-				   const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
-				   uint32_t gid);
+LC_Crypt_TokenZka_GetContextIdList(GWEN_CRYPT_TOKEN *ct,
+                                   uint32_t *pIdList,
+                                   uint32_t *pCount,
+                                   uint32_t gid);
 
-
-static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
-			     uint32_t keyId,
-			     GWEN_CRYPT_PADDALGO *a,
-			     const uint8_t *pInData,
-			     uint32_t inLen,
-			     uint8_t *pSignatureData,
-			     uint32_t *pSignatureLen,
-			     uint32_t *pSeqCounter,
-			     uint32_t gid);
+static const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB
+LC_Crypt_TokenZka_GetContext(GWEN_CRYPT_TOKEN *ct,
+                             uint32_t id,
+                             uint32_t gid);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Verify(GWEN_CRYPT_TOKEN *ct,
-			       uint32_t keyId,
-			       GWEN_CRYPT_PADDALGO *a,
-			       const uint8_t *pInData,
-			       uint32_t inLen,
-			       const uint8_t *pSignatureData,
-			       uint32_t signatureLen,
-			       uint32_t seqCounter,
-			       uint32_t gid);
-
-static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Encipher(GWEN_CRYPT_TOKEN *ct,
-				 uint32_t keyId,
-				 GWEN_CRYPT_PADDALGO *a,
-				 const uint8_t *pInData,
-				 uint32_t inLen,
-				 uint8_t *pOutData,
-				 uint32_t *pOutLen,
-				 uint32_t gid);
-
-static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
-				 uint32_t keyId,
-				 GWEN_CRYPT_PADDALGO *a,
-				 const uint8_t *pInData,
-				 uint32_t inLen,
-				 uint8_t *pOutData,
-				 uint32_t *pOutLen,
-				 uint32_t gid);
+LC_Crypt_TokenZka_SetContext(GWEN_CRYPT_TOKEN *ct,
+                             uint32_t id,
+                             const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+                             uint32_t gid);
 
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Open(GWEN_CRYPT_TOKEN *ct, int admin, uint32_t guiid);
-static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Close(GWEN_CRYPT_TOKEN *ct, int abandon, uint32_t guiid);
-
-
-
-
-static GWEN_CRYPT_TOKEN* GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Plugin_CreateToken(GWEN_PLUGIN *pl,
-                                       const char *name);
-
-static GWEN_CRYPT_TOKEN* GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Plugin_CreateToken(GWEN_PLUGIN *pl,
-                                       const char *name);
+LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
+                       uint32_t keyId,
+                       GWEN_CRYPT_PADDALGO *a,
+                       const uint8_t *pInData,
+                       uint32_t inLen,
+                       uint8_t *pSignatureData,
+                       uint32_t *pSignatureLen,
+                       uint32_t *pSeqCounter,
+                       uint32_t gid);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
-                                      GWEN_BUFFER *name);
+LC_Crypt_TokenZka_Verify(GWEN_CRYPT_TOKEN *ct,
+                         uint32_t keyId,
+                         GWEN_CRYPT_PADDALGO *a,
+                         const uint8_t *pInData,
+                         uint32_t inLen,
+                         const uint8_t *pSignatureData,
+                         uint32_t signatureLen,
+                         uint32_t seqCounter,
+                         uint32_t gid);
+
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_Encipher(GWEN_CRYPT_TOKEN *ct,
+                           uint32_t keyId,
+                           GWEN_CRYPT_PADDALGO *a,
+                           const uint8_t *pInData,
+                           uint32_t inLen,
+                           uint8_t *pOutData,
+                           uint32_t *pOutLen,
+                           uint32_t gid);
+
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
+                           uint32_t keyId,
+                           GWEN_CRYPT_PADDALGO *a,
+                           const uint8_t *pInData,
+                           uint32_t inLen,
+                           uint8_t *pOutData,
+                           uint32_t *pOutLen,
+                           uint32_t gid);
+
+
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_Open(GWEN_CRYPT_TOKEN *ct, int admin, uint32_t guiid);
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_Close(GWEN_CRYPT_TOKEN *ct, int abandon, uint32_t guiid);
+
+
+
+
+static GWEN_CRYPT_TOKEN *GWENHYWFAR_CB
+LC_Crypt_TokenZka_Plugin_CreateToken(GWEN_PLUGIN *pl,
+                                     const char *name);
+
+static GWEN_CRYPT_TOKEN *GWENHYWFAR_CB
+LC_Crypt_TokenZka_Plugin_CreateToken(GWEN_PLUGIN *pl,
+                                     const char *name);
+
+static int GWENHYWFAR_CB
+LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
+                                    GWEN_BUFFER *name);
 
 static GWEN_PLUGIN *LC_Crypt_TokenZka_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                                                  const char *modName,
                                                  const char *fileName);
 
 static int GWENHYWFAR_CB
-  LC_Crypt_TokenZka_GenerateKey(GWEN_CRYPT_TOKEN *ct,
-				    uint32_t kid,
-				    const GWEN_CRYPT_CRYPTALGO *a,
-				    uint32_t gid);
+LC_Crypt_TokenZka_GenerateKey(GWEN_CRYPT_TOKEN *ct,
+                              uint32_t kid,
+                              const GWEN_CRYPT_CRYPTALGO *a,
+                              uint32_t gid);
 
 static int GWENHYWFAR_CB
 LC_Crypt_TokenZka_ChangePin(GWEN_CRYPT_TOKEN *ct, int admin, uint32_t gid);
@@ -189,15 +189,16 @@ static int LC_TokenZkaCard__ReadKeys(GWEN_CRYPT_TOKEN *ct);
 
 
 static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfo(GWEN_CRYPT_TOKEN *ct, uint32_t id);
-static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(GWEN_CRYPT_TOKEN *ct, int num, int ver);
+static GWEN_CRYPT_TOKEN_KEYINFO *LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(GWEN_CRYPT_TOKEN *ct, int num,
+    int ver);
 
 static int LC_Crypt_TokenZka__AddKeyInfo(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_KEYINFO *ki);
 static int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
-                                                  GWEN_CRYPT_TOKEN_KEYINFO *ki,
-                                                  const int modLen,
-                                                  const int expLen);
+                                                      GWEN_CRYPT_TOKEN_KEYINFO *ki,
+                                                      const int modLen,
+                                                      const int expLen);
 static int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct,
-                                        GWEN_CRYPT_TOKEN_KEYINFO *ki);
+                                               GWEN_CRYPT_TOKEN_KEYINFO *ki);
 
 #endif
 

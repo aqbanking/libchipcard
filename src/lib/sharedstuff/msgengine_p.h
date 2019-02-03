@@ -53,7 +53,7 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
 
 static
 GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
-					 const char *tname);
+                                         const char *tname);
 
 
 static

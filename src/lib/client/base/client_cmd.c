@@ -1,6 +1,7 @@
 
 
-int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
+int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
+{
   GWEN_XMLNODE *cardNode;
   const unsigned char *atr;
   unsigned int atrLen;
@@ -17,7 +18,7 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
     return 1;
   }
   hexAtr=GWEN_Buffer_new(0, 256, 0, 1);
-  if (GWEN_Text_ToHexBuffer((const char*)atr, atrLen, hexAtr, 0, 0, 0)) {
+  if (GWEN_Text_ToHexBuffer((const char *)atr, atrLen, hexAtr, 0, 0, 0)) {
     DBG_ERROR(LC_LOGDOMAIN, "Internal error");
     abort();
   }
@@ -27,7 +28,7 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
     DBG_ERROR(LC_LOGDOMAIN, "No card nodes.");
     return -1;
   }
-  while(cardNode) {
+  while (cardNode) {
     const char *name;
     const char *tp;
     const char *xtp;
@@ -48,22 +49,22 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
         nAtrs=GWEN_XMLNode_FindFirstTag(nAtrs, "atrs", 0, 0);
       if (nAtrs) {
         GWEN_XMLNODE *nAtr;
-  
+
         nAtr=GWEN_XMLNode_GetFirstTag(nAtrs);
-        while(nAtr) {
+        while (nAtr) {
           GWEN_XMLNODE *nData;
-  
+
           nData=GWEN_XMLNode_GetFirstData(nAtr);
           if (nData) {
             const char *p;
-  
+
             p=GWEN_XMLNode_GetData(nData);
             if (p) {
               GWEN_BUFFER *dbuf;
 
               /* compress ATR from XML file */
               dbuf=GWEN_Buffer_new(0, 256, 0, 1);
-              while(*p) {
+              while (*p) {
                 if (!isspace(*p))
                   GWEN_Buffer_AppendByte(dbuf, *p);
                 p++;
@@ -91,10 +92,10 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
   /* add all cards whose base types are contained in the list.
    * repeat this as long as we added cards */
   done=0;
-  while(!done) {
+  while (!done) {
     done=1;
     cardNode=GWEN_XMLNode_FindFirstTag(cl->cardNodes, "card", 0, 0);
-    while(cardNode) {
+    while (cardNode) {
       const char *name;
       const char *extends;
 
@@ -122,7 +123,8 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card){
 GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
                                                const char *commandName,
                                                const char *driverType,
-                                               const char *readerType){
+                                               const char *readerType)
+{
   GWEN_XMLNODE *cmds;
   GWEN_XMLNODE *n;
 
@@ -148,7 +150,7 @@ GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
                                 "command",
                                 "name",
                                 commandName);
-    while(n) {
+    while (n) {
       if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
                      driverType)==0 &&
           strcasecmp(GWEN_XMLNode_GetProperty(n, "reader", ""),
@@ -169,7 +171,7 @@ GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
                                 "command",
                                 "name",
                                 commandName);
-    while(n) {
+    while (n) {
       if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
                      driverType)==0) {
         DBG_DEBUG(LC_LOGDOMAIN, "Found command in %s", driverType);
@@ -185,7 +187,7 @@ GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
                               "command",
                               "name",
                               commandName);
-  while(n) {
+  while (n) {
     if (!GWEN_XMLNode_GetProperty(n, "driver", 0))
       return n;
     n=GWEN_XMLNode_FindNextTag(n, "command", "name", commandName);
@@ -199,7 +201,8 @@ GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
 GWEN_XMLNODE *LC_Client_FindCommandInCardNode(GWEN_XMLNODE *node,
                                               const char *commandName,
                                               const char *driverType,
-                                              const char *readerType) {
+                                              const char *readerType)
+{
   GWEN_XMLNODE *n;
 
   n=LC_Client__FindCommandInCardNode(node, commandName,
@@ -221,13 +224,14 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
                                                 const char *cardType,
                                                 const char *commandName,
                                                 const char *driverType,
-                                                const char *readerType){
+                                                const char *readerType)
+{
   GWEN_XMLNODE *node;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Searching in family of \"%s\"", cardType);
   node=GWEN_XMLNode_FindFirstTag(cardNodes, "card", "name", cardType);
   if (node) {
-    while(node) {
+    while (node) {
       GWEN_XMLNODE *n;
       const char *parent;
 
@@ -280,19 +284,19 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
 
 
 
-GWEN_XMLNODE*
-LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
-                                 const GWEN_STRINGLIST *cardTypes,
-                                 const char *commandName,
-                                 const char *driverType,
-                                 const char *readerType){
+GWEN_XMLNODE *LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
+                                               const GWEN_STRINGLIST *cardTypes,
+                                               const char *commandName,
+                                               const char *driverType,
+                                               const char *readerType)
+{
   GWEN_STRINGLIST *handled;
   GWEN_STRINGLISTENTRY *se;
   GWEN_XMLNODE *node=0;
 
   handled=GWEN_StringList_new();
   se=GWEN_StringList_FirstEntry(cardTypes);
-  while(se) {
+  while (se) {
     const char *s;
 
     s=GWEN_StringListEntry_Data(se);
@@ -318,7 +322,8 @@ LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
 
 GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl,
                                         LC_CARD *card,
-                                        const char *commandName) {
+                                        const char *commandName)
+{
   GWEN_XMLNODE *n;
 
   n=LC_Card_GetCardNode(card);
@@ -352,20 +357,21 @@ GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl,
 
 
 GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
-                                         int sw1, int sw2) {
+                                         int sw1, int sw2)
+{
   GWEN_XMLNODE *rnode;
   GWEN_XMLNODE *n;
   int lsw1, lsw2;
 
   DBG_DEBUG(0, "Searching for result type of %02x/%02x", sw1, sw2);
-  while(node) {
+  while (node) {
     rnode=GWEN_XMLNode_FindNode(node,
                                 GWEN_XMLNodeTypeTag,
                                 "results");
     if (rnode) {
       /* first try exact match */
       n=GWEN_XMLNode_GetFirstTag(rnode);
-      while(n) {
+      while (n) {
         if (1==sscanf(GWEN_XMLNode_GetProperty(n, "sw1", "-1"),
                       "%i", &lsw1) &&
             1==sscanf(GWEN_XMLNode_GetProperty(n, "sw2", "-1"),
@@ -383,7 +389,7 @@ GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
 
       /* try SW1 only */
       n=GWEN_XMLNode_GetFirstTag(rnode);
-      while(n) {
+      while (n) {
         if (1==sscanf(GWEN_XMLNode_GetProperty(n, "sw1", "-1"),
                       "%i", &lsw1) &&
             1==sscanf(GWEN_XMLNode_GetProperty(n, "sw2", "-1"),
@@ -410,7 +416,8 @@ GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
 
 GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
                                    GWEN_XMLNODE *cmdNode,
-                                   int sw1, int sw2) {
+                                   int sw1, int sw2)
+{
   GWEN_XMLNODE *tmpNode;
   GWEN_XMLNODE *rnode;
 
@@ -445,7 +452,7 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
     return rnode;
 
   /* try in parents */
-  for(;;) {
+  for (;;) {
     const char *parent;
 
     parent=GWEN_XMLNode_GetProperty(tmpNode, "extends", 0);
@@ -475,7 +482,8 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
 
 
 GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
-                                           const char *typ) {
+                                           const char *typ)
+{
   GWEN_XMLNODE *rnode;
   GWEN_XMLNODE *n;
   const char *ltyp;
@@ -491,7 +499,7 @@ GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
 
   /* first try exact match */
   n=GWEN_XMLNode_GetFirstTag(rnode);
-  while(n) {
+  while (n) {
     ltyp=GWEN_XMLNode_GetProperty(n, "type", 0);
     if (ltyp) {
       if (strcasecmp(ltyp, typ)==0)
@@ -502,7 +510,7 @@ GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
 
   /* then try a response without any type */
   n=GWEN_XMLNode_GetFirstTag(rnode);
-  while(n) {
+  while (n) {
     ltyp=GWEN_XMLNode_GetProperty(n, "type", 0);
     if (!ltyp)
       return n;
@@ -516,7 +524,8 @@ GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
 
 GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
                                      GWEN_XMLNODE *cmdNode,
-                                     const char *typ) {
+                                     const char *typ)
+{
   GWEN_XMLNODE *tmpNode;
   GWEN_XMLNODE *rnode;
 
@@ -542,7 +551,7 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
     return rnode;
 
   /* try in parents */
-  for(;;) {
+  for (;;) {
     const char *parent;
 
     parent=GWEN_XMLNode_GetProperty(tmpNode, "extends", 0);
@@ -568,9 +577,10 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
 
 
 LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
-				      GWEN_XMLNODE *node,
-				      GWEN_DB_NODE *cmdData,
-				      GWEN_BUFFER *gbuf) {
+                                      GWEN_XMLNODE *node,
+                                      GWEN_DB_NODE *cmdData,
+                                      GWEN_BUFFER *gbuf)
+{
   GWEN_XMLNODE *sendNode;
   GWEN_XMLNODE *dataNode;
   GWEN_XMLNODE *apduNode;
@@ -583,7 +593,7 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
   sendNode=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "send");
   if (!sendNode) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "No <send> tag in command definition, do not execute");
+             "No <send> tag in command definition, do not execute");
     return LC_Client_ResultDontExecute;
   }
 
@@ -625,10 +635,10 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
     if (i>255) {
       // hm: add long length coding if data > 255 bytes
       int ih=i>>8;
-      GWEN_Buffer_AppendByte(gbuf, (unsigned char) 0 );
-      GWEN_Buffer_AppendByte(gbuf, (unsigned char) ih );
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char) 0);
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char) ih);
     }
-    GWEN_Buffer_AppendByte(gbuf, (unsigned char) (i&0xFF) );
+    GWEN_Buffer_AppendByte(gbuf, (unsigned char)(i&0xFF));
 
     GWEN_Buffer_AppendBuffer(gbuf, dataBuffer);
   }
@@ -651,7 +661,7 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
     GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
   // long addressing mode
   if (i>255) {
-      GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
+    GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
   }
   return 0;
 }
@@ -661,7 +671,8 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
 int LC_Client_ParseResult(LC_CLIENT *cl,
                           GWEN_XMLNODE *node,
                           GWEN_BUFFER *gbuf,
-                          GWEN_DB_NODE *rspData){
+                          GWEN_DB_NODE *rspData)
+{
   unsigned int i;
   int sw1, sw2;
   GWEN_DB_NODE *dbTmp;
@@ -703,7 +714,7 @@ int LC_Client_ParseResult(LC_CLIENT *cl,
     txtbuf=GWEN_Buffer_new(0, 256, 0, 1);
     first=1;
     tnode=GWEN_XMLNode_GetFirstData(rnode);
-    while(tnode) {
+    while (tnode) {
       const char *p;
 
       p=GWEN_XMLNode_GetData(tnode);
@@ -742,7 +753,8 @@ int LC_Client_ParseResult(LC_CLIENT *cl,
 int LC_Client_ParseResponse(LC_CLIENT *cl,
                             GWEN_XMLNODE *node,
                             GWEN_BUFFER *gbuf,
-                            GWEN_DB_NODE *rspData){
+                            GWEN_DB_NODE *rspData)
+{
   GWEN_DB_NODE *dbTmp;
   GWEN_XMLNODE *rnode;
   const char *p;
@@ -781,7 +793,7 @@ int LC_Client_ParseResponse(LC_CLIENT *cl,
                                     rnode,
                                     gbuf,
                                     dbTmp,
-                                    GWEN_MSGENGINE_READ_FLAGS_DEFAULT)){
+                                    GWEN_MSGENGINE_READ_FLAGS_DEFAULT)) {
       DBG_ERROR(LC_LOGDOMAIN, "Error parsing response");
       return -1;
     }
@@ -795,7 +807,8 @@ int LC_Client_ParseResponse(LC_CLIENT *cl,
 int LC_Client_ParseAnswer(LC_CLIENT *cl,
                           GWEN_XMLNODE *node,
                           GWEN_BUFFER *gbuf,
-                          GWEN_DB_NODE *rspData){
+                          GWEN_DB_NODE *rspData)
+{
   assert(cl);
 
   if (LC_Client_ParseResult(cl, node, gbuf, rspData)) {
@@ -803,7 +816,7 @@ int LC_Client_ParseAnswer(LC_CLIENT *cl,
     return -1;
   }
 
-  if (LC_Client_ParseResponse(cl, node, gbuf, rspData)){
+  if (LC_Client_ParseResponse(cl, node, gbuf, rspData)) {
     DBG_INFO(0, "Error parsing response");
     return -1;
   }
@@ -817,7 +830,8 @@ LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
                                      LC_CARD *card,
                                      const char *command,
                                      GWEN_DB_NODE *cmdData,
-                                     GWEN_BUFFER *buf) {
+                                     GWEN_BUFFER *buf)
+{
   GWEN_XMLNODE *node;
   LC_CLIENT_RESULT res;
 
@@ -836,8 +850,8 @@ LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
   res=LC_Client__BuildApdu(cl, node, cmdData, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "Error building APDU for command \"%s\" (%d)",
-	     command, res);
+             "Error building APDU for command \"%s\" (%d)",
+             command, res);
     return res;
   }
 
@@ -850,7 +864,8 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
                                        LC_CARD *card,
                                        const char *commandName,
                                        GWEN_DB_NODE *cmdData,
-                                       GWEN_DB_NODE *rspData) {
+                                       GWEN_DB_NODE *rspData)
+{
   GWEN_XMLNODE *node;
   GWEN_BUFFER *buf;
   GWEN_BUFFER *rbuf;
@@ -892,8 +907,8 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
   res=LC_Client__BuildApdu(cl, node, cmdData, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
-	     "Error building APDU for command \"%s\" (%d)",
-	     commandName, res);
+             "Error building APDU for command \"%s\" (%d)",
+             commandName, res);
     GWEN_Buffer_free(buf);
     return res;
   }

@@ -26,7 +26,8 @@ GWEN_INHERIT(LC_CARD, LC_MEMORYCARD)
 
 
 
-int LC_MemoryCard_ExtendCard(LC_CARD *card){
+int LC_MemoryCard_ExtendCard(LC_CARD *card)
+{
   LC_MEMORYCARD *mc;
 
   GWEN_NEW_OBJECT(LC_MEMORYCARD, mc);
@@ -46,7 +47,8 @@ int LC_MemoryCard_ExtendCard(LC_CARD *card){
 
 
 
-int LC_MemoryCard_UnextendCard(LC_CARD *card){
+int LC_MemoryCard_UnextendCard(LC_CARD *card)
+{
   LC_MEMORYCARD *mc;
 
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
@@ -59,18 +61,20 @@ int LC_MemoryCard_UnextendCard(LC_CARD *card){
 
 
 
-void GWENHYWFAR_CB LC_MemoryCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_MemoryCard_freeData(void *bp, void *p)
+{
   LC_MEMORYCARD *mc;
 
   assert(bp);
   assert(p);
-  mc=(LC_MEMORYCARD*)p;
+  mc=(LC_MEMORYCARD *)p;
   GWEN_FREE_OBJECT(mc);
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_MEMORYCARD *mc;
 
@@ -98,7 +102,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_MEMORYCARD *mc;
   int i;
@@ -131,7 +136,8 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_MEMORYCARD *mc;
 
@@ -153,7 +159,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card){
 LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
                                           int offset,
                                           int size,
-                                          GWEN_BUFFER *buf){
+                                          GWEN_BUFFER *buf)
+{
   int t;
   LC_MEMORYCARD *mc;
   int bytesRead=0;
@@ -163,7 +170,7 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
   assert(mc);
 
-  while(size>0) {
+  while (size>0) {
     if (size>252)
       t=252;
     else
@@ -189,7 +196,8 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
 LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
                                            int offset,
                                            const char *ptr,
-                                           unsigned int size) {
+                                           unsigned int size)
+{
   LC_MEMORYCARD *mc;
   LC_CLIENT_RESULT res;
 
@@ -197,10 +205,10 @@ LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
   assert(mc);
 
-  while(size>0) {
+  while (size>0) {
     int t;
     int j;
-  
+
     /* calculate the position at the next boundary */
     j=(((offset)/mc->writeBoundary)+1)*mc->writeBoundary;
     /* read the distance from the current offset to that next boundary */
@@ -223,7 +231,8 @@ LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
 
 
 
-void LC_MemoryCard__CalculateCapacity(LC_CARD *card){
+void LC_MemoryCard__CalculateCapacity(LC_CARD *card)
+{
   LC_MEMORYCARD *mc;
   int i1, i2;
   int j1, j2;
@@ -246,8 +255,8 @@ void LC_MemoryCard__CalculateCapacity(LC_CARD *card){
     return;
   }
 
-  i1=( ( (unsigned char)p[1] ) >> 3 ) & 0x0f; /* count of elements */
-  i2=( (unsigned char)p[1] ) & 0x07;      /* size of element */
+  i1=(((unsigned char)p[1]) >> 3) & 0x0f;     /* count of elements */
+  i2=((unsigned char)p[1]) & 0x07;        /* size of element */
 
   /* check element number */
   if (i1==0)
@@ -270,7 +279,8 @@ void LC_MemoryCard__CalculateCapacity(LC_CARD *card){
 
 
 
-unsigned int LC_MemoryCard_GetCapacity(const LC_CARD *card){
+unsigned int LC_MemoryCard_GetCapacity(const LC_CARD *card)
+{
   LC_MEMORYCARD *mc;
 
   assert(card);

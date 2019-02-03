@@ -25,7 +25,7 @@
 GWEN_INHERIT(LC_CARD, LC_STARCOS)
 
 
-static const unsigned char lc_starcos_key_log_order[]={
+static const unsigned char lc_starcos_key_log_order[]= {
   0x86, 0x81, 0x91, 0x96, /* account 1 */
   0x87, 0x82, 0x92, 0x97, /* account 2 */
   0x88, 0x83, 0x93, 0x98, /* account 3 */
@@ -38,7 +38,8 @@ static const unsigned char lc_starcos_key_log_order[]={
 
 
 
-int LC_Starcos_ExtendCard(LC_CARD *card){
+int LC_Starcos_ExtendCard(LC_CARD *card)
+{
   LC_STARCOS *scos;
   int rv;
 
@@ -70,7 +71,8 @@ int LC_Starcos_ExtendCard(LC_CARD *card){
 
 
 
-int LC_Starcos_UnextendCard(LC_CARD *card){
+int LC_Starcos_UnextendCard(LC_CARD *card)
+{
   LC_STARCOS *scos;
   int rv;
 
@@ -89,12 +91,13 @@ int LC_Starcos_UnextendCard(LC_CARD *card){
 
 
 
-void GWENHYWFAR_CB LC_Starcos_freeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_Starcos_freeData(void *bp, void *p)
+{
   LC_STARCOS *scos;
 
   assert(bp);
   assert(p);
-  scos=(LC_STARCOS*)p;
+  scos=(LC_STARCOS *)p;
   free(scos->appName);
   GWEN_Buffer_free(scos->bin_ef_gd_0);
   GWEN_DB_Group_free(scos->db_ef_gd_0);
@@ -104,7 +107,8 @@ void GWENHYWFAR_CB LC_Starcos_freeData(void *bp, void *p){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_STARCOS *scos;
 
@@ -147,7 +151,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Open(LC_CARD *card){
 LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
                                         const char *efName,
                                         const char *formatName,
-                                        GWEN_DB_NODE *db) {
+                                        GWEN_DB_NODE *db)
+{
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
 
@@ -181,7 +186,8 @@ LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_STARCOS *scos;
   GWEN_BUFFER *mbuf;
@@ -243,16 +249,22 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
   else {
     DBG_ERROR(0, "Got this version data:");
     GWEN_DB_Dump(dbVersion, 2);
-  
+
     x=GWEN_DB_GetIntValue(dbVersion, "publisherId", 0, 0x44);
     GWEN_DB_Group_free(dbVersion);
-  
-    switch(x) {
-    case 0x44: s="starcos"; break;
-    case 0x47: s="starcos-vr"; break;
-    default:   s="starcos"; break;
+
+    switch (x) {
+    case 0x44:
+      s="starcos";
+      break;
+    case 0x47:
+      s="starcos-vr";
+      break;
+    default:
+      s="starcos";
+      break;
     }
-  
+
     DBG_INFO(LC_LOGDOMAIN, "Selecting application \"%s\"", s);
     res=LC_Card_SelectApp(card, s);
     if (res!=LC_Client_ResultOk) {
@@ -313,7 +325,8 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_STARCOS *scos;
 
@@ -333,7 +346,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Close(LC_CARD *card){
 
 
 
-GWEN_DB_NODE *LC_Starcos_GetCardDataAsDb(const LC_CARD *card){
+GWEN_DB_NODE *LC_Starcos_GetCardDataAsDb(const LC_CARD *card)
+{
   LC_STARCOS *scos;
 
   assert(card);
@@ -345,7 +359,8 @@ GWEN_DB_NODE *LC_Starcos_GetCardDataAsDb(const LC_CARD *card){
 
 
 
-GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card){
+GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card)
+{
   LC_STARCOS *scos;
 
   assert(card);
@@ -357,11 +372,11 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB 
-LC_Starcos_GetPinStatus(LC_CARD *card,
-                        unsigned int pid,
-                        int *maxErrors,
-                        int *currentErrors) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
+                                                     unsigned int pid,
+                                                     int *maxErrors,
+                                                     int *currentErrors)
+{
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -402,13 +417,14 @@ LC_Starcos_GetPinStatus(LC_CARD *card,
 
 
 
-int LC_Starcos__GetKeyDescrOffset(int kid) {
+int LC_Starcos__GetKeyDescrOffset(int kid)
+{
   const unsigned char *p;
   int i;
 
   i=0;
   p=lc_starcos_key_log_order;
-  while(*p && *p!=(unsigned char)kid) {
+  while (*p && *p!=(unsigned char)kid) {
     p++;
     i++;
   }
@@ -420,7 +436,8 @@ int LC_Starcos__GetKeyDescrOffset(int kid) {
 
 
 LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
-					   unsigned int *pResult) {
+                                           unsigned int *pResult)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -457,7 +474,8 @@ LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card) {
+LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -495,7 +513,8 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card) {
 
 
 
-LC_STARCOS_KEYDESCR *LC_Starcos__FindKeyDescr(LC_CARD *card, int kid) {
+LC_STARCOS_KEYDESCR *LC_Starcos__FindKeyDescr(LC_CARD *card, int kid)
+{
   LC_STARCOS *scos;
   LC_STARCOS_KEYDESCR *d;
 
@@ -504,7 +523,7 @@ LC_STARCOS_KEYDESCR *LC_Starcos__FindKeyDescr(LC_CARD *card, int kid) {
   assert(scos);
 
   d=LC_Starcos_KeyDescr_List_First(scos->keyDescriptors);
-  while(d) {
+  while (d) {
     if (LC_Starcos_KeyDescr_GetKeyId(d)==kid)
       break;
     d=LC_Starcos_KeyDescr_List_Next(d);
@@ -516,7 +535,8 @@ LC_STARCOS_KEYDESCR *LC_Starcos__FindKeyDescr(LC_CARD *card, int kid) {
 
 
 LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
-					  LC_STARCOS_KEYDESCR **pDescr) {
+                                          LC_STARCOS_KEYDESCR **pDescr)
+{
   LC_STARCOS *scos;
   LC_STARCOS_KEYDESCR *d;
   LC_CLIENT_RESULT res;
@@ -574,7 +594,8 @@ LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
 
 
 LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
-					 const LC_STARCOS_KEYDESCR *d) {
+                                         const LC_STARCOS_KEYDESCR *d)
+{
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbDescr;
   GWEN_BUFFER *mbuf;
@@ -636,7 +657,8 @@ LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
-					LC_STARCOS_KEYDESCR **pDescr) {
+                                        LC_STARCOS_KEYDESCR **pDescr)
+{
   LC_STARCOS *scos;
   LC_STARCOS_KEYDESCR *d;
 
@@ -664,7 +686,8 @@ LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
 
 LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
-                                            int bits) {
+                                            int bits)
+{
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -731,8 +754,9 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
-					    int dstKid,
-					    const LC_STARCOS_KEYDESCR *descr){
+                                            int dstKid,
+                                            const LC_STARCOS_KEYDESCR *descr)
+{
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbDescr;
@@ -808,7 +832,8 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
 
 
 
-int LC_Starcos__IsSignKey(int kid) {
+int LC_Starcos__IsSignKey(int kid)
+{
   if (kid>=0x86 && kid<=0x8a)
     return 0;
   if (kid>=0x96 && kid<=0x9a)
@@ -820,13 +845,15 @@ int LC_Starcos__IsSignKey(int kid) {
 
 
 
-int LC_Starcos__IsCryptKey(int kid) {
+int LC_Starcos__IsCryptKey(int kid)
+{
   return !LC_Starcos__IsSignKey(kid);
 }
 
 
 
-int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid) {
+int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -881,10 +908,11 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid) {
 
 
 LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
-					   const uint8_t *pModulus,
-					   uint32_t lModulus,
-					   const uint8_t *pExponent,
-					   uint32_t lExponent) {
+                                           const uint8_t *pModulus,
+                                           uint32_t lModulus,
+                                           const uint8_t *pExponent,
+                                           uint32_t lExponent)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -942,7 +970,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
     DBG_INFO(LC_LOGDOMAIN, "Need to mirror the modulus");
 
     /* we have to mirror the modulus */
-    s=(const char*)p+bs;
+    s=(const char *)p+bs;
     for (i=0; i<(int)bs; i++)
       GWEN_Buffer_AppendByte(mbuf, *(--s));
   }
@@ -1019,8 +1047,9 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
 
 LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
-					  GWEN_BUFFER *bModulus,
-					  GWEN_BUFFER *bExponent) {
+                                          GWEN_BUFFER *bModulus,
+                                          GWEN_BUFFER *bExponent)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *mbuf;
@@ -1042,7 +1071,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
         (kid>=0x91 && kid<=0x9a) ||
         kid==0x8e ||
         kid==0x8f
-       )
+      )
      ) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Bad key id for reading (%02x)",
@@ -1106,7 +1135,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
 
     /* we have to mirror the modulus */
     DBG_INFO(LC_LOGDOMAIN, "Mirroring modulus");
-    s=(const char*)p+modLen;
+    s=(const char *)p+modLen;
     for (i=0; i<modLen; i++)
       GWEN_Buffer_AppendByte(bModulus, *(--s));
   }
@@ -1122,7 +1151,8 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
 
 LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
                                               int idx,
-                                              GWEN_DB_NODE *dbData) {
+                                              GWEN_DB_NODE *dbData)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *buf;
@@ -1141,7 +1171,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
-			    idx, buf);
+                            idx, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
     GWEN_Buffer_free(buf);
@@ -1152,9 +1182,9 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   if (GWEN_Buffer_GetUsedBytes(buf)) {
     if ((unsigned char)(GWEN_Buffer_GetStart(buf)[0])!=0xff) {
       if (LC_Card_ParseRecord(card, idx, buf, dbData)) {
-	DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
-	GWEN_Buffer_free(buf);
-	return LC_Client_ResultDataError;
+        DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
+        GWEN_Buffer_free(buf);
+        return LC_Client_ResultDataError;
       }
     } /* if buffer content is valid */
   } /* if buffer not empty */
@@ -1167,7 +1197,8 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
                                                int idx,
-                                               GWEN_DB_NODE *dbData) {
+                                               GWEN_DB_NODE *dbData)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *buf;
@@ -1213,7 +1244,8 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
-					   uint32_t *pSeq) {
+                                           uint32_t *pSeq)
+{
   LC_STARCOS *scos;
   LC_CLIENT_RESULT res;
   unsigned int i;
@@ -1278,7 +1310,8 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
 LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
                                               const char *ptr,
                                               unsigned int size,
-                                              GWEN_BUFFER *sigBuf) {
+                                              GWEN_BUFFER *sigBuf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
@@ -1341,7 +1374,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                                                 const char *ptr,
                                                 unsigned int size,
                                                 const char *sigptr,
-                                                unsigned int sigsize) {
+                                                unsigned int sigsize)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
@@ -1392,7 +1426,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
+LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_STARCOS *scos;
@@ -1436,12 +1471,12 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf) {
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB 
-LC_Starcos_GetInitialPin(LC_CARD *card,
-                         int pid,
-                         unsigned char *buffer,
-                         unsigned int maxSize,
-                         unsigned int *pinLength) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetInitialPin(LC_CARD *card,
+                                                      int pid,
+                                                      unsigned char *buffer,
+                                                      unsigned int maxSize,
+                                                      unsigned int *pinLength)
+{
   LC_STARCOS *scos;
 
   assert(card);

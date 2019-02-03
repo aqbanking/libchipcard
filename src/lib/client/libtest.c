@@ -22,15 +22,17 @@
 
 #ifdef LC_CLIENT_WITH_LCC
 
-int testLcc7(int argc, char **argv) {
+int testLcc7(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
-  uint8_t cmdSelectDF[]={
-      0x00, 0xa4, 0x04, 0x00,
-      0x07,
-      0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00};
-  uint8_t cmdReadRecord[]={ 0x00, 0xb2, 0x00, 0x00, 0x00};
+  uint8_t cmdSelectDF[]= {
+    0x00, 0xa4, 0x04, 0x00,
+    0x07,
+    0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00
+  };
+  uint8_t cmdReadRecord[]= { 0x00, 0xb2, 0x00, 0x00, 0x00};
   GWEN_BUFFER *mbuf;
   int i;
   int j;
@@ -77,8 +79,8 @@ int testLcc7(int argc, char **argv) {
 
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
 
-  res=LC_Card_ExecApdu(card, (const char*)cmdSelectDF, sizeof(cmdSelectDF),
-		       mbuf, LC_Client_CmdTargetCard, 10000);
+  res=LC_Card_ExecApdu(card, (const char *)cmdSelectDF, sizeof(cmdSelectDF),
+                       mbuf, LC_Client_CmdTargetCard, 10000);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
@@ -88,15 +90,15 @@ int testLcc7(int argc, char **argv) {
     cmdReadRecord[3]=(i<<3) | 4; /* SFI */
     for (j=1; j<16; j++) {
       cmdReadRecord[2]=j; /* record number */
-      res=LC_Card_ExecApdu(card, (const char*)cmdReadRecord, sizeof(cmdReadRecord),
-			   mbuf, LC_Client_CmdTargetCard, 10000);
+      res=LC_Card_ExecApdu(card, (const char *)cmdReadRecord, sizeof(cmdReadRecord),
+                           mbuf, LC_Client_CmdTargetCard, 10000);
       if (res!=LC_Client_ResultOk) {
-	fprintf(stderr, "ERROR: Wait timed out.\n");
+        fprintf(stderr, "ERROR: Wait timed out.\n");
       }
       else {
-	fprintf(stdout, "SFI=%d, Record=%d:\n", i, j);
-	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
-			     stdout, 2);
+        fprintf(stdout, "SFI=%d, Record=%d:\n", i, j);
+        GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
+                             stdout, 2);
       }
       GWEN_Buffer_Reset(mbuf);
     }
@@ -134,7 +136,8 @@ int testLcc7(int argc, char **argv) {
 
 
 #ifdef LC_CLIENT_WITH_PCSC
-int testPcsc1(int argc, char **argv) {
+int testPcsc1(int argc, char **argv)
+{
   LC_CLIENT *cl;
 
   cl=LC_Client_new("test", "0.1");
@@ -147,7 +150,8 @@ int testPcsc1(int argc, char **argv) {
 
 
 
-int testPcsc2(int argc, char **argv) {
+int testPcsc2(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
 
@@ -169,7 +173,8 @@ int testPcsc2(int argc, char **argv) {
 
 
 
-int testPcsc3(int argc, char **argv) {
+int testPcsc3(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
 
@@ -198,7 +203,8 @@ int testPcsc3(int argc, char **argv) {
 
 
 
-int testPcsc4(int argc, char **argv) {
+int testPcsc4(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
 
@@ -241,7 +247,8 @@ int testPcsc4(int argc, char **argv) {
 
 
 
-int testPcsc5(int argc, char **argv) {
+int testPcsc5(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
@@ -303,7 +310,8 @@ int testPcsc5(int argc, char **argv) {
 
 
 
-int testPcsc6(int argc, char **argv) {
+int testPcsc6(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
@@ -421,15 +429,17 @@ int testPcsc6(int argc, char **argv) {
 }
 
 
-int testPcsc7(int argc, char **argv) {
+int testPcsc7(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
-  uint8_t cmdSelectDF[]={
-      0x00, 0xa4, 0x04, 0x00,
-      0x07,
-      0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00};
-  uint8_t cmdReadRecord[]={ 0x00, 0xb2, 0x00, 0x00, 0x00};
+  uint8_t cmdSelectDF[]= {
+    0x00, 0xa4, 0x04, 0x00,
+    0x07,
+    0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00
+  };
+  uint8_t cmdReadRecord[]= { 0x00, 0xb2, 0x00, 0x00, 0x00};
   GWEN_BUFFER *mbuf;
   int i;
   int j;
@@ -481,8 +491,8 @@ int testPcsc7(int argc, char **argv) {
 
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
 
-  res=LC_Card_ExecApdu(card, (const char*)cmdSelectDF, sizeof(cmdSelectDF),
-		       mbuf, LC_Client_CmdTargetCard);
+  res=LC_Card_ExecApdu(card, (const char *)cmdSelectDF, sizeof(cmdSelectDF),
+                       mbuf, LC_Client_CmdTargetCard);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
@@ -492,14 +502,14 @@ int testPcsc7(int argc, char **argv) {
     cmdReadRecord[3]=(i<<3) | 4; /* SFI */
     for (j=1; j<16; j++) {
       cmdReadRecord[2]=j; /* record number */
-      res=LC_Card_ExecApdu(card, (const char*)cmdReadRecord, sizeof(cmdReadRecord),
-			   mbuf, LC_Client_CmdTargetCard);
+      res=LC_Card_ExecApdu(card, (const char *)cmdReadRecord, sizeof(cmdReadRecord),
+                           mbuf, LC_Client_CmdTargetCard);
       if (res!=LC_Client_ResultOk) {
-	fprintf(stderr, "ERROR: Wait timed out.\n");
+        fprintf(stderr, "ERROR: Wait timed out.\n");
       }
       else {
-	fprintf(stdout, "SFI=%d, Record=%d:\n", i, j);
-	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
+        fprintf(stdout, "SFI=%d, Record=%d:\n", i, j);
+        GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf),
                              2);
       }
       GWEN_Buffer_Reset(mbuf);
@@ -534,15 +544,17 @@ int testPcsc7(int argc, char **argv) {
 
 
 
-int testPcsc8(int argc, char **argv) {
+int testPcsc8(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
-  uint8_t cmdSelectDF[]={
-      0x00, 0xa4, 0x04, 0x00,
-      0x07,
-      0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00};
-  uint8_t cmdReadRecord[]={ 0x00, 0xb2, 0x00, 0x0c, 0x00};
+  uint8_t cmdSelectDF[]= {
+    0x00, 0xa4, 0x04, 0x00,
+    0x07,
+    0xa0, 0x00, 0x00, 0x00, 0x04, 0x30, 0x60, 0x00
+  };
+  uint8_t cmdReadRecord[]= { 0x00, 0xb2, 0x00, 0x0c, 0x00};
   GWEN_BUFFER *mbuf;
   int i;
 
@@ -593,8 +605,8 @@ int testPcsc8(int argc, char **argv) {
 
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
 
-  res=LC_Card_ExecApdu(card, (const char*)cmdSelectDF, sizeof(cmdSelectDF),
-		       mbuf, LC_Client_CmdTargetCard);
+  res=LC_Card_ExecApdu(card, (const char *)cmdSelectDF, sizeof(cmdSelectDF),
+                       mbuf, LC_Client_CmdTargetCard);
   if (res!=LC_Client_ResultOk) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
@@ -602,14 +614,14 @@ int testPcsc8(int argc, char **argv) {
 
   for (i=1; i<16; i++) {
     cmdReadRecord[2]=i; /* record number */
-    res=LC_Card_ExecApdu(card, (const char*)cmdReadRecord, sizeof(cmdReadRecord),
-			 mbuf, LC_Client_CmdTargetCard);
+    res=LC_Card_ExecApdu(card, (const char *)cmdReadRecord, sizeof(cmdReadRecord),
+                         mbuf, LC_Client_CmdTargetCard);
     if (res!=LC_Client_ResultOk) {
-	fprintf(stderr, "ERROR: Wait timed out.\n");
+      fprintf(stderr, "ERROR: Wait timed out.\n");
     }
     else {
-	fprintf(stdout, "Record=%d:\n", i);
-	GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf), 2);
+      fprintf(stdout, "Record=%d:\n", i);
+      GWEN_Text_DumpString(GWEN_Buffer_GetStart(mbuf), GWEN_Buffer_GetUsedBytes(mbuf), 2);
     }
     GWEN_Buffer_Reset(mbuf);
   }
@@ -642,7 +654,8 @@ int testPcsc8(int argc, char **argv) {
 
 
 
-int testPcsc9(int argc, char **argv) {
+int testPcsc9(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CLIENT_RESULT res;
   LC_CARD *card;
@@ -815,7 +828,8 @@ int testPcsc9(int argc, char **argv) {
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int rv;
   int tcount=0;
   int tfailed=0;

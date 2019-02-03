@@ -23,13 +23,13 @@
 
 
 LC_CARD *LC_Card_new(LC_CLIENT *cl,
-		     SCARDHANDLE scardHandle,
-		     const char *readerName,
-		     DWORD protocol,
-		     const char *cardType,
-		     uint32_t rflags,
-		     const unsigned char *atrBuf,
-		     unsigned int atrLen);
+                     SCARDHANDLE scardHandle,
+                     const char *readerName,
+                     DWORD protocol,
+                     const char *cardType,
+                     uint32_t rflags,
+                     const unsigned char *atrBuf,
+                     unsigned int atrLen);
 
 
 GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card,

@@ -28,7 +28,8 @@
 GWEN_LIST_FUNCTIONS(LC_TLV, LC_TLV)
 
 
-LC_TLV *LC_TLV_new() {
+LC_TLV *LC_TLV_new()
+{
   LC_TLV *tlv;
 
   GWEN_NEW_OBJECT(LC_TLV, tlv);
@@ -39,7 +40,8 @@ LC_TLV *LC_TLV_new() {
 
 
 
-void LC_TLV_free(LC_TLV *tlv) {
+void LC_TLV_free(LC_TLV *tlv)
+{
   if (tlv) {
     free(tlv->tagData);
     GWEN_LIST_FINI(LC_TLV, tlv);
@@ -49,42 +51,48 @@ void LC_TLV_free(LC_TLV *tlv) {
 
 
 
-int LC_TLV_IsBerTlv(const LC_TLV *tlv){
+int LC_TLV_IsBerTlv(const LC_TLV *tlv)
+{
   assert(tlv);
   return tlv->isBerTlv;
 }
 
 
 
-unsigned int LC_TLV_GetTagType(const LC_TLV *tlv){
+unsigned int LC_TLV_GetTagType(const LC_TLV *tlv)
+{
   assert(tlv);
   return tlv->tagType;
 }
 
 
 
-unsigned int LC_TLV_GetTagLength(const LC_TLV *tlv){
+unsigned int LC_TLV_GetTagLength(const LC_TLV *tlv)
+{
   assert(tlv);
   return tlv->tagLength;
 }
 
 
 
-unsigned int LC_TLV_GetTagSize(const LC_TLV *tlv){
+unsigned int LC_TLV_GetTagSize(const LC_TLV *tlv)
+{
   assert(tlv);
   return tlv->tagSize;
 }
 
 
 
-const void *LC_TLV_GetTagData(const LC_TLV *tlv){
+const void *LC_TLV_GetTagData(const LC_TLV *tlv)
+{
   assert(tlv);
   return tlv->tagData;
 }
 
 
 
-LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv) {
+LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv)
+{
   const char *p;
   unsigned int tagMode;
   unsigned int tagType;
@@ -195,7 +203,7 @@ LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv) {
   tlv->tagType=tagType;
   tlv->tagLength=tagLength;
   if (tagLength) {
-    tlv->tagData=(void*)malloc(tagLength);
+    tlv->tagData=(void *)malloc(tagLength);
     memmove(tlv->tagData, tagData, tagLength);
   }
 
@@ -206,14 +214,16 @@ LC_TLV *LC_TLV_fromBuffer(GWEN_BUFFER *mbuf, int isBerTlv) {
 
 
 
-int LC_TLV_IsContructed(const LC_TLV *tlv){
+int LC_TLV_IsContructed(const LC_TLV *tlv)
+{
   assert(tlv);
   return (tlv->tagMode & 0x20);
 }
 
 
 
-unsigned int LC_TLV_GetClass(const LC_TLV *tlv){
+unsigned int LC_TLV_GetClass(const LC_TLV *tlv)
+{
   assert(tlv);
   return (tlv->tagMode & 0xc0);
 }

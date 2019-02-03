@@ -28,94 +28,95 @@
 #define PROGRAM_VERSION "1.9"
 
 
-const GWEN_ARGS prg_args[]={
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "configfile",                 /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "C",                          /* short option */
-  "configfile",                 /* long option */
-  "Configuration file to load", /* short description */
-  "Configuration file to load." /* long description */
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "file",                       /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "f",                          /* short option */
-  "file",                       /* long option */
-  "File name",                  /* short description */
-  "File name. \n"
-  "This filename is used when reading or writing data such as public keys,\n"
-  "bank information etc."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "logtype",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logtype",                    /* long option */
-  "Set the logtype",            /* short description */
-  "Set the logtype (console, file)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "loglevel",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "loglevel",                   /* long option */
-  "Set the log level",          /* short description */
-  "Set the log level (info, notice, warning, error)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "logfile",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logfile",                   /* long option */
-  "Set the log file",          /* short description */
-  "Set the log file (if log type is \"file\")."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "verbosity",                  /* name */
-  0,                            /* minnum */
-  10,                           /* maxnum */
-  "v",                          /* short option */
-  "verbous",                    /* long option */
-  "Increase the verbosity",     /* short description */
-  "Every occurrence of this option increases the verbosity."
-},
-{
-  GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "help",                       /* name */
-  0,                            /* minnum */
-  0,                            /* maxnum */
-  "h",                          /* short option */
-  "help",                       /* long option */
-  "Show help",                  /* short description */
-  "Shows this help."            /* long description */
+const GWEN_ARGS prg_args[]= {
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "configfile",                 /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "C",                          /* short option */
+    "configfile",                 /* long option */
+    "Configuration file to load", /* short description */
+    "Configuration file to load." /* long description */
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "file",                       /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "f",                          /* short option */
+    "file",                       /* long option */
+    "File name",                  /* short description */
+    "File name. \n"
+    "This filename is used when reading or writing data such as public keys,\n"
+    "bank information etc."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logtype",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logtype",                    /* long option */
+    "Set the logtype",            /* short description */
+    "Set the logtype (console, file)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "loglevel",                   /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "loglevel",                   /* long option */
+    "Set the log level",          /* short description */
+    "Set the log level (info, notice, warning, error)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logfile",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logfile",                   /* long option */
+    "Set the log file",          /* short description */
+    "Set the log file (if log type is \"file\")."
+  },
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "verbosity",                  /* name */
+    0,                            /* minnum */
+    10,                           /* maxnum */
+    "v",                          /* short option */
+    "verbous",                    /* long option */
+    "Increase the verbosity",     /* short description */
+    "Every occurrence of this option increases the verbosity."
+  },
+  {
+    GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "help",                       /* name */
+    0,                            /* minnum */
+    0,                            /* maxnum */
+    "h",                          /* short option */
+    "help",                       /* long option */
+    "Show help",                  /* short description */
+    "Shows this help."            /* long description */
   }
 };
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
+void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+{
   const char *s;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     s="Ok.";
     break;
@@ -165,7 +166,8 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
-int loaded(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int loaded(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
@@ -262,7 +264,8 @@ int loaded(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int maxload(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int maxload(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
@@ -356,7 +359,8 @@ int maxload(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
@@ -450,7 +454,8 @@ int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   LC_GELDKARTE_BLOG_LIST2 *bll;
@@ -544,22 +549,22 @@ int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
       bl=LC_GeldKarte_BLog_List2Iterator_Data(blli);
       assert(bl);
       fprintf(stdout,
-	      "Status bSEQ lSEQ hSEQ sSEQ KeyId Merchant     Value   Loaded \n");
-      while(bl) {
+              "Status bSEQ lSEQ hSEQ sSEQ KeyId Merchant     Value   Loaded \n");
+      while (bl) {
 
-	fprintf(stdout,
-		"%6d %4d %4d %4d %4d %4d %12s %7.2f %7.2f\n",
-		LC_GeldKarte_BLog_GetStatus(bl),
-		LC_GeldKarte_BLog_GetBSeq(bl),
-		LC_GeldKarte_BLog_GetLSeq(bl),
-		LC_GeldKarte_BLog_GetHSeq(bl),
-		LC_GeldKarte_BLog_GetSSeq(bl),
-		LC_GeldKarte_BLog_GetKeyId(bl),
-		LC_GeldKarte_BLog_GetMerchantId(bl),
-		(float)(LC_GeldKarte_BLog_GetValue(bl)/100.0),
-		(float)(LC_GeldKarte_BLog_GetLoaded(bl)/100.0));
+        fprintf(stdout,
+                "%6d %4d %4d %4d %4d %4d %12s %7.2f %7.2f\n",
+                LC_GeldKarte_BLog_GetStatus(bl),
+                LC_GeldKarte_BLog_GetBSeq(bl),
+                LC_GeldKarte_BLog_GetLSeq(bl),
+                LC_GeldKarte_BLog_GetHSeq(bl),
+                LC_GeldKarte_BLog_GetSSeq(bl),
+                LC_GeldKarte_BLog_GetKeyId(bl),
+                LC_GeldKarte_BLog_GetMerchantId(bl),
+                (float)(LC_GeldKarte_BLog_GetValue(bl)/100.0),
+                (float)(LC_GeldKarte_BLog_GetLoaded(bl)/100.0));
 
-	bl=LC_GeldKarte_BLog_List2Iterator_Next(blli);
+        bl=LC_GeldKarte_BLog_List2Iterator_Next(blli);
       }
       LC_GeldKarte_BLog_List2Iterator_free(blli);
     }
@@ -572,7 +577,8 @@ int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int rv;
   GWEN_DB_NODE *db;
   const char *s;
@@ -635,10 +641,10 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
-		      "geldkarte3",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "geldkarte3.log"),
-		      logType,
-		      GWEN_LoggerFacility_User);
+                      "geldkarte3",
+                      GWEN_DB_GetCharValue(db, "logfile", 0, "geldkarte3.log"),
+                      logType,
+                      GWEN_LoggerFacility_User);
   if (rv) {
     fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
     return RETURNVALUE_SETUP;

@@ -47,9 +47,9 @@
  */
 CHIPCARD_API
 int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pt,
-			     uint32_t guiid);
+                             LC_CARD *hcard,
+                             GWEN_CRYPT_PINTYPE pt,
+                             uint32_t guiid);
 
 CHIPCARD_API
 int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
@@ -66,10 +66,10 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
  */
 CHIPCARD_API
 int LC_Crypt_Token_ChangePin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pt,
-			     int initial,
-			     uint32_t guiid);
+                             LC_CARD *hcard,
+                             GWEN_CRYPT_PINTYPE pt,
+                             int initial,
+                             uint32_t guiid);
 
 /**
  * Convert the given client result code to one of Gwenhywfars error codes.

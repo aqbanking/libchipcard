@@ -23,7 +23,7 @@
 #define PROGRAM_VERSION "0.1"
 
 
-const GWEN_ARGS prg_args[]={
+const GWEN_ARGS prg_args[]= {
   {
     GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
     GWEN_ArgsType_Char,            /* type */
@@ -97,10 +97,11 @@ const GWEN_ARGS prg_args[]={
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
+void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+{
   const char *s;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     s="Ok.";
     break;
@@ -153,7 +154,8 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int rv;
   GWEN_DB_NODE *db;
   const char *s;
@@ -168,30 +170,30 @@ int main(int argc, char **argv) {
 
   db=GWEN_DB_Group_new("arguments");
   rv=GWEN_Args_Check(argc, argv, 1,
-		     GWEN_ARGS_MODE_ALLOW_FREEPARAM |
-		     GWEN_ARGS_MODE_STOP_AT_FREEPARAM,
-		     prg_args,
-		     db);
+                     GWEN_ARGS_MODE_ALLOW_FREEPARAM |
+                     GWEN_ARGS_MODE_STOP_AT_FREEPARAM,
+                     prg_args,
+                     db);
   if (rv==GWEN_ARGS_RESULT_HELP) {
     GWEN_BUFFER *ubuf;
 
     ubuf=GWEN_Buffer_new(0, 1024, 0, 1);
     GWEN_Buffer_AppendString(ubuf,
-			     I18N("Usage: "));
+                             I18N("Usage: "));
     GWEN_Buffer_AppendString(ubuf, argv[0]);
     GWEN_Buffer_AppendString(ubuf,
-			     I18N(" [GLOBAL OPTIONS] COMMAND"
-				  " [LOCAL OPTIONS]\n"));
+                             I18N(" [GLOBAL OPTIONS] COMMAND"
+                                  " [LOCAL OPTIONS]\n"));
     if (GWEN_Args_Usage(prg_args, ubuf, GWEN_ArgsOutType_Txt)) {
       fprintf(stderr, "Could not generate help string.\n");
       GWEN_Buffer_free(ubuf);
       return RETURNVALUE_PARAM;
     }
     GWEN_Buffer_AppendString(ubuf,
-			     I18N("\nCommands:\n\n"));
+                             I18N("\nCommands:\n\n"));
     GWEN_Buffer_AppendString(ubuf,
-			     I18N("  getkey:\n"
-				  "    get public part of a rsa key\n\n"));
+                             I18N("  getkey:\n"
+                                  "    get public part of a rsa key\n\n"));
     fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
@@ -228,10 +230,10 @@ int main(int argc, char **argv) {
     return RETURNVALUE_PARAM;
   }
   rv=GWEN_Logger_Open(GWEN_LOGDOMAIN,
-		      "zkacard-tool",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "zkacard-tool.log"),
-		      logType,
-		      GWEN_LoggerFacility_User);
+                      "zkacard-tool",
+                      GWEN_DB_GetCharValue(db, "logfile", 0, "zkacard-tool.log"),
+                      logType,
+                      GWEN_LoggerFacility_User);
   if (rv) {
     fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
     return RETURNVALUE_SETUP;
@@ -241,10 +243,10 @@ int main(int argc, char **argv) {
   /* handle command */
 
   if (strcasecmp(cmd, "getkey")==0) {
-    rv=getPublicKey(db,argc,argv);
+    rv=getPublicKey(db, argc, argv);
   }
   else if (strcasecmp(cmd, "shownotepad")==0) {
-      rv=showNotepad(db,argc,argv);
+    rv=showNotepad(db, argc, argv);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", s);

@@ -2,7 +2,8 @@
 
 
 void LC_Client__SampleXmlFiles(const char *where,
-                               GWEN_STRINGLIST *sl) {
+                               GWEN_STRINGLIST *sl)
+{
   GWEN_BUFFER *buf;
   GWEN_DIRECTORY *d;
   unsigned int dpos;
@@ -21,7 +22,7 @@ void LC_Client__SampleXmlFiles(const char *where,
     GWEN_STRINGLISTENTRY *se;
 
     slDirs=GWEN_StringList_new();
-    while (!GWEN_Directory_Read(d, buffer, sizeof(buffer))){
+    while (!GWEN_Directory_Read(d, buffer, sizeof(buffer))) {
       if (strcmp(buffer, ".")!=0 &&
           strcmp(buffer, "..")!=0) {
         struct stat st;
@@ -32,7 +33,7 @@ void LC_Client__SampleXmlFiles(const char *where,
         GWEN_Buffer_AppendString(buf, buffer);
         DBG_DEBUG(LC_LOGDOMAIN, "Checking file \"%s\"",
                   GWEN_Buffer_GetStart(buf));
-  
+
         if (stat(GWEN_Buffer_GetStart(buf), &st)) {
           DBG_ERROR(LC_LOGDOMAIN, "stat(%s): %s",
                     GWEN_Buffer_GetStart(buf),
@@ -64,7 +65,7 @@ void LC_Client__SampleXmlFiles(const char *where,
 
     /* now read subfolders */
     se=GWEN_StringList_FirstEntry(slDirs);
-    while(se) {
+    while (se) {
       LC_Client__SampleXmlFiles(GWEN_StringListEntry_Data(se), sl);
       se=GWEN_StringListEntry_Next(se);
     }
@@ -73,7 +74,7 @@ void LC_Client__SampleXmlFiles(const char *where,
   } /* if open succeeded */
   else {
     DBG_DEBUG(LC_LOGDOMAIN, "Could not open dir \"%s\"",
-	      GWEN_Buffer_GetStart(buf));
+              GWEN_Buffer_GetStart(buf));
   }
   GWEN_Directory_free(d);
   GWEN_Buffer_free(buf);
@@ -82,13 +83,14 @@ void LC_Client__SampleXmlFiles(const char *where,
 
 
 int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
-                           GWEN_XMLNODE *node) {
+                           GWEN_XMLNODE *node)
+{
   GWEN_XMLNODE *nsrc, *ndst;
 
   assert(node);
 
   nsrc=GWEN_XMLNode_GetChild(node);
-  while(nsrc) {
+  while (nsrc) {
     /* merge 1st level */
     if (GWEN_XMLNode_GetType(nsrc)==GWEN_XMLNodeTypeTag) {
       ndst=GWEN_XMLNode_FindFirstTag(destNode,
@@ -105,7 +107,7 @@ int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
                     GWEN_XMLNode_GetData(nsrc),
                     GWEN_XMLNode_GetData(ndst));
         nsrc2=GWEN_XMLNode_GetChild(nsrc);
-        while(nsrc2) {
+        while (nsrc2) {
           if (GWEN_XMLNode_GetType(nsrc2)==GWEN_XMLNodeTypeTag) {
             ndst2=GWEN_XMLNode_FindNode(ndst,
                                         GWEN_XMLNodeTypeTag,
@@ -143,7 +145,7 @@ int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
         } /* while there are 2nd level source tags */
       }
       else {
-	GWEN_XMLNODE *newNode;
+        GWEN_XMLNODE *newNode;
 
         DBG_VERBOUS(LC_LOGDOMAIN, "Adding branch \"%s\"",
                     GWEN_XMLNode_GetData(nsrc));
@@ -160,9 +162,10 @@ int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
 
 
 int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
-			   const char *basedir,
+                           const char *basedir,
                            const char *tPlural,
-                           const char *tSingular) {
+                           const char *tSingular)
+{
   GWEN_STRINGLIST *sl;
   GWEN_STRINGLISTENTRY *se;
   GWEN_BUFFER *buf;
@@ -184,9 +187,9 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
 
   /* load all files from the list */
   se=GWEN_StringList_FirstEntry(sl);
-  while(se) {
+  while (se) {
     GWEN_XMLNODE *n;
-  
+
     n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, tSingular);
     if (GWEN_XML_ReadFile(n,
                           GWEN_StringListEntry_Data(se),
@@ -196,7 +199,7 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
     }
     else {
       GWEN_XMLNODE *nn;
-  
+
       nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, tPlural);
       if (!nn) {
         DBG_WARN(LC_LOGDOMAIN, "File \"%s\" does not contain <%s>",
@@ -232,7 +235,8 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
 
 
 
-GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName) {
+GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName)
+{
   GWEN_XMLNODE *node;
 
   assert(cl);
@@ -250,7 +254,8 @@ GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName) {
 
 
 
-GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName) {
+GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName)
+{
   GWEN_XMLNODE *node;
 
   assert(cl);

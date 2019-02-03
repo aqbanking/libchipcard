@@ -82,8 +82,8 @@ GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
-					 LC_HI_PERSONAL_DATA **pPersonal,
-					 LC_HI_INSURANCE_DATA **pInsurance);
+                                         LC_HI_PERSONAL_DATA **pPersonal,
+                                         LC_HI_INSURANCE_DATA **pInsurance);
 
 CHIPCARD_API
 const char *LC_KvkCard_GetCardNumber(const LC_CARD *card);

@@ -28,7 +28,8 @@
 
 
 
-LC_DRIVER_STATUS LC_DriverStatus_fromString(const char *s) {
+LC_DRIVER_STATUS LC_DriverStatus_fromString(const char *s)
+{
   if (strcasecmp(s, "Down")==0)
     return LC_DriverStatusDown;
   else if (strcasecmp(s, "WaitForStart")==0)
@@ -49,22 +50,32 @@ LC_DRIVER_STATUS LC_DriverStatus_fromString(const char *s) {
 
 
 
-const char *LC_DriverStatus_toString(LC_DRIVER_STATUS dst) {
-  switch(dst) {
-  case LC_DriverStatusDown:         return "Down";
-  case LC_DriverStatusWaitForStart: return "WaitForStart";
-  case LC_DriverStatusStarted:      return "Started";
-  case LC_DriverStatusUp:           return "Up";
-  case LC_DriverStatusStopping:     return "Stopping";
-  case LC_DriverStatusAborted:      return "Aborted";
-  case LC_DriverStatusDisabled:     return "Disabled";
-  default:                          return "Unknown";
+const char *LC_DriverStatus_toString(LC_DRIVER_STATUS dst)
+{
+  switch (dst) {
+  case LC_DriverStatusDown:
+    return "Down";
+  case LC_DriverStatusWaitForStart:
+    return "WaitForStart";
+  case LC_DriverStatusStarted:
+    return "Started";
+  case LC_DriverStatusUp:
+    return "Up";
+  case LC_DriverStatusStopping:
+    return "Stopping";
+  case LC_DriverStatusAborted:
+    return "Aborted";
+  case LC_DriverStatusDisabled:
+    return "Disabled";
+  default:
+    return "Unknown";
   }
 }
 
 
 
-LC_READER_STATUS LC_ReaderStatus_fromString(const char *s) {
+LC_READER_STATUS LC_ReaderStatus_fromString(const char *s)
+{
   if (strcasecmp(s, "Down")==0)
     return LC_ReaderStatusDown;
   else if (strcasecmp(s, "WaitForStart")==0)
@@ -87,23 +98,34 @@ LC_READER_STATUS LC_ReaderStatus_fromString(const char *s) {
 
 
 
-const char *LC_ReaderStatus_toString(LC_READER_STATUS rst) {
-  switch(rst) {
-  case LC_ReaderStatusDown:              return "Down";
-  case LC_ReaderStatusWaitForStart:      return "WaitForStart";
-  case LC_ReaderStatusWaitForDriver:     return "WaitForDriver";
-  case LC_ReaderStatusWaitForReaderUp:   return "WaitForReaderUp";
-  case LC_ReaderStatusWaitForReaderDown: return "WaitForReaderDown";
-  case LC_ReaderStatusUp:                return "Up";
-  case LC_ReaderStatusAborted:           return "Aborted";
-  case LC_ReaderStatusDisabled:          return "Disabled";
-  default:                               return "Unknown";
+const char *LC_ReaderStatus_toString(LC_READER_STATUS rst)
+{
+  switch (rst) {
+  case LC_ReaderStatusDown:
+    return "Down";
+  case LC_ReaderStatusWaitForStart:
+    return "WaitForStart";
+  case LC_ReaderStatusWaitForDriver:
+    return "WaitForDriver";
+  case LC_ReaderStatusWaitForReaderUp:
+    return "WaitForReaderUp";
+  case LC_ReaderStatusWaitForReaderDown:
+    return "WaitForReaderDown";
+  case LC_ReaderStatusUp:
+    return "Up";
+  case LC_ReaderStatusAborted:
+    return "Aborted";
+  case LC_ReaderStatusDisabled:
+    return "Disabled";
+  default:
+    return "Unknown";
   }
 }
 
 
 
-uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
+uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name)
+{
   int i;
   const char *p;
   uint32_t flags=0;
@@ -142,13 +164,14 @@ uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
 
 
 
-uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
+uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name)
+{
   const char *p;
   uint32_t flags=0;
   GWEN_XMLNODE *n;
 
   n=GWEN_XMLNode_FindFirstTag(node, name, 0, 0);
-  while(n) {
+  while (n) {
     GWEN_XMLNODE *nn;
 
     nn=GWEN_XMLNode_GetFirstData(n);
@@ -173,9 +196,9 @@ uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
       else if (strcasecmp(p, "keepRunning")==0)
         flags|=LC_READER_FLAGS_KEEP_RUNNING;
       else if (strcasecmp(p, "lowWriteBoundary")==0)
-	flags|=LC_READER_FLAGS_LOW_WRITE_BOUNDARY;
+        flags|=LC_READER_FLAGS_LOW_WRITE_BOUNDARY;
       else if (strcasecmp(p, "noMemorySw")==0)
-	flags|=LC_READER_FLAGS_NO_MEMORY_SW;
+        flags|=LC_READER_FLAGS_NO_MEMORY_SW;
       else {
         DBG_WARN(0, "Unknown flag \"%s\", ignoring", p);
       }
@@ -190,7 +213,8 @@ uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name){
 
 void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
                          const char *name,
-                         uint32_t fl) {
+                         uint32_t fl)
+{
   assert(db);
   assert(name);
   GWEN_DB_DeleteVar(db, name);
@@ -217,15 +241,16 @@ void LC_ReaderFlags_toDb(GWEN_DB_NODE *db,
                          name, "keepRunning");
   if (fl & LC_READER_FLAGS_LOW_WRITE_BOUNDARY)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			 name, "lowWriteBoundary");
+                         name, "lowWriteBoundary");
   if (fl & LC_READER_FLAGS_NO_MEMORY_SW)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT,
-			 name, "noMemorySw");
+                         name, "noMemorySw");
 }
 
 
 
-uint32_t LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
+uint32_t LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name)
+{
   const char *p;
   uint32_t flags=0;
   int i;
@@ -300,7 +325,8 @@ uint32_t LC_NotifyFlags_fromDb(GWEN_DB_NODE *db, const char *name){
 
 void LC_NotifyFlags_toDb(GWEN_DB_NODE *db,
                          const char *name,
-                         uint32_t fl) {
+                         uint32_t fl)
+{
   assert(db);
   assert(name);
   GWEN_DB_DeleteVar(db, name);
@@ -369,7 +395,8 @@ void LC_NotifyFlags_toDb(GWEN_DB_NODE *db,
 
 
 
-LC_SERVICE_STATUS LC_ServiceStatus_fromString(const char *s) {
+LC_SERVICE_STATUS LC_ServiceStatus_fromString(const char *s)
+{
   if (strcasecmp(s, "Down")==0)
     return LC_ServiceStatusDown;
   else if (strcasecmp(s, "WaitForStart")==0)
@@ -390,22 +417,32 @@ LC_SERVICE_STATUS LC_ServiceStatus_fromString(const char *s) {
 
 
 
-const char *LC_ServiceStatus_toString(LC_SERVICE_STATUS st) {
-  switch(st) {
-  case LC_ServiceStatusDown:         return "Down";
-  case LC_ServiceStatusWaitForStart: return "WaitForStart";
-  case LC_ServiceStatusStarted:      return "Started";
-  case LC_ServiceStatusUp:           return "Up";
-  case LC_ServiceStatusStopping:     return "Stopping";
-  case LC_ServiceStatusAborted:      return "Aborted";
-  case LC_ServiceStatusDisabled:     return "Disabled";
-  default:                           return "Unknown";
+const char *LC_ServiceStatus_toString(LC_SERVICE_STATUS st)
+{
+  switch (st) {
+  case LC_ServiceStatusDown:
+    return "Down";
+  case LC_ServiceStatusWaitForStart:
+    return "WaitForStart";
+  case LC_ServiceStatusStarted:
+    return "Started";
+  case LC_ServiceStatusUp:
+    return "Up";
+  case LC_ServiceStatusStopping:
+    return "Stopping";
+  case LC_ServiceStatusAborted:
+    return "Aborted";
+  case LC_ServiceStatusDisabled:
+    return "Disabled";
+  default:
+    return "Unknown";
   }
 }
 
 
 
-uint32_t LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name){
+uint32_t LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name)
+{
   const char *p;
   int i;
   uint32_t flags=0;
@@ -432,7 +469,8 @@ uint32_t LC_ServiceFlags_fromDb(GWEN_DB_NODE *db, const char *name){
 
 void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
                           const char *name,
-                          uint32_t flags) {
+                          uint32_t flags)
+{
   GWEN_DB_DeleteVar(db, name);
   if (flags & LC_SERVICE_FLAGS_AUTOLOAD)
     GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "autoload");
@@ -444,7 +482,8 @@ void LC_ServiceFlags_toDb(GWEN_DB_NODE *db,
 
 
 
-uint32_t LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
+uint32_t LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name)
+{
   const char *p;
   int i;
   uint32_t flags=0;
@@ -474,7 +513,8 @@ uint32_t LC_DriverFlags_fromDb(GWEN_DB_NODE *db, const char *name) {
 
 
 int LC_DriverFlags_toDb(GWEN_DB_NODE *db, const char *name,
-                        uint32_t flags) {
+                        uint32_t flags)
+{
   GWEN_DB_DeleteVar(db, name);
   if (flags & LC_DRIVER_FLAGS_AUTO)
     if (GWEN_DB_SetCharValue(db, GWEN_DB_FLAGS_DEFAULT, name, "auto"))
@@ -500,27 +540,46 @@ int LC_DriverFlags_toDb(GWEN_DB_NODE *db, const char *name,
 
 
 
-const char *LC_Error_toString(uint32_t err) {
+const char *LC_Error_toString(uint32_t err)
+{
   switch (err) {
-  case LC_ERROR_NONE:                   return "none";
-  case LC_ERROR_GENERIC:                return "generic";
-  case LC_ERROR_INVALID:                return "Invalid argument";
-  case LC_ERROR_CARD_REMOVED:           return "Card removed";
-  case LC_ERROR_CARD_NOT_OWNED:         return "Card not owned";
-  case LC_ERROR_NOT_SUPPORTED:          return "Not supported";
-  case LC_ERROR_SETUP:                  return "Setup error";
-  case LC_ERROR_NO_DATA:                return "No data";
-  case LC_ERROR_LOCKED_BY_OTHER:        return "Locked by other";
-  case LC_ERROR_NOT_LOCKED:             return "Not locked";
+  case LC_ERROR_NONE:
+    return "none";
+  case LC_ERROR_GENERIC:
+    return "generic";
+  case LC_ERROR_INVALID:
+    return "Invalid argument";
+  case LC_ERROR_CARD_REMOVED:
+    return "Card removed";
+  case LC_ERROR_CARD_NOT_OWNED:
+    return "Card not owned";
+  case LC_ERROR_NOT_SUPPORTED:
+    return "Not supported";
+  case LC_ERROR_SETUP:
+    return "Setup error";
+  case LC_ERROR_NO_DATA:
+    return "No data";
+  case LC_ERROR_LOCKED_BY_OTHER:
+    return "Locked by other";
+  case LC_ERROR_NOT_LOCKED:
+    return "Not locked";
 
-  case LC_ERROR_BAD_RESPONSE:           return "Bad response";
-  case LC_ERROR_NO_SLOTS_CONNECTED:     return "No slots connected";
-  case LC_ERROR_NO_SLOTS_DISCONNECTED:  return "No slots disconnected";
-  case LC_ERROR_NO_SLOTS_AVAILABLE:     return "No slots available";
-  case LC_ERROR_BAD_PIN:                return "Bad pin";
-  case LC_ERROR_USER_ABORTED:           return "User aborted";
-  case LC_ERROR_CARD_DESTROYED:         return "Card destroyed";
-  default:                              return "Unknown error code";
+  case LC_ERROR_BAD_RESPONSE:
+    return "Bad response";
+  case LC_ERROR_NO_SLOTS_CONNECTED:
+    return "No slots connected";
+  case LC_ERROR_NO_SLOTS_DISCONNECTED:
+    return "No slots disconnected";
+  case LC_ERROR_NO_SLOTS_AVAILABLE:
+    return "No slots available";
+  case LC_ERROR_BAD_PIN:
+    return "Bad pin";
+  case LC_ERROR_USER_ABORTED:
+    return "User aborted";
+  case LC_ERROR_CARD_DESTROYED:
+    return "Card destroyed";
+  default:
+    return "Unknown error code";
   }
 }
 

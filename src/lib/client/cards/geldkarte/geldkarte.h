@@ -71,13 +71,13 @@ CHIPCARD_API GWEN_DB_NODE *LC_GeldKarte_GetCardDataAsDb(const LC_CARD *card);
  * it.
  */
 CHIPCARD_API
-  GWEN_BUFFER *LC_GeldKarte_GetCardDataAsBuffer(const LC_CARD *card);
+GWEN_BUFFER *LC_GeldKarte_GetCardDataAsBuffer(const LC_CARD *card);
 
 /**
  * Returns the card data (EF_BOERSE) parsed into a GWEN_DB.
  */
 CHIPCARD_API
-  GWEN_DB_NODE *LC_GeldKarte_GetAccountDataAsDb(const LC_CARD *card);
+GWEN_DB_NODE *LC_GeldKarte_GetAccountDataAsDb(const LC_CARD *card);
 
 /**
  * Returns the raw card data (content of EF_BOERSE). The card object remains the
@@ -85,7 +85,7 @@ CHIPCARD_API
  * it.
  */
 CHIPCARD_API
-  GWEN_BUFFER *LC_GeldKarte_GetAccountDataAsBuffer(const LC_CARD *card);
+GWEN_BUFFER *LC_GeldKarte_GetAccountDataAsBuffer(const LC_CARD *card);
 /*@}*/
 
 
@@ -98,8 +98,8 @@ CHIPCARD_API
  * transfer amount limit).
  */
 CHIPCARD_API
-  LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
-                                           LC_GELDKARTE_VALUES *val);
+LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
+                                         LC_GELDKARTE_VALUES *val);
 
 /**
  * Read the BLOGs off the card.
@@ -107,8 +107,8 @@ CHIPCARD_API
  * (see @ref LC_GELDKARTE_BLOG).
  */
 CHIPCARD_API
-  LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
-                                          LC_GELDKARTE_BLOG_LIST2 *bll);
+LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
+                                        LC_GELDKARTE_BLOG_LIST2 *bll);
 
 /**
  * Read the LLOGs off the card.
@@ -117,8 +117,8 @@ CHIPCARD_API
  * (see @ref LC_GELDKARTE_LLOG).
  */
 CHIPCARD_API
-  LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
-                                          LC_GELDKARTE_LLOG_LIST2 *bll);
+LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
+                                        LC_GELDKARTE_LLOG_LIST2 *bll);
 /*@}*/
 
 /*@}*/ /* defgroup */

@@ -30,7 +30,8 @@ GWEN_INHERIT(GWEN_MSGENGINE, LC_MSGENGINE)
 
 
 
-GWEN_MSGENGINE *LC_MsgEngine_new(){
+GWEN_MSGENGINE *LC_MsgEngine_new()
+{
   GWEN_MSGENGINE *e;
   LC_MSGENGINE *le;
 
@@ -53,12 +54,13 @@ GWEN_MSGENGINE *LC_MsgEngine_new(){
 
 
 
-void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p)
+{
   GWEN_MSGENGINE *e;
   LC_MSGENGINE *le;
 
-  e=(GWEN_MSGENGINE*)bp;
-  le=(LC_MSGENGINE*)p;
+  e=(GWEN_MSGENGINE *)bp;
+  le=(LC_MSGENGINE *)p;
 
   /* free all objects inside LC_MsgEngine */
 
@@ -67,7 +69,8 @@ void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p){
 
 
 
-uint32_t LC_MsgEngine__FromBCD(uint32_t value) {
+uint32_t LC_MsgEngine__FromBCD(uint32_t value)
+{
   uint32_t rv;
 
   rv=0;
@@ -85,7 +88,8 @@ uint32_t LC_MsgEngine__FromBCD(uint32_t value) {
 
 
 
-uint32_t LC_MsgEngine__ToBCD(uint32_t value) {
+uint32_t LC_MsgEngine__ToBCD(uint32_t value)
+{
   uint32_t rv;
 
   rv=0;
@@ -131,7 +135,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
                           GWEN_XMLNODE *node,
                           GWEN_BUFFER *vbuf,
                           char escapeChar,
-                          const char *delimiters){
+                          const char *delimiters)
+{
   LC_MSGENGINE *le;
   const char *type;
 
@@ -143,7 +148,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     DBG_DEBUG(LC_LOGDOMAIN, "Buffer empty");
     return 0;
   }
-  type=GWEN_XMLNode_GetProperty(node, "type","");
+  type=GWEN_XMLNode_GetProperty(node, "type", "");
   if (strcasecmp(type, "byte")==0) {
     int isBCD;
     int c;
@@ -319,8 +324,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     }
 
     if (GWEN_Text_ToBcdBuffer(GWEN_Buffer_GetPosPointer(msgbuf),
-			      size,
-			      vbuf,
+                              size,
+                              vbuf,
                               0, 0, skipLeadingZeroes)) {
       DBG_ERROR(LC_LOGDOMAIN, "Error parsing BCD string");
       return -1;
@@ -373,22 +378,22 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
       GWEN_Text_CondenseBuffer(tbuf);
       GWEN_Buffer_Rewind(tbuf);
       if (GWEN_Buffer_GetUsedBytes(tbuf)==0) {
-	/* just to fool the caller */
+        /* just to fool the caller */
         GWEN_Buffer_AppendByte(tbuf, 0);
       }
       if (GWEN_Buffer_AppendBuffer(vbuf, tbuf)) {
-	DBG_INFO(LC_LOGDOMAIN, "here");
+        DBG_INFO(LC_LOGDOMAIN, "here");
         GWEN_Buffer_free(tbuf);
-	return -1;
+        return -1;
       }
       GWEN_Buffer_free(tbuf);
     }
     else {
       if (GWEN_Buffer_AppendBytes(vbuf,
-				  GWEN_Buffer_GetPosPointer(msgbuf),
-				  size)) {
-	DBG_INFO(LC_LOGDOMAIN, "here");
-	return -1;
+                                  GWEN_Buffer_GetPosPointer(msgbuf),
+                                  size)) {
+        DBG_INFO(LC_LOGDOMAIN, "here");
+        return -1;
       }
     }
 
@@ -407,7 +412,7 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
       size=GWEN_Buffer_GetPos(vbuf)-vpos;
       p=GWEN_Buffer_GetStart(vbuf)+vpos;
       for (j=0; j<size; j++) {
-        switch((unsigned char)*p) {
+        switch ((unsigned char)*p) {
         case LC_KVK_UMLAUT_AE:
           *p=(char)'Ä';
           break;
@@ -465,8 +470,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     j=(unsigned char)(p[pos]);
     if (isBerTlv) {
       if ((j & 0x1f)==0x1f) {
-	/* we should read here all following bytes until bit 7 is clear */
-	pos++;
+        /* we should read here all following bytes until bit 7 is clear */
+        pos++;
         if (pos>=size) {
           DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
           return -1;
@@ -557,72 +562,72 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
     isBCD=atoi(GWEN_XMLNode_GetProperty(node, "bcd", "0"));
     value=0;
     if (bigEndian) {
-      switch(GWEN_Buffer_GetBytesLeft(msgbuf)) {
+      switch (GWEN_Buffer_GetBytesLeft(msgbuf)) {
       case 4:
-	c=GWEN_Buffer_ReadByte(msgbuf);
-	if (c>=0) {
-	  value=(((unsigned char)(c&0xff)<<24));
-	  c=GWEN_Buffer_ReadByte(msgbuf);
-	  if (c>=0) {
-	    value|=(((unsigned char)(c&0xff)<<16));
-	    c=GWEN_Buffer_ReadByte(msgbuf);
-	    if (c>=0) {
-	      value|=(((unsigned char)(c&0xff)<<8));
-	      c=GWEN_Buffer_ReadByte(msgbuf);
-	      if (c>=0)
-		value|=(unsigned char)((c&0xff));
-	    }
-	  }
-	}
-	break;
+        c=GWEN_Buffer_ReadByte(msgbuf);
+        if (c>=0) {
+          value=(((unsigned char)(c&0xff)<<24));
+          c=GWEN_Buffer_ReadByte(msgbuf);
+          if (c>=0) {
+            value|=(((unsigned char)(c&0xff)<<16));
+            c=GWEN_Buffer_ReadByte(msgbuf);
+            if (c>=0) {
+              value|=(((unsigned char)(c&0xff)<<8));
+              c=GWEN_Buffer_ReadByte(msgbuf);
+              if (c>=0)
+                value|=(unsigned char)((c&0xff));
+            }
+          }
+        }
+        break;
       case 3:
-	c=GWEN_Buffer_ReadByte(msgbuf);
-	if (c>=0) {
-	  value|=(((unsigned char)(c&0xff)<<16));
-	  c=GWEN_Buffer_ReadByte(msgbuf);
-	  if (c>=0) {
-	    value|=(((unsigned char)(c&0xff)<<8));
-	    c=GWEN_Buffer_ReadByte(msgbuf);
-	    if (c>=0)
-	      value|=(unsigned char)((c&0xff));
-	  }
-	}
-	break;
+        c=GWEN_Buffer_ReadByte(msgbuf);
+        if (c>=0) {
+          value|=(((unsigned char)(c&0xff)<<16));
+          c=GWEN_Buffer_ReadByte(msgbuf);
+          if (c>=0) {
+            value|=(((unsigned char)(c&0xff)<<8));
+            c=GWEN_Buffer_ReadByte(msgbuf);
+            if (c>=0)
+              value|=(unsigned char)((c&0xff));
+          }
+        }
+        break;
       case 2:
-	c=GWEN_Buffer_ReadByte(msgbuf);
-	if (c>=0) {
-	  value|=(((unsigned char)(c&0xff)<<8));
-	  c=GWEN_Buffer_ReadByte(msgbuf);
-	  if (c>=0)
-	    value|=(unsigned char)((c&0xff));
-	}
-	break;
+        c=GWEN_Buffer_ReadByte(msgbuf);
+        if (c>=0) {
+          value|=(((unsigned char)(c&0xff)<<8));
+          c=GWEN_Buffer_ReadByte(msgbuf);
+          if (c>=0)
+            value|=(unsigned char)((c&0xff));
+        }
+        break;
       case 1:
-	c=GWEN_Buffer_ReadByte(msgbuf);
-	if (c>=0)
-	  value|=(unsigned char)((c&0xff));
-	break;
+        c=GWEN_Buffer_ReadByte(msgbuf);
+        if (c>=0)
+          value|=(unsigned char)((c&0xff));
+        break;
       default:
-	DBG_ERROR(LC_LOGDOMAIN, "Invalid number of bytes for type \"uint\" (%d)",
-		  GWEN_Buffer_GetBytesLeft(msgbuf));
-	return GWEN_ERROR_INVALID;
+        DBG_ERROR(LC_LOGDOMAIN, "Invalid number of bytes for type \"uint\" (%d)",
+                  GWEN_Buffer_GetBytesLeft(msgbuf));
+        return GWEN_ERROR_INVALID;
       }
     } /* if bigEndian */
     else {
       c=GWEN_Buffer_ReadByte(msgbuf);
       if (c>=0) {
-	value=(unsigned char)((c&0xff));
-	c=GWEN_Buffer_ReadByte(msgbuf);
-	if (c>=0) {
-	  value|=(unsigned char)(((c&0xff)<<8));
-	  c=GWEN_Buffer_ReadByte(msgbuf);
-	  if (c>=0) {
-	    value|=(unsigned char)(((c&0xff)<<16));
-	    c=GWEN_Buffer_ReadByte(msgbuf);
-	    if (c>=0)
-	      value|=(unsigned char)(((c&0xff)<<24));
-	  }
-	}
+        value=(unsigned char)((c&0xff));
+        c=GWEN_Buffer_ReadByte(msgbuf);
+        if (c>=0) {
+          value|=(unsigned char)(((c&0xff)<<8));
+          c=GWEN_Buffer_ReadByte(msgbuf);
+          if (c>=0) {
+            value|=(unsigned char)(((c&0xff)<<16));
+            c=GWEN_Buffer_ReadByte(msgbuf);
+            if (c>=0)
+              value|=(unsigned char)(((c&0xff)<<24));
+          }
+        }
       }
     }
     if (isBCD)
@@ -645,7 +650,8 @@ int LC_MsgEngine_TypeRead(GWEN_MSGENGINE *e,
 int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
                            GWEN_BUFFER *gbuf,
                            GWEN_BUFFER *data,
-                           GWEN_XMLNODE *node){
+                           GWEN_XMLNODE *node)
+{
   LC_MSGENGINE *le;
   const char *type;
 
@@ -653,7 +659,7 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
   le=GWEN_INHERIT_GETDATA(GWEN_MSGENGINE, LC_MSGENGINE, e);
   assert(le);
 
-  type=GWEN_XMLNode_GetProperty(node, "type","");
+  type=GWEN_XMLNode_GetProperty(node, "type", "");
   if (strcasecmp(type, "byte")==0) {
     int value;
     int isBCD;
@@ -701,24 +707,24 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
 
     if (bigEndian) {
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>8)&0xff))){
+                                 (unsigned char)((value>>8)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)(value&0xff))){
+                                 (unsigned char)(value&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
     }
     else {
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)(value&0xff))){
+                                 (unsigned char)(value&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>8)&0xff))){
+                                 (unsigned char)((value>>8)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
@@ -743,44 +749,44 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
 
     if (bigEndian) {
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>24)&0xff))){
+                                 (unsigned char)((value>>24)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>16)&0xff))){
+                                 (unsigned char)((value>>16)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>8)&0xff))){
+                                 (unsigned char)((value>>8)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)(value&0xff))){
+                                 (unsigned char)(value&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
     }
     else {
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)(value&0xff))){
+                                 (unsigned char)(value&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>8)&0xff))){
+                                 (unsigned char)((value>>8)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>16)&0xff))){
+                                 (unsigned char)((value>>16)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
       if (GWEN_Buffer_AppendByte(gbuf,
-                                 (unsigned char)((value>>24)&0xff))){
+                                 (unsigned char)((value>>24)&0xff))) {
         DBG_INFO(LC_LOGDOMAIN, "called from here");
         return -1;
       }
@@ -844,10 +850,11 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
     }
 
     /* preset */
-    for (i=0; i<8; i++) buffer[i]=0xff;
+    for (i=0; i<8; i++)
+      buffer[i]=0xff;
     /* set C to "2", set length */
     buffer[0]=pinlen + 0x20;
-  
+
     /* now transform pin */
     for (i=0; i<pinlen; i++) {
       k=i/2+1;
@@ -856,8 +863,8 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
         DBG_ERROR(LC_LOGDOMAIN, "Only digits allowed in FPIN2");
         return -1;
       }
-  
-      if (i & 1){
+
+      if (i & 1) {
         /* right digit */
         buffer[k]&=0xf0; /* erase right digit */
         buffer[k]+=j;    /* set right digit */
@@ -925,7 +932,8 @@ int LC_MsgEngine_TypeWrite(GWEN_MSGENGINE *e,
 
 
 GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
-					 const char *tname){
+                                         const char *tname)
+{
   LC_MSGENGINE *le;
 
   assert(e);
@@ -951,7 +959,8 @@ GWEN_DB_NODE_TYPE LC_MsgEngine_TypeCheck(GWEN_MSGENGINE *e,
 
 const char *LC_MsgEngine_GetCharValue(GWEN_MSGENGINE *e,
                                       const char *name,
-                                      const char *defValue){
+                                      const char *defValue)
+{
   LC_MSGENGINE *le;
 
   assert(e);
@@ -965,7 +974,8 @@ const char *LC_MsgEngine_GetCharValue(GWEN_MSGENGINE *e,
 
 int LC_MsgEngine_GetIntValue(GWEN_MSGENGINE *e,
                              const char *name,
-                             int defValue){
+                             int defValue)
+{
   LC_MSGENGINE *le;
 
   assert(e);
@@ -980,7 +990,8 @@ int LC_MsgEngine_GetIntValue(GWEN_MSGENGINE *e,
 int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
                              GWEN_XMLNODE *node,
                              GWEN_DB_NODE *gr,
-                             GWEN_BUFFER *vbuf){
+                             GWEN_BUFFER *vbuf)
+{
   const char *typ;
 
   typ=GWEN_XMLNode_GetProperty(node, "type", "");
@@ -1033,7 +1044,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
       //  j&=0x1f;
     }
     DBG_DEBUG(LC_LOGDOMAIN, "Tag type %02x%s", j,
-	      isBerTlv?" (BER-TLV)":"");
+              isBerTlv?" (BER-TLV)":"");
     tagType=j;
 
     /* get length */
@@ -1107,30 +1118,30 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
           name=GWEN_XMLNode_GetProperty(node, "name", 0);
           ngr=gr;
           if (name && *name) {
-	    ngr=GWEN_DB_GetGroup(gr,
-				 GWEN_DB_FLAGS_DEFAULT,
-				 name);
-	    assert(ngr);
-	  }
+            ngr=GWEN_DB_GetGroup(gr,
+                                 GWEN_DB_FLAGS_DEFAULT,
+                                 name);
+            assert(ngr);
+          }
           name=GWEN_XMLNode_GetProperty(tlvNode, "name", 0);
-	  if (name && *name) {
-	    ngr=GWEN_DB_GetGroup(ngr,
-				 GWEN_DB_FLAGS_DEFAULT |
-				 GWEN_PATH_FLAGS_CREATE_GROUP,
-				 name);
-	    assert(ngr);
-	  }
-	  if (tagLength) {
+          if (name && *name) {
+            ngr=GWEN_DB_GetGroup(ngr,
+                                 GWEN_DB_FLAGS_DEFAULT |
+                                 GWEN_PATH_FLAGS_CREATE_GROUP,
+                                 name);
+            assert(ngr);
+          }
+          if (tagLength) {
             if (GWEN_MsgEngine_ParseMessage(e,
                                             tlvNode,
                                             vbuf,
                                             ngr,
-                                            GWEN_MSGENGINE_READ_FLAGS_DEFAULT)){
+                                            GWEN_MSGENGINE_READ_FLAGS_DEFAULT)) {
               DBG_INFO(LC_LOGDOMAIN, "here");
               return -1;
             }
-	    DBG_VERBOUS(LC_LOGDOMAIN, "Done parsing subnodes");
-	  }
+            DBG_VERBOUS(LC_LOGDOMAIN, "Done parsing subnodes");
+          }
           return 0;
         } /* if tag id matches */
       } /* if id is ok */
@@ -1169,7 +1180,8 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
 int LC_MsgEngine_BinTypeWrite(GWEN_MSGENGINE *e,
                               GWEN_XMLNODE *node,
                               GWEN_DB_NODE *gr,
-                              GWEN_BUFFER *dbuf){
+                              GWEN_BUFFER *dbuf)
+{
   return 1;
 }
 

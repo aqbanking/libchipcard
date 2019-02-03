@@ -32,7 +32,7 @@
 
 #define ZKACARDTOOL_PROGRAM_VERSION "0.9"
 
-int getPublicKey(GWEN_DB_NODE *dbArgs,int argc,char **argv);
+int getPublicKey(GWEN_DB_NODE *dbArgs, int argc, char **argv);
 int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv);
 void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
 

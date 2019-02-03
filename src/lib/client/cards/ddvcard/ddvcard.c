@@ -27,7 +27,8 @@ GWEN_INHERIT(LC_CARD, LC_DDVCARD)
 
 
 
-int LC_DDVCard_ExtendCard(LC_CARD *card){
+int LC_DDVCard_ExtendCard(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
   int rv;
 
@@ -52,7 +53,8 @@ int LC_DDVCard_ExtendCard(LC_CARD *card){
 
 
 
-int LC_DDVCard_UnextendCard(LC_CARD *card){
+int LC_DDVCard_UnextendCard(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
   int rv;
 
@@ -71,12 +73,13 @@ int LC_DDVCard_UnextendCard(LC_CARD *card){
 
 
 
-void GWENHYWFAR_CB LC_DDVCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_DDVCard_freeData(void *bp, void *p)
+{
   LC_DDVCARD *ddv;
 
   assert(bp);
   assert(p);
-  ddv=(LC_DDVCARD*)p;
+  ddv=(LC_DDVCARD *)p;
   GWEN_Buffer_free(ddv->bin_ef_id_1);
   GWEN_DB_Group_free(ddv->db_ef_id_1);
   GWEN_FREE_OBJECT(ddv);
@@ -84,7 +87,8 @@ void GWENHYWFAR_CB LC_DDVCard_freeData(void *bp, void *p){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_DDVCARD *ddv;
 
@@ -124,7 +128,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Open(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_DDVCARD *ddv;
   GWEN_BUFFER *mbuf;
@@ -202,7 +207,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
     }
 
     /* check for OS version on the chip card (DDV1 needs 1 or higher) */
-    if (GWEN_DB_GetIntValue(dbRecord, "OSVersion",0, 0)<1) {
+    if (GWEN_DB_GetIntValue(dbRecord, "OSVersion", 0, 0)<1) {
       DBG_ERROR(LC_LOGDOMAIN, "Bad CardOS version, this does not seem to be DDV1 card");
       GWEN_DB_Group_free(dbRecord);
       GWEN_Buffer_free(mbuf);
@@ -210,7 +215,7 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
     }
 
     /* check for filler (DDV1 needs 0) */
-    if (GWEN_DB_GetIntValue(dbRecord, "filler",0, 0)!=0) {
+    if (GWEN_DB_GetIntValue(dbRecord, "filler", 0, 0)!=0) {
       DBG_ERROR(LC_LOGDOMAIN, "Bad byte at pos 23, this does not seem to be DDV1 card");
       GWEN_DB_Group_free(dbRecord);
       GWEN_Buffer_free(mbuf);
@@ -295,7 +300,8 @@ LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_DDVCARD *ddv;
 
@@ -314,7 +320,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card, const char *pin){
+LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card, const char *pin)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   LC_PININFO *pi;
@@ -327,15 +334,16 @@ LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card, const char *pin){
   pi=LC_Card_GetPinInfoByName(card, "ch_pin");
   assert(pi);
   res=LC_Card_IsoVerifyPin(card, 0, pi,
-			   (const unsigned char*)pin, strlen(pin),
-			   &triesLeft);
+                           (const unsigned char *)pin, strlen(pin),
+                           &triesLeft);
   LC_PinInfo_free(pi);
   return res;
 }
 
 
 
-LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card){
+LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   LC_PININFO *pi;
@@ -354,7 +362,8 @@ LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card){
+int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRecord;
@@ -399,7 +408,8 @@ int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
+int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbRecord;
@@ -450,7 +460,8 @@ int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetKeyVersion1(LC_CARD *card, int keyNumber){
+int LC_DDVCard_GetKeyVersion1(LC_CARD *card, int keyNumber)
+{
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -484,19 +495,22 @@ int LC_DDVCard_GetKeyVersion1(LC_CARD *card, int keyNumber){
 
 
 
-int LC_DDVCard_GetSignKeyVersion1(LC_CARD *card){
+int LC_DDVCard_GetSignKeyVersion1(LC_CARD *card)
+{
   return LC_DDVCard_GetKeyVersion1(card, 2);
 }
 
 
 
-int LC_DDVCard_GetCryptKeyVersion1(LC_CARD *card){
+int LC_DDVCard_GetCryptKeyVersion1(LC_CARD *card)
+{
   return LC_DDVCard_GetKeyVersion1(card, 3);
 }
 
 
 
-int LC_DDVCard_GetSignKeyVersion(LC_CARD *card){
+int LC_DDVCard_GetSignKeyVersion(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -517,7 +531,8 @@ int LC_DDVCard_GetSignKeyVersion(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card){
+int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -538,7 +553,8 @@ int LC_DDVCard_GetCryptKeyVersion(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetSignKeyNumber(LC_CARD *card){
+int LC_DDVCard_GetSignKeyNumber(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -553,7 +569,8 @@ int LC_DDVCard_GetSignKeyNumber(LC_CARD *card){
 
 
 
-int LC_DDVCard_GetCryptKeyNumber(LC_CARD *card){
+int LC_DDVCard_GetCryptKeyNumber(LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -568,7 +585,8 @@ int LC_DDVCard_GetCryptKeyNumber(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf){
+LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
+{
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -584,7 +602,7 @@ LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf){
   dbResp=GWEN_DB_Group_new("response");
   res=LC_Card_ExecCommand(card,
                           "GetChallenge",
-			  dbReq, dbResp);
+                          dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -616,7 +634,8 @@ LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf){
 LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
                                            const char *data,
                                            unsigned int dlen,
-                                           GWEN_BUFFER *obuf){
+                                           GWEN_BUFFER *obuf)
+{
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -653,7 +672,7 @@ LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
                         0,
                         0, 0,
                         &bs);
-  if ( p && bs==8)
+  if (p && bs==8)
     GWEN_Buffer_AppendBytes(obuf, p, bs);
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Expected 8 bytes response, got %d bytes", bs);
@@ -671,7 +690,8 @@ LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
                                        GWEN_BUFFER *ibuf,
-                                       GWEN_BUFFER *obuf){
+                                       GWEN_BUFFER *obuf)
+{
   return LC_DDVCard_CryptCharBlock(card,
                                    GWEN_Buffer_GetStart(ibuf),
                                    GWEN_Buffer_GetUsedBytes(ibuf),
@@ -682,7 +702,8 @@ LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
                                       GWEN_BUFFER *hbuf,
-                                      GWEN_BUFFER *obuf){
+                                      GWEN_BUFFER *obuf)
+{
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -751,7 +772,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
                         0,
                         0, 0,
                         &bs);
-  if ( p && bs==8)
+  if (p && bs==8)
     GWEN_Buffer_AppendBytes(obuf, p, bs);
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Expected 8 bytes response, got %d bytes", bs);
@@ -769,7 +790,8 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
                                       GWEN_BUFFER *hbuf,
-                                      GWEN_BUFFER *obuf){
+                                      GWEN_BUFFER *obuf)
+{
   LC_DDVCARD *ddv;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -825,7 +847,7 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
                         0,
                         0, 0,
                         &bs);
-  if ( p && bs==8)
+  if (p && bs==8)
     GWEN_Buffer_AppendBytes(obuf, p, bs);
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Expected 8 bytes response, got %d bytes", bs);
@@ -843,7 +865,8 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_DDVCard_SignHash(LC_CARD *card,
                                      GWEN_BUFFER *hbuf,
-                                     GWEN_BUFFER *obuf){
+                                     GWEN_BUFFER *obuf)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -864,7 +887,8 @@ LC_CLIENT_RESULT LC_DDVCard_SignHash(LC_CARD *card,
 
 
 
-GWEN_DB_NODE *LC_DDVCard_GetCardDataAsDb(const LC_CARD *card){
+GWEN_DB_NODE *LC_DDVCard_GetCardDataAsDb(const LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -876,7 +900,8 @@ GWEN_DB_NODE *LC_DDVCard_GetCardDataAsDb(const LC_CARD *card){
 
 
 
-GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card){
+GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card)
+{
   LC_DDVCARD *ddv;
 
   assert(card);
@@ -890,7 +915,8 @@ GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card){
 
 LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
                                               int idx,
-                                              GWEN_DB_NODE *dbData){
+                                              GWEN_DB_NODE *dbData)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   GWEN_DB_NODE *dbCurr;
@@ -927,15 +953,15 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
 
       p1=GWEN_DB_GetCharValue(dbCurr, "bankCode", 0, "");
       if (p1) {
-	char *p2;
+        char *p2;
         char *p3;
 
-	p2=strdup(p1);
-	while ( (p3=strchr(p2, '=')) ) {
+        p2=strdup(p1);
+        while ((p3=strchr(p2, '='))) {
           *p3='2';
-	}
-	GWEN_DB_SetCharValue(dbCurr, GWEN_DB_FLAGS_OVERWRITE_VARS,
-			     "bankCode", p2);
+        }
+        GWEN_DB_SetCharValue(dbCurr, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                             "bankCode", p2);
         free(p2);
       }
       GWEN_DB_AddGroup(dbData, dbCurr);
@@ -956,7 +982,8 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
                                                int idx,
-                                               GWEN_DB_NODE *dbData){
+                                               GWEN_DB_NODE *dbData)
+{
   LC_DDVCARD *ddv;
   LC_CLIENT_RESULT res;
   GWEN_BUFFER *buf;

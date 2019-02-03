@@ -74,20 +74,20 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
-				     int globalKey,
-				     int keyId,
-				     int keyVersion,
-				     const uint8_t *ptr,
-				     unsigned int size,
-				     GWEN_BUFFER *outBuf);
+                                     int globalKey,
+                                     int keyId,
+                                     int keyVersion,
+                                     const uint8_t *ptr,
+                                     unsigned int size,
+                                     GWEN_BUFFER *outBuf);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
-                       uint32_t flags,
-                       int recNum,
-                       const char *searchPattern,
-                       unsigned int searchPatternSize,
-                       GWEN_BUFFER *buf);
+                                                uint32_t flags,
+                                                int recNum,
+                                                const char *searchPattern,
+                                                unsigned int searchPatternSize,
+                                                GWEN_BUFFER *buf);
 
 /*@}*/
 

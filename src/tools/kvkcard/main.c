@@ -52,99 +52,100 @@
 #endif
 
 
-const GWEN_ARGS prg_args[]={
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "verbosity",                  /* name */
-  0,                            /* minnum */
-  10,                           /* maxnum */
-  "v",                          /* short option */
-  "verbous",                    /* long option */
-  "Increase the verbosity",     /* short description */
-  "Every occurrence of this option increases the verbosity."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "filename",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "f",                          /* short option */
-  "filename",                   /* long option */
-  "File to write to (stdout if omitted)",    /* short description */
-  "File to write to. If omitted stdout will be used."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,            /* type */
-  "beep",                       /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "b",                          /* short option */
-  "beep",                       /* long option */
-  "Beep after reading a card",  /* short description */
-  "Beep after reading a card."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
-  GWEN_ArgsType_Char,
-  "infilename",
-  0,
-  1,
-  "i",
-  "infilename",
-  "File to read from. Only needed for psvd and pspd.",
-  "File to read from. Only needed for psvd and pspd."
-},
-{
-  0,
-  GWEN_ArgsType_Int,
-  "dosmode",
-  0,
-  1,
-  "d",
-  "dosmode",
-  "Store data in DOS mode",
-  "Store data in DOS mode"
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
-  GWEN_ArgsType_Char,
-  "program",
-  0,
-  1,
-  "p",
-  "program",
-  "Program to call on cards found",
-  "Program to call on cards found."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT,
-  GWEN_ArgsType_Char,
-  "args",
-  0,
-  1,
-  "a",
-  "args",
-  "Arguments for the program to be called",
-  "Arguments for the program to be called"
-},
-{
-  GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "help",                       /* name */
-  0,                            /* minnum */
-  0,                            /* maxnum */
-  "h",                          /* short option */
-  "help",                       /* long option */
-  "Show help",                  /* short description */
-  "Shows this help."            /* long description */
+const GWEN_ARGS prg_args[]= {
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "verbosity",                  /* name */
+    0,                            /* minnum */
+    10,                           /* maxnum */
+    "v",                          /* short option */
+    "verbous",                    /* long option */
+    "Increase the verbosity",     /* short description */
+    "Every occurrence of this option increases the verbosity."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "filename",                   /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "f",                          /* short option */
+    "filename",                   /* long option */
+    "File to write to (stdout if omitted)",    /* short description */
+    "File to write to. If omitted stdout will be used."
+  },
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,            /* type */
+    "beep",                       /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "b",                          /* short option */
+    "beep",                       /* long option */
+    "Beep after reading a card",  /* short description */
+    "Beep after reading a card."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+    GWEN_ArgsType_Char,
+    "infilename",
+    0,
+    1,
+    "i",
+    "infilename",
+    "File to read from. Only needed for psvd and pspd.",
+    "File to read from. Only needed for psvd and pspd."
+  },
+  {
+    0,
+    GWEN_ArgsType_Int,
+    "dosmode",
+    0,
+    1,
+    "d",
+    "dosmode",
+    "Store data in DOS mode",
+    "Store data in DOS mode"
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+    GWEN_ArgsType_Char,
+    "program",
+    0,
+    1,
+    "p",
+    "program",
+    "Program to call on cards found",
+    "Program to call on cards found."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT,
+    GWEN_ArgsType_Char,
+    "args",
+    0,
+    1,
+    "a",
+    "args",
+    "Arguments for the program to be called",
+    "Arguments for the program to be called"
+  },
+  {
+    GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "help",                       /* name */
+    0,                            /* minnum */
+    0,                            /* maxnum */
+    "h",                          /* short option */
+    "help",                       /* long option */
+    "Show help",                  /* short description */
+    "Shows this help."            /* long description */
   }
 };
 
 
-void usage(const char *name, const char *ustr) {
+void usage(const char *name, const char *ustr)
+{
   fprintf(stdout,
           I18N("KVKCard3 - A tool to read information from a German medical card.\n"
                "(c) 2007 Martin Preuss<martin@libchipcard.de>\n"
@@ -166,10 +167,11 @@ void usage(const char *name, const char *ustr) {
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
+void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+{
   const char *s;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     s="Ok.";
     break;
@@ -223,8 +225,9 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
-int writeFile(FILE *f, const char *p, int len) {
-  while(len>0) {
+int writeFile(FILE *f, const char *p, int len)
+{
+  while (len>0) {
     ssize_t l;
     ssize_t s;
 
@@ -234,8 +237,8 @@ int writeFile(FILE *f, const char *p, int len) {
     s=fwrite(p, 1, l, f);
     if (s==(ssize_t)-1 || s==0) {
       DBG_INFO(LC_LOGDOMAIN,
-	       "fwrite: %s",
-	       strerror(errno));
+               "fwrite: %s",
+               strerror(errno));
       return GWEN_ERROR_IO;
     }
     p+=s;
@@ -247,7 +250,8 @@ int writeFile(FILE *f, const char *p, int len) {
 
 
 
-void errorBeep() {
+void errorBeep()
+{
   fprintf(stderr, "\007");
   usleep(250000);
   fprintf(stderr, "\007");
@@ -257,14 +261,16 @@ void errorBeep() {
 
 
 
-void okBeep() {
+void okBeep()
+{
   fprintf(stderr, "\007");
 }
 
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int rv;
   GWEN_DB_NODE *db;
   const char *s;

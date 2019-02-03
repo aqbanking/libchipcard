@@ -63,28 +63,28 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
-					    int dstKid,
-					    const LC_STARCOS_KEYDESCR *descr);
+                                            int dstKid,
+                                            const LC_STARCOS_KEYDESCR *descr);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
-					LC_STARCOS_KEYDESCR **pDescr);
+                                        LC_STARCOS_KEYDESCR **pDescr);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
-					 const LC_STARCOS_KEYDESCR *d);
+                                         const LC_STARCOS_KEYDESCR *d);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
-					   const uint8_t *pModulus,
-					   uint32_t lModulus,
-					   const uint8_t *pExponent,
-					   uint32_t lExponent);
+                                           const uint8_t *pModulus,
+                                           uint32_t lModulus,
+                                           const uint8_t *pExponent,
+                                           uint32_t lExponent);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
-					  GWEN_BUFFER *bModulus,
-					  GWEN_BUFFER *bExponent);
+                                          GWEN_BUFFER *bModulus,
+                                          GWEN_BUFFER *bExponent);
 
 /*@}*/
 
@@ -125,7 +125,7 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
 /*@{*/
 CHIPCARD_API
 LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
-					   uint32_t *pSeq);
+                                           uint32_t *pSeq);
 
 /**
  * returns 8 random bytes

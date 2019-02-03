@@ -16,11 +16,11 @@
 
 #include <gwenhywfar/db.h>
 
-CHIPCARD_API 
+CHIPCARD_API
 int LC_DriverInfo_ReadDrivers(const char *dataDir,
                               GWEN_DB_NODE *dbDrivers,
-			      int availOnly,
-			      int dontSearchDrivers);
+                              int availOnly,
+                              int dontSearchDrivers);
 
 
 #endif

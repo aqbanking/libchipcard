@@ -22,10 +22,11 @@
 
 
 
-int LC_Crypt_Token_ResultToError(LC_CLIENT_RESULT res) {
+int LC_Crypt_Token_ResultToError(LC_CLIENT_RESULT res)
+{
   int rv;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     rv=0;
     break;
@@ -71,24 +72,25 @@ int LC_Crypt_Token_ResultToError(LC_CLIENT_RESULT res) {
 
 static
 int LC_Crypt_Token__GetPin(GWEN_CRYPT_TOKEN *ct,
-			   LC_CARD *hcard,
-			   int pid,
-			   GWEN_CRYPT_PINTYPE pt,
-			   GWEN_CRYPT_PINENCODING pe,
-			   uint32_t flags,
-			   unsigned char *buffer,
-			   unsigned int minLength,
-			   unsigned int maxLength,
-			   unsigned int *pinLength,
-			   uint32_t guiid) {
+                           LC_CARD *hcard,
+                           int pid,
+                           GWEN_CRYPT_PINTYPE pt,
+                           GWEN_CRYPT_PINENCODING pe,
+                           uint32_t flags,
+                           unsigned char *buffer,
+                           unsigned int minLength,
+                           unsigned int maxLength,
+                           unsigned int *pinLength,
+                           uint32_t guiid)
+{
   int rv;
 
   rv=GWEN_Crypt_Token_GetPin(ct,
-			     pt, pe, flags,
-			     buffer,
-			     minLength, maxLength,
-			     pinLength,
-			     guiid);
+                             pt, pe, flags,
+                             buffer,
+                             minLength, maxLength,
+                             pinLength,
+                             guiid);
   if (rv==GWEN_ERROR_DEFAULT_VALUE) {
     LC_CLIENT_RESULT res;
 
@@ -101,10 +103,10 @@ int LC_Crypt_Token__GetPin(GWEN_CRYPT_TOKEN *ct,
 
     if (pe!=GWEN_Crypt_PinEncoding_Ascii) {
       rv=GWEN_Crypt_TransformPin(GWEN_Crypt_PinEncoding_Ascii,
-				 pe,
-				 buffer,
-				 maxLength,
-				 pinLength);
+                                 pe,
+                                 buffer,
+                                 maxLength,
+                                 pinLength);
       if (rv) {
         DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
         return rv;
@@ -123,10 +125,11 @@ int LC_Crypt_Token__GetPin(GWEN_CRYPT_TOKEN *ct,
 
 static
 int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
-			      LC_CARD *hcard,
-			      GWEN_CRYPT_PINTYPE pt,
-			      int initial,
-			      uint32_t guiid) {
+                              LC_CARD *hcard,
+                              GWEN_CRYPT_PINTYPE pt,
+                              int initial,
+                              uint32_t guiid)
+{
   LC_CLIENT_RESULT res;
   LC_PININFO *pi;
   int maxErrors;
@@ -162,7 +165,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
     }
 
     if ((currentErrors!=maxErrors) &&
-        (GWEN_Crypt_Token_GetModes(ct) & GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)){
+        (GWEN_Crypt_Token_GetModes(ct) & GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad pin entered at least once before, aborting");
       LC_PinInfo_free(pi);
@@ -175,7 +178,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
     int mres;
     int triesLeft=-1;
 
-    DBG_INFO(LC_LOGDOMAIN,"Terminal has a keypad, will ask for pin.");
+    DBG_INFO(LC_LOGDOMAIN, "Terminal has a keypad, will ask for pin.");
     /* tell the user about pin verification */
     mres=GWEN_Crypt_Token_BeginEnterPin(ct, pt, guiid);
     if (mres) {
@@ -196,7 +199,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
       LC_PinInfo_free(pi);
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
-	switch (LC_Card_GetLastSW2(hcard)) {
+        switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
           return GWEN_ERROR_BAD_PIN_0_LEFT;
         case 0xc1: /* one left */
@@ -266,16 +269,16 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
     }
     else
       mres=LC_Crypt_Token__GetPin(ct,
-				  hcard,
-				  LC_PinInfo_GetId(pi),
-				  pt,
-				  pe,
-				  pflags,
-				  pinBuffer1,
-				  LC_PinInfo_GetMinLength(pi),
-				  pinMaxLen,
-				  &pinLength1,
-				  guiid);
+                                  hcard,
+                                  LC_PinInfo_GetId(pi),
+                                  pt,
+                                  pe,
+                                  pflags,
+                                  pinBuffer1,
+                                  LC_PinInfo_GetMinLength(pi),
+                                  pinMaxLen,
+                                  &pinLength1,
+                                  guiid);
     if (mres!=0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
       memset(pinBuffer1, 0, sizeof(pinBuffer1));
@@ -304,16 +307,16 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
     if (!pinMaxLen || pinMaxLen>sizeof(pinBuffer2)-1)
       pinMaxLen=sizeof(pinBuffer2)-1;
     mres=LC_Crypt_Token__GetPin(ct,
-				hcard,
-				LC_PinInfo_GetId(pi),
-				pt,
-				pe,
-				pflags,
-				pinBuffer2,
-				LC_PinInfo_GetMinLength(pi),
-				pinMaxLen,
-				&pinLength2,
-				guiid);
+                                hcard,
+                                LC_PinInfo_GetId(pi),
+                                pt,
+                                pe,
+                                pflags,
+                                pinBuffer2,
+                                LC_PinInfo_GetMinLength(pi),
+                                pinMaxLen,
+                                &pinLength2,
+                                guiid);
     if (mres!=0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
       memset(pinBuffer1, 0, sizeof(pinBuffer1));
@@ -351,7 +354,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
         /* TODO: Set Pin status */
         switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
-	  return GWEN_ERROR_BAD_PIN_0_LEFT;
+          return GWEN_ERROR_BAD_PIN_0_LEFT;
         case 0xc1: /* one left */
           return GWEN_ERROR_BAD_PIN_1_LEFT;
         case 0xc2: /* two left */
@@ -389,10 +392,11 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
 
 static
 int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
-					LC_CARD *hcard,
-					GWEN_CRYPT_PINTYPE pt,
-					const LC_PININFO *pi,
-					uint32_t guiid) {
+                                        LC_CARD *hcard,
+                                        GWEN_CRYPT_PINTYPE pt,
+                                        const LC_PININFO *pi,
+                                        uint32_t guiid)
+{
   LC_CLIENT_RESULT res;
   int maxErrors;
   int currentErrors;
@@ -426,8 +430,8 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
 
     if ((currentErrors!=maxErrors) &&
         !(GWEN_Crypt_Token_GetModes(ct) &
-	  GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)
-       ){
+          GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)
+       ) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad pin entered at least once before, aborting");
       return GWEN_ERROR_ABORTED;
@@ -435,8 +439,8 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
   }
   else {
     DBG_INFO(LC_LOGDOMAIN,
-	     "Unable to read pin status for pin %02x (not supported)",
-	     LC_PinInfo_GetId(pi));
+             "Unable to read pin status for pin %02x (not supported)",
+             LC_PinInfo_GetId(pi));
   }
 
   if ((pt!=GWEN_Crypt_PinType_Manage) &&
@@ -445,7 +449,7 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
     uint32_t bid;
     int triesLeft=-1;
 
-    DBG_INFO(LC_LOGDOMAIN,"Terminal has a keypad, will ask for pin.");
+    DBG_INFO(LC_LOGDOMAIN, "Terminal has a keypad, will ask for pin.");
     /* tell the user about pin verification */
     bid=GWEN_Crypt_Token_BeginEnterPin(ct, pt, guiid);
     if (bid==0) {
@@ -464,9 +468,9 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                 LC_Card_GetLastText(hcard));
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
-	switch (LC_Card_GetLastSW2(hcard)) {
+        switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
-	  return GWEN_ERROR_BAD_PIN_0_LEFT;
+          return GWEN_ERROR_BAD_PIN_0_LEFT;
         case 0xc1: /* one left */
           return GWEN_ERROR_BAD_PIN_1_LEFT;
         case 0xc2: /* two left */
@@ -530,16 +534,16 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
     if (!pinMaxLen || pinMaxLen>sizeof(pinBuffer)-1)
       pinMaxLen=sizeof(pinBuffer)-1;
     mres=LC_Crypt_Token__GetPin(ct,
-				hcard,
-				LC_PinInfo_GetId(pi),
-				pt,
-				pe,
-				pflags,
-				pinBuffer,
-				LC_PinInfo_GetMinLength(pi),
-				pinMaxLen,
-				&pinLength,
-				guiid);
+                                hcard,
+                                LC_PinInfo_GetId(pi),
+                                pt,
+                                pe,
+                                pflags,
+                                pinBuffer,
+                                LC_PinInfo_GetMinLength(pi),
+                                pinMaxLen,
+                                &pinLength,
+                                guiid);
     if (mres!=0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error asking for PIN, aborting");
       memset(pinBuffer, 0, sizeof(pinBuffer));
@@ -572,14 +576,14 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
 
       if (LC_Card_GetLastSW1(hcard)==0x63) {
         /* set pin status */
-	GWEN_Crypt_Token_SetPinStatus(ct,
-				      pt,
-				      pe,
-				      pflags,
-				      pinBuffer,
-				      origPinLength,
-				      0,
-				      guiid);
+        GWEN_Crypt_Token_SetPinStatus(ct,
+                                      pt,
+                                      pe,
+                                      pflags,
+                                      pinBuffer,
+                                      origPinLength,
+                                      0,
+                                      guiid);
 
         switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
@@ -595,14 +599,14 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
       else if (LC_Card_GetLastSW1(hcard)==0x69 &&
                LC_Card_GetLastSW2(hcard)==0x83) {
         /* set pin status */
-	GWEN_Crypt_Token_SetPinStatus(ct,
-				      pt,
-				      pe,
-				      pflags,
-				      pinBuffer,
-				      origPinLength,
-				      0,
-				      guiid);
+        GWEN_Crypt_Token_SetPinStatus(ct,
+                                      pt,
+                                      pe,
+                                      pflags,
+                                      pinBuffer,
+                                      origPinLength,
+                                      0,
+                                      guiid);
         DBG_ERROR(LC_LOGDOMAIN, "Card unusable");
         return GWEN_ERROR_IO;
       }
@@ -613,19 +617,19 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
       else {
         if (triesLeft>=0) {
           /* set pin status */
-	  GWEN_Crypt_Token_SetPinStatus(ct,
-					pt,
-					pe,
-					pflags,
-					pinBuffer,
-					origPinLength,
-					0,
-					guiid);
-	  switch (triesLeft) {
+          GWEN_Crypt_Token_SetPinStatus(ct,
+                                        pt,
+                                        pe,
+                                        pflags,
+                                        pinBuffer,
+                                        origPinLength,
+                                        0,
+                                        guiid);
+          switch (triesLeft) {
           case 0: /* no error left */
             return GWEN_ERROR_BAD_PIN_0_LEFT;
           case 1: /* one left */
-	    return GWEN_ERROR_BAD_PIN_1_LEFT;
+            return GWEN_ERROR_BAD_PIN_1_LEFT;
           case 2: /* two left */
             return GWEN_ERROR_BAD_PIN_2_LEFT;
           default:   /* unknown count */
@@ -640,13 +644,13 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
       DBG_INFO(LC_LOGDOMAIN, "PIN ok");
       /* set pin status */
       GWEN_Crypt_Token_SetPinStatus(ct,
-				    pt,
-				    pe,
-				    pflags,
-				    pinBuffer,
-				    origPinLength,
-				    1,
-				    guiid);
+                                    pt,
+                                    pe,
+                                    pflags,
+                                    pinBuffer,
+                                    origPinLength,
+                                    1,
+                                    guiid);
     }
   } // if no keyPad
 
@@ -657,9 +661,10 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
 
 static
 int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pt,
-			     uint32_t guiid) {
+                             LC_CARD *hcard,
+                             GWEN_CRYPT_PINTYPE pt,
+                             uint32_t guiid)
+{
   LC_PININFO *pi;
   int rv;
 
@@ -684,7 +689,8 @@ int LC_Crypt_Token__EnterPin(GWEN_CRYPT_TOKEN *ct,
 int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
                              LC_CARD *hcard,
                              GWEN_CRYPT_PINTYPE pt,
-                             uint32_t guiid) {
+                             uint32_t guiid)
+{
   int rv;
 
   /* enter pin */
@@ -703,7 +709,8 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                                         LC_CARD *hcard,
                                         GWEN_CRYPT_PINTYPE pt,
                                         const LC_PININFO *pi,
-                                        uint32_t guiid) {
+                                        uint32_t guiid)
+{
   int rv;
 
   /* enter pin */
@@ -719,10 +726,11 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
 
 
 int LC_Crypt_Token_ChangePin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pt,
-			     int initial,
-			     uint32_t guiid) {
+                             LC_CARD *hcard,
+                             GWEN_CRYPT_PINTYPE pt,
+                             int initial,
+                             uint32_t guiid)
+{
   int rv;
 
   if (pt!=GWEN_Crypt_PinType_Access &&

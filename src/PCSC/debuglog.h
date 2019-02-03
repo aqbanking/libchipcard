@@ -46,9 +46,9 @@ extern "C"
 #define DEBUGLOG_IGNORE_ENTRIES 2
 
 enum {
-	DEBUGLOG_NO_DEBUG = 0,
-	DEBUGLOG_SYSLOG_DEBUG,
-	DEBUGLOG_STDERR_DEBUG
+  DEBUGLOG_NO_DEBUG = 0,
+  DEBUGLOG_SYSLOG_DEBUG,
+  DEBUGLOG_STDERR_DEBUG
 };
 
 #define DEBUG_CATEGORY_NOTHING  0
@@ -56,10 +56,10 @@ enum {
 #define DEBUG_CATEGORY_SW       2
 
 enum {
-	PCSC_LOG_DEBUG = 0,
-	PCSC_LOG_INFO,
-	PCSC_LOG_ERROR,
-	PCSC_LOG_CRITICAL
+  PCSC_LOG_DEBUG = 0,
+  PCSC_LOG_INFO,
+  PCSC_LOG_ERROR,
+  PCSC_LOG_CRITICAL
 };
 
 /* You can't do #ifndef __FUNCTION__ */
@@ -81,7 +81,7 @@ enum {
 
 PCSC_API void log_msg(const int priority, const char *fmt, ...);
 PCSC_API void log_xxd(const int priority, const char *msg,
-	const unsigned char *buffer, const int size);
+                      const unsigned char *buffer, const int size);
 
 void DebugLogSuppress(const int);
 void DebugLogSetLogType(const int);
@@ -93,5 +93,5 @@ PCSC_API void DebugLogSetLevel(const int level);
 }
 #endif
 
-#endif							/* __debuglog_h__ */
+#endif              /* __debuglog_h__ */
 

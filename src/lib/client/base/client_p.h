@@ -52,10 +52,10 @@ struct LC_CLIENT {
 
 
 static int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
-					    const char *readerName,
-					    GWEN_BUFFER *driverType,
-					    GWEN_BUFFER *readerType,
-					    uint32_t *pReaderFlags);
+                                            const char *readerName,
+                                            GWEN_BUFFER *driverType,
+                                            GWEN_BUFFER *readerType,
+                                            uint32_t *pReaderFlags);
 
 
 static void LC_Client__SampleXmlFiles(const char *where,
@@ -73,24 +73,24 @@ static GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
                                                       const char *commandName,
                                                       const char *driverType,
                                                       const char *readerType);
-static GWEN_XMLNODE*
-  LC_Client_FindCommandInCardNode(GWEN_XMLNODE *node,
+static GWEN_XMLNODE *
+LC_Client_FindCommandInCardNode(GWEN_XMLNODE *node,
+                                const char *commandName,
+                                const char *driverType,
+                                const char *readerType);
+static GWEN_XMLNODE *
+LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
+                                  GWEN_STRINGLIST *handled,
+                                  const char *cardType,
                                   const char *commandName,
                                   const char *driverType,
                                   const char *readerType);
-static GWEN_XMLNODE*
-  LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
-                                    GWEN_STRINGLIST *handled,
-                                    const char *cardType,
-                                    const char *commandName,
-                                    const char *driverType,
-                                    const char *readerType);
-static GWEN_XMLNODE*
-  LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
-                                   const GWEN_STRINGLIST *cardTypes,
-                                   const char *commandName,
-                                   const char *driverType,
-                                   const char *readerType);
+static GWEN_XMLNODE *
+LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
+                                 const GWEN_STRINGLIST *cardTypes,
+                                 const char *commandName,
+                                 const char *driverType,
+                                 const char *readerType);
 
 
 static GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
@@ -111,9 +111,9 @@ static GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
 
 
 static LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
-					     GWEN_XMLNODE *node,
-					     GWEN_DB_NODE *cmdData,
-					     GWEN_BUFFER *gbuf);
+                                             GWEN_XMLNODE *node,
+                                             GWEN_DB_NODE *cmdData,
+                                             GWEN_BUFFER *gbuf);
 
 static int LC_Client_ParseResult(LC_CLIENT *cl,
                                  GWEN_XMLNODE *node,
@@ -136,8 +136,8 @@ static int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName);
 
 
 static LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
-					      const char *readerName,
-					      LC_CARD **pCard);
+                                              const char *readerName,
+                                              LC_CARD **pCard);
 
 
 #endif /* CHIPCARD_CLIENT_CLIENT_P_H */

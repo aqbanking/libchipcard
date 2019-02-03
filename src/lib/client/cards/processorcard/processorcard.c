@@ -25,7 +25,8 @@ GWEN_INHERIT(LC_CARD, LC_PROCESSORCARD)
 
 
 
-int LC_ProcessorCard_ExtendCard(LC_CARD *card){
+int LC_ProcessorCard_ExtendCard(LC_CARD *card)
+{
   LC_PROCESSORCARD *mc;
 
   GWEN_NEW_OBJECT(LC_PROCESSORCARD, mc);
@@ -42,7 +43,8 @@ int LC_ProcessorCard_ExtendCard(LC_CARD *card){
 
 
 
-int LC_ProcessorCard_UnextendCard(LC_CARD *card){
+int LC_ProcessorCard_UnextendCard(LC_CARD *card)
+{
   LC_PROCESSORCARD *mc;
 
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_PROCESSORCARD, card);
@@ -55,18 +57,20 @@ int LC_ProcessorCard_UnextendCard(LC_CARD *card){
 
 
 
-void GWENHYWFAR_CB LC_ProcessorCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB LC_ProcessorCard_freeData(void *bp, void *p)
+{
   LC_PROCESSORCARD *mc;
 
   assert(bp);
   assert(p);
-  mc=(LC_PROCESSORCARD*)p;
+  mc=(LC_PROCESSORCARD *)p;
   GWEN_FREE_OBJECT(mc);
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_PROCESSORCARD *mc;
 
@@ -94,7 +98,8 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_PROCESSORCARD *mc;
 
@@ -122,7 +127,8 @@ LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card){
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   LC_PROCESSORCARD *mc;
 

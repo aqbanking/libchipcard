@@ -1,6 +1,7 @@
 
 
-int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs) {
+int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs)
+{
   int rv;
   LC_CLIENT_RESULT res;
   int v;
@@ -49,8 +50,8 @@ int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs) {
     if (v>1)
       fprintf(stderr, "Writing data.\n");
     writeFile(stdout,
-	      GWEN_Buffer_GetStart(tbuf),
-	      GWEN_Buffer_GetUsedBytes(tbuf));
+              GWEN_Buffer_GetStart(tbuf),
+              GWEN_Buffer_GetUsedBytes(tbuf));
 
     GWEN_Buffer_free(tbuf);
 
@@ -70,7 +71,8 @@ int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs) {
 
 
 
-int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   int v;
@@ -95,14 +97,14 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (v>1)
     fprintf(stderr, "Connected.\n");
 
-  for (i=0;;i++) {
+  for (i=0;; i++) {
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
     if (res!=LC_Client_ResultOk) {
       showError(card, res, "GetNextCard");
       if (dobeep)
-	errorBeep();
+        errorBeep();
       return RETURNVALUE_WORK;
     }
     if (v>0)
@@ -116,7 +118,7 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     if (res!=LC_Client_ResultOk) {
       showError(card, res, "ReleaseCard");
       if (dobeep)
-	errorBeep();
+        errorBeep();
       LC_Card_free(card);
       return RETURNVALUE_WORK;
     }
@@ -131,7 +133,7 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     if (i>15) {
       fprintf(stderr, "ERROR: No card found.\n");
       if (dobeep)
-	errorBeep();
+        errorBeep();
       return RETURNVALUE_WORK;
     }
 #endif

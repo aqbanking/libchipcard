@@ -37,122 +37,123 @@
     "See COPYING for details.\n"
 
 
-const GWEN_ARGS prg_args[]={
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "logtype",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logtype",                    /* long option */
-  "Set the logtype",            /* short description */
-  "Set the logtype (console, file)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "loglevel",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "loglevel",                   /* long option */
-  "Set the log level",          /* short description */
-  "Set the log level (info, notice, warning, error)."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "logfile",                    /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "logfile",                   /* long option */
-  "Set the log file",          /* short description */
-  "Set the log file (if log type is \"file\")."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "verbosity",                  /* name */
-  0,                            /* minnum */
-  10,                           /* maxnum */
-  "v",                          /* short option */
-  "verbous",                    /* long option */
-  "Increase the verbosity",     /* short description */
-  "Every occurrence of this option increases the verbosity."
-},
-{
-  0,                            /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "verify",                     /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  0,                            /* short option */
-  "verify",                     /* long option */
-  "Verify written data",     /* short description */
-  "Verify data after writing it to the card."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "offset",                     /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "a",                          /* short option */
-  "offset",                     /* long option */
-  "offset to start reading/writing at",      /* short description */
-  "Offset to start reading/writing at."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "size",                       /* name */
-  1,                            /* minnum */
-  1,                            /* maxnum */
-  "s",                          /* short option */
-  "size",                       /* long option */
-  "number of bytes to read/write",  /* short description */
-  "Number of bytes to read/write.", /* long description */
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "filename",                   /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "f",                          /* short option */
-  "filename",                   /* long option */
-  "File to read/write",         /* short description */
-  "File to read/write."
-},
-{
-  GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
-  GWEN_ArgsType_Char,            /* type */
-  "pin",                        /* name */
-  0,                            /* minnum */
-  1,                            /* maxnum */
-  "p",                          /* short option */
-  "pin",                        /* long option */
-  "Pin",                        /* short description */
-  "Pin."
-},
-{
-  GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
-  GWEN_ArgsType_Int,             /* type */
-  "help",                       /* name */
-  0,                            /* minnum */
-  0,                            /* maxnum */
-  "h",                          /* short option */
-  "help",                       /* long option */
-  "Show help",                  /* short description */
-  "Shows this help."            /* long description */
+const GWEN_ARGS prg_args[]= {
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logtype",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logtype",                    /* long option */
+    "Set the logtype",            /* short description */
+    "Set the logtype (console, file)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "loglevel",                   /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "loglevel",                   /* long option */
+    "Set the log level",          /* short description */
+    "Set the log level (info, notice, warning, error)."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "logfile",                    /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "logfile",                   /* long option */
+    "Set the log file",          /* short description */
+    "Set the log file (if log type is \"file\")."
+  },
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "verbosity",                  /* name */
+    0,                            /* minnum */
+    10,                           /* maxnum */
+    "v",                          /* short option */
+    "verbous",                    /* long option */
+    "Increase the verbosity",     /* short description */
+    "Every occurrence of this option increases the verbosity."
+  },
+  {
+    0,                            /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "verify",                     /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    0,                            /* short option */
+    "verify",                     /* long option */
+    "Verify written data",     /* short description */
+    "Verify data after writing it to the card."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "offset",                     /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "a",                          /* short option */
+    "offset",                     /* long option */
+    "offset to start reading/writing at",      /* short description */
+    "Offset to start reading/writing at."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "size",                       /* name */
+    1,                            /* minnum */
+    1,                            /* maxnum */
+    "s",                          /* short option */
+    "size",                       /* long option */
+    "number of bytes to read/write",  /* short description */
+    "Number of bytes to read/write.", /* long description */
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "filename",                   /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "f",                          /* short option */
+    "filename",                   /* long option */
+    "File to read/write",         /* short description */
+    "File to read/write."
+  },
+  {
+    GWEN_ARGS_FLAGS_HAS_ARGUMENT, /* flags */
+    GWEN_ArgsType_Char,            /* type */
+    "pin",                        /* name */
+    0,                            /* minnum */
+    1,                            /* maxnum */
+    "p",                          /* short option */
+    "pin",                        /* long option */
+    "Pin",                        /* short description */
+    "Pin."
+  },
+  {
+    GWEN_ARGS_FLAGS_HELP | GWEN_ARGS_FLAGS_LAST, /* flags */
+    GWEN_ArgsType_Int,             /* type */
+    "help",                       /* name */
+    0,                            /* minnum */
+    0,                            /* maxnum */
+    "h",                          /* short option */
+    "help",                       /* long option */
+    "Show help",                  /* short description */
+    "Shows this help."            /* long description */
   }
 };
 
 
-void usage(const char *ustr) {
-  fprintf(stdout,"%s%s",
+void usage(const char *ustr)
+{
+  fprintf(stdout, "%s%s",
           I18N("MemCard2 - A tool to read/write data from/to a memory chip card\n"
                "(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
                "This library is free software; you can redistribute it and/or\n"
@@ -165,10 +166,11 @@ void usage(const char *ustr) {
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
+void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+{
   const char *s;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     s="Ok.";
     break;
@@ -222,7 +224,8 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
 
 
 
-int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   int rv;
@@ -250,7 +253,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (v>1)
     fprintf(stderr, "Connected.\n");
 
-  for (i=0;;i++) {
+  for (i=0;; i++) {
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
@@ -317,7 +320,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     f=stdout;
   }
   else {
-    f=fopen(fname,"w+");
+    f=fopen(fname, "w+");
   }
   if (!f) {
     fprintf(stderr,
@@ -340,7 +343,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   bps=0;
   t0=time(0);
   i=size;
-  while(i) {
+  while (i) {
     int t;
 
     if (i>1024)
@@ -427,9 +430,8 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     showError(card, res, "CardClose");
     return RETURNVALUE_WORK;
   }
-  else
-    if (v>1)
-      fprintf(stderr, "Card closed.\n");
+  else if (v>1)
+    fprintf(stderr, "Card closed.\n");
 
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
@@ -448,7 +450,8 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;
   int rv;
@@ -474,7 +477,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     f=stdin;
   }
   else {
-    f=fopen(fname,"r");
+    f=fopen(fname, "r");
   }
   if (!f) {
     fprintf(stderr,
@@ -495,7 +498,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   if (v>1)
     fprintf(stderr, "Connected.\n");
 
-  for (i=0;;i++) {
+  for (i=0;; i++) {
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
@@ -580,7 +583,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   bps=0;
   t0=time(0);
   i=size;
-  while(i) {
+  while (i) {
     int t;
     char buf[1024];
 
@@ -703,18 +706,16 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
     showError(card, res, "CardClose");
     return RETURNVALUE_WORK;
   }
-  else
-    if (v>1)
-      fprintf(stderr, "Card closed.\n");
+  else if (v>1)
+    fprintf(stderr, "Card closed.\n");
 
   res=LC_Client_ReleaseCard(cl, card);
   if (res!=LC_Client_ResultOk) {
     showError(card, res, "ReleaseCard");
     return RETURNVALUE_WORK;
   }
-  else
-    if (v>1)
-      fprintf(stderr, "Card released.\n");
+  else if (v>1)
+    fprintf(stderr, "Card released.\n");
 
   /* finished */
   if (v>1)
@@ -724,7 +725,8 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int rv;
   GWEN_DB_NODE *db;
   const char *s;
@@ -775,9 +777,9 @@ int main(int argc, char **argv) {
   }
   rv=GWEN_Logger_Open(LC_LOGDOMAIN,
                       "memcard3",
-		      GWEN_DB_GetCharValue(db, "logfile", 0, "memcard3.log"),
-		      logType,
-		      GWEN_LoggerFacility_User);
+                      GWEN_DB_GetCharValue(db, "logfile", 0, "memcard3.log"),
+                      logType,
+                      GWEN_LoggerFacility_User);
   if (rv) {
     fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
     return RETURNVALUE_SETUP;

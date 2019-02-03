@@ -1,6 +1,7 @@
 
 
-int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CLIENT_RESULT res;
   int v;
   int rv;
@@ -27,8 +28,8 @@ int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
   root=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, "root");
   rv=GWEN_XML_ReadFile(root,
                        inFile,
-		       GWEN_XML_FLAGS_HANDLE_HEADERS |
-		       GWEN_XML_FLAGS_HANDLE_NAMESPACES);
+                       GWEN_XML_FLAGS_HANDLE_HEADERS |
+                       GWEN_XML_FLAGS_HANDLE_NAMESPACES);
   if (rv<0) {
     GWEN_XMLNode_free(root);
     DBG_ERROR(0, "Error: %d", rv);

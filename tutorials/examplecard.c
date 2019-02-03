@@ -34,7 +34,8 @@ GWEN_INHERIT(LC_CARD, EXAMPLE_CARD)
  * Also, this function must be called before using any other function of the
  * inheriting type.
  */
-int ExampleCard_ExtendCard(LC_CARD *card){
+int ExampleCard_ExtendCard(LC_CARD *card)
+{
   EXAMPLE_CARD *xc;
   int rv;
 
@@ -66,7 +67,8 @@ int ExampleCard_ExtendCard(LC_CARD *card){
  * ExampleCard_ExtendCard(), so after that the function ExampleCard_Close()
  * will no longer be called internally by LC_Card_Close().
  */
-int ExampleCard_UnextendCard(LC_CARD *card){
+int ExampleCard_UnextendCard(LC_CARD *card)
+{
   EXAMPLE_CARD *xc;
   int rv;
 
@@ -92,12 +94,13 @@ int ExampleCard_UnextendCard(LC_CARD *card){
  * a pointer to the derived type (in this case EXAMPLE_CARD). You need to cast
  * these pointers to their real types respectively.
  */
-void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p){
+void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p)
+{
   EXAMPLE_CARD *xc;
 
   assert(bp);
   assert(p);
-  xc=(EXAMPLE_CARD*)p;
+  xc=(EXAMPLE_CARD *)p;
   GWEN_FREE_OBJECT(xc);
 }
 
@@ -112,7 +115,8 @@ void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p){
  * may later be used again, because the function LC_Card_Open() also does
  * the connection work and must therefore only be called *once*.
  */
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   EXAMPLE_CARD *xc;
 
@@ -140,7 +144,8 @@ LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card){
 
 
 /* As discussed above this is the card specific setup. */
-LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card){
+LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   EXAMPLE_CARD *xc;
 
@@ -174,7 +179,8 @@ LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card){
  * Additionally, you can do your own deinit stuff here before actually
  * releasing the card.
  */
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card){
+LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card)
+{
   LC_CLIENT_RESULT res;
   EXAMPLE_CARD *xc;
 
@@ -195,7 +201,8 @@ LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card){
 /* This is just an example of how to access data stored in the card type
  * extension
  */
-int ExampleCard_GetExampleData(const LC_CARD *card){
+int ExampleCard_GetExampleData(const LC_CARD *card)
+{
   EXAMPLE_CARD *xc;
 
   assert(card);
@@ -207,9 +214,10 @@ int ExampleCard_GetExampleData(const LC_CARD *card){
 
 
 
-int test_type(TYPE_VISIBLE *v) {
+int test_type(TYPE_VISIBLE *v)
+{
   return test_type(v);
-  return ((EXAMPLE_CARD*)v)->exampleData;
+  return ((EXAMPLE_CARD *)v)->exampleData;
 }
 
 

@@ -84,15 +84,15 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *b
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
-					     LC_HI_PERSONAL_DATA **pData);
+                                             LC_HI_PERSONAL_DATA **pData);
 
 CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
-					      LC_HI_INSURANCE_DATA **pData);
+                                              LC_HI_INSURANCE_DATA **pData);
 
-CHIPCARD_API 
+CHIPCARD_API
 LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
-					       LC_HI_INSURANCE_DATA **pData);
+                                               LC_HI_INSURANCE_DATA **pData);
 
 /*@}*/
 
@@ -104,12 +104,12 @@ LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
 /*@{*/
 
 CHIPCARD_API CHIPCARD_DEPRECATED
-  LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
-				     GWEN_BUFFER *buf);
+LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
+                                   GWEN_BUFFER *buf);
 
 CHIPCARD_API CHIPCARD_DEPRECATED
-  LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
-				     GWEN_BUFFER *buf);
+LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
+                                   GWEN_BUFFER *buf);
 /*@}*/
 
 

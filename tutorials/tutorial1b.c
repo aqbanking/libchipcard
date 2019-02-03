@@ -33,7 +33,8 @@
  */
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   /* The basic object of Libchipcard itself is LC_CLIENT.
    * You must create and initialize such an object before doing anything
    * with Libchipcard.

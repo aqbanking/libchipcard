@@ -46,10 +46,11 @@
 
 /* This function explains an error */
 void showError(LC_CARD *card, LC_CLIENT_RESULT res,
-               const char *failedCommand) {
+               const char *failedCommand)
+{
   const char *s;
 
-  switch(res) {
+  switch (res) {
   case LC_Client_ResultOk:
     s="Ok.";
     break;
@@ -103,7 +104,8 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res,
 
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   LC_CLIENT *cl;
   LC_CARD *card=0;
   LC_CLIENT_RESULT res;

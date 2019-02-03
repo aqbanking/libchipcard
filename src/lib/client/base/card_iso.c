@@ -1,11 +1,11 @@
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-  LC_Card__IsoReadBinary(LC_CARD *card,
-                         uint32_t flags,
-                         int offset,
-                         int size,
-                         GWEN_BUFFER *buf){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
+                                                    uint32_t flags,
+                                                    int offset,
+                                                    int size,
+                                                    GWEN_BUFFER *buf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -18,7 +18,7 @@ LC_CLIENT_RESULT CHIPCARD_CB
     if (offset>255) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
-		"(%u)", flags);
+                "(%u)", flags);
       return LC_Client_ResultInvalid;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
@@ -62,12 +62,12 @@ LC_CLIENT_RESULT CHIPCARD_CB
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoUpdateBinary(LC_CARD *card,
-                         uint32_t flags,
-                         int offset,
-                         const char *ptr,
-                         unsigned int size){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
+                                                      uint32_t flags,
+                                                      int offset,
+                                                      const char *ptr,
+                                                      unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -78,7 +78,7 @@ LC_Card__IsoUpdateBinary(LC_CARD *card,
     if (offset>255) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
-		"(%u)", flags);
+                "(%u)", flags);
       return LC_Client_ResultInvalid;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
@@ -112,12 +112,12 @@ LC_Card__IsoUpdateBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoWriteBinary(LC_CARD *card,
-                        uint32_t flags,
-                        int offset,
-                        const char *ptr,
-                        unsigned int size){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
+                                                     uint32_t flags,
+                                                     int offset,
+                                                     const char *ptr,
+                                                     unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -162,11 +162,11 @@ LC_Card__IsoWriteBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoEraseBinary(LC_CARD *card,
-                        uint32_t flags,
-                        int offset,
-                        unsigned int size){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
+                                                     uint32_t flags,
+                                                     int offset,
+                                                     unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -208,11 +208,11 @@ LC_Card__IsoEraseBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoReadRecord(LC_CARD *card,
-                       uint32_t flags,
-                       int recNum,
-                       GWEN_BUFFER *buf){
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
+                                                    uint32_t flags,
+                                                    int recNum,
+                                                    GWEN_BUFFER *buf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -225,8 +225,8 @@ LC_Card__IsoReadRecord(LC_CARD *card,
       LC_CARD_ISO_FLAGS_RECSEL_GIVEN) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Invalid flags %u"
-	      " (only RECSEL_GIVEN is allowed)", flags)
-      return LC_Client_ResultInvalid;
+              " (only RECSEL_GIVEN is allowed)", flags)
+    return LC_Client_ResultInvalid;
   }
   p2|=0x04;
 
@@ -266,12 +266,12 @@ LC_Card__IsoReadRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoWriteRecord(LC_CARD *card,
-                        uint32_t flags,
-                        int recNum,
-                        const char *ptr,
-                        unsigned int size) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
+                                                     uint32_t flags,
+                                                     int recNum,
+                                                     const char *ptr,
+                                                     unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -303,12 +303,12 @@ LC_Card__IsoWriteRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoUpdateRecord(LC_CARD *card,
-                         uint32_t flags,
-                         int recNum,
-                         const char *ptr,
-                         unsigned int size) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
+                                                      uint32_t flags,
+                                                      int recNum,
+                                                      const char *ptr,
+                                                      unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -339,11 +339,11 @@ LC_Card__IsoUpdateRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoAppendRecord(LC_CARD *card,
-                         uint32_t flags,
-                         const char *ptr,
-                         unsigned int size) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
+                                                      uint32_t flags,
+                                                      const char *ptr,
+                                                      unsigned int size)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -372,13 +372,13 @@ LC_Card__IsoAppendRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoVerifyPin(LC_CARD *card,
-                      uint32_t flags,
-                      const LC_PININFO *pi,
-                      const unsigned char *ptr,
-                      unsigned int size,
-                      int *triesLeft) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
+                                                   uint32_t flags,
+                                                   const LC_PININFO *pi,
+                                                   const unsigned char *ptr,
+                                                   unsigned int size,
+                                                   int *triesLeft)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
@@ -388,7 +388,7 @@ LC_Card__IsoVerifyPin(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(LC_PinInfo_GetEncoding(pi)) {
+  switch (LC_PinInfo_GetEncoding(pi)) {
   case GWEN_Crypt_PinEncoding_Bin:
     cmd="IsoVerifyPin_Bin";
     break;
@@ -442,15 +442,15 @@ LC_Card__IsoVerifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoModifyPin(LC_CARD *card,
-                      uint32_t flags,
-                      const LC_PININFO *pi,
-                      const unsigned char *oldptr,
-                      unsigned int oldsize,
-                      const unsigned char *newptr,
-                      unsigned int newsize,
-                      int *triesLeft) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
+                                                   uint32_t flags,
+                                                   const LC_PININFO *pi,
+                                                   const unsigned char *oldptr,
+                                                   unsigned int oldsize,
+                                                   const unsigned char *newptr,
+                                                   unsigned int newsize,
+                                                   int *triesLeft)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
@@ -460,7 +460,7 @@ LC_Card__IsoModifyPin(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(LC_PinInfo_GetEncoding(pi)) {
+  switch (LC_PinInfo_GetEncoding(pi)) {
   case GWEN_Crypt_PinEncoding_Bin:
     cmd="IsoModifyPin_Bin";
     break;
@@ -518,11 +518,11 @@ LC_Card__IsoModifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoPerformVerification(LC_CARD *card,
-                                uint32_t flags,
-                                const LC_PININFO *pi,
-                                int *triesLeft) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
+                                                             uint32_t flags,
+                                                             const LC_PININFO *pi,
+                                                             int *triesLeft)
+{
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
@@ -532,7 +532,7 @@ LC_Card__IsoPerformVerification(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(LC_PinInfo_GetEncoding(pi)) {
+  switch (LC_PinInfo_GetEncoding(pi)) {
   case GWEN_Crypt_PinEncoding_Bin:
     cmd="IsoPerformVerification_Bin";
     break;
@@ -584,11 +584,11 @@ LC_Card__IsoPerformVerification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoPerformModification(LC_CARD *card,
-                                uint32_t flags,
-                                const LC_PININFO *pi,
-                                int *triesLeft) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
+                                                             uint32_t flags,
+                                                             const LC_PININFO *pi,
+                                                             int *triesLeft)
+{
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
@@ -598,7 +598,7 @@ LC_Card__IsoPerformModification(LC_CARD *card,
   if (triesLeft)
     *triesLeft=-1;
 
-  switch(LC_PinInfo_GetEncoding(pi)) {
+  switch (LC_PinInfo_GetEncoding(pi)) {
   case GWEN_Crypt_PinEncoding_Bin:
     cmd="IsoPerformModification_Bin";
     break;
@@ -648,9 +648,9 @@ LC_Card__IsoPerformModification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoManageSe(LC_CARD *card,
-                     int tmpl, int kids, int kidp, int ar) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
+                                                  int tmpl, int kids, int kidp, int ar)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -703,12 +703,12 @@ LC_Card__IsoManageSe(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoInternalAuth(LC_CARD *card,
-                         int kid,
-                         const unsigned char *ptr,
-                         unsigned int size,
-                         GWEN_BUFFER *rBuf) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
+                                                      int kid,
+                                                      const unsigned char *ptr,
+                                                      unsigned int size,
+                                                      GWEN_BUFFER *rBuf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_CLIENT_RESULT res;
@@ -734,10 +734,10 @@ LC_Card__IsoInternalAuth(LC_CARD *card,
     const void *p;
 
     p=GWEN_DB_GetBinValue(dbResp,
-			  "response/data",
-			  0,
-			  0, 0,
-			  &bs);
+                          "response/data",
+                          0,
+                          0, 0,
+                          &bs);
     if (p && bs) {
       GWEN_Buffer_AppendBytes(rBuf, p, bs);
     }
@@ -754,11 +754,11 @@ LC_Card__IsoInternalAuth(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoEncipher(LC_CARD *card,
-                     const char *ptr,
-                     unsigned int size,
-                     GWEN_BUFFER *codeBuf) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
+                                                  const char *ptr,
+                                                  unsigned int size,
+                                                  GWEN_BUFFER *codeBuf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_CLIENT_RESULT res;
@@ -799,11 +799,11 @@ LC_Card__IsoEncipher(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB
-LC_Card__IsoDecipher(LC_CARD *card,
-                     const char *ptr,
-                     unsigned int size,
-                     GWEN_BUFFER *plainBuf) {
+LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
+                                                  const char *ptr,
+                                                  unsigned int size,
+                                                  GWEN_BUFFER *plainBuf)
+{
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_CLIENT_RESULT res;
@@ -849,9 +849,10 @@ LC_Card__IsoDecipher(LC_CARD *card,
 
 LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
                                        uint32_t flags,
-				       int offset,
+                                       int offset,
                                        int size,
-                                       GWEN_BUFFER *buf) {
+                                       GWEN_BUFFER *buf)
+{
   assert(card);
   if (card->readBinaryFn)
     return card->readBinaryFn(card, flags, offset, size, buf);
@@ -862,10 +863,11 @@ LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
-					uint32_t flags,
-					int offset,
-					const char *ptr,
-                                        unsigned int size) {
+                                        uint32_t flags,
+                                        int offset,
+                                        const char *ptr,
+                                        unsigned int size)
+{
   assert(card);
   if (card->writeBinaryFn)
     return card->writeBinaryFn(card, flags, offset, ptr, size);
@@ -876,10 +878,11 @@ LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
-					 uint32_t flags,
-					 int offset,
-					 const char *ptr,
-                                         unsigned int size) {
+                                         uint32_t flags,
+                                         int offset,
+                                         const char *ptr,
+                                         unsigned int size)
+{
   assert(card);
   if (card->updateBinaryFn)
     return card->updateBinaryFn(card, flags, offset, ptr, size);
@@ -891,9 +894,10 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
-					uint32_t flags,
-					int offset,
-                                        unsigned int size) {
+                                        uint32_t flags,
+                                        int offset,
+                                        unsigned int size)
+{
   assert(card);
   if (card->eraseBinaryFn)
     return card->eraseBinaryFn(card, flags, offset, size);
@@ -904,9 +908,10 @@ LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
-				       uint32_t flags,
-				       int recNum,
-                                       GWEN_BUFFER *buf) {
+                                       uint32_t flags,
+                                       int recNum,
+                                       GWEN_BUFFER *buf)
+{
   assert(card);
   if (card->readRecordFn)
     return card->readRecordFn(card, flags, recNum, buf);
@@ -917,10 +922,11 @@ LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
-					uint32_t flags,
-					int recNum,
-					const char *ptr,
-                                        unsigned int size) {
+                                        uint32_t flags,
+                                        int recNum,
+                                        const char *ptr,
+                                        unsigned int size)
+{
   assert(card);
   if (card->writeRecordFn)
     return card->writeRecordFn(card, flags, recNum, ptr, size);
@@ -933,7 +939,8 @@ LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
                                          uint32_t flags,
                                          const char *ptr,
-                                         unsigned int size) {
+                                         unsigned int size)
+{
   assert(card);
   if (card->appendRecordFn)
     return card->appendRecordFn(card, flags, ptr, size);
@@ -945,10 +952,11 @@ LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
-					 uint32_t flags,
-					 int recNum,
-					 const char *ptr,
-                                         unsigned int size) {
+                                         uint32_t flags,
+                                         int recNum,
+                                         const char *ptr,
+                                         unsigned int size)
+{
   assert(card);
   if (card->updateRecordFn)
     return card->updateRecordFn(card, flags, recNum, ptr, size);
@@ -963,11 +971,12 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       const LC_PININFO *pi,
                                       const unsigned char *ptr,
                                       unsigned int size,
-                                      int *triesLeft) {
+                                      int *triesLeft)
+{
   assert(card);
   if (card->verifyPinFn)
     return card->verifyPinFn(card, flags, pi, ptr, size,
-			     triesLeft);
+                             triesLeft);
   else
     return LC_Card__IsoVerifyPin(card, flags, pi, ptr, size,
                                  triesLeft);
@@ -982,7 +991,8 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       unsigned int oldsize,
                                       const unsigned char *newptr,
                                       unsigned int newsize,
-                                      int *triesLeft) {
+                                      int *triesLeft)
+{
   assert(card);
   if (card->modifyPinFn)
     return card->modifyPinFn(card, flags, pi,
@@ -991,7 +1001,7 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                              triesLeft);
   else
     return LC_Card__IsoModifyPin(card, flags, pi,
-				 oldptr, oldsize,
+                                 oldptr, oldsize,
                                  newptr, newsize,
                                  triesLeft);
 }
@@ -1001,7 +1011,8 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
-                                                int *triesLeft) {
+                                                int *triesLeft)
+{
   assert(card);
   if (card->performVerificationFn)
     return card->performVerificationFn(card, flags, pi,
@@ -1016,7 +1027,8 @@ LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
-                                                int *triesLeft) {
+                                                int *triesLeft)
+{
   assert(card);
   if (card->performModificationFn)
     return card->performModificationFn(card, flags, pi,
@@ -1029,7 +1041,8 @@ LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoManageSe(LC_CARD *card,
-                                     int tmpl, int kids, int kidp, int ar) {
+                                     int tmpl, int kids, int kidp, int ar)
+{
   assert(card);
   if (card->manageSeFn)
     return card->manageSeFn(card, tmpl, kids, kidp, ar);
@@ -1042,7 +1055,8 @@ LC_CLIENT_RESULT LC_Card_IsoManageSe(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoEncipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
-                                     GWEN_BUFFER *codeBuf) {
+                                     GWEN_BUFFER *codeBuf)
+{
   assert(card);
   if (card->encipherFn)
     return card->encipherFn(card, ptr, size, codeBuf);
@@ -1055,7 +1069,8 @@ LC_CLIENT_RESULT LC_Card_IsoEncipher(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoDecipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
-                                     GWEN_BUFFER *plainBuf) {
+                                     GWEN_BUFFER *plainBuf)
+{
   assert(card);
   if (card->decipherFn)
     return card->decipherFn(card, ptr, size, plainBuf);
@@ -1068,7 +1083,8 @@ LC_CLIENT_RESULT LC_Card_IsoDecipher(LC_CARD *card,
 LC_CLIENT_RESULT LC_Card_IsoSign(LC_CARD *card,
                                  const char *ptr,
                                  unsigned int size,
-                                 GWEN_BUFFER *sigBuf) {
+                                 GWEN_BUFFER *sigBuf)
+{
   assert(card);
   if (card->signFn)
     return card->signFn(card, ptr, size, sigBuf);
@@ -1082,7 +1098,8 @@ LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
                                    const char *dptr,
                                    unsigned int dsize,
                                    const char *sigptr,
-                                   unsigned int sigsize) {
+                                   unsigned int sigsize)
+{
   assert(card);
   if (card->verifyFn)
     return card->verifyFn(card, dptr, dsize, sigptr, sigsize);
@@ -1093,10 +1110,11 @@ LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
 
 
 LC_CLIENT_RESULT LC_Card_IsoInternalAuth(LC_CARD *card,
-					 int kid,
-					 const unsigned char *ptr,
-					 unsigned int size,
-					 GWEN_BUFFER *rBuf) {
+                                         int kid,
+                                         const unsigned char *ptr,
+                                         unsigned int size,
+                                         GWEN_BUFFER *rBuf)
+{
   assert(card);
   if (card->internalAuthFn)
     return card->internalAuthFn(card, kid, ptr, size, rBuf);
@@ -1110,14 +1128,16 @@ LC_CLIENT_RESULT LC_Card_IsoInternalAuth(LC_CARD *card,
 
 
 
-void LC_Card_SetIsoReadBinaryFn(LC_CARD *card, LC_CARD_ISOREADBINARY_FN f) {
+void LC_Card_SetIsoReadBinaryFn(LC_CARD *card, LC_CARD_ISOREADBINARY_FN f)
+{
   assert(card);
   card->readBinaryFn=f;
 }
 
 
 
-void LC_Card_SetIsoWriteBinaryFn(LC_CARD *card, LC_CARD_ISOWRITEBINARY_FN f){
+void LC_Card_SetIsoWriteBinaryFn(LC_CARD *card, LC_CARD_ISOWRITEBINARY_FN f)
+{
   assert(card);
   card->writeBinaryFn=f;
 }
@@ -1125,28 +1145,32 @@ void LC_Card_SetIsoWriteBinaryFn(LC_CARD *card, LC_CARD_ISOWRITEBINARY_FN f){
 
 
 void LC_Card_SetIsoUpdateBinaryFn(LC_CARD *card,
-                                  LC_CARD_ISOUPDATEBINARY_FN f){
+                                  LC_CARD_ISOUPDATEBINARY_FN f)
+{
   assert(card);
   card->updateBinaryFn=f;
 }
 
 
 
-void LC_Card_SetIsoEraseBinaryFn(LC_CARD *card, LC_CARD_ISOERASEBINARY_FN f) {
+void LC_Card_SetIsoEraseBinaryFn(LC_CARD *card, LC_CARD_ISOERASEBINARY_FN f)
+{
   assert(card);
   card->eraseBinaryFn=f;
 }
 
 
 
-void LC_Card_SetIsoReadRecordFn(LC_CARD *card, LC_CARD_ISOREADRECORD_FN f){
+void LC_Card_SetIsoReadRecordFn(LC_CARD *card, LC_CARD_ISOREADRECORD_FN f)
+{
   assert(card);
   card->readRecordFn=f;
 }
 
 
 
-void LC_Card_SetIsoWriteRecordFn(LC_CARD *card, LC_CARD_ISOWRITERECORD_FN f){
+void LC_Card_SetIsoWriteRecordFn(LC_CARD *card, LC_CARD_ISOWRITERECORD_FN f)
+{
   assert(card);
   card->writeRecordFn=f;
 }
@@ -1154,7 +1178,8 @@ void LC_Card_SetIsoWriteRecordFn(LC_CARD *card, LC_CARD_ISOWRITERECORD_FN f){
 
 
 void LC_Card_SetIsoUpdateRecordFn(LC_CARD *card,
-                                  LC_CARD_ISOUPDATERECORD_FN f) {
+                                  LC_CARD_ISOUPDATERECORD_FN f)
+{
   assert(card);
   card->updateRecordFn=f;
 }
@@ -1162,21 +1187,24 @@ void LC_Card_SetIsoUpdateRecordFn(LC_CARD *card,
 
 
 void LC_Card_SetIsoAppendRecordFn(LC_CARD *card,
-                                  LC_CARD_ISOAPPENDRECORD_FN f){
+                                  LC_CARD_ISOAPPENDRECORD_FN f)
+{
   assert(card);
   card->appendRecordFn=f;
 }
 
 
 
-void LC_Card_SetIsoVerifyPinFn(LC_CARD *card, LC_CARD_ISOVERIFYPIN_FN f) {
+void LC_Card_SetIsoVerifyPinFn(LC_CARD *card, LC_CARD_ISOVERIFYPIN_FN f)
+{
   assert(card);
   card->verifyPinFn=f;
 }
 
 
 
-void LC_Card_SetIsoModifyPinFn(LC_CARD *card, LC_CARD_ISOMODIFYPIN_FN f) {
+void LC_Card_SetIsoModifyPinFn(LC_CARD *card, LC_CARD_ISOMODIFYPIN_FN f)
+{
   assert(card);
   card->modifyPinFn=f;
 }
@@ -1184,7 +1212,8 @@ void LC_Card_SetIsoModifyPinFn(LC_CARD *card, LC_CARD_ISOMODIFYPIN_FN f) {
 
 
 void LC_Card_SetIsoPerformVerificationFn(LC_CARD *card,
-                                         LC_CARD_ISOPERFORMVERIFICATION_FN f){
+                                         LC_CARD_ISOPERFORMVERIFICATION_FN f)
+{
   assert(card);
   card->performVerificationFn=f;
 }
@@ -1192,49 +1221,56 @@ void LC_Card_SetIsoPerformVerificationFn(LC_CARD *card,
 
 
 void LC_Card_SetIsoPerformModificationFn(LC_CARD *card,
-                                         LC_CARD_ISOPERFORMMODIFICATION_FN f){
+                                         LC_CARD_ISOPERFORMMODIFICATION_FN f)
+{
   assert(card);
   card->performModificationFn=f;
 }
 
 
 
-void LC_Card_SetIsoManageSeFn(LC_CARD *card, LC_CARD_ISOMANAGESE_FN f) {
+void LC_Card_SetIsoManageSeFn(LC_CARD *card, LC_CARD_ISOMANAGESE_FN f)
+{
   assert(card);
   card->manageSeFn=f;
 }
 
 
 
-void LC_Card_SetIsoSignFn(LC_CARD *card, LC_CARD_ISOSIGN_FN f) {
+void LC_Card_SetIsoSignFn(LC_CARD *card, LC_CARD_ISOSIGN_FN f)
+{
   assert(card);
   card->signFn=f;
 }
 
 
 
-void LC_Card_SetIsoVerifyFn(LC_CARD *card, LC_CARD_ISOVERIFY_FN f) {
+void LC_Card_SetIsoVerifyFn(LC_CARD *card, LC_CARD_ISOVERIFY_FN f)
+{
   assert(card);
   card->verifyFn=f;
 }
 
 
 
-void LC_Card_SetIsoEncipherFn(LC_CARD *card, LC_CARD_ISOENCIPHER_FN f) {
+void LC_Card_SetIsoEncipherFn(LC_CARD *card, LC_CARD_ISOENCIPHER_FN f)
+{
   assert(card);
   card->encipherFn=f;
 }
 
 
 
-void LC_Card_SetIsoDecipherFn(LC_CARD *card, LC_CARD_ISODECIPHER_FN f) {
+void LC_Card_SetIsoDecipherFn(LC_CARD *card, LC_CARD_ISODECIPHER_FN f)
+{
   assert(card);
   card->decipherFn=f;
 }
 
 
 
-void LC_Card_SetIsoInternalAuthFn(LC_CARD *card, LC_CARD_ISOINTERNALAUTH_FN f) {
+void LC_Card_SetIsoInternalAuthFn(LC_CARD *card, LC_CARD_ISOINTERNALAUTH_FN f)
+{
   assert(card);
   card->internalAuthFn=f;
 }

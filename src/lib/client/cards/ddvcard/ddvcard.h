@@ -138,17 +138,17 @@ CHIPCARD_API GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card);
  * Read institution data (including bank code, server address, user id etc).
  */
 CHIPCARD_API
-  LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
-                                                int idx,
-                                                GWEN_DB_NODE *dbData);
+LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
+                                              int idx,
+                                              GWEN_DB_NODE *dbData);
 
 /**
  * Write institution data (including bank code, server address, user id etc).
  */
-CHIPCARD_API 
-  LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
-                                                 int idx,
-                                                 GWEN_DB_NODE *dbData);
+CHIPCARD_API
+LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
+                                               int idx,
+                                               GWEN_DB_NODE *dbData);
 /*@}*/
 
 /** @name Key Information

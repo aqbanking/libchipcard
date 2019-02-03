@@ -22,7 +22,8 @@
 
 
 
-int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs){
+int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
   LC_CLIENT_RESULT res;
   int timeOut;
   LC_CARD *card=NULL;
