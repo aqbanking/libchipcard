@@ -88,3 +88,23 @@ dist-hook:
 	rm -f ChangeLog 2>/dev/null
 	$(MAKE) ChangeLog
 
+format:
+	find . -name '*.[c,h,cpp]' -exec astyle \
+	  --style=stroustrup \
+	    -s2 \
+	    --min-conditional-indent=0 \
+	    --indent-labels \
+	    --max-continuation-indent=80 \
+	    --pad-comma \
+	    --pad-header \
+	    --unpad-paren \
+	    --align-pointer=name \
+	    --break-closing-braces \
+	    --break-one-line-headers \
+	    --attach-return-type \
+	    --convert-tabs \
+	    --max-code-length=120 \
+	    --break-after-logical \
+	    --preserve-date \
+	    --suffix=none \{\} \;
+
