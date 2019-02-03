@@ -2038,7 +2038,35 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                         GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
                     }
                 }
+                /* set correct hash algorithm for user based verification of no hash was on the card */
+                if (GWEN_Crypt_Token_Context_GetKeyHashAlgo(ctx)==GWEN_Crypt_HashAlgoId_None) {
+                    switch (rdhVersion) {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 5:
+                        GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,GWEN_Crypt_HashAlgoId_Rmd160);
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                        if (version == 1) {
+                            GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,GWEN_Crypt_HashAlgoId_Rmd160);
+                        }
+                        else if ( version == 2) {
+                            GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,GWEN_Crypt_HashAlgoId_Sha256);
+                        }
+                        else {
+                            GWEN_Crypt_Token_Context_SetKeyHashAlgo(ctx,GWEN_Crypt_HashAlgoId_None);
+                        }
+                        break;
+                    }
+                }
             }
+
+
 
             /**** RDH7 Block start******/
             lct->contexts[cnt]=ctx;
