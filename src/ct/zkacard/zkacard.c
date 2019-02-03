@@ -1957,14 +1957,14 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
                         if (ki) {
                             GWEN_Crypt_Token_Context_SetSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,signKeyNum);
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,signKeyVer);
+                            GWEN_Crypt_Token_Context_SetSignKeyNum(ctx,signKeyNum);
+                            GWEN_Crypt_Token_Context_SetSignKeyVer(ctx,signKeyVer);
                         }
                         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 3, 0);
                         if (ki) {
                             GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,cryptKeyNum);
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,cryptKeyVer);
+                            GWEN_Crypt_Token_Context_SetDecipherKeyNum(ctx,cryptKeyNum);
+                            GWEN_Crypt_Token_Context_SetDecipherKeyVer(ctx,cryptKeyVer);
                         }
                         GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
                     }
@@ -1975,8 +1975,8 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                         ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
                         if (ki) {
                             GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyNumber(ki,authKeyNum);
-                            //GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki,authKeyVer);
+                            GWEN_Crypt_Token_Context_SetAuthSignKeyNum(ctx,signKeyNum);
+                            GWEN_Crypt_Token_Context_SetAuthSignKeyVer(ctx,signKeyVer);
                         }
                         GWEN_Crypt_Token_Context_SetProtocolVersion(ctx,signKeyNum);
                     }
