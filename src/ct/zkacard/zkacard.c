@@ -1992,59 +1992,45 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid) {
                     /* CID is in EF_ID */
                     LC_CT_ZKA *lct;
                     LC_CLIENT_RESULT res;
+                    GWEN_BUFFER *ef_id_bin;
+                    GWEN_BUFFER *cid_str;
                     GWEN_DB_NODE *ef_id_db;
+                    char branchKeyChar[3]="\0\0\0";
+                    char checkSumChar[2]="\0\0";
+                    int i_val;
 
                     lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
                     assert(lct);
-                    if ( rdhVersion == 7 ) {
-                        GWEN_BUFFER *ef_id_bin;
-                        GWEN_BUFFER *cid_str;
-                        GWEN_DB_NODE *ef_id_db;
-                        char branchKeyChar[3]="\0\0\0";
-                        char checkSumChar[2]="\0\0";
-                        int i_val;
 
-                        ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
-                        GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin),GWEN_Buffer_GetUsedBytes(ef_id_bin));
+                    ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
+                    GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin),GWEN_Buffer_GetUsedBytes(ef_id_bin));
 
-                        ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
-                        cid_str=GWEN_Buffer_new(NULL,20,0,0);
-                        i_val=GWEN_DB_GetIntValue(ef_id_db, "branchKey", 0, 0);
-                        sprintf(branchKeyChar,"%2d",i_val);
-                        GWEN_Buffer_AppendString(cid_str,branchKeyChar);
-                        s=GWEN_DB_GetCharValue(ef_id_db, "shortBankCode", 0, NULL);
-                        GWEN_Buffer_AppendString(cid_str,s);
-                        s=GWEN_DB_GetCharValue(ef_id_db, "cardNumber", 0, NULL);
-                        GWEN_Buffer_AppendString(cid_str,s);
-                        i_val=GWEN_DB_GetIntValue(ef_id_db, "checkSum", 0, 0);
-                        i_val>>=4; /* checksum is in the left nibble */
-                        sprintf(checkSumChar,"%1d",i_val);
-                        GWEN_Buffer_AppendString(cid_str,checkSumChar);
-                        GWEN_Crypt_Token_Context_SetSystemId(ctx, GWEN_Buffer_GetStart(cid_str));
-                        s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
-                        if (s) {
-                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
-                        }
-                        else {
-                            s=GWEN_DB_GetCharValue(dbT, "userId", 0, NULL);
-                            if (s) {
-                                GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
-                            }
-                        }
-                        GWEN_Buffer_free(cid_str);
+                    ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
+                    cid_str=GWEN_Buffer_new(NULL,20,0,0);
+                    i_val=GWEN_DB_GetIntValue(ef_id_db, "branchKey", 0, 0);
+                    sprintf(branchKeyChar,"%2d",i_val);
+                    GWEN_Buffer_AppendString(cid_str,branchKeyChar);
+                    s=GWEN_DB_GetCharValue(ef_id_db, "shortBankCode", 0, NULL);
+                    GWEN_Buffer_AppendString(cid_str,s);
+                    s=GWEN_DB_GetCharValue(ef_id_db, "cardNumber", 0, NULL);
+                    GWEN_Buffer_AppendString(cid_str,s);
+                    i_val=GWEN_DB_GetIntValue(ef_id_db, "checkSum", 0, 0);
+                    i_val>>=4; /* checksum is in the left nibble */
+                    sprintf(checkSumChar,"%1d",i_val);
+                    GWEN_Buffer_AppendString(cid_str,checkSumChar);
+                    GWEN_Crypt_Token_Context_SetSystemId(ctx, GWEN_Buffer_GetStart(cid_str));
+                    s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
+                    if (s) {
+                        GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
                     }
                     else {
-                        dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "user");
                         s=GWEN_DB_GetCharValue(dbT, "userId", 0, NULL);
                         if (s) {
                             GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
-                            GWEN_Crypt_Token_Context_SetSystemId(ctx, s);
-                        }
-                        s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
-                        if (s) {
-                            GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
                         }
                     }
+                    GWEN_Buffer_free(cid_str);
+
                 }
                 else {
                     s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
