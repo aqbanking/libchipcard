@@ -1410,7 +1410,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
     GWEN_Buffer_AppendByte(scratchBuf, GWEN_Buffer_ReadByte(mbuf));
   }
   GWEN_DB_SetBinValue(dbRecord, 0, "modulus", GWEN_Buffer_GetStart(scratchBuf), modLen);
-  GWEN_Crypt_Token_KeyInfo_SetModulus(ki, GWEN_Buffer_GetStart(scratchBuf), modLen);
+  GWEN_Crypt_Token_KeyInfo_SetModulus(ki, (const uint8_t*) GWEN_Buffer_GetStart(scratchBuf), modLen);
   GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASMODULUS);
   GWEN_Buffer_Reset(scratchBuf);
   byte= GWEN_Buffer_ReadByte(mbuf);
@@ -1571,7 +1571,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
       uint32_t tag_len_len;
       uint32_t data_len=GWEN_TLV_ParseLength(mbuf, &tag_len_len);
       /*GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),data_len+tag_len_len);*/
-      GWEN_Crypt_Token_KeyInfo_SetCertificate(ki, GWEN_Buffer_GetStart(mbuf), recordLen);
+      GWEN_Crypt_Token_KeyInfo_SetCertificate(ki, (const uint8_t*) GWEN_Buffer_GetStart(mbuf), recordLen);
       GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
     }
     else {
@@ -1872,7 +1872,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
           b=GWEN_DB_GetBinValue(dbT, "keyHash", 0, NULL, 0, &binDataLen);
           if (b) {
             char *c = (char *) b;
-            char hash[33];
+            uint8_t hash[33];
 
             switch (version) {
             case 1:
@@ -2036,7 +2036,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
           assert(lct);
 
           ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
-          GWEN_Crypt_Token_Context_SetCid(ctx, GWEN_Buffer_GetStart(ef_id_bin), GWEN_Buffer_GetUsedBytes(ef_id_bin));
+          GWEN_Crypt_Token_Context_SetCid(ctx, (const uint8_t*) GWEN_Buffer_GetStart(ef_id_bin), GWEN_Buffer_GetUsedBytes(ef_id_bin));
 
           ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
           cid_str=GWEN_Buffer_new(NULL, 20, 0, 0);
