@@ -1572,6 +1572,8 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
       uint32_t data_len=GWEN_TLV_ParseLength(mbuf, &tag_len_len);
       /*GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),data_len+tag_len_len);*/
       GWEN_Crypt_Token_KeyInfo_SetCertificate(ki, (const uint8_t*) GWEN_Buffer_GetStart(mbuf), recordLen);
+      /* Certificate on zka cards is always X.509 */
+      GWEN_Crypt_Token_KeyInfo_SetCertType(ki, 3);
       GWEN_Crypt_Token_KeyInfo_AddFlags(ki, GWEN_CRYPT_TOKEN_KEYFLAGS_HASCERTIFICATE);
     }
     else {
@@ -2035,23 +2037,10 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
           lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
           assert(lct);
 
+          /* system identificator for zka cards is the card identification (CID) */
           ef_id_bin=LC_ZkaCard_GetCardDataAsBuffer(lct->card);
           GWEN_Crypt_Token_Context_SetCid(ctx, (const uint8_t*) GWEN_Buffer_GetStart(ef_id_bin), GWEN_Buffer_GetUsedBytes(ef_id_bin));
 
-          ef_id_db=LC_ZkaCard_GetCardDataAsDb(lct->card);
-          cid_str=GWEN_Buffer_new(NULL, 20, 0, 0);
-          i_val=GWEN_DB_GetIntValue(ef_id_db, "branchKey", 0, 0);
-          sprintf(branchKeyChar, "%2d", i_val);
-          GWEN_Buffer_AppendString(cid_str, branchKeyChar);
-          s=GWEN_DB_GetCharValue(ef_id_db, "shortBankCode", 0, NULL);
-          GWEN_Buffer_AppendString(cid_str, s);
-          s=GWEN_DB_GetCharValue(ef_id_db, "cardNumber", 0, NULL);
-          GWEN_Buffer_AppendString(cid_str, s);
-          i_val=GWEN_DB_GetIntValue(ef_id_db, "checkSum", 0, 0);
-          i_val>>=4; /* checksum is in the left nibble */
-          sprintf(checkSumChar, "%1d", i_val);
-          GWEN_Buffer_AppendString(cid_str, checkSumChar);
-          GWEN_Crypt_Token_Context_SetSystemId(ctx, GWEN_Buffer_GetStart(cid_str));
           s=GWEN_DB_GetCharValue(dbT, "customerId", 0, NULL);
           if (s) {
             GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
@@ -2062,7 +2051,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
               GWEN_Crypt_Token_Context_SetCustomerId(ctx, s);
             }
           }
-          GWEN_Buffer_free(cid_str);
+
 
         }
         else {
