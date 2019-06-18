@@ -7,7 +7,8 @@ noinst_HEADERS=global.h
 zkacard_tool_SOURCES=\
   main.c \
   getpublickey.c \
-  shownotepad.c
+  shownotepad.c \
+  resetptc.c
 zkacard_tool_LDADD=../../lib/client/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
 zkacard_tool_LDFLAGS=@STRIPALL@
 

@@ -194,6 +194,12 @@ int main(int argc, char **argv)
     GWEN_Buffer_AppendString(ubuf,
                              I18N("  getkey:\n"
                                   "    get public part of a rsa key\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("  shownotepad:\n"
+                                  "    show HBCI info from the NOTEPAD\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("  resetptc:\n"
+                                  "    reset pin try counter\n\n"));
     fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
@@ -247,6 +253,9 @@ int main(int argc, char **argv)
   }
   else if (strcasecmp(cmd, "shownotepad")==0) {
     rv=showNotepad(db, argc, argv);
+  }
+  else if (strcasecmp(cmd, "resetptc")==0) {
+    rv=resetPtc(db, argc, argv);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", s);
