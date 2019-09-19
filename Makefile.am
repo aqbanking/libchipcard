@@ -24,6 +24,9 @@ chipcard-config: chipcard-config.in
 	cat chipcard-config.in >>chipcard-config && \
 	chmod a+x chipcard-config
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libchipcard-client.pc libchipcard-server.pc
+
 rpm:    $(PACKAGE).spec dist
 	rpmbuild="rpm" && \
 	if [ `rpm --version | awk '{ print $$3 }'` > /dev/null ]; then rpmbuild="rpmbuild"; fi && \

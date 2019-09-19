@@ -148,7 +148,7 @@ AC_LIBTOOL_RC
 AC_PROG_LIBTOOL
 AC_CHECK_PROG(SED,sed,sed)
 
-
+PKG_PROG_PKG_CONFIG
 
 ###-------------------------------------------------------------------------
 # Checks for libraries.
@@ -612,6 +612,8 @@ AC_CONFIG_FILES([Makefile
                  chipcard-config.in
                  Doxyfile
                  libchipcard.spec
+                 libchipcard-client.pc
+                 libchipcard-server.pc
                  bin/Makefile
                  data/Makefile
                  data/drivers/Makefile
