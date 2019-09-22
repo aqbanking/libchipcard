@@ -774,7 +774,26 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenZka_GetContext(GWEN_
   for (i=0; i<LC_CT_ZKA_NUM_CONTEXT; i++) {
     if (lct->contexts[i]!=NULL &&
         GWEN_Crypt_Token_Context_GetId(lct->contexts[i])==id)
-      return lct->contexts[i];
+    {
+        /* We need to set the correct key versions, key versions stored in EF_KEYD and in EF_NOTEPAD can differ, assume
+         * those from EF_NOTEPAD to be the correct ones
+         */
+        GWEN_CRYPT_TOKEN_CONTEXT *ctx =  lct->contexts[i];
+        GWEN_CRYPT_TOKEN_KEYINFO *ki;
+        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
+        if (ki) {
+            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, GWEN_Crypt_Token_Context_GetSignKeyVer(ctx));
+        }
+        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 3, 0);
+        if (ki) {
+            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, GWEN_Crypt_Token_Context_GetDecipherKeyVer(ctx));
+        }
+        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
+        if (ki) {
+            GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, GWEN_Crypt_Token_Context_GetAuthSignKeyVer(ctx));
+        }
+      return ctx;
+    }
   }
 
   return NULL;
@@ -2010,8 +2029,8 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
             ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
             if (ki) {
               GWEN_Crypt_Token_Context_SetAuthSignKeyId(ctx, GWEN_Crypt_Token_KeyInfo_GetId(ki));
-              GWEN_Crypt_Token_Context_SetAuthSignKeyNum(ctx, signKeyNum);
-              GWEN_Crypt_Token_Context_SetAuthSignKeyVer(ctx, signKeyVer);
+              GWEN_Crypt_Token_Context_SetAuthSignKeyNum(ctx, authKeyNum);
+              GWEN_Crypt_Token_Context_SetAuthSignKeyVer(ctx, authKeyVer);
             }
             GWEN_Crypt_Token_Context_SetProtocolVersion(ctx, signKeyNum);
           }
