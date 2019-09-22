@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2019 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -60,15 +60,15 @@ GWEN_PLUGIN *LC_Crypt_TokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
   LC_CT_PLUGIN_DDV *cpl;
   LC_CLIENT_RESULT res;
 
-  pl=GWEN_Crypt_Token_Plugin_new(pm,
-                                 GWEN_Crypt_Token_Device_Card,
-                                 modName,
-                                 fileName);
+  pl=GWEN_Crypt_Token_Plugin_new(pm, GWEN_Crypt_Token_Device_Card, modName, fileName);
 
   GWEN_NEW_OBJECT(LC_CT_PLUGIN_DDV, cpl);
-  GWEN_INHERIT_SETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_DDV, pl, cpl,
-                       LC_Crypt_TokenDDV_Plugin_FreeData);
+  GWEN_INHERIT_SETDATA(GWEN_PLUGIN, LC_CT_PLUGIN_DDV, pl, cpl, LC_Crypt_TokenDDV_Plugin_FreeData);
   cpl->client=LC_Client_new("LC_Crypt_TokenDDV", VERSION);
+  if (cpl->client==NULL) {
+    DBG_ERROR(LC_LOGDOMAIN, "Error creating chipcard client, chipcards will not be available");
+    return NULL;
+  }
   res=LC_Client_Init(cpl->client);
   if (res!=LC_Client_ResultOk) {
     DBG_ERROR(LC_LOGDOMAIN,
