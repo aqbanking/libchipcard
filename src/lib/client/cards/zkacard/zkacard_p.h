@@ -55,6 +55,11 @@ static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFE
 
 static int LC_ZkaCard__ReadPwdd(LC_CARD *card);
 static LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card);
-
+static LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
+                                                       uint32_t flags,
+                                                       int recNum,
+                                                       const char *searchPattern,
+                                                       unsigned int searchPatternSize,
+                                                       GWEN_BUFFER *buf);
 #endif
 

@@ -770,12 +770,12 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
   return LC_Client_ResultOk;
 }
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
-                                                            uint32_t flags,
-                                                            int recNum,
-                                                            const char *searchPattern,
-                                                            unsigned int searchPatternSize,
-                                                            GWEN_BUFFER *buf)
+LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
+                                                uint32_t flags,
+                                                int recNum,
+                                                const char *searchPattern,
+                                                unsigned int searchPatternSize,
+                                                GWEN_BUFFER *buf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;

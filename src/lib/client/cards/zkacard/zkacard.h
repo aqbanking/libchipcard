@@ -81,14 +81,6 @@ LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
                                      unsigned int size,
                                      GWEN_BUFFER *outBuf);
 
-CHIPCARD_API
-LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
-                                                uint32_t flags,
-                                                int recNum,
-                                                const char *searchPattern,
-                                                unsigned int searchPatternSize,
-                                                GWEN_BUFFER *buf);
-
 /*@}*/
 
 #endif
