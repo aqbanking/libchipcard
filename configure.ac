@@ -620,6 +620,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/posix/cyberjack_pcsc/Makefile
                  data/drivers/win32/Makefile
                  data/drivers/win32/cyberjack_ctapi/Makefile
+                 data/drivers/win32/generic_pcsc/Makefile
                  doc/Makefile
                  etc/Makefile
                  src/Makefile
