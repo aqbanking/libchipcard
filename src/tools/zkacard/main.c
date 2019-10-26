@@ -200,6 +200,15 @@ int main(int argc, char **argv)
     GWEN_Buffer_AppendString(ubuf,
                              I18N("  resetptc:\n"
                                   "    reset pin try counter\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("  exportcontext:\n"
+                                  "    export a context from the NOTEPAD to a XML file\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("  addcontext:\n"
+                                  "    add a new context to the NOTEPAD to a XML file\n\n"));
+    GWEN_Buffer_AppendString(ubuf,
+                             I18N("  deletecontext:\n"
+                                  "    delete a context from the NOTEPAD\n\n"));
     fprintf(stdout, "%s\n", GWEN_Buffer_GetStart(ubuf));
     GWEN_Buffer_free(ubuf);
     return 0;
@@ -246,6 +255,17 @@ int main(int argc, char **argv)
   }
   GWEN_Logger_SetLevel(GWEN_LOGDOMAIN, logLevel);
 
+  rv=GWEN_Logger_Open(LC_LOGDOMAIN,
+                      "zkacard-tool",
+                      GWEN_DB_GetCharValue(db, "logfile", 0, "zkacard-tool.log"),
+                      logType,
+                      GWEN_LoggerFacility_User);
+  if (rv) {
+    fprintf(stderr, "ERROR: Could not setup logging (%d).\n", rv);
+    return RETURNVALUE_SETUP;
+  }
+  GWEN_Logger_SetLevel(LC_LOGDOMAIN, logLevel);
+
   /* handle command */
 
   if (strcasecmp(cmd, "getkey")==0) {
@@ -256,6 +276,15 @@ int main(int argc, char **argv)
   }
   else if (strcasecmp(cmd, "resetptc")==0) {
     rv=resetPtc(db, argc, argv);
+  }
+  else if (strcasecmp(cmd, "exportcontext")==0) {
+    rv=exportContext(db, argc, argv);
+  }
+  else if (strcasecmp(cmd, "addcontext")==0) {
+    rv=addContext(db, argc, argv);
+  }
+  else if (strcasecmp(cmd, "deletecontext")==0) {
+    rv=deleteContext(db, argc, argv);
   }
   else {
     fprintf(stderr, "Unknown command \"%s\"\n", s);
