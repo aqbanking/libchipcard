@@ -788,7 +788,7 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenZka_GetContext(GWEN_
         if (ki) {
             GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, GWEN_Crypt_Token_Context_GetDecipherKeyVer(ctx));
         }
-        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 2, 0);
+        ki=LC_Crypt_TokenZka__FindKeyInfoByNumberAndVersion(ct, 4, 0);
         if (ki) {
             GWEN_Crypt_Token_KeyInfo_SetKeyVersion(ki, GWEN_Crypt_Token_Context_GetAuthSignKeyVer(ctx));
         }
@@ -1992,19 +1992,13 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 
         // fields in EF_NOTEPAD contain data not directly related to the real key number (keynum=RHD version, keyver=1)
         // Override existing mechanism:
-        // 1) Signing     in RDH9 always with key #2 in EK_KEYD;
-        // 2) Deciphering in RDH9 always with key #3 in EK_KEYD;
-        // GWEN_Crypt_Token_Context_SetSignKeyId(ctx, 2);
-        // GWEN_Crypt_Token_Context_SetDecipherKeyId(ctx, 3);
-
-        // ToDo: if signKeyNum == cryptKeyNum == authKeyNum, then this value denotes the
-        //       RDH version of the card. Use this info to set card RDH version automatically
 
         if (numKeys >= 2) {
           /* check for identical keynums, identifies the RHD profile # */
           if (signKeyNum == cryptKeyNum) {
-            // 1) Signing     in RDH9 always with key #2 in EK_KEYD;
-            // 2) Deciphering in RDH9 always with key #3 in EK_KEYD;
+            // 1) Signing        in RDH9 always with key #2 in EK_KEYD;
+            // 2) Deciphering    in RDH9 always with key #3 in EK_KEYD;
+            // 3) Authentication in RDH9 always with key #4 in EK_KEYD;
             DBG_INFO(LC_LOGDOMAIN, "RHD version %d", signKeyNum);
             rdhVersion = signKeyNum;
 
