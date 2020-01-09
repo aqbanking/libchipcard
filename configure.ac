@@ -643,6 +643,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/cards/processorcard/Makefile
                  src/lib/client/cards/starcos/Makefile
                  src/lib/client/cards/zkacard/Makefile
+                 src/lib/client/cards/chiptanusb/Makefile
                  src/lib/client/ct/Makefile
                  src/ct/Makefile
                  src/ct/ddvcard/Makefile
@@ -651,6 +652,8 @@ AC_CONFIG_FILES([Makefile
                  src/ct/starcoscard/starcoscard.xml
                  src/ct/zkacard/Makefile
                  src/ct/zkacard/zkacard.xml
+                 src/ct/chiptanusb/Makefile
+                 src/ct/chiptanusb/chiptanusb.xml
                  src/tools/Makefile
                  src/tools/geldkarte/Makefile
                  src/tools/memcard/Makefile
@@ -721,7 +724,7 @@ done
 #
 
 lc_modules="cards ct"
-lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard memorycard processorcard"
+lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard chiptanusb memorycard processorcard"
 
 
 lprefix="${srcdir}"
@@ -775,7 +778,7 @@ done
 # symlink all headers from src/lib/client/cards
 hfiles=`( cd "${srcdir}/src/lib/client/cards" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/base/${f}"
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/cards/${f}"
   case ${f} in
     *_p.h | *_l.h)
       ;;

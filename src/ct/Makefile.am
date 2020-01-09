@@ -1,2 +1,2 @@
-SUBDIRS=ddvcard starcoscard zkacard
+SUBDIRS=ddvcard starcoscard zkacard chiptanusb
 
