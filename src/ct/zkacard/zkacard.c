@@ -1389,7 +1389,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
 
     }
     else {
-      DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_KEYD (%d)", i, res);
+      DBG_ERROR(LC_LOGDOMAIN, "Error reading record 0 of EF_KEYD (%d)", res);
       if (i>1)
         GWEN_Buffer_free(mbuf);
       return LC_Client_ResultIoError;
@@ -1802,7 +1802,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
       const char *s;
       GWEN_CRYPT_TOKEN_KEYINFO *ki;
       int j;
-      int version;
+      int version=-1;
       int keyNum=-1;
       int keyVer=-1;
       int numKeys=0;
