@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Thu Jan 09 2020
-    copyright   : (C) 2020 by 
+    copyright   : (C) 2020 by Herbert Ellebruch
     email       : 
 
  ***************************************************************************
@@ -15,11 +15,15 @@
 
 #include <chipcard/card_imp.h>
 
+typedef struct LC_CHIPTANCARD LC_CHIPTANCARD;
+struct LC_CHIPTANCARD {
+	LC_CARD_OPEN_FN openFn;
+	LC_CARD_CLOSE_FN closeFn;
 
+};
 
-
-
-
-
+static void GWENHYWFAR_CB LC_ChiptanusbCard_freeData(void *bp, void *p);
+static LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Open(LC_CARD *card);
+static LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card);
 
 #endif

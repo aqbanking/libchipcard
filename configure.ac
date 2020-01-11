@@ -661,6 +661,7 @@ AC_CONFIG_FILES([Makefile
                  src/tools/kvkcard/Makefile
                  src/tools/cardcommander/Makefile
                  src/tools/zkacard/Makefile
+                 src/tools/usbtan-test/Makefile
                  tutorials/Makefile
                  m4/Makefile
                 ])
