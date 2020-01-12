@@ -1,7 +1,7 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
     copyright   : (C) 2020 by Ellebruch Herbert
-    email       : 
+    email       :
 
  ***************************************************************************
  *          Please see toplevel file COPYING for license details           *
@@ -25,7 +25,7 @@
 
 // **************************************************** routine from aqbanking start
 
-static char RequestString[] = "280888113176100001234567041,23";		// Test Tan
+static char RequestString[] = "280888113176100001234567041,23";   // Test Tan
 
 /* Kopie von
 aqbanking-5.99.44beta/src/libs/plugins/backends/aqhbci/tan/tan_chiptan_opt.c
@@ -158,10 +158,11 @@ int __translateWithLen(const char *code, GWEN_BUFFER *cbuf, int sizeLen)
       ctrl = (unsigned int)rv;
       /* write to output buffer */
       snprintf(numbuf, sizeof(numbuf) - 1, "%02x", ctrl);
-        numbuf[sizeof(numbuf) - 1] = 0;
+      numbuf[sizeof(numbuf) - 1] = 0;
       GWEN_Buffer_AppendString(xbuf, numbuf);
       code += 2;
-    } while (ctrl & maskCtlFlag);
+    }
+    while (ctrl & maskCtlFlag);
   }
   else {
     /* DBG_ERROR(AQHBCI_LOGDOMAIN, "no control bytes fallback to HHD 1.3.2"); */
@@ -172,8 +173,8 @@ int __translateWithLen(const char *code, GWEN_BUFFER *cbuf, int sizeLen)
   if (inLen) {
     GWEN_Buffer_AppendBytes(xbuf, code, inLen);
     if (inLen % 2)
-       /* fill with "F" if necessary */
-       GWEN_Buffer_AppendByte(xbuf, 'F');
+      /* fill with "F" if necessary */
+      GWEN_Buffer_AppendByte(xbuf, 'F');
   }
   code += inLen;
 
@@ -213,8 +214,8 @@ int __translateWithLen(const char *code, GWEN_BUFFER *cbuf, int sizeLen)
       numbuf[sizeof(numbuf) - 1] = 0;
       GWEN_Buffer_AppendString(xbuf, numbuf);
       if (inLen)
-      /* hex encode data */
-      GWEN_Text_ToHexBuffer(code, inLen, xbuf, 0, 0, 0);
+        /* hex encode data */
+        GWEN_Text_ToHexBuffer(code, inLen, xbuf, 0, 0, 0);
       code += inLen;
     }
     else {
@@ -436,7 +437,7 @@ int _extractDataForLuhnSum(const char *code, GWEN_BUFFER *xbuf)
 
   /* read LDE1, DE1, LDE2, DE2, ... */
   while (i < len - 1) {
-  unsigned int v;
+    unsigned int v;
 
     rv = _readBytesHex(code, 2);
     if (rv < 0) {
@@ -516,7 +517,8 @@ int _calcXorSum(const char *code, int len)
   return (unsigned int)sum;
 }
 
-typedef int(*GetTanfromUSB_GeneratorFn)(unsigned char* HHDCommand, int fullHHD_Len, int* pATC, char* pGeneratedTAN, uint32_t maxTanLen, char* pCardnummber, char* pEndDate, char* IssueDate);
+typedef int(*GetTanfromUSB_GeneratorFn)(unsigned char *HHDCommand, int fullHHD_Len, int *pATC, char *pGeneratedTAN,
+                                        uint32_t maxTanLen, char *pCardnummber, char *pEndDate, char *IssueDate);
 
 int main(int argc, char **argv)
 {
@@ -535,21 +537,21 @@ int main(int argc, char **argv)
   int HHD_Generator_Len;
 
   unsigned char HHDCommand[200];
-  static char cardPrefix[] = { 0,0,0,0,1,0,0 };
-  unsigned char* pHHDDest;
-  unsigned char* pHHDSrc;
+  static char cardPrefix[] = { 0, 0, 0, 0, 1, 0, 0 };
+  unsigned char *pHHDDest;
+  unsigned char *pHHDSrc;
 
 
   /* Comand for Tan and ATC for card sync Command*/
   unsigned char HHD_CommandSync[] = { 0, 0, 0, 0, 1, 0, 0, 4, /* Prefix*/
-                                      3, 1, 8, 0x3A	/* Generator Code*/
-  };
+                                      3, 1, 8, 0x3A /* Generator Code*/
+                                    };
   int HHD_LenSync;
 
   GWEN_PLUGIN_MANAGER *pm;
   GWEN_PLUGIN *pl;
   GWEN_CRYPT_TOKEN *ct;
-  GWEN_LIBLOADER* ll;
+  GWEN_LIBLOADER *ll;
 
   void *p;
 
@@ -595,13 +597,14 @@ int main(int argc, char **argv)
 
   rv = GWEN_LibLoader_Resolve(ll, "GetTanfromUSB_Generator", &p);
   if (rv < 0) {
-  return rv;
+    return rv;
   }
 
   HHD_LenSync = sizeof(HHD_CommandSync);
 
   /* Generate TAN and ATC for Sync Command */
-  rv = ((GetTanfromUSB_GeneratorFn)p)(HHD_CommandSync, HHD_LenSync, &ATC, &GeneratedTAN[0], sizeof(GeneratedTAN) - 1, &Cardnummber[0], &EndDate[0], &IssueDate[0]);
+  rv = ((GetTanfromUSB_GeneratorFn)p)(HHD_CommandSync, HHD_LenSync, &ATC, &GeneratedTAN[0], sizeof(GeneratedTAN) - 1,
+                                      &Cardnummber[0], &EndDate[0], &IssueDate[0]);
   if (rv < 0) {
     printf("Fehler bei TAN Generierung\r\n");
     exit(0);
@@ -613,7 +616,8 @@ int main(int argc, char **argv)
   printf("EndeDatum = %s\r\n", EndDate);
   printf("Ausgabedatum =  = %s\r\n", IssueDate);
 
-  rv = ((GetTanfromUSB_GeneratorFn)p)(HHDCommand, fullHHD_Len, &ATC, &GeneratedTAN[0], sizeof(GeneratedTAN) - 1, &Cardnummber[0], &EndDate[0], &IssueDate[0]);
+  rv = ((GetTanfromUSB_GeneratorFn)p)(HHDCommand, fullHHD_Len, &ATC, &GeneratedTAN[0], sizeof(GeneratedTAN) - 1,
+                                      &Cardnummber[0], &EndDate[0], &IssueDate[0]);
   if (rv < 0) {
     printf("Fehler bei TAN Generierung\r\n");
     exit(0);

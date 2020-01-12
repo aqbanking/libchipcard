@@ -91,6 +91,7 @@ dist-hook:
 	rm -f ChangeLog 2>/dev/null
 	$(MAKE) ChangeLog
 
+
 format:
 	find . -name '*.[c,h,cpp]' -exec astyle \
 	  --style=stroustrup \
@@ -110,4 +111,5 @@ format:
 	    --break-after-logical \
 	    --preserve-date \
 	    --suffix=none \{\} \;
+
 

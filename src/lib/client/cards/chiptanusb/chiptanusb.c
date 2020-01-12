@@ -1,7 +1,7 @@
 /***************************************************************************
     begin       : Thu Jan 09 2020
     copyright   : (C) 2020 by Herbert Ellebruch
-    email       : 
+    email       :
 
  ***************************************************************************
  *          Please see toplevel file COPYING for license details           *
@@ -162,9 +162,10 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card)
 }
 
 LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
-                                         unsigned char* pCommand, int size,GWEN_BUFFER *buf) {
+                                               unsigned char *pCommand, int size, GWEN_BUFFER *buf)
+{
 
-  static char QuitString[] = { 0x0,0x0,0x0,0x0,0x0,0x0};
+  static char QuitString[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbReqQuit;
@@ -179,7 +180,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
     GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                         "data", pCommand, size);
   }
-  res = LC_Card_ExecCommand(card, "GenerateTan", dbReq, dbResp );
+  res = LC_Card_ExecCommand(card, "GenerateTan", dbReq, dbResp);
   if (res!=LC_Client_ResultOk) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -189,7 +190,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
   dbReqQuit=GWEN_DB_Group_new("request");
   dbRespQuit=GWEN_DB_Group_new("response");
   GWEN_DB_SetBinValue(dbReqQuit, GWEN_DB_FLAGS_DEFAULT,
-                        "data", QuitString, sizeof(QuitString));
+                      "data", QuitString, sizeof(QuitString));
 
   res = LC_Card_ExecCommand(card, "QuitTanResponce", dbReqQuit, dbRespQuit);
 
@@ -200,10 +201,10 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
 
   /* successful */
   p=GWEN_DB_GetBinValue(dbResp,
-                          "response/data",
-                          0,
-                          0, 0,
-                          &bs);
+                        "response/data",
+                        0,
+                        0, 0,
+                        &bs);
   if (p && bs) {
     GWEN_Buffer_AppendBytes(buf, p, bs);
   }

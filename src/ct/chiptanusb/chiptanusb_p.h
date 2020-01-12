@@ -1,7 +1,7 @@
 /***************************************************************************
     begin       : Thu Jan 09 2020
     copyright   : (C) 2020 by Ellebruch Herbert
-    email       : 
+    email       :
 
  ***************************************************************************
  *          Please see toplevel file COPYING for license details           *
@@ -22,12 +22,13 @@
    maxTanLen:      max Tan length in characters (size of receive Buffer must be maxTanLen + 1)
    pCardnummber:   pointer to card number (char[11] 10 + Terminator)
    pEndDate:       pointer to end date of card yymm
-						  type of field must be char[5]
+              type of field must be char[5]
    pIssueDate:     pointer to IssueDate of card ddmmyy
-						  type of field must be char[7]
+              type of field must be char[7]
 */
 
-static void ExtractReceivedGeneratorFields(GWEN_BUFFER * mbuf, int* ATC, char *TAN_String, uint32_t maxTanLen, char* pCardnummber, char* pEndDate, char* pIssueDate);
+static void ExtractReceivedGeneratorFields(GWEN_BUFFER *mbuf, int *ATC, char *TAN_String, uint32_t maxTanLen,
+                                           char *pCardnummber, char *pEndDate, char *pIssueDate);
 
 
 #endif
