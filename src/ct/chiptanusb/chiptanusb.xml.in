@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf8"?>
+
+<plugin type="ct" name="chiptanusb" device="card" >
+  <version>@CHIPCARD_VERSION_STRING@</version>
+  <author>Martin Preuss (martin@libchipcard.de)</author>
+  <short>ChipTAN USB Medium</short>
+
+  <descr>
+    This plugins provides support for ChipTanUSB.
+
+    <text format="html" >
+      <p>
+        This plugins provides support for ChipTanUSB.
+      </p>
+    </text>
+
+    <text format="html" lang="de" >
+      <p>
+        Dieses Modul unterstuetzt ChipTanUSB.
+      </p>
+    </text>
+
+  </descr>
+
+</plugin>
+
+
