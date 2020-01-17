@@ -104,7 +104,7 @@ AQ_CHECK_OS
 #
 
 AC_MSG_CHECKING(for installation prefix)
-AC_PREFIX_DEFAULT(/usr)
+AC_PREFIX_DEFAULT(/usr/local)
 if test "x$prefix" = "xNONE"; then
   prefix=$ac_default_prefix
   ac_configure_args="$ac_configure_args --prefix $prefix"
