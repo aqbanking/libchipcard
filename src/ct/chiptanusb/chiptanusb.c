@@ -28,6 +28,30 @@
 #include <chipcard/ct/ct_card.h>
 
 #define PROGRAM_VERSION "1.0"
+/*
+	Building the apdu string
+	Die Eingabedaten werden wie folgt aufgebaut:
+	Länge             Inhalt                          Bedeutung
+		4              ’00 00 00 00‘          Activation ID (fix)
+		1              ‘01‘                   Processing Option Flag (POF) (fix)
+		1              ‘00‘                   Controllbyte (fix)
+		2              ‘XX XX‘                Länge m des Datenblocks (MSB first, dez 35 = 00 23)
+		m              ‘XX … XX‘              Datenblock der Länge m (Flickerdaten)
+
+	diese sind als Daten Teil in ein Secoder-Kommando Nr 6 einzutragen also
+		20 76 00 00 00 <Lc> <Lc> <Eingabedaten> 00(Le) 00(Le)
+	Oder Boxing
+		FF 91 06 00 00 <Lc> <Lc> <Eingabedaten> 00(Le) 00(Le)
+
+Quitung für die TanGenerierung
+ transmitted:
+  FF 91 07 00 00 00 06 00 00 00 00 00 00 00 00
+ received:
+  00 01 91 00
+Zurückmeldung:
+sw1 = 0x91
+sw2 = 0;
+*/
 
 /* Extract card Info
    Parameter:
@@ -169,7 +193,7 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
     return GWEN_ERROR_OPEN;
   }
 
-  DBG_INFO(0, "Card is a CipTanUsb card as expected.");
+  DBG_INFO(0, "Card is a ChipTanUsb card as expected.");
 
   mbuf = GWEN_Buffer_new(0, 256, 0, 1);
   res = LC_ChiptanusbCard_GenerateTan(card, HHDCommand, fullHHD_Len, mbuf);

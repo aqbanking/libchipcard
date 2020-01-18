@@ -614,7 +614,7 @@ int main(int argc, char **argv)
   printf("ATC = %d\r\n", ATC);
   printf("Kartennummer = %s\r\n", Cardnummber);
   printf("EndeDatum = %s\r\n", EndDate);
-  printf("Ausgabedatum =  = %s\r\n", IssueDate);
+  printf("Ausgabedatum = %s\r\n", IssueDate);
 
   rv = ((GetTanfromUSB_GeneratorFn)p)(HHDCommand, fullHHD_Len, &ATC, &GeneratedTAN[0], sizeof(GeneratedTAN) - 1,
                                       &Cardnummber[0], &EndDate[0], &IssueDate[0]);
@@ -628,7 +628,7 @@ int main(int argc, char **argv)
   printf("ATC = %d\r\n", ATC);
   printf("Kartennummer = %s\r\n", Cardnummber);
   printf("EndeDatum = %s\r\n", EndDate);
-  printf("Ausgabedatum =  = %s\r\n", IssueDate);
+  printf("Ausgabedatum = %s\r\n", IssueDate);
 
   return 0;
 }
