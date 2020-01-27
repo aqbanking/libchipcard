@@ -21,6 +21,8 @@
 #include <gwenhywfar/debug.h>
 #include <chipcard/client.h>
 
+#include <ctype.h>
+
 #define PROGRAM_VERSION "0.1"
 
 // **************************************************** routine from aqbanking start
