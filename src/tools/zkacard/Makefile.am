@@ -6,6 +6,7 @@ noinst_HEADERS=global.h
 
 zkacard_tool_SOURCES=\
   main.c \
+  common.c \
   getpublickey.c \
   shownotepad.c \
   resetptc.c \

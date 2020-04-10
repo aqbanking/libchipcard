@@ -378,141 +378,17 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   }
 
 
+  res= ZkaCardTool_OpenCard(&lc,&hcard);
 
-  /* get public key info */
-
-  lc=LC_Client_new("zkacard", ZKACARDTOOL_PROGRAM_VERSION);
-  res=LC_Client_Init(lc);
   if (res!=LC_Client_ResultOk) {
-    showError(0, res, "Init");
-    return RETURNVALUE_SETUP;
-  }
-
-  res=LC_Client_Start(lc);
-  if (res!=LC_Client_ResultOk) {
-    showError(hcard, res, "StartWait");
-    return RETURNVALUE_WORK;
-  }
-
-  for (i=0;; i++) {
-    const GWEN_STRINGLIST *sl;
-    GWEN_STRINGLISTENTRY *se;
-    uint8_t found = 0;
-    if (v>0) {
-      fprintf(stderr, "Waiting for card...\n");
-    }
-    res=LC_Client_GetNextCard(lc, &hcard, 20);
-    if (res!=LC_Client_ResultOk) {
-      showError(hcard, res, "GetNextCard");
+      showError(hcard, res, "StartWait");
+      ZkaCardTool_CloseCard(lc,hcard);
       return RETURNVALUE_WORK;
-    }
-    else {
-      if (v>0) {
-        fprintf(stderr, "Found a card.\n");
-      }
-      break;
-    }
-#if 0
-    sl=LC_Card_GetCardTypes(hcard);
-    se=GWEN_StringList_FirstEntry(sl);
-    while (se) {
-      const char *s=GWEN_StringListEntry_Data(se);
-      if (strcasecmp(s, "zkacard")==0) {
-        found = 1;
-        break;
-      }
-      GWEN_StringListEntry_Next(se);
-    }
-    if (found)
-      break;
-#endif
-
-
-
-    if (v>0) {
-      fprintf(stderr, "Not a zka card, releasing.\n");
-    }
-    res=LC_Client_ReleaseCard(lc, hcard);
-    if (res!=LC_Client_ResultOk) {
-      showError(hcard, res, "ReleaseCard");
-      return RETURNVALUE_WORK;
-    }
-    LC_Card_free(hcard);
-
-    if (i>15) {
-      fprintf(stderr, "ERROR: No card found.\n");
-      return RETURNVALUE_WORK;
-    }
-  } /* for */
-  rv=LC_ZkaCard_ExtendCard(hcard);
-  /* open card */
-  if (v>0)
-    fprintf(stderr, "Opening card.\n");
-  res=LC_Card_Open(hcard);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card is a memory card as expected.\n");
-
-  pi=LC_ZkaCard_GetPinInfo(hcard, 3);
-  if (pi == NULL)
-    pi=LC_Card_GetPinInfoByName(hcard, "ch_pin");
-
-  while (!haveAccessPin) {
-    int rv;
-
-    /* enter pin */
-    if (pi)
-      rv=EnterPinWithPinInfo(hcard,
-                             GWEN_Crypt_PinType_Access,
-                             pi,
-                             0);
-    else {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
-    }
-    if (rv) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
-    }
-    else
-      haveAccessPin=1;
-  } /* while !havepin */
-
-  if (v>0)
-    fprintf(stderr, "Closing card.\n");
-  res=LC_Card_Close(hcard);
-  if (res!=LC_Client_ResultOk) {
-    showError(hcard, res, "CardClose");
-    return RETURNVALUE_WORK;
-  }
-  else if (v>1)
-    fprintf(stderr, "Card closed.\n");
-
-  if (v>0)
-    fprintf(stderr, "Releasing card.\n");
-  res=LC_Client_ReleaseCard(lc, hcard);
-  if (res!=LC_Client_ResultOk) {
-    showError(hcard, res, "ReleaseCard");
-    return RETURNVALUE_WORK;
-  }
-  LC_Card_free(hcard);
-
-  /* finished */
-  if (v>1)
-    fprintf(stderr, "Finished.\n");
-  return 0;
-
-  res=LC_Client_Fini(lc);
-  if (res!=LC_Client_ResultOk) {
-    showError(0, res, "Init");
   }
 
-  LC_Client_free(lc);
+  ZkaCardTool_EnsureAccessPin(hcard, guuid,1);
+
+  ZkaCardTool_CloseCard(lc,hcard);
 
   return 0;
 }
