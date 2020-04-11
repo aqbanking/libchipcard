@@ -1,0 +1,31 @@
+# pkg-config configuration for libchipcard-client
+# For information about the syntax, see pkg-config(1)
+
+# General installation directories
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+pkgdatadir=@lc_client_xml_dir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+bindir=@bindir@
+sysconfdir=@sysconfdir@
+
+# Particular variables of libchipcard-client
+vmajor=@CHIPCARD_VERSION_MAJOR@
+vminor=@CHIPCARD_VERSION_MINOR@
+vpatchlevel=@CHIPCARD_VERSION_PATCHLEVEL@
+vbuild=@CHIPCARD_VERSION_BUILD@
+vtag=@CHIPCARD_VERSION_TAG@
+vstring=@CHIPCARD_VERSION_MAJOR@.@CHIPCARD_VERSION_MINOR@.@CHIPCARD_VERSION_PATCHLEVEL@
+
+# Human-readable name
+Name: libchipcardc
+# Human-readable description
+Description: A multi-platform client library to connect with a libchipcard server
+
+Version: @VERSION@
+Libs: @libchipcardc_libs@
+Cflags: @libchipcard_includes@ @gwenhywfar_includes@
+

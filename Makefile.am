@@ -24,6 +24,9 @@ chipcard-config: chipcard-config.in
 	cat chipcard-config.in >>chipcard-config && \
 	chmod a+x chipcard-config
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libchipcard-client.pc libchipcard-server.pc
+
 rpm:    $(PACKAGE).spec dist
 	rpmbuild="rpm" && \
 	if [ `rpm --version | awk '{ print $$3 }'` > /dev/null ]; then rpmbuild="rpmbuild"; fi && \
@@ -88,6 +91,7 @@ dist-hook:
 	rm -f ChangeLog 2>/dev/null
 	$(MAKE) ChangeLog
 
+
 format:
 	find . -name '*.[c,h,cpp]' -exec astyle \
 	  --style=stroustrup \
@@ -107,4 +111,5 @@ format:
 	    --break-after-logical \
 	    --preserve-date \
 	    --suffix=none \{\} \;
+
 

@@ -1,51 +1,45 @@
 # $Id: chipcard-client-config.in.in 217 2006-09-08 02:37:16Z martin $
 # Author of this file: Martin Preuss<martin@libchipcard.de>
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-datarootdir=@datarootdir@
-datadir=@datadir@
-
 result=""
 
 for d in $*; do
     case $d in
 	--includes)
-	    result="$result @libchipcard_includes@ @gwenhywfar_includes@"
+	    result="$result `@PKG_CONFIG@ --cflags libchipcard-client`"
 	    ;;
 	--client-libs)
-	    result="$result @libchipcardc_libs@"
+	    result="$result `@PKG_CONFIG@ --libs libchipcard-client`"
 	    ;;
 	--vmajor)
-	    result="$result @CHIPCARD_VERSION_MAJOR@"
+	    result="$result `@PKG_CONFIG@ --variable=vmajor libchipcard-client`"
 	    ;;
 	--vminor)
-	    result="$result @CHIPCARD_VERSION_MINOR@"
+	    result="$result `@PKG_CONFIG@ --variable=vminor libchipcard-client`"
 	    ;;
 	--vpatchlevel)
-	    result="$result @CHIPCARD_VERSION_PATCHLEVEL@"
+	    result="$result `@PKG_CONFIG@ --variable=vpatchlevel libchipcard-client`"
 	    ;;
 	--vbuild)
-	    result="$result @CHIPCARD_VERSION_BUILD@"
+	    result="$result `@PKG_CONFIG@ --variable=vbuild libchipcard-client`"
 	    ;;
 	--vtag)
-	    result="$result @CHIPCARD_VERSION_TAG@"
+	    result="$result `@PKG_CONFIG@ --variable=vtag libchipcard-client`"
 	    ;;
         --vstring)
-	    result="$result @CHIPCARD_VERSION_MAJOR@.@CHIPCARD_VERSION_MINOR@.@CHIPCARD_VERSION_PATCHLEVEL@"
+	    result="$result `@PKG_CONFIG@ --variable=vstring libchipcard-client`"
             ;;
 	--client-datadir)
-	    result="$result @lc_client_xml_dir@"
+	    result="$result `@PKG_CONFIG@ --variable=pkgdatadir libchipcard-client`"
 	    ;;
 	--server-datadir)
-	    result="$result @lc_server_data_dir@"
+	    result="$result `@PKG_CONFIG@ --variable=pkgdatadir libchipcard-server`"
 	    ;;
 	--driverdir)
-	    result="$result @lc_server_driver_dir@"
+	    result="$result `@PKG_CONFIG@ --variable=driverdir libchipcard-server`"
 	    ;;
 	--servicedir)
-	    result="$result @lc_server_service_dir@"
+	    result="$result `@PKG_CONFIG@ --variable=servicedir libchipcard-server`"
 	    ;;
 	*)
 	    echo "Usage:"

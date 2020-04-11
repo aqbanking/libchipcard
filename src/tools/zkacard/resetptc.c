@@ -60,7 +60,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
     }
 
     if ((currentErrors==maxErrors)) {
-        printf("PIN PTC ok. Nothing to be done.\n");
+      printf("PIN PTC ok. Nothing to be done.\n");
 
 
       DBG_ERROR(LC_LOGDOMAIN,
@@ -81,8 +81,8 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
 
     DBG_INFO(LC_LOGDOMAIN, "Terminal has a keypad, will ask for pin.");
     printf("Bad pin entered at least once before.\n ");
-    printf("Maximum number of tries:   %d\n",maxErrors);
-    printf("Remaining number of tries: %d\n",currentErrors);
+    printf("Maximum number of tries:   %d\n", maxErrors);
+    printf("Remaining number of tries: %d\n", currentErrors);
     printf("Enter pin to reset try counter...");
 
     res=LC_Card_IsoPerformVerification(hcard, 0, pi, &triesLeft);
@@ -95,30 +95,29 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                 LC_Card_GetLastSW2(hcard),
                 LC_Card_GetLastText(hcard));
       if (LC_Card_GetLastSW1(hcard)==0x90 &&
-                     LC_Card_GetLastSW2(hcard)==0x00)
-      {
-          res=LC_Card_GetPinStatus(hcard,
-                                   LC_PinInfo_GetId(pi),
-                                   &maxErrors,
-                                   &currentErrors);
-          printf("PIN verification succesfull\n");
-          printf("Maximum number of tries:   %d\n",maxErrors);
-          printf("Remaining number of tries: %d\n",currentErrors);
-          return 0;
+          LC_Card_GetLastSW2(hcard)==0x00) {
+        res=LC_Card_GetPinStatus(hcard,
+                                 LC_PinInfo_GetId(pi),
+                                 &maxErrors,
+                                 &currentErrors);
+        printf("PIN verification succesfull\n");
+        printf("Maximum number of tries:   %d\n", maxErrors);
+        printf("Remaining number of tries: %d\n", currentErrors);
+        return 0;
       }
       else if (LC_Card_GetLastSW1(hcard)==0x63) {
         switch (LC_Card_GetLastSW2(hcard)) {
         case 0xc0: /* no error left */
-            printf("PIN verification failed. PIN is disabled.\n");
-            return GWEN_ERROR_BAD_PIN_0_LEFT;
+          printf("PIN verification failed. PIN is disabled.\n");
+          return GWEN_ERROR_BAD_PIN_0_LEFT;
         case 0xc1: /* one left */
-            printf("PIN verification failed. 1 try left.\n");
+          printf("PIN verification failed. 1 try left.\n");
           return GWEN_ERROR_BAD_PIN_1_LEFT;
         case 0xc2: /* two left */
-            printf("PIN verification failed. 2 tries left.\n");
+          printf("PIN verification failed. 2 tries left.\n");
           return GWEN_ERROR_BAD_PIN_2_LEFT;
         default:   /* unknown error */
-            printf("Unkown error...\n");
+          printf("Unkown error...\n");
           return GWEN_ERROR_BAD_PIN;
         } // switch
       }
@@ -137,16 +136,16 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
         if (triesLeft>=0) {
           switch (triesLeft) {
           case 0: /* no error left */
-              printf("PIN verification failed. PIN is disabled.\n");
+            printf("PIN verification failed. PIN is disabled.\n");
             return GWEN_ERROR_BAD_PIN_0_LEFT;
           case 1: /* one left */
-              printf("PIN verification failed. 1 try left.\n");
+            printf("PIN verification failed. 1 try left.\n");
             return GWEN_ERROR_BAD_PIN_1_LEFT;
           case 2: /* two left */
-              printf("PIN verification failed. 2 tries left.\n");
+            printf("PIN verification failed. 2 tries left.\n");
             return GWEN_ERROR_BAD_PIN_2_LEFT;
           default:   /* unknown count */
-              printf("Unkown error...\n");
+            printf("Unkown error...\n");
             return GWEN_ERROR_BAD_PIN;
           } // switch
         }
@@ -162,8 +161,8 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                                &maxErrors,
                                &currentErrors);
       printf("PIN verification succesfull\n");
-      printf("Maximum number of tries:   %d\n",maxErrors);
-      printf("Remaining number of tries: %d\n",currentErrors);
+      printf("Maximum number of tries:   %d\n", maxErrors);
+      printf("Remaining number of tries: %d\n", currentErrors);
       return 0;
     }
   } /* if hasKeyPad */

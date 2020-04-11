@@ -659,6 +659,24 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
   }
   if (j>=0)
     GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);
+  else {                /* USB_TAN start */
+    j=0;
+    if (1!=sscanf(GWEN_XMLNode_GetProperty(apduNode, "le", "0"),
+                  "%i", &j))
+      j=0;
+    if (j!=-1) {
+      j=GWEN_DB_GetIntValue(cmdData, "le", 0, -1);
+      if (j==-1) {
+        if (1!=sscanf(GWEN_XMLNode_GetProperty(apduNode, "le", "-1"),
+                      "%i", &j))
+          j=-1;
+      }
+    }
+    if (j>=0) {
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char)(j>>8));
+      GWEN_Buffer_AppendByte(gbuf, (unsigned char)(j&0xFF));
+    }
+  }                   /* USB_TAN end */
   // long addressing mode
   if (i>255) {
     GWEN_Buffer_AppendByte(gbuf, (unsigned char)j);

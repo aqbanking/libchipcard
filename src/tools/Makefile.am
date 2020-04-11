@@ -1,2 +1,2 @@
-SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander zkacard
+SUBDIRS=geldkarte chipcard-tool memcard kvkcard cardcommander zkacard usbtan-test
 

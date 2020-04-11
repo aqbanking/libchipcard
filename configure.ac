@@ -16,9 +16,9 @@ AC_CONFIG_HEADER([config.h])
 
 CHIPCARD_VERSION_MAJOR=5
 CHIPCARD_VERSION_MINOR=1
-CHIPCARD_VERSION_PATCHLEVEL=3
+CHIPCARD_VERSION_PATCHLEVEL=5
 CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="beta"
+CHIPCARD_VERSION_TAG="rc2"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -28,7 +28,7 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 LIBCHIPCARD_SO_CURRENT=7
 LIBCHIPCARD_SO_AGE=1
-LIBCHIPCARD_SO_REVISION=3
+LIBCHIPCARD_SO_REVISION=5
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -104,7 +104,7 @@ AQ_CHECK_OS
 #
 
 AC_MSG_CHECKING(for installation prefix)
-AC_PREFIX_DEFAULT(/usr)
+AC_PREFIX_DEFAULT(/usr/local)
 if test "x$prefix" = "xNONE"; then
   prefix=$ac_default_prefix
   ac_configure_args="$ac_configure_args --prefix $prefix"
@@ -148,7 +148,7 @@ AC_LIBTOOL_RC
 AC_PROG_LIBTOOL
 AC_CHECK_PROG(SED,sed,sed)
 
-
+PKG_PROG_PKG_CONFIG
 
 ###-------------------------------------------------------------------------
 # Checks for libraries.
@@ -612,6 +612,8 @@ AC_CONFIG_FILES([Makefile
                  chipcard-config.in
                  Doxyfile
                  libchipcard.spec
+                 libchipcard-client.pc
+                 libchipcard-server.pc
                  bin/Makefile
                  data/Makefile
                  data/drivers/Makefile
@@ -620,6 +622,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/posix/cyberjack_pcsc/Makefile
                  data/drivers/win32/Makefile
                  data/drivers/win32/cyberjack_ctapi/Makefile
+                 data/drivers/win32/generic_pcsc/Makefile
                  doc/Makefile
                  etc/Makefile
                  src/Makefile
@@ -640,6 +643,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/client/cards/processorcard/Makefile
                  src/lib/client/cards/starcos/Makefile
                  src/lib/client/cards/zkacard/Makefile
+                 src/lib/client/cards/chiptanusb/Makefile
                  src/lib/client/ct/Makefile
                  src/ct/Makefile
                  src/ct/ddvcard/Makefile
@@ -648,6 +652,8 @@ AC_CONFIG_FILES([Makefile
                  src/ct/starcoscard/starcoscard.xml
                  src/ct/zkacard/Makefile
                  src/ct/zkacard/zkacard.xml
+                 src/ct/chiptanusb/Makefile
+                 src/ct/chiptanusb/chiptanusb.xml
                  src/tools/Makefile
                  src/tools/geldkarte/Makefile
                  src/tools/memcard/Makefile
@@ -655,6 +661,7 @@ AC_CONFIG_FILES([Makefile
                  src/tools/kvkcard/Makefile
                  src/tools/cardcommander/Makefile
                  src/tools/zkacard/Makefile
+                 src/tools/usbtan-test/Makefile
                  tutorials/Makefile
                  m4/Makefile
                 ])
@@ -718,7 +725,7 @@ done
 #
 
 lc_modules="cards ct"
-lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard memorycard processorcard"
+lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard chiptanusb memorycard processorcard"
 
 
 lprefix="${srcdir}"
@@ -772,7 +779,7 @@ done
 # symlink all headers from src/lib/client/cards
 hfiles=`( cd "${srcdir}/src/lib/client/cards" && ls *.h 2>/dev/null )`
 for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/base/${f}"
+  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/cards/${f}"
   case ${f} in
     *_p.h | *_l.h)
       ;;

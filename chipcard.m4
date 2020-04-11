@@ -31,50 +31,46 @@ have_chipcard_client="no"
 chipcard_client_dir=""
 chipcard_client_datadir=""
 chipcard_client_libs=""
-chipcard_client_infolib=""
 chipcard_client_includes=""
 chipcard_client_servicedir=""
 if test "$enable_chipcard_client" != "no"; then
   AC_MSG_CHECKING(for chipcard_client)
-  AC_ARG_WITH(chipcard-client-dir, [  --with-chipcard-client-dir=DIR
-                            uses chipcard_client from given dir],
-    [lcc_dir="$withval"],
-    [lcc_dir="${prefix} \
-	     /usr/local \
-             /usr \
-	     /chipcard-client \
-             /sw \
-             /"])
+  AC_ARG_WITH(chipcard-client-dir,
+    [  --with-chipcard-client-dir=DIR    obsolete - set PKG_CONFIG_PATH environment variable instead],
+    [AC_MSG_RESULT([obsolete configure option '--with-chipcard-client-dir' used])
+     AC_MSG_ERROR([
+*** Configure switch '--with-chipcard-client-dir' is obsolete.
+*** If you want to use libchipcardc from a non-system location
+*** then locate the file 'libchipcard-client.pc' and add its parent directory
+*** to environment variable PKG_CONFIG_PATH. For example
+*** configure <options> PKG_CONFIG_PATH="<path-to-libchipcard-client.pc's-dir>:\${PKG_CONFIG_PATH}"])],
+    [])
 
-  for li in $lcc_dir; do
-      if test -x "$li/bin/chipcard-config"; then
-          chipcard_client_dir="$li";
-          break
-      fi
-  done
-  if test -z "$chipcard_client_dir"; then
-      AC_MSG_RESULT([not found ])
+  $PKG_CONFIG --exists libchipcard-client
+  result=$?
+  if test $result -ne 0; then
+      AC_MSG_RESULT(not found)
       AC_MSG_ERROR([
-*** The library libchipcardc was not found. Obtain it from 
-*** http://www.libchipcard.de.
-*** If it is already installed (including the -devel package), 
-*** you might need to specify the location with the 
-*** option --with-chipcard-client-dir=DIR.
-***
-*** Please note that it is not Libchipcard this package requested, it is the
-*** successor chipcard.])
+*** Package libchipcard-client was not found in the pkg-config search path.
+*** Perhaps you should add the directory containing `libchipcard-client.pc'
+*** to the PKG_CONFIG_PATH environment variable])
   else
+      chipcard_client_dir="`$PKG_CONFIG --variable=prefix libchipcard-client`"
       AC_MSG_RESULT($chipcard_client_dir)
-      AC_MSG_CHECKING(for chipcard-client libs)
-      chipcard_client_libs="`$chipcard_client_dir/bin/chipcard-config --client-libs`"
-      AC_MSG_RESULT($chipcard_client_libs)
-      AC_MSG_CHECKING(for chipcard-client includes)
-      chipcard_client_includes="`$chipcard_client_dir/bin/chipcard-config --includes`"
-      AC_MSG_RESULT($chipcard_client_includes)
-      AC_MSG_CHECKING(for chipcard-client datadir)
-      chipcard_client_datadir="`$chipcard_client_dir/bin/chipcard-config --client-datadir`"
-      AC_MSG_RESULT($chipcard_client_datadir)
   fi
+
+  AC_MSG_CHECKING(for chipcard-client libs)
+  chipcard_client_libs="`$PKG_CONFIG --libs libchipcard-client`"
+  AC_MSG_RESULT($chipcard_client_libs)
+
+  AC_MSG_CHECKING(for chipcard-client includes)
+  chipcard_client_includes="`$PKG_CONFIG --cflags libchipcard-client`"
+  AC_MSG_RESULT($chipcard_client_includes)
+
+  AC_MSG_CHECKING(for chipcard-client datadir)
+  chipcard_client_datadir="`$PKG_CONFIG --variable=pkgdatadir libchipcard-client`"
+  AC_MSG_RESULT($chipcard_client_datadir)
+
   AC_MSG_CHECKING(if chipcard_client test desired)
   AC_ARG_ENABLE(chipcard-client-test,
     [  --enable-chipcard-client-test   enable chipcard_client-test (default=yes)],
@@ -83,24 +79,29 @@ if test "$enable_chipcard_client" != "no"; then
   AC_MSG_RESULT($enable_chipcard_client_test)
   AC_MSG_CHECKING(for Chipcard-Client version >=$vma.$vmi.$vpl.$vbld)
   if test "$enable_chipcard_client_test" != "no"; then
-    chipcard_client_versionstring="`$chipcard_client_dir/bin/chipcard-config --vstring`.`$chipcard_client_dir/bin/chipcard-config --vbuild`"
-    AC_MSG_RESULT([found $chipcard_client_versionstring])
-    if test "$vma" -gt "`$chipcard_client_dir/bin/chipcard-config --vmajor`"; then
+    lcc_vmajor="`$PKG_CONFIG --variable=vmajor libchipcard-client`"
+    lcc_vminor="`$PKG_CONFIG --variable=vminor libchipcard-client`"
+    lcc_vpatchlevel="`$PKG_CONFIG --variable=vpatchlevel libchipcard-client`"
+    lcc_vstring="`$PKG_CONFIG --variable=vstring libchipcard-client`"
+    lcc_vbuild="`$PKG_CONFIG --variable=vbuild libchipcard-client`"
+    lcc_versionstring="$lcc_vstring.$lcc_vbuild"
+    AC_MSG_RESULT([found $lcc_versionstring])
+    if test "$vma" -gt "$lcc_vmajor"; then
       AC_MSG_ERROR([Your Chipcard-Client version is way too old.
-      Please update from http://sf.net/projects/libchipcard])
-    elif test "$vma" = "`$chipcard_client_dir/bin/chipcard-config --vmajor`"; then
-      if test "$vmi" -gt "`$chipcard_client_dir/bin/chipcard-config --vminor`"; then
+      Please update from https://www.aquamaniac.de])
+    elif test "$vma" = "$lcc_vmajor"; then
+      if test "$vmi" -gt "$lcc_vminor"; then
         AC_MSG_ERROR([Your Chipcard-Client version is too old.
-          Please update from http://sf.net/projects/libchipcard])
-      elif test "$vmi" = "`$chipcard_client_dir/bin/chipcard-config --vminor`"; then
-          if test "$vpl" -gt "`$chipcard_client_dir/bin/chipcard-config --vpatchlevel`"; then
+          Please update from https://www.aquamaniac.de])
+      elif test "$vmi" = "$lcc_vminor"; then
+          if test "$vpl" -gt "$lcc_vpatchlevel"; then
             AC_MSG_ERROR([Your Chipcard-Client version is a little bit too old.
-            Please update from http://sf.net/projects/libchipcard])
-          elif test "$vpl" = "`$chipcard_client_dir/bin/chipcard-config --vpatchlevel`"; then
-            if test "$vbld" -gt "`$chipcard_client_dir/bin/chipcard-config --vbuild`"; then
-              AC_MSG_ERROR([Your Chipcard-Client version is a little bit too old. 
-  Please update to the latest CVS version. Instructions for accessing 
-  CVS can be found on http://sf.net/projects/libchipcard])
+            Please update from https://www.aquamaniac.de])
+          elif test "$vpl" = "$lcc_vpatchlevel"; then
+            if test "$vbld" -gt "$lcc_vbuild"; then
+              AC_MSG_ERROR([Your Chipcard-Client version is a little bit too old.
+  Please update to the latest git version. Instructions for accessing
+  git can be found on https://www.aquamaniac.de])
              fi
            fi
       fi
@@ -155,45 +156,42 @@ chipcard_server_driverdir=""
 chipcard_server_datadir=""
 if test "$enable_chipcard_server" != "no"; then
   AC_MSG_CHECKING(for chipcard_server)
-  AC_ARG_WITH(chipcard-server-dir, [  --with-chipcard-server-dir=DIR
-                            uses chipcard_server from given dir],
-    [lcc_dir="$withval"],
-    [lcc_dir="${prefix} \
-	     /usr/local \
-             /usr \
-	     /chipcard-server \
-             /"])
+  AC_ARG_WITH(chipcard-server-dir,
+    [  --with-chipcard-server-dir=DIR    obsolete - set PKG_CONFIG_PATH environment variable instead],
+    [AC_MSG_RESULT([obsolete configure option '--with-chipcard-server-dir' used])
+     AC_MSG_ERROR([
+*** Configure switch '--with-chipcard-server-dir' is obsolete.
+*** If you want to use libchipcards from a non-system location
+*** then locate the file 'libchipcard-server.pc' and add its parent directory
+*** to environment variable PKG_CONFIG_PATH. For example
+*** configure <options> PKG_CONFIG_PATH="<path-to-libchipcard-server.pc's-dir>:\${PKG_CONFIG_PATH}"])],
+    [])
 
-  for li in $lcc_dir; do
-      if test -x "$li/bin/chipcard-config"; then
-          chipcard_server_dir="$li";
-          break
-      fi
-  done
-  if test -z "$chipcard_server_dir"; then
-      AC_MSG_RESULT([not found ])
+  $PKG_CONFIG --exists libchipcard-server
+  result=$?
+  if test $result -ne 0; then
+      AC_MSG_RESULT(not found)
       AC_MSG_ERROR([
-*** The library libchipcards was not found. Obtain it from 
-*** http://www.libchipcard.de.
-*** If it is already installed (including the -devel package), 
-*** you might need to specify the location with the 
-*** option --with-chipcard-server-dir=DIR.
-***
-*** Please note that it is not Libchipcard this package requested, it is the
-*** successor chipcard.])
+*** Package libchipcard-server was not found in the pkg-config search path.
+*** Perhaps you should add the directory containing `libchipcard-server.pc'
+*** to the PKG_CONFIG_PATH environment variable])
   else
+      chipcard_server_dir="`$PKG_CONFIG --variable=prefix libchipcard-server`"
       AC_MSG_RESULT($chipcard_server_dir)
-      AC_MSG_CHECKING(for chipcard-server datadir)
-      chipcard_server_datadir="`$chipcard_server_dir/bin/chipcard-config --server-datadir`"
-      AC_MSG_RESULT($chipcard_server_datadir)
-      AC_MSG_CHECKING(for chipcard-server driver dir)
-      chipcard_server_driverdir="`$chipcard_server_dir/bin/chipcard-config --driverdir`"
-      AC_MSG_RESULT($chipcard_server_driverdir)
-      AC_MSG_CHECKING(for chipcard-server service dir)
-      chipcard_server_servicedir="`$chipcard_server_dir/bin/chipcard-config --servicedir`"
-      AC_MSG_RESULT($chipcard_server_servicedir)
-
   fi
+
+  AC_MSG_CHECKING(for chipcard-server datadir)
+  chipcard_server_datadir="`$PKG_CONFIG --variable=pkgdatadir libchipcard-server`"
+  AC_MSG_RESULT($chipcard_server_datadir)
+
+  AC_MSG_CHECKING(for chipcard-server driver dir)
+  chipcard_server_driverdir="`$PKG_CONFIG --driverdir libchipcard-server`"
+  AC_MSG_RESULT($chipcard_server_driverdir)
+
+  AC_MSG_CHECKING(for chipcard-server service dir)
+  chipcard_server_servicedir="`$PKG_CONFIG --servicedir libchipcard-server`"
+  AC_MSG_RESULT($chipcard_server_servicedir)
+
   AC_MSG_CHECKING(if chipcard_server test desired)
   AC_ARG_ENABLE(chipcard-server-test,
     [  --enable-chipcard-server-test   enable chipcard_server-test (default=yes)],
@@ -202,24 +200,29 @@ if test "$enable_chipcard_server" != "no"; then
   AC_MSG_RESULT($enable_chipcard_server_test)
   AC_MSG_CHECKING(for Chipcard-Server version >=$vma.$vmi.$vpl.$vbld)
   if test "$enable_chipcard_server_test" != "no"; then
-    chipcard_server_versionstring="`$chipcard_server_dir/bin/chipcard-config --vstring`.`$chipcard_server_dir/bin/chipcard-config --vbuild`"
-    AC_MSG_RESULT([found $chipcard_server_versionstring])
-    if test "$vma" -gt "`$chipcard_server_dir/bin/chipcard-config --vmajor`"; then
+    lcs_vmajor="`$PKG_CONFIG --variable=vmajor libchipcard-server`"
+    lcs_vminor="`$PKG_CONFIG --variable=vminor libchipcard-server`"
+    lcs_vpatchlevel="`$PKG_CONFIG --variable=vpatchlevel libchipcard-server`"
+    lcs_vstring="`$PKG_CONFIG --variable=vstring libchipcard-server`"
+    lcs_vbuild="`$PKG_CONFIG --variable=vbuild libchipcard-server`"
+    lcs_versionstring="$lcs_vstring.$lcs_vbuild"
+    AC_MSG_RESULT([found $lcs_versionstring])
+    if test "$vma" -gt "$lcs_vmajor"; then
       AC_MSG_ERROR([Your Chipcard-Server version is way too old.
-      Please update from http://sf.net/projects/libchipcard])
-    elif test "$vma" = "`$chipcard_server_dir/bin/chipcard-config --vmajor`"; then
-      if test "$vmi" -gt "`$chipcard_server_dir/bin/chipcard-config --vminor`"; then
+      Please update from https://www.aquamaniac.de])
+    elif test "$vma" = "$lcs_vmajor"; then
+      if test "$vmi" -gt "$lcs_vminor"; then
         AC_MSG_ERROR([Your Chipcard-Server version is too old.
-          Please update from http://sf.net/projects/libchipcard])
-      elif test "$vmi" = "`$chipcard_server_dir/bin/chipcard-config --vminor`"; then
-          if test "$vpl" -gt "`$chipcard_server_dir/bin/chipcard-config --vpatchlevel`"; then
+          Please update from https://www.aquamaniac.de])
+      elif test "$vmi" = "$lcs_vminor"; then
+          if test "$vpl" -gt "$lcs_vpatchlevel"; then
             AC_MSG_ERROR([Your Chipcard-Server version is a little bit too old.
-            Please update from http://sf.net/projects/libchipcard])
-          elif test "$vpl" = "`$chipcard_server_dir/bin/chipcard-config --vpatchlevel`"; then
-            if test "$vbld" -gt "`$chipcard_server_dir/bin/chipcard-config --vbuild`"; then
-              AC_MSG_ERROR([Your Chipcard-Server version is a little bit too old. 
-  Please update to the latest CVS version. Instructions for accessing 
-  CVS can be found on http://sf.net/projects/libchipcard])
+            Please update from https://www.aquamaniac.de])
+          elif test "$vpl" = "$lcs_vpatchlevel"; then
+            if test "$vbld" -gt "$lcs_vbuild"; then
+              AC_MSG_ERROR([Your Chipcard-Server version is a little bit too old.
+  Please update to the latest git version. Instructions for accessing
+  git can be found on https://www.aquamaniac.de])
              fi
            fi
       fi

@@ -1,0 +1,74 @@
+<cards>
+  <card name="ChiptanusbCard" extends="ProcessorCard" type="processor" >
+    <cardinfo>
+      <name>PinTanKarte</name>
+      <descr>
+        (Card to generate a TAN for HBCI PinTan Banking)
+      </descr>
+      <atrs>
+        <atr>3b ef 00 ff 81 31 ?? 45 65 63 *</atr>
+        <atr>3b ff 18 00 ff 81 31 ?? 45 65 63 *</atr>
+        <atr>3b ff 11 00 ff 81 31 ?? 95 80 f9 *</atr>
+      </atrs>
+    </cardinfo>
+    
+    <commands>
+      "<command name="GenerateTan">
+        "<send>
+          "<APDU le="0">
+            "<ELEM type="word">0xff91</ELEM>"
+            "<ELEM type="byte">0x06</ELEM>"
+            "<ELEM type="word">0x0</ELEM>"
+            "<ELEM type="byte">0x0</ELEM>"
+          </APDU>\n"
+          "<DATA>
+            "<ELEM name="data" type="bytes"/>"
+          </DATA>"
+        </send>"
+        "<results>
+          "<result sw1="0x61" type="success">
+            Command executed, correct size in SW2
+          </result>
+          <result sw1="0x6F" sw2="0x01" type="error">
+            Aboarded by User
+          </result>
+          <!-- <result sw1="0x6F" sw2="0x0C" type="error">
+            Time out
+          </result> -->
+          
+        </results>
+      </command>\n"
+
+      <command name="QuitTanResponce">
+        <send>
+          <APDU le="0">
+            <ELEM type="word">0xff91</ELEM>
+            <ELEM type="byte">0x07</ELEM>
+            <ELEM type="word">0x0</ELEM>
+            <ELEM type="byte">0x0</ELEM>
+          </APDU>
+          "<DATA>
+           "<ELEM name="data" type="bytes"/>
+          </DATA>
+        </send>
+        "<results>
+          <result sw1="0x91" type="success">
+            Command executed, correct size in SW2
+          </result>
+          <!-- <result sw1="0x69" sw2="0x86" type="error">
+            No EF selected (internal error)
+          </result>  -->
+          
+           <!-- <result sw1="0x6a" sw2="0x83" type="error">
+            Record not found
+          </result> -->
+        </results>
+      </command>
+    </commands>
+   
+    <!-- generic command responses -->
+    <results>
+    </results>
+
+  </card>
+</cards>
