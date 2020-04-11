@@ -199,6 +199,16 @@ static int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
                                                       const int expLen);
 static int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct,
                                                GWEN_CRYPT_TOKEN_KEYINFO *ki);
-
+static int LC_Crypt_TokenZka__WriteContextToNotepadRecord(GWEN_CRYPT_TOKEN *ct,
+        uint32_t recordId,
+        const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+        uint32_t gid);
+static int LC_Crypt_TokenZka__UpdateContext(GWEN_CRYPT_TOKEN *ct,
+                                            uint32_t id,
+                                            const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+                                            uint32_t gid);
+static int LC_Crypt_TokenZka__AddContext(GWEN_CRYPT_TOKEN *ct,
+        const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+        uint32_t gid);
 #endif
 

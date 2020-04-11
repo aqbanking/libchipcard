@@ -136,7 +136,6 @@ static int ZkaCardTool__CreateContextRecord(GWEN_BUFFER *buf,
           GWEN_Buffer_AppendString(instBuffer,keyNum);
           GWEN_Buffer_AppendString(instBuffer,keyVer);
           GWEN_Buffer_AppendByte(instBuffer,*hashAlgo);
-          GWEN_Buffer_AppendBytes(instBuffer,keyHash,keyHashLen);
           if ( version == 2 && keyHashLen == 20 )
           {
               int i;
@@ -144,6 +143,8 @@ static int ZkaCardTool__CreateContextRecord(GWEN_BUFFER *buf,
               for (i = 0 ; i < 12 ; i++ ) GWEN_Buffer_AppendByte(instBuffer,tmp);
               keyHashLen = 32;
           }
+          GWEN_Buffer_AppendBytes(instBuffer,keyHash,keyHashLen);
+
           instSize += 9 + keyHashLen;
       }
 

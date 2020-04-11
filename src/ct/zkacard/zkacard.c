@@ -806,8 +806,78 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_SetContext(GWEN_CRYPT_TOKEN *ct,
                                                const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
                                                uint32_t gid)
 {
-  DBG_ERROR(LC_LOGDOMAIN, "Function LC_Crypt_TokenZka_SetContext not implemented!");
-  return GWEN_ERROR_NOT_IMPLEMENTED;
+
+    LC_CT_ZKA *lct;
+    uint32_t ctxIdList[LC_CT_ZKA_NUM_CONTEXT];
+    uint32_t ctxCnt = LC_CT_ZKA_NUM_CONTEXT;
+    uint16_t i;
+    int32_t  rv=0;
+
+    assert(ct);
+    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+    assert(lct);
+
+
+    lct->keyListIsValid=0;   // necessary in order to get latest Usage Counters
+
+    if (!(lct->keyListIsValid)) {
+
+      /* read keys */
+      rv=LC_TokenZkaCard__ReadKeys(ct);
+      if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return 0;
+      }
+    }
+
+    if (!(lct->contextListIsValid)) {
+
+      /* read the context list */
+      rv=LC_Crypt_TokenZka__ReadContextList(ct, gid);
+      if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return 0;
+      }
+    }
+
+    /* search if context already exists */
+    for (i=0; i<LC_CT_ZKA_NUM_CONTEXT; i++) {
+      if (lct->contexts[i]!=NULL &&
+          GWEN_Crypt_Token_Context_GetId(lct->contexts[i])==id)
+      {
+          rv = LC_Crypt_TokenZka__UpdateContext(ct,id,ctx,gid);
+          if ( rv < 0 ) {
+              DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+          }
+          return rv;
+      }
+    }
+
+
+    /* new context */
+    /* check if the id is highest existing id + 1, otherwise inconsistencies can happen since
+     * the id itself is determined implicitly by the ordering of HBCI data in the EF_NOTEPAD
+     */
+    rv = LC_Crypt_TokenZka_GetContextIdList(ct,ctxIdList,&ctxCnt,gid);
+    if ( rv < 0)
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    if ( id != (ctxIdList[ctxCnt-1] +1) )
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return GWEN_ERROR_INVALID;
+    }
+
+    rv = LC_Crypt_TokenZka__AddContext(ct,ctx,gid);
+    if ( rv < 0 ) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+    }
+
+    return rv;
+
 }
 
 
@@ -2123,7 +2193,606 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
   return 0;
 }
 
+int LC_Crypt_TokenZka__WriteContextToNotepadRecord(GWEN_CRYPT_TOKEN *ct,
+        uint32_t recordId,
+        const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+        uint32_t gid)
+{
+    GWEN_BUFFER *localBuffer;
+    LC_CT_ZKA *lct;
+    uint32_t rv;
+    uint16_t totalLen=0;
+    uint16_t version = 2; /* we always write version V002 */
+    GWEN_BUFFER *recordBuffer;
+
+    assert(ct);
+    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+    assert(lct);
+
+    if (lct->card==NULL) {
+        DBG_ERROR(LC_LOGDOMAIN, "No card.");
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    /* ensure access pin, because this is needed for accessing the notepad */
+    rv=LC_Crypt_TokenZka__EnsureAccessPin(ct, gid);
+    if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    rv=LC_Card_SelectMf(lct->card);
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectDf(lct->card, "DF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_NOTEPAD (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectEf(lct->card, "EF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting EF_NOTEPAD (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
 
 
+    /* create the record */
+
+    localBuffer = GWEN_Buffer_new(NULL,236,0,0);
+
+    /* version */
+    {
+        GWEN_Buffer_AppendByte(localBuffer,0xc0);
+        GWEN_Buffer_AppendByte(localBuffer,0x03);
+        GWEN_Buffer_AppendByte(localBuffer,0x30);
+        GWEN_Buffer_AppendByte(localBuffer,0x30);
+        GWEN_Buffer_AppendByte(localBuffer,0x30+version);
+        totalLen += 5;
+
+    }
+
+    /* HBCI-Institutsparameterblock (M) */
+    {
+        const char * bankName;
+        uint16_t     bankNameLen;
+        const char * country;
+        const char * bankCode;
+        uint16_t     bankCodeLen;
+        uint32_t     keyNum;
+        uint32_t     keyVer;
+        uint32_t     hashAlgo;
+        uint16_t     hashAlgoLen;
+        const char * keyHash;
+        uint32_t     keyHashLen;
+        uint32_t     keyStatus;
+        uint16_t     instSize = 0;
+
+        GWEN_BUFFER *instBuffer = GWEN_Buffer_new(NULL,96,0,0);
+
+        /* Kreditinstitutsbezeichung (O) */
+        bankName = GWEN_Crypt_Token_Context_GetPeerName(ctx);
+        if ( bankName )
+        {
+            bankNameLen = strlen(bankName);
+            GWEN_Buffer_AppendByte(instBuffer,0xc1);
+            GWEN_Buffer_AppendByte(instBuffer,bankNameLen);
+            GWEN_Buffer_AppendString(instBuffer,bankName);
+            instSize += (2+bankNameLen);
+        }
+
+        /* Länderkennzeichen (M) set to 280 since HBCI is used in Germany only... */
+        GWEN_Buffer_AppendByte(instBuffer,0xc2);
+        GWEN_Buffer_AppendByte(instBuffer,0x03);
+        GWEN_Buffer_AppendString(instBuffer, "280");
+        instSize += 5;
+
+        /* Kreditsinstitutcode (M) */
+        bankCode = GWEN_Crypt_Token_Context_GetPeerId(ctx);
+        if ( bankCode )
+        {
+            bankCodeLen = strlen(bankCode);
+            GWEN_Buffer_AppendByte(instBuffer,0xc3);
+            GWEN_Buffer_AppendByte(instBuffer,bankCodeLen);
+            GWEN_Buffer_AppendString(instBuffer,bankCode);
+            instSize += (2+bankCodeLen);
+        }
+        else
+        {
+            DBG_ERROR(LC_LOGDOMAIN,"No bank code in context, is mandatory!\n");
+            GWEN_Buffer_free(instBuffer);
+            GWEN_Buffer_free(localBuffer);
+            return GWEN_ERROR_ABORTED;
+        }
+
+        /* Hashwert Institutsschlüssel (O) */
+        keyNum = GWEN_Crypt_Token_Context_GetKeyHashNum(ctx);
+        keyVer = GWEN_Crypt_Token_Context_GetKeyHashVer(ctx);
+        hashAlgo = GWEN_Crypt_Token_Context_GetKeyHashAlgo(ctx);
+        keyHash = GWEN_Crypt_Token_Context_GetKeyHashPtr(ctx);
+        keyHashLen =  GWEN_Crypt_Token_Context_GetKeyHashLen(ctx);
+
+        if ( keyHash && keyNum && keyVer && hashAlgo && keyHashLen )
+        {
+
+            char asciiBuffer[4];
+
+
+
+            GWEN_Buffer_AppendByte(instBuffer,0xc4);
+            GWEN_Buffer_AppendByte(instBuffer,0x27);
+            sprintf(asciiBuffer,"%3d",keyNum);
+            GWEN_Buffer_AppendString(instBuffer,asciiBuffer);
+            sprintf(asciiBuffer,"%3d",keyVer);
+            GWEN_Buffer_AppendString(instBuffer,asciiBuffer);
+
+            switch (hashAlgo)
+            {
+            case GWEN_Crypt_HashAlgoId_None:
+                DBG_ERROR(LC_LOGDOMAIN,"Key hash data inconsistent, aborting!\n");
+                GWEN_Buffer_free(instBuffer);
+                GWEN_Buffer_free(localBuffer);
+                return GWEN_ERROR_ABORTED;
+            case GWEN_Crypt_HashAlgoId_Rmd160:
+                if ( keyHashLen != 20)
+                {
+                    DBG_ERROR(LC_LOGDOMAIN,"Key hash data inconsistent, aborting!\n");
+                    GWEN_Buffer_free(instBuffer);
+                    GWEN_Buffer_free(localBuffer);
+                    return GWEN_ERROR_ABORTED;
+                }
+                GWEN_Buffer_AppendByte(instBuffer,0x02);
+                {
+                    int i;
+                    char tmp = 0x0;
+                    for (i = 0 ; i < 12 ; i++ ) GWEN_Buffer_AppendByte(instBuffer,tmp);
+                }
+                break;
+            case GWEN_Crypt_HashAlgoId_Sha256:
+                if ( keyHashLen != 32)
+                {
+                    DBG_ERROR(LC_LOGDOMAIN,"Key hash data inconsistent, aborting!\n");
+                    GWEN_Buffer_free(instBuffer);
+                    GWEN_Buffer_free(localBuffer);
+                    return GWEN_ERROR_ABORTED;
+                }
+                GWEN_Buffer_AppendByte(instBuffer,0x03);
+                break;
+            }
+
+            GWEN_Buffer_AppendBytes(instBuffer,keyHash,keyHashLen);
+
+            instSize += 41;
+        }
+
+        /* Schlüsselstatus (M) */
+        keyStatus = GWEN_Crypt_Token_Context_GetKeyStatus(ctx);
+        if ( keyStatus > 255)
+        {
+            DBG_ERROR(LC_LOGDOMAIN,"Key status inconsistent, aborting!\n");
+            GWEN_Buffer_free(instBuffer);
+            GWEN_Buffer_free(localBuffer);
+            return GWEN_ERROR_ABORTED;
+        }
+        GWEN_Buffer_AppendByte(instBuffer,0xc5);
+        GWEN_Buffer_AppendByte(instBuffer,0x01);
+        GWEN_Buffer_AppendByte(instBuffer,(char)keyStatus);
+        instSize += 3;
+
+        GWEN_Buffer_AppendByte(localBuffer,0xe1);
+        GWEN_Buffer_AppendByte(localBuffer,instSize);
+
+        GWEN_Buffer_Rewind(instBuffer);
+        if (GWEN_Buffer_GetUsedBytes(instBuffer) != instSize)
+        {
+            DBG_ERROR(LC_LOGDOMAIN,"Institute buffer size of %d does not match count of %d!\n",GWEN_Buffer_GetUsedBytes(instBuffer),instSize);
+            GWEN_Buffer_free(instBuffer);
+            GWEN_Buffer_free(localBuffer);
+            return GWEN_ERROR_ABORTED;
+        }
+        GWEN_Buffer_AppendBytes(localBuffer,GWEN_Buffer_GetStart(instBuffer),instSize);
+        totalLen += 2+instSize;
+
+        GWEN_Buffer_free(instBuffer);
+    }
+
+    /* HBCI-Kommunikationsparameterblock (M) */
+    {
+        uint8_t      commType;
+        const char  *address;
+        int          addrLen;
+
+        commType = 2; /* only possible choice */
+        address = GWEN_Crypt_Token_Context_GetAddress(ctx);;
+        if ( address )
+        {
+            addrLen = strlen(address);
+            assert(addrLen < 51);
+        }
+        else
+        {
+            DBG_ERROR(LC_LOGDOMAIN,"No comm address in context!\n");
+            GWEN_Buffer_free(localBuffer);
+            return GWEN_ERROR_ABORTED;
+        }
+        GWEN_Buffer_AppendByte(localBuffer,0xe2);
+        GWEN_Buffer_AppendByte(localBuffer,5+addrLen);
+        GWEN_Buffer_AppendByte(localBuffer,0xc6);
+        GWEN_Buffer_AppendByte(localBuffer,0x01);
+        GWEN_Buffer_AppendByte(localBuffer,commType);
+        GWEN_Buffer_AppendByte(localBuffer,0xc7);
+        GWEN_Buffer_AppendByte(localBuffer,addrLen);
+        GWEN_Buffer_AppendString(localBuffer,address);
+        totalLen += ( 7 + addrLen );
+    }
+
+    /* HBCI-Kundenparameterblock (O) */
+    {
+        /* customer parameters */
+        const char * userId;
+        uint8_t      userIdLen = 0;
+        const char * customerId;
+        uint8_t      customerIdLen = 0;
+        uint32_t     signKeyNum;
+        uint32_t     signKeyVer;
+        uint32_t     cryptKeyNum;
+        uint32_t     cryptKeyVer;
+        uint32_t     authKeyNum;
+        uint32_t     authKeyVer;
+        uint8_t      userLen = 0;
+        uint8_t      keyNumLen = 0;
+        char         asciiBuffer[4];
+
+        userId = GWEN_Crypt_Token_Context_GetUserId(ctx);
+        customerId = GWEN_Crypt_Token_Context_GetCustomerId(ctx);
+
+        signKeyNum = GWEN_Crypt_Token_Context_GetSignKeyNum(ctx);
+        signKeyVer = GWEN_Crypt_Token_Context_GetSignKeyVer(ctx);
+
+        cryptKeyNum = GWEN_Crypt_Token_Context_GetDecipherKeyNum(ctx);
+        cryptKeyVer = GWEN_Crypt_Token_Context_GetDecipherKeyVer(ctx);
+
+        authKeyNum = GWEN_Crypt_Token_Context_GetAuthSignKeyNum(ctx);
+        authKeyVer = GWEN_Crypt_Token_Context_GetAuthSignKeyVer(ctx);
+
+        if ( userId )
+        {
+            if (!signKeyNum || !signKeyVer || !cryptKeyNum || !cryptKeyVer)
+            {
+                DBG_ERROR(LC_LOGDOMAIN,"No user key info in context!\n");
+                GWEN_Buffer_free(localBuffer);
+                return GWEN_ERROR_ABORTED;
+            }
+            if (signKeyNum != cryptKeyNum )
+            {
+                DBG_ERROR(LC_LOGDOMAIN,"User key info not consistent in context!\n");
+                GWEN_Buffer_free(localBuffer);
+                return GWEN_ERROR_ABORTED;
+            }
+            userIdLen = strlen(userId);
+            if (customerId)
+            {
+                customerIdLen = strlen(customerId) + 2;
+            }
+            userLen = userIdLen + 2 +customerIdLen + 14;
+            if  (authKeyNum && authKeyVer)
+            {
+                userLen += 6;
+            }
+
+            GWEN_Buffer_AppendByte(localBuffer,0xe3);
+            GWEN_Buffer_AppendByte(localBuffer,userLen);
+            GWEN_Buffer_AppendByte(localBuffer,0xc8);
+            GWEN_Buffer_AppendByte(localBuffer,userIdLen);
+            GWEN_Buffer_AppendString(localBuffer,userId);
+
+            if ( customerId )
+            {
+                GWEN_Buffer_AppendByte(localBuffer,0xc9);
+                GWEN_Buffer_AppendByte(localBuffer,customerIdLen-2);
+                GWEN_Buffer_AppendString(localBuffer,customerId);
+            }
+
+            GWEN_Buffer_AppendByte(localBuffer,0xca);
+            GWEN_Buffer_AppendByte(localBuffer,(authKeyNum && authKeyVer)?0x12:0x0c);
+            sprintf(asciiBuffer,"%3d",signKeyNum);
+            GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+            sprintf(asciiBuffer,"%3d",signKeyVer);
+            GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+            sprintf(asciiBuffer,"%3d",cryptKeyNum);
+            GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+            sprintf(asciiBuffer,"%3d",cryptKeyVer);
+            GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+            if  (authKeyNum && authKeyVer)
+            {
+                if (authKeyNum != cryptKeyNum )
+                {
+                    DBG_ERROR(LC_LOGDOMAIN,"User key info not consistent in context!\n");
+                    GWEN_Buffer_free(localBuffer);
+                    return GWEN_ERROR_ABORTED;
+                }
+                sprintf(asciiBuffer,"%3d",authKeyNum);
+                GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+                sprintf(asciiBuffer,"%3d",authKeyVer);
+                GWEN_Buffer_AppendString(localBuffer,asciiBuffer);
+            }
+
+        }
+        totalLen += ( userLen + 2);
+
+
+    }
+
+
+  /* finalize everything */
+
+  GWEN_Buffer_Rewind(localBuffer);
+  assert(totalLen == GWEN_Buffer_GetUsedBytes(localBuffer));
+
+  recordBuffer=GWEN_Buffer_new(0, 239, 0, 1);
+  GWEN_Buffer_AppendByte(recordBuffer,0xf0);
+  assert(totalLen <= 239);
+  if (totalLen > 127)
+  {
+      GWEN_Buffer_AppendByte(recordBuffer,0x81);
+      GWEN_Buffer_AppendByte(recordBuffer,(totalLen & 0xff));
+  }
+  else
+  {
+       GWEN_Buffer_AppendByte(recordBuffer,totalLen);
+  }
+  GWEN_Buffer_AppendBytes(recordBuffer,GWEN_Buffer_GetStart(localBuffer),totalLen);
+
+  GWEN_Buffer_free(localBuffer);
+
+  /* write record */
+  rv=LC_Card_IsoUpdateRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, recordId,
+                              GWEN_Buffer_GetStart(recordBuffer),
+                              GWEN_Buffer_GetUsedBytes(recordBuffer));
+  GWEN_Buffer_free(recordBuffer);
+  if (rv!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "Error writing context to record %d of EF_NOTEPAD.",recordId);
+    return rv;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+int LC_Crypt_TokenZka__UpdateContext(GWEN_CRYPT_TOKEN *ct,
+        uint32_t id,
+        const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+        uint32_t gid)
+{
+
+    LC_CT_ZKA *lct;
+    GWEN_BUFFER *mbuf;
+    uint32_t rv;
+    uint16_t i;
+    uint32_t cnt;
+    uint8_t  recordToUpdate = 0;
+
+    assert(ct);
+    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+    assert(lct);
+
+    if (lct->card==NULL) {
+      DBG_ERROR(LC_LOGDOMAIN, "No card.");
+      return GWEN_ERROR_NOT_OPEN;
+    }
+
+    /* ensure access pin, because this is needed for accessing the notepad */
+    rv=LC_Crypt_TokenZka__EnsureAccessPin(ct, gid);
+    if (rv<0) {
+      DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+      return rv;
+    }
+
+    rv=LC_Card_SelectMf(lct->card);
+    if (rv!=LC_Client_ResultOk) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", rv);
+      return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectDf(lct->card, "DF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_NOTEPAD (%d)", rv);
+      return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectEf(lct->card, "EF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+      DBG_ERROR(LC_LOGDOMAIN, "Error selecting EF_NOTEPAD (%d)", rv);
+      return GWEN_ERROR_NOT_OPEN;
+    }
+
+
+    mbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    cnt = 1;
+    for ( i = 1; i < LC_CT_ZKA_NUM_CONTEXT ; i++) {
+        /* read record */
+        DBG_INFO(LC_LOGDOMAIN, "Reading entry %d", i);
+        rv=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
+        GWEN_Buffer_Rewind(mbuf);
+        if (rv!=LC_Client_ResultOk) {
+            if (LC_Card_GetLastSW1(lct->card)==0x6a &&
+                    LC_Card_GetLastSW2(lct->card)==0x83) {
+                DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
+                break;
+            }
+            else {
+                DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_NOTEPAD (%d)", i, rv);
+                if (i>1)
+                  break;
+                GWEN_Buffer_free(mbuf);
+                return GWEN_ERROR_IO;
+            }
+        }
+        else {
+            /* see if we have a HBCI parameter record (F0) */
+            if (GWEN_Buffer_GetBytesLeft(mbuf)) {
+                uint8_t firstByte;
+                DBG_INFO(LC_LOGDOMAIN, "Checking if entry %d is a HBCI parameter record", i);
+                GWEN_Buffer_Rewind(mbuf);
+                firstByte = (uint8_t) GWEN_Buffer_ReadByte(mbuf);
+                if ( firstByte == 0xf0 )
+                {
+                    DBG_INFO(LC_LOGDOMAIN, "Record %d of EF_NOTEPAD is a HBCI parameter record, context id is %d",i,cnt);
+                    if ( cnt == id )
+                    {
+                        recordToUpdate = i;
+                        DBG_INFO(LC_LOGDOMAIN, "Record %d of EF_NOTEPAD is HBCI parameter record with context %d to update",i,cnt);
+                        break;
+                    }
+                    cnt++;
+                }
+                else
+                {
+                    DBG_INFO(LC_LOGDOMAIN, "Record %d of EF_NOTEPAD not a HBCI parameter record (Tag %X)",i,firstByte);
+                }
+            }
+            else {
+                DBG_INFO(LC_LOGDOMAIN, "Entry %d is empty", i);
+            }
+        }
+        GWEN_Buffer_Reset(mbuf);
+    }
+
+    if ( recordToUpdate == 0 )
+    {
+        DBG_ERROR(LC_LOGDOMAIN, "HBCI parameter record for updating context %d not foundin EF_NOTEPAD.", id);
+        return GWEN_ERROR_INVALID;
+    }
+
+    /* write context data to EF_NOTEPAD */
+    rv =LC_Crypt_TokenZka__WriteContextToNotepadRecord(ct,recordToUpdate,ctx,gid);
+    if ( rv < 0 )
+    {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    /* update the context list */
+    rv=LC_Crypt_TokenZka__ReadContextList(ct, gid);
+    if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    return rv;
+}
+
+int LC_Crypt_TokenZka__AddContext(GWEN_CRYPT_TOKEN *ct,
+        const GWEN_CRYPT_TOKEN_CONTEXT *ctx,
+        uint32_t gid)
+{
+
+    LC_CT_ZKA *lct;
+    GWEN_BUFFER *mbuf;
+    uint32_t rv;
+    uint16_t i;
+    uint8_t  recordToUpdate = 0;
+
+    assert(ct);
+    lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
+    assert(lct);
+
+    if (lct->card==NULL) {
+        DBG_ERROR(LC_LOGDOMAIN, "No card.");
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    /* ensure access pin, because this is needed for accessing the notepad */
+    rv=LC_Crypt_TokenZka__EnsureAccessPin(ct, gid);
+    if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    rv=LC_Card_SelectMf(lct->card);
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectDf(lct->card, "DF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_NOTEPAD (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    rv=LC_Card_SelectEf(lct->card, "EF_NOTEPAD");
+    if (rv!=LC_Client_ResultOk) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error selecting EF_NOTEPAD (%d)", rv);
+        return GWEN_ERROR_NOT_OPEN;
+    }
+
+    mbuf=GWEN_Buffer_new(0, 256, 0, 1);
+    for ( i = 1; i < LC_CT_ZKA_NUM_CONTEXT ; i++) {
+        /* read record */
+        DBG_INFO(LC_LOGDOMAIN, "Reading entry %d", i);
+        rv=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
+        GWEN_Buffer_Rewind(mbuf);
+        if (rv!=LC_Client_ResultOk) {
+            if (LC_Card_GetLastSW1(lct->card)==0x6a &&
+                    LC_Card_GetLastSW2(lct->card)==0x83) {
+                DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
+                break;
+            }
+            else {
+                DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_NOTEPAD (%d)", i, rv);
+                if (i>1)
+                    break;
+                GWEN_Buffer_free(mbuf);
+                return GWEN_ERROR_IO;
+            }
+        }
+        else {
+
+            /* see if we have an empty record (00) */
+            if (GWEN_Buffer_GetBytesLeft(mbuf)) {
+                char firstByte = 0x0;
+                DBG_INFO(LC_LOGDOMAIN, "Checking if entry %d is a HBCI parameter record", i);
+
+                GWEN_Buffer_Rewind(mbuf);
+                firstByte = (char) GWEN_Buffer_ReadByte(mbuf);
+                if ( firstByte == 0x00 )
+                {
+                    DBG_INFO(LC_LOGDOMAIN, "Record %d of EF_NOTEPAD is empty, use it for adding the new context.",i);
+                    recordToUpdate = i;
+                    break;
+                }
+                else
+                {
+                    DBG_INFO(LC_LOGDOMAIN, "Record %d of EF_NOTEPAD not a HBCI parameter record (Tag %X)",i,firstByte);
+                }
+            }
+            else {
+                DBG_INFO(LC_LOGDOMAIN, "Entry %d is empty", i);
+            }
+        }
+        GWEN_Buffer_Reset(mbuf);
+    }
+
+    if ( recordToUpdate == 0 )
+    {
+        DBG_ERROR(LC_LOGDOMAIN, "No empty record found in EF_NOTEPAD. Cannot add new context.");
+        return GWEN_ERROR_INVALID;
+    }
+
+    /* write context data to EF_NOTEPAD */
+    rv =LC_Crypt_TokenZka__WriteContextToNotepadRecord(ct,recordToUpdate,ctx,gid);
+
+    /* update the context list */
+    rv=LC_Crypt_TokenZka__ReadContextList(ct, gid);
+    if (rv<0) {
+        DBG_INFO(LC_LOGDOMAIN, "here (%d)", rv);
+        return rv;
+    }
+
+    return rv;
+}
 
 

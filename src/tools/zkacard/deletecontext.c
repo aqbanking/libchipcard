@@ -255,8 +255,8 @@ int deleteContext(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   }
   else
   {
-      DBG_INFO(LC_LOGDOMAIN, "New context could not be added!");
-      printf("New context could not be added!\n");
+      DBG_INFO(LC_LOGDOMAIN, "Context %d could not be deleted!",ctxNum);
+      printf("Context %d could not be deleted!\n",ctxNum);
   }
 
   GWEN_DB_Group_free(dbNotePad);

@@ -421,12 +421,14 @@
               </descr>
             <record>
               <ELEM name="entry" type="tlv" minnum="1" maxnum="1" >
+                
                 <tlv id="0x00">
                   <DESCR>
                     Empty record
                   </DESCR>
                   <ELEM name="emptyData" type="bytes" />
                 </tlv>
+                
                 <tlv id="0xf0">
                   <DESCR>
                     HBCI parameter record
@@ -511,18 +513,102 @@
                 
                 <tlv id="0xf1">
                   <DESCR>
-                    Record for external app
+                    Record for external app (DFÜ bank comm data)
                   </DESCR>
                   <ELEM name="app1Data" type="bin" maxnum="0" />
                 </tlv>
       
                 <tlv id="0xf2">
                   <DESCR>
-                    Record for external app
+                    Record for external app (reserved)
                   </DESCR>
                   <ELEM name="app2Data" type="bin" maxnum="0" />
                 </tlv>
+    
+                <tlv id="0xf3">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app3Data" type="bin" maxnum="0" />
+                </tlv>
+        
+                <tlv id="0xf4">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app4Data" type="bin" maxnum="0" />
+                </tlv>
                 
+                <tlv id="0xf5">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app5Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xf6">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app6Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xf7">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app7Data" type="bin" maxnum="0" />
+                </tlv>
+                             
+                <tlv id="0xf8">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app8Data" type="bin" maxnum="0" />
+                </tlv>
+                             
+                <tlv id="0xf9">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app9Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xfa">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app10Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xfb">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app11Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xfc">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app12Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xfd">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app13Data" type="bin" maxnum="0" />
+                </tlv>
+                
+                <tlv id="0xfe">
+                  <DESCR>
+                    Record for external app (reserved)
+                  </DESCR>
+                  <ELEM name="app14Data" type="bin" maxnum="0" />
+                </tlv>
+         
               </ELEM>
             </record>
           </ef>
