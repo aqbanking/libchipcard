@@ -1,4 +1,4 @@
-INCLUDES=-I$(libchipcard_symlinkdir) $(pcsc_includes) $(gwenhywfar_includes) -I.. -I$(srcdir)/.. -I$(top_srcdir) @gwenhywfar_includes@
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(pcsc_includes) $(gwenhywfar_includes) -I.. -I$(srcdir)/.. -I$(top_srcdir) @gwenhywfar_includes@
 
 noinst_LTLIBRARIES=libbase.la
 

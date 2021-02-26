@@ -3,11 +3,9 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 EXTRA_DIST=app.xml card.xml
-
-
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 
 noinst_LTLIBRARIES=libcards-kvk.la

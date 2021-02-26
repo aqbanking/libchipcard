@@ -1,6 +1,6 @@
 bin_PROGRAMS=zkacard-tool
 
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) 
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
 
 noinst_HEADERS=global.h
 

@@ -1,4 +1,4 @@
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=starcoscard.xml

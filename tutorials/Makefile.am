@@ -1,4 +1,4 @@
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) 
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
 
 EXTRA_DIST=README examplecard.xml tutorials.h
 

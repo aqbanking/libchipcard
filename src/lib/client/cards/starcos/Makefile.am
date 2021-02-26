@@ -3,10 +3,9 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 EXTRA_DIST=app-hvb.xml app-vr.xml app.xml card.xml types.xml
-
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../
 
 typefiles=types.xml
 
