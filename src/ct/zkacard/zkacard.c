@@ -1898,22 +1898,22 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
             case 1:
               assert(hashAlgo==GWEN_Crypt_HashAlgoId_Rmd160);
               assert(binDataLen==20);
-              /* 20 byte Hashwert */
+              /* 20 bytes hash value */
               memcpy(hash, c, 20*sizeof(char));
-              hash[21]='\0';
+              hash[20]='\0';
               hashLen=20;
               break;
             case 2:
               assert(binDataLen==32);
               if (hashAlgo==GWEN_Crypt_HashAlgoId_Rmd160) {
-                /*12bytes 00 20 bytes Hashwert*/
+                /*12 bytes 00, 20 bytes hash value */
                 memcpy(hash, c+12, 20*sizeof(char));
-                hash[21]='\0';
+                hash[20]='\0';
                 hashLen=20;
               }
               else if (hashAlgo==GWEN_Crypt_HashAlgoId_Sha256) {
                 memcpy(hash, c, 32*sizeof(char));
-                hash[33]='\0';
+                hash[32]='\0';
                 hashLen=32;
               }
               else {
