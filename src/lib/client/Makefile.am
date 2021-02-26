@@ -6,8 +6,7 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
-
-INCLUDES = -I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
+AM_CPPFLAGS= -I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
 
 lib_LTLIBRARIES=libchipcard.la
 noinst_PROGRAMS=libtest

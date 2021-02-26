@@ -1,6 +1,6 @@
 bin_PROGRAMS=kvkcard
 
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) 
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
 
 EXTRA_DIST=README read.c rdvd.c rdpd.c psvd.c
 

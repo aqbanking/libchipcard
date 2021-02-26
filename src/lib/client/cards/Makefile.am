@@ -4,13 +4,11 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../ -I../client -I$(srcdir)/../ -I$(srcdir)/../client
 
 typefiles=hidata.xml
 
-
 EXTRA_DIST=card.xml $(typefiles)
-
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../ -I../client -I$(srcdir)/../ -I$(srcdir)/../client
 
 noinst_LTLIBRARIES=libcards.la
 

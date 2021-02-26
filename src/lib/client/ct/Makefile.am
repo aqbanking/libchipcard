@@ -1,5 +1,4 @@
-
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I$(srcdir)/.. 
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I$(srcdir)/..
 
 DEFS += \
   -DBUILDING_CHIPCARD

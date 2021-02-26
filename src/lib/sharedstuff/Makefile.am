@@ -1,4 +1,4 @@
-INCLUDES=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I../.. -I../../.. -I$(top_builddir)
+AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I.. -I../.. -I../../.. -I$(top_builddir)
 
 typefiles=pininfo.xml
 
