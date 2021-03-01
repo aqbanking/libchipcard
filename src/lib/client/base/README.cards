@@ -1,1 +1,4 @@
 This folder contains the card XML files.
+
+The presence of this file on the target system is necessary for correct
+operation of libchipcard (see https://bugs.debian.org/983764).
