@@ -223,8 +223,7 @@ GWEN_PLUGIN *ct_chiptanusb_factory(GWEN_PLUGIN_MANAGER *pm,
 {
   GWEN_PLUGIN *pl;
 
-  pl = GWEN_Plugin_new(pm, modName, fileName);
-
+  pl=GWEN_Crypt_Token_Plugin_new(pm, GWEN_Crypt_Token_Device_Card, modName, fileName);
   if (pl==NULL) {
     DBG_ERROR(LC_LOGDOMAIN, "No plugin created");
     return NULL;
