@@ -12,7 +12,7 @@
 # include <config.h>
 #endif
 
-#include "chiptanusb_p.h"
+#include "chiptanusb.h"
 
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
@@ -28,30 +28,40 @@
 #include <chipcard/ct/ct_card.h>
 
 #define PROGRAM_VERSION "1.0"
+
+
+
+static void _extractReceivedGeneratorFields(GWEN_BUFFER *mbuf, int *ATC, char *TAN_String, uint32_t maxTanLen,
+                                            char *pCardnummber, char *pEndDate, char *pIssueDate);
+
+
+
+
 /*
 	Building the apdu string
 	Die Eingabedaten werden wie folgt aufgebaut:
-	Länge             Inhalt                          Bedeutung
-		4              ’00 00 00 00‘          Activation ID (fix)
-		1              ‘01‘                   Processing Option Flag (POF) (fix)
-		1              ‘00‘                   Controllbyte (fix)
-		2              ‘XX XX‘                Länge m des Datenblocks (MSB first, dez 35 = 00 23)
-		m              ‘XX … XX‘              Datenblock der Länge m (Flickerdaten)
+	Laenge             Inhalt        Bedeutung
+        4                  00 00 00 00   Activation ID (fix)
+        1                  01            Processing Option Flag (POF) (fix)
+        1                  00            Controllbyte (fix)
+        2                  XX XX         Laenge m des Datenblocks (MSB first, dez 35 = 00 23)
+        m                  XX  XX        Datenblock der Laenge m (Flickerdaten)
 
 	diese sind als Daten Teil in ein Secoder-Kommando Nr 6 einzutragen also
 		20 76 00 00 00 <Lc> <Lc> <Eingabedaten> 00(Le) 00(Le)
 	Oder Boxing
 		FF 91 06 00 00 <Lc> <Lc> <Eingabedaten> 00(Le) 00(Le)
 
-Quitung für die TanGenerierung
- transmitted:
-  FF 91 07 00 00 00 06 00 00 00 00 00 00 00 00
- received:
-  00 01 91 00
-Zurückmeldung:
-sw1 = 0x91
-sw2 = 0;
+        Quittung fuer die TanGenerierung
+         transmitted:
+          FF 91 07 00 00 00 06 00 00 00 00 00 00 00 00
+         received:
+          00 01 91 00
+        Zurueckmeldung:
+        sw1 = 0x91
+        sw2 = 0;
 */
+
 
 /* Extract card Info
    Parameter:
@@ -66,7 +76,7 @@ sw2 = 0;
               type of field must be char[7]
 */
 
-void ExtractReceivedGeneratorFields(GWEN_BUFFER *mbuf, int *ATC, char *TAN_String, uint32_t maxTanLen,
+void _extractReceivedGeneratorFields(GWEN_BUFFER *mbuf, int *ATC, char *TAN_String, uint32_t maxTanLen,
                                     char *pCardnummber, char *pEndDate, char *pIssueDate)
 {
 
@@ -160,63 +170,62 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
 
   cl = LC_Client_new("PinTanKarte", PROGRAM_VERSION);//  client.c
   if (LC_Client_Init(cl)) {
-    DBG_ERROR(0, "ERROR: Could not init libchipcard");
+    DBG_ERROR(LC_LOGDOMAIN, "Could not init libchipcard");
     LC_Client_free(cl);
     return GWEN_ERROR_NOT_CONNECTED;
   }
 
-
-  DBG_INFO(0, "Connecting to server.");
+  DBG_INFO(LC_LOGDOMAIN, "Connecting to server.");
   res = LC_Client_Start(cl);
   if (res != LC_Client_ResultOk) {
     return GWEN_ERROR_NOT_CONNECTED;
   }
-  DBG_INFO(0, "Connected.");
+  DBG_INFO(LC_LOGDOMAIN, "Connected.");
 
-  DBG_INFO(0, "Waiting for card...");
+  DBG_INFO(LC_LOGDOMAIN, "Waiting for card...");
   res = LC_Client_GetNextCard(cl, &card, 20);
   if (res != LC_Client_ResultOk) {
-    DBG_ERROR(0, "ERROR: GetNextCard.");
+    DBG_ERROR(LC_LOGDOMAIN, "GetNextCard.");
     return GWEN_ERROR_REMOVED;
   }
 
-  DBG_INFO(0, "Found a card.");
+  DBG_INFO(LC_LOGDOMAIN, "Found a card.");
   if (LC_ChiptanusbCard_ExtendCard(card)) {
-    DBG_ERROR(0, "ERROR: Could not extend card as CipTanUsb card.");
+    DBG_ERROR(LC_LOGDOMAIN, "Could not extend card as CipTanUsb card.");
     return GWEN_ERROR_INVALID;
   }
 
-  DBG_INFO(0, "Opening card.");
+  DBG_INFO(LC_LOGDOMAIN, "Opening card.");
   res = LC_Card_Open(card);
   if (res != LC_Client_ResultOk) {
-    DBG_ERROR(0, "ERROR: Error executing command CardOpen (%d).\n", res);
+    DBG_ERROR(LC_LOGDOMAIN, "Error executing command CardOpen (%d).\n", res);
     return GWEN_ERROR_OPEN;
   }
 
-  DBG_INFO(0, "Card is a ChipTanUsb card as expected.");
+  DBG_INFO(LC_LOGDOMAIN, "Card is a ChipTanUsb card as expected.");
 
   mbuf = GWEN_Buffer_new(0, 256, 0, 1);
   res = LC_ChiptanusbCard_GenerateTan(card, HHDCommand, fullHHD_Len, mbuf);
   if (res != LC_Client_ResultOk) {
-    DBG_ERROR(0, "ERROR: Error Reading Tan from card.\n");
+    DBG_ERROR(LC_LOGDOMAIN, "Error Reading Tan from card.\n");
     GWEN_Buffer_free(mbuf);
     return GWEN_ERROR_READ;
   }
 
-  ExtractReceivedGeneratorFields(mbuf, pATC, pGeneratedTAN, maxTanLen, pCardnummber, pEndDate, pIssueDate);
+  _extractReceivedGeneratorFields(mbuf, pATC, pGeneratedTAN, maxTanLen, pCardnummber, pEndDate, pIssueDate);
   GWEN_Buffer_free(mbuf);
-
 
   LC_Card_Close(card);
   LC_Client_ReleaseCard(cl, card);
   LC_Card_free(card);
   LC_Client_free(cl);
 
-
   return (0);
 }
 
 
+
+CHIPCARD_EXPORT
 GWEN_PLUGIN *ct_chiptanusb_factory(GWEN_PLUGIN_MANAGER *pm,
                                    const char *modName,
                                    const char *fileName)

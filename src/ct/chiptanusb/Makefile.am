@@ -9,8 +9,8 @@ libct_chiptanusb_la_SOURCES=\
 
 
 crypttokenplugin_LTLIBRARIES=chiptanusb.la
-noinst_HEADERS=\
-  chiptanusb_p.h
+noinst_HEADERS= \
+  chiptanusb.h
 
 chiptanusb_la_SOURCES=dummy.c
 
