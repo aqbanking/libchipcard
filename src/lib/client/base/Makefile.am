@@ -25,6 +25,7 @@ iheader_HEADERS=\
 
 noinst_HEADERS=\
  client_l.h client_p.h \
+ client_xml.h \
  card_p.h \
  tlv_p.h
 
