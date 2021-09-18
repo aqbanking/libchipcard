@@ -31,6 +31,8 @@ static int _parseAnswer(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GW
 
 
 
+
+
 int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 {
   GWEN_XMLNODE *cardNode;
@@ -148,6 +150,177 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 
   return (types!=0)?0:1;
 }
+
+
+
+LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
+                                     LC_CARD *card,
+                                     const char *command,
+                                     GWEN_DB_NODE *cmdData,
+                                     GWEN_BUFFER *buf)
+{
+  GWEN_XMLNODE *node;
+  LC_CLIENT_RESULT res;
+
+  DBG_INFO(LC_LOGDOMAIN, "Building APDU for command \"%s\"", command);
+  /* lookup card command */
+  DBG_INFO(LC_LOGDOMAIN, "- looking up command");
+  node=LC_Card_FindCommand(card, command);
+  if (!node) {
+    DBG_INFO(LC_LOGDOMAIN, "Command \"%s\" not found",
+             command);
+    return LC_Client_ResultNotFound;
+  }
+
+  /* build APDU */
+  DBG_INFO(LC_LOGDOMAIN, "- building APDU");
+  res=_internalBuildApdu(cl, node, cmdData, buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN,
+             "Error building APDU for command \"%s\" (%d)",
+             command, res);
+    return res;
+  }
+
+  return LC_Client_ResultOk;
+}
+
+
+
+LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
+                                       LC_CARD *card,
+                                       const char *commandName,
+                                       GWEN_DB_NODE *cmdData,
+                                       GWEN_DB_NODE *rspData)
+{
+  GWEN_XMLNODE *node;
+  GWEN_BUFFER *buf;
+  GWEN_BUFFER *rbuf;
+  LC_CLIENT_RESULT res;
+  LC_CLIENT_CMDTARGET t;
+  const char *s;
+
+  DBG_INFO(LC_LOGDOMAIN, "Executing command \"%s\"", commandName);
+
+  /* lookup card command */
+  DBG_INFO(LC_LOGDOMAIN, "- looking up command");
+  node=LC_Card_FindCommand(card, commandName);
+  if (!node) {
+    DBG_INFO(LC_LOGDOMAIN, "Command \"%s\" not found",
+             commandName);
+    return LC_Client_ResultNotFound;
+  }
+
+  /* determine target of the command */
+  DBG_INFO(LC_LOGDOMAIN, "- determining target");
+  t=LC_Client_CmdTargetCard;
+  s=GWEN_XMLNode_GetProperty(node, "target", "card");
+  if (s) {
+    if (strcasecmp(s, "card")==0)
+      t=LC_Client_CmdTargetCard;
+    else if (strcasecmp(s, "reader")==0)
+      t=LC_Client_CmdTargetReader;
+    else {
+      DBG_ERROR(LC_LOGDOMAIN,
+                "Invalid target given in command \"%s\": %s",
+                commandName, s);
+      return LC_Client_ResultCfgError;
+    }
+  }
+
+  /* build APDU */
+  DBG_INFO(LC_LOGDOMAIN, "- building APDU");
+  buf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=_internalBuildApdu(cl, node, cmdData, buf);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN,
+             "Error building APDU for command \"%s\" (%d)",
+             commandName, res);
+    GWEN_Buffer_free(buf);
+    return res;
+  }
+
+  /* send APDU */
+  DBG_INFO(LC_LOGDOMAIN, "- sending APDU, waiting for answer");
+  rbuf=GWEN_Buffer_new(0, 256, 0, 1);
+  res=LC_Card_ExecApdu(card,
+                       GWEN_Buffer_GetStart(buf),
+                       GWEN_Buffer_GetUsedBytes(buf),
+                       rbuf,
+                       t);
+  if (res!=LC_Client_ResultOk) {
+    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
+    GWEN_Buffer_free(rbuf);
+    GWEN_Buffer_free(buf);
+    return res;
+  }
+  GWEN_Buffer_free(buf);
+
+  /* parse answer */
+  DBG_INFO(LC_LOGDOMAIN, "- parsing response");
+  if (_parseAnswer(cl, node, rbuf, rspData)) {
+    DBG_INFO(LC_LOGDOMAIN, "Error parsing answer");
+    GWEN_Buffer_free(rbuf);
+    return LC_Client_ResultCmdError;
+  }
+
+  /* store response data */
+  if (GWEN_Buffer_GetUsedBytes(rbuf)) {
+    GWEN_DB_SetBinValue(rspData, GWEN_DB_FLAGS_OVERWRITE_VARS,
+                        "data",
+                        GWEN_Buffer_GetStart(rbuf),
+                        GWEN_Buffer_GetUsedBytes(rbuf));
+  }
+  GWEN_Buffer_free(rbuf);
+
+  /* check for error result of command */
+  s=GWEN_DB_GetCharValue(rspData, "result/type", 0, "error");
+  if (strcasecmp(s, "success")!=0) {
+    DBG_INFO(LC_LOGDOMAIN, "Command execution error flagged by card (%s)",
+             s?s:"(none)");
+    return LC_Client_ResultCmdError;
+  }
+
+  /* done */
+  return LC_Client_ResultOk;
+}
+
+
+
+GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl, LC_CARD *card, const char *commandName)
+{
+  GWEN_XMLNODE *n;
+
+  n=LC_Card_GetCardNode(card);
+  if (n) {
+    const char *cardName;
+    GWEN_STRINGLIST *sl;
+
+    cardName=GWEN_XMLNode_GetProperty(n, "name", 0);
+    assert(cardName);
+    DBG_INFO(LC_LOGDOMAIN, "Preselected card type \"%s\"", cardName);
+
+    sl=GWEN_StringList_new();
+    n=_findCommandInCardFamily(cl->cardNodes,
+                               sl,
+                               cardName,
+                               commandName,
+                               LC_Card_GetDriverType(card),
+                               LC_Card_GetReaderType(card));
+    GWEN_StringList_free(sl);
+    if (n)
+      return n;
+    return 0;
+  }
+  return _findCommandInCardTypes(cl->cardNodes,
+                                 LC_Card_GetCardTypes(card),
+                                 commandName,
+                                 LC_Card_GetDriverType(card),
+                                 LC_Card_GetReaderType(card));
+}
+
+
+
 
 
 
@@ -322,40 +495,6 @@ GWEN_XMLNODE *_findCommandInCardTypes(GWEN_XMLNODE *cardNodes,
   } /* while */
 
   return node;
-}
-
-
-
-GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl, LC_CARD *card, const char *commandName)
-{
-  GWEN_XMLNODE *n;
-
-  n=LC_Card_GetCardNode(card);
-  if (n) {
-    const char *cardName;
-    GWEN_STRINGLIST *sl;
-
-    cardName=GWEN_XMLNode_GetProperty(n, "name", 0);
-    assert(cardName);
-    DBG_INFO(LC_LOGDOMAIN, "Preselected card type \"%s\"", cardName);
-
-    sl=GWEN_StringList_new();
-    n=_findCommandInCardFamily(cl->cardNodes,
-                               sl,
-                               cardName,
-                               commandName,
-                               LC_Card_GetDriverType(card),
-                               LC_Card_GetReaderType(card));
-    GWEN_StringList_free(sl);
-    if (n)
-      return n;
-    return 0;
-  }
-  return _findCommandInCardTypes(cl->cardNodes,
-                                 LC_Card_GetCardTypes(card),
-                                 commandName,
-                                 LC_Card_GetDriverType(card),
-                                 LC_Card_GetReaderType(card));
 }
 
 
@@ -827,146 +966,6 @@ int _parseAnswer(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_N
 
   return 0;
 }
-
-
-
-LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
-                                     LC_CARD *card,
-                                     const char *command,
-                                     GWEN_DB_NODE *cmdData,
-                                     GWEN_BUFFER *buf)
-{
-  GWEN_XMLNODE *node;
-  LC_CLIENT_RESULT res;
-
-  DBG_INFO(LC_LOGDOMAIN, "Building APDU for command \"%s\"", command);
-  /* lookup card command */
-  DBG_INFO(LC_LOGDOMAIN, "- looking up command");
-  node=LC_Card_FindCommand(card, command);
-  if (!node) {
-    DBG_INFO(LC_LOGDOMAIN, "Command \"%s\" not found",
-             command);
-    return LC_Client_ResultNotFound;
-  }
-
-  /* build APDU */
-  DBG_INFO(LC_LOGDOMAIN, "- building APDU");
-  res=_internalBuildApdu(cl, node, cmdData, buf);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN,
-             "Error building APDU for command \"%s\" (%d)",
-             command, res);
-    return res;
-  }
-
-  return LC_Client_ResultOk;
-}
-
-
-
-LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
-                                       LC_CARD *card,
-                                       const char *commandName,
-                                       GWEN_DB_NODE *cmdData,
-                                       GWEN_DB_NODE *rspData)
-{
-  GWEN_XMLNODE *node;
-  GWEN_BUFFER *buf;
-  GWEN_BUFFER *rbuf;
-  LC_CLIENT_RESULT res;
-  LC_CLIENT_CMDTARGET t;
-  const char *s;
-
-  DBG_INFO(LC_LOGDOMAIN, "Executing command \"%s\"", commandName);
-
-  /* lookup card command */
-  DBG_INFO(LC_LOGDOMAIN, "- looking up command");
-  node=LC_Card_FindCommand(card, commandName);
-  if (!node) {
-    DBG_INFO(LC_LOGDOMAIN, "Command \"%s\" not found",
-             commandName);
-    return LC_Client_ResultNotFound;
-  }
-
-  /* determine target of the command */
-  DBG_INFO(LC_LOGDOMAIN, "- determining target");
-  t=LC_Client_CmdTargetCard;
-  s=GWEN_XMLNode_GetProperty(node, "target", "card");
-  if (s) {
-    if (strcasecmp(s, "card")==0)
-      t=LC_Client_CmdTargetCard;
-    else if (strcasecmp(s, "reader")==0)
-      t=LC_Client_CmdTargetReader;
-    else {
-      DBG_ERROR(LC_LOGDOMAIN,
-                "Invalid target given in command \"%s\": %s",
-                commandName, s);
-      return LC_Client_ResultCfgError;
-    }
-  }
-
-  /* build APDU */
-  DBG_INFO(LC_LOGDOMAIN, "- building APDU");
-  buf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=_internalBuildApdu(cl, node, cmdData, buf);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN,
-             "Error building APDU for command \"%s\" (%d)",
-             commandName, res);
-    GWEN_Buffer_free(buf);
-    return res;
-  }
-
-  /* send APDU */
-  DBG_INFO(LC_LOGDOMAIN, "- sending APDU, waiting for answer");
-  rbuf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_Card_ExecApdu(card,
-                       GWEN_Buffer_GetStart(buf),
-                       GWEN_Buffer_GetUsedBytes(buf),
-                       rbuf,
-                       t);
-  if (res!=LC_Client_ResultOk) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    GWEN_Buffer_free(rbuf);
-    GWEN_Buffer_free(buf);
-    return res;
-  }
-  GWEN_Buffer_free(buf);
-
-  /* parse answer */
-  DBG_INFO(LC_LOGDOMAIN, "- parsing response");
-  if (_parseAnswer(cl, node, rbuf, rspData)) {
-    DBG_INFO(LC_LOGDOMAIN, "Error parsing answer");
-    GWEN_Buffer_free(rbuf);
-    return LC_Client_ResultCmdError;
-  }
-
-  /* store response data */
-  if (GWEN_Buffer_GetUsedBytes(rbuf)) {
-    GWEN_DB_SetBinValue(rspData, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "data",
-                        GWEN_Buffer_GetStart(rbuf),
-                        GWEN_Buffer_GetUsedBytes(rbuf));
-  }
-  GWEN_Buffer_free(rbuf);
-
-  /* check for error result of command */
-  s=GWEN_DB_GetCharValue(rspData, "result/type", 0, "error");
-  if (strcasecmp(s, "success")!=0) {
-    DBG_INFO(LC_LOGDOMAIN, "Command execution error flagged by card (%s)",
-             s?s:"(none)");
-    return LC_Client_ResultCmdError;
-  }
-
-  /* done */
-  return LC_Client_ResultOk;
-}
-
-
-
-
-
-
 
 
 
