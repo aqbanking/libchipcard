@@ -45,7 +45,7 @@ struct LC_CLIENT {
   SCARD_READERSTATE readerStates[MAX_READERS];
   int readerCount;
   int lastUsedReader;
-  LPSTR readerList;
+  LPSTR readerList; /* multistring containing result of SCardListReaders */
 };
 
 
