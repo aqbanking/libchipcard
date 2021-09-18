@@ -63,15 +63,6 @@ static int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
                                   const char *tPlural,
                                   const char *tSingular);
 
-static GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
-                                                      const char *commandName,
-                                                      const char *driverType,
-                                                      const char *readerType);
-static GWEN_XMLNODE *
-LC_Client_FindCommandInCardNode(GWEN_XMLNODE *node,
-                                const char *commandName,
-                                const char *driverType,
-                                const char *readerType);
 static GWEN_XMLNODE *
 LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
                                   GWEN_STRINGLIST *handled,

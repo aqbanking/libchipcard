@@ -1,5 +1,20 @@
 
 
+
+static GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
+                                                      const char *commandName,
+                                                      const char *driverType,
+                                                      const char *readerType);
+
+static GWEN_XMLNODE *_findCommandInCardNode(GWEN_XMLNODE *node,
+                                            const char *commandName,
+                                            const char *driverType,
+                                            const char *readerType);
+
+
+
+
+
 int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 {
   GWEN_XMLNODE *cardNode;
@@ -120,7 +135,7 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 
 
 
-GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
+GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
                                                const char *commandName,
                                                const char *driverType,
                                                const char *readerType)
@@ -198,21 +213,18 @@ GWEN_XMLNODE *LC_Client__FindCommandInCardNode(GWEN_XMLNODE *node,
 
 
 
-GWEN_XMLNODE *LC_Client_FindCommandInCardNode(GWEN_XMLNODE *node,
+GWEN_XMLNODE *_findCommandInCardNode(GWEN_XMLNODE *node,
                                               const char *commandName,
                                               const char *driverType,
                                               const char *readerType)
 {
   GWEN_XMLNODE *n;
 
-  n=LC_Client__FindCommandInCardNode(node, commandName,
-                                     driverType, readerType);
+  n=_internalFindCommandInCardNode(node, commandName, driverType, readerType);
   if (n==0)
-    n=LC_Client__FindCommandInCardNode(node, commandName,
-                                       driverType, 0);
+    n=_internalFindCommandInCardNode(node, commandName, driverType, 0);
   if (n==0)
-    n=LC_Client__FindCommandInCardNode(node, commandName,
-                                       0, 0);
+    n=_internalFindCommandInCardNode(node, commandName, 0, 0);
 
   return n;
 }
@@ -242,8 +254,7 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
                   driverType?driverType:"(none)",
                   readerType?readerType:"(none)");
       if (!GWEN_StringList_HasString(handled, cardType)) {
-        n=LC_Client_FindCommandInCardNode(node, commandName,
-                                          driverType, readerType);
+        n=_findCommandInCardNode(node, commandName, driverType, readerType);
         GWEN_StringList_AppendString(handled, cardType, 0, 1);
         if (n) {
           return n;
