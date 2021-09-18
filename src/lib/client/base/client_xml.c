@@ -1,3 +1,11 @@
+/***************************************************************************
+    begin       : Mon Mar 01 2004
+    copyright   : (C) 2021 by Martin Preuss
+    email       : martin@libchipcard.de
+
+ ***************************************************************************
+ *          Please see toplevel file COPYING for license details           *
+ ***************************************************************************/
 
 
 static void _sampleXmlFiles(const char *where, GWEN_STRINGLIST *sl);
