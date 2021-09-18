@@ -5,13 +5,29 @@ static GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
                                                       const char *commandName,
                                                       const char *driverType,
                                                       const char *readerType);
-
 static GWEN_XMLNODE *_findCommandInCardNode(GWEN_XMLNODE *node,
                                             const char *commandName,
                                             const char *driverType,
                                             const char *readerType);
-
-
+static GWEN_XMLNODE *_findCommandInCardFamily(GWEN_XMLNODE *cardNodes,
+                                              GWEN_STRINGLIST *handled,
+                                              const char *cardType,
+                                              const char *commandName,
+                                              const char *driverType,
+                                              const char *readerType);
+static GWEN_XMLNODE * _findCommandInCardTypes(GWEN_XMLNODE *cardNodes,
+                                              const GWEN_STRINGLIST *cardTypes,
+                                              const char *commandName,
+                                              const char *driverType,
+                                              const char *readerType);
+static GWEN_XMLNODE *_findResultInNode(GWEN_XMLNODE *node, int sw1, int sw2);
+static GWEN_XMLNODE *_findResult(LC_CLIENT *cl, GWEN_XMLNODE *cmdNode, int sw1, int sw2);
+static GWEN_XMLNODE *_findResponseInNode(GWEN_XMLNODE *cmd, const char *typ);
+static GWEN_XMLNODE *_findResponse(LC_CLIENT *cl, GWEN_XMLNODE *cmdNode, const char *typ);
+static LC_CLIENT_RESULT _internalBuildApdu(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_DB_NODE *cmdData, GWEN_BUFFER *gbuf);
+static int _parseResult(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData);
+static int _parseResponse(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData);
+static int _parseAnswer(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData);
 
 
 
@@ -136,9 +152,9 @@ int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 
 
 GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
-                                               const char *commandName,
-                                               const char *driverType,
-                                               const char *readerType)
+                                             const char *commandName,
+                                             const char *driverType,
+                                             const char *readerType)
 {
   GWEN_XMLNODE *cmds;
   GWEN_XMLNODE *n;
@@ -149,9 +165,7 @@ GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
            driverType?driverType:"(none)",
            readerType?readerType:"(none)");
 
-  cmds=GWEN_XMLNode_FindNode(node,
-                             GWEN_XMLNodeTypeTag,
-                             "commands");
+  cmds=GWEN_XMLNode_FindNode(node, GWEN_XMLNodeTypeTag, "commands");
   if (!cmds) {
     DBG_INFO(LC_LOGDOMAIN, "No commands in card data");
     return 0;
@@ -159,19 +173,12 @@ GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
 
   /* first try exact match */
   if (driverType && readerType) {
-    DBG_DEBUG(LC_LOGDOMAIN, "Searching for %s/%s/%s",
-              driverType, readerType, commandName);
-    n=GWEN_XMLNode_FindFirstTag(cmds,
-                                "command",
-                                "name",
-                                commandName);
+    DBG_DEBUG(LC_LOGDOMAIN, "Searching for %s/%s/%s", driverType, readerType, commandName);
+    n=GWEN_XMLNode_FindFirstTag(cmds, "command", "name", commandName);
     while (n) {
-      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
-                     driverType)==0 &&
-          strcasecmp(GWEN_XMLNode_GetProperty(n, "reader", ""),
-                     readerType)==0) {
-        DBG_DEBUG(LC_LOGDOMAIN,
-                  "Found command in %s/%s", driverType, readerType);
+      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""), driverType)==0 &&
+          strcasecmp(GWEN_XMLNode_GetProperty(n, "reader", ""), readerType)==0) {
+        DBG_DEBUG(LC_LOGDOMAIN, "Found command in %s/%s", driverType, readerType);
         return n;
       }
       n=GWEN_XMLNode_FindNextTag(n, "command", "name", commandName);
@@ -182,13 +189,9 @@ GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
     /* try match of driver only */
     DBG_DEBUG(LC_LOGDOMAIN, "Searching for %s/%s",
               driverType, commandName);
-    n=GWEN_XMLNode_FindFirstTag(cmds,
-                                "command",
-                                "name",
-                                commandName);
+    n=GWEN_XMLNode_FindFirstTag(cmds, "command", "name", commandName);
     while (n) {
-      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""),
-                     driverType)==0) {
+      if (strcasecmp(GWEN_XMLNode_GetProperty(n, "driver", ""), driverType)==0) {
         DBG_DEBUG(LC_LOGDOMAIN, "Found command in %s", driverType);
         return n;
       }
@@ -198,10 +201,7 @@ GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
 
   /* try match of command name only */
   DBG_DEBUG(LC_LOGDOMAIN, "Searching for %s", commandName);
-  n=GWEN_XMLNode_FindFirstTag(cmds,
-                              "command",
-                              "name",
-                              commandName);
+  n=GWEN_XMLNode_FindFirstTag(cmds, "command", "name", commandName);
   while (n) {
     if (!GWEN_XMLNode_GetProperty(n, "driver", 0))
       return n;
@@ -214,9 +214,9 @@ GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
 
 
 GWEN_XMLNODE *_findCommandInCardNode(GWEN_XMLNODE *node,
-                                              const char *commandName,
-                                              const char *driverType,
-                                              const char *readerType)
+                                     const char *commandName,
+                                     const char *driverType,
+                                     const char *readerType)
 {
   GWEN_XMLNODE *n;
 
@@ -231,12 +231,12 @@ GWEN_XMLNODE *_findCommandInCardNode(GWEN_XMLNODE *node,
 
 
 
-GWEN_XMLNODE *LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
-                                                GWEN_STRINGLIST *handled,
-                                                const char *cardType,
-                                                const char *commandName,
-                                                const char *driverType,
-                                                const char *readerType)
+GWEN_XMLNODE *_findCommandInCardFamily(GWEN_XMLNODE *cardNodes,
+                                       GWEN_STRINGLIST *handled,
+                                       const char *cardType,
+                                       const char *commandName,
+                                       const char *driverType,
+                                       const char *readerType)
 {
   GWEN_XMLNODE *node;
 
@@ -295,11 +295,11 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
 
 
 
-GWEN_XMLNODE *LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
-                                               const GWEN_STRINGLIST *cardTypes,
-                                               const char *commandName,
-                                               const char *driverType,
-                                               const char *readerType)
+GWEN_XMLNODE *_findCommandInCardTypes(GWEN_XMLNODE *cardNodes,
+                                      const GWEN_STRINGLIST *cardTypes,
+                                      const char *commandName,
+                                      const char *driverType,
+                                      const char *readerType)
 {
   GWEN_STRINGLIST *handled;
   GWEN_STRINGLISTENTRY *se;
@@ -315,12 +315,7 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
 
     DBG_INFO(LC_LOGDOMAIN,
              "Searching in card type \"%s\"", s);
-    node=LC_Client_FindCommandInCardFamily(cardNodes,
-                                           handled,
-                                           s,
-                                           commandName,
-                                           driverType,
-                                           readerType);
+    node=_findCommandInCardFamily(cardNodes, handled, s, commandName, driverType, readerType);
     if (node)
       break;
     se=GWEN_StringListEntry_Next(se);
@@ -331,9 +326,7 @@ GWEN_XMLNODE *LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
 
 
 
-GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl,
-                                        LC_CARD *card,
-                                        const char *commandName)
+GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl, LC_CARD *card, const char *commandName)
 {
   GWEN_XMLNODE *n;
 
@@ -347,28 +340,27 @@ GWEN_XMLNODE *LC_Client_FindCardCommand(LC_CLIENT *cl,
     DBG_INFO(LC_LOGDOMAIN, "Preselected card type \"%s\"", cardName);
 
     sl=GWEN_StringList_new();
-    n=LC_Client_FindCommandInCardFamily(cl->cardNodes,
-                                        sl,
-                                        cardName,
-                                        commandName,
-                                        LC_Card_GetDriverType(card),
-                                        LC_Card_GetReaderType(card));
+    n=_findCommandInCardFamily(cl->cardNodes,
+                               sl,
+                               cardName,
+                               commandName,
+                               LC_Card_GetDriverType(card),
+                               LC_Card_GetReaderType(card));
     GWEN_StringList_free(sl);
     if (n)
       return n;
     return 0;
   }
-  return LC_Client_FindCommandInCardTypes(cl->cardNodes,
-                                          LC_Card_GetCardTypes(card),
-                                          commandName,
-                                          LC_Card_GetDriverType(card),
-                                          LC_Card_GetReaderType(card));
+  return _findCommandInCardTypes(cl->cardNodes,
+                                 LC_Card_GetCardTypes(card),
+                                 commandName,
+                                 LC_Card_GetDriverType(card),
+                                 LC_Card_GetReaderType(card));
 }
 
 
 
-GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
-                                         int sw1, int sw2)
+GWEN_XMLNODE *_findResultInNode(GWEN_XMLNODE *node, int sw1, int sw2)
 {
   GWEN_XMLNODE *rnode;
   GWEN_XMLNODE *n;
@@ -425,18 +417,16 @@ GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
 
 
 
-GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
-                                   GWEN_XMLNODE *cmdNode,
-                                   int sw1, int sw2)
+GWEN_XMLNODE *_findResult(LC_CLIENT *cl, GWEN_XMLNODE *cmdNode, int sw1, int sw2)
 {
   GWEN_XMLNODE *tmpNode;
   GWEN_XMLNODE *rnode;
 
   /* first find result in command node */
-  rnode=LC_Client_FindResultInNode(cmdNode, sw1, sw2);
+  rnode=_findResultInNode(cmdNode, sw1, sw2);
   if (rnode)
     return rnode;
-  rnode=LC_Client_FindResultInNode(cmdNode, -1, -1);
+  rnode=_findResultInNode(cmdNode, -1, -1);
   if (rnode)
     return rnode;
 
@@ -444,10 +434,10 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
   tmpNode=GWEN_XMLNode_GetParent(cmdNode);
   if (!tmpNode)
     return 0;
-  rnode=LC_Client_FindResultInNode(tmpNode, sw1, sw2);
+  rnode=_findResultInNode(tmpNode, sw1, sw2);
   if (rnode)
     return rnode;
-  rnode=LC_Client_FindResultInNode(tmpNode, -1, -1);
+  rnode=_findResultInNode(tmpNode, -1, -1);
   if (rnode)
     return rnode;
 
@@ -455,10 +445,10 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
   tmpNode=GWEN_XMLNode_GetParent(tmpNode);
   if (!tmpNode)
     return 0;
-  rnode=LC_Client_FindResultInNode(tmpNode, sw1, sw2);
+  rnode=_findResultInNode(tmpNode, sw1, sw2);
   if (rnode)
     return rnode;
-  rnode=LC_Client_FindResultInNode(tmpNode, -1, -1);
+  rnode=_findResultInNode(tmpNode, -1, -1);
   if (rnode)
     return rnode;
 
@@ -477,11 +467,11 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
     if (!tmpNode)
       break;
 
-    rnode=LC_Client_FindResultInNode(tmpNode, sw1, sw2);
+    rnode=_findResultInNode(tmpNode, sw1, sw2);
     if (rnode) {
       break;
     }
-    rnode=LC_Client_FindResultInNode(tmpNode, -1, -1);
+    rnode=_findResultInNode(tmpNode, -1, -1);
     if (rnode) {
       break;
     }
@@ -492,8 +482,7 @@ GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
 
 
 
-GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
-                                           const char *typ)
+GWEN_XMLNODE *_findResponseInNode(GWEN_XMLNODE *cmd, const char *typ)
 {
   GWEN_XMLNODE *rnode;
   GWEN_XMLNODE *n;
@@ -533,15 +522,13 @@ GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
 
 
 
-GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
-                                     GWEN_XMLNODE *cmdNode,
-                                     const char *typ)
+GWEN_XMLNODE *_findResponse(LC_CLIENT *cl, GWEN_XMLNODE *cmdNode, const char *typ)
 {
   GWEN_XMLNODE *tmpNode;
   GWEN_XMLNODE *rnode;
 
   /* first find response in command node */
-  rnode=LC_Client_FindResponseInNode(cmdNode, typ);
+  rnode=_findResponseInNode(cmdNode, typ);
   if (rnode)
     return rnode;
 
@@ -549,7 +536,7 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
   tmpNode=GWEN_XMLNode_GetParent(cmdNode);
   if (!tmpNode)
     return 0;
-  rnode=LC_Client_FindResponseInNode(tmpNode, typ);
+  rnode=_findResponseInNode(tmpNode, typ);
   if (rnode)
     return rnode;
 
@@ -557,7 +544,7 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
   tmpNode=GWEN_XMLNode_GetParent(tmpNode);
   if (!tmpNode)
     return 0;
-  rnode=LC_Client_FindResponseInNode(tmpNode, typ);
+  rnode=_findResponseInNode(tmpNode, typ);
   if (rnode)
     return rnode;
 
@@ -576,7 +563,7 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
     if (!tmpNode)
       break;
 
-    rnode=LC_Client_FindResponseInNode(tmpNode, typ);
+    rnode=_findResponseInNode(tmpNode, typ);
     if (rnode) {
       break;
     }
@@ -587,10 +574,7 @@ GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
 
 
 
-LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
-                                      GWEN_XMLNODE *node,
-                                      GWEN_DB_NODE *cmdData,
-                                      GWEN_BUFFER *gbuf)
+LC_CLIENT_RESULT _internalBuildApdu(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_DB_NODE *cmdData, GWEN_BUFFER *gbuf)
 {
   GWEN_XMLNODE *sendNode;
   GWEN_XMLNODE *dataNode;
@@ -697,10 +681,7 @@ LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
 
 
 
-int LC_Client_ParseResult(LC_CLIENT *cl,
-                          GWEN_XMLNODE *node,
-                          GWEN_BUFFER *gbuf,
-                          GWEN_DB_NODE *rspData)
+int _parseResult(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData)
 {
   unsigned int i;
   int sw1, sw2;
@@ -727,7 +708,7 @@ int LC_Client_ParseResult(LC_CLIENT *cl,
   GWEN_DB_SetIntValue(dbTmp, GWEN_DB_FLAGS_DEFAULT,
                       "sw2", sw2);
 
-  rnode=LC_Client_FindResult(cl, node, sw1, sw2);
+  rnode=_findResult(cl, node, sw1, sw2);
   if (rnode) {
     const char *t;
     GWEN_XMLNODE *tnode;
@@ -779,10 +760,7 @@ int LC_Client_ParseResult(LC_CLIENT *cl,
 
 
 
-int LC_Client_ParseResponse(LC_CLIENT *cl,
-                            GWEN_XMLNODE *node,
-                            GWEN_BUFFER *gbuf,
-                            GWEN_DB_NODE *rspData)
+int _parseResponse(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData)
 {
   GWEN_DB_NODE *dbTmp;
   GWEN_XMLNODE *rnode;
@@ -806,7 +784,7 @@ int LC_Client_ParseResponse(LC_CLIENT *cl,
     return -1;
   }
 
-  rnode=LC_Client_FindResponse(cl, node, p);
+  rnode=_findResponse(cl, node, p);
   if (!rnode) {
     DBG_DEBUG(0, "Did not find response");
     if (GWEN_Buffer_GetUsedBytes(gbuf)) {
@@ -833,19 +811,16 @@ int LC_Client_ParseResponse(LC_CLIENT *cl,
 
 
 
-int LC_Client_ParseAnswer(LC_CLIENT *cl,
-                          GWEN_XMLNODE *node,
-                          GWEN_BUFFER *gbuf,
-                          GWEN_DB_NODE *rspData)
+int _parseAnswer(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GWEN_DB_NODE *rspData)
 {
   assert(cl);
 
-  if (LC_Client_ParseResult(cl, node, gbuf, rspData)) {
+  if (_parseResult(cl, node, gbuf, rspData)) {
     DBG_INFO(0, "Error parsing result");
     return -1;
   }
 
-  if (LC_Client_ParseResponse(cl, node, gbuf, rspData)) {
+  if (_parseResponse(cl, node, gbuf, rspData)) {
     DBG_INFO(0, "Error parsing response");
     return -1;
   }
@@ -876,7 +851,7 @@ LC_CLIENT_RESULT LC_Client_BuildApdu(LC_CLIENT *cl,
 
   /* build APDU */
   DBG_INFO(LC_LOGDOMAIN, "- building APDU");
-  res=LC_Client__BuildApdu(cl, node, cmdData, buf);
+  res=_internalBuildApdu(cl, node, cmdData, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
              "Error building APDU for command \"%s\" (%d)",
@@ -933,7 +908,7 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
   /* build APDU */
   DBG_INFO(LC_LOGDOMAIN, "- building APDU");
   buf=GWEN_Buffer_new(0, 256, 0, 1);
-  res=LC_Client__BuildApdu(cl, node, cmdData, buf);
+  res=_internalBuildApdu(cl, node, cmdData, buf);
   if (res!=LC_Client_ResultOk) {
     DBG_INFO(LC_LOGDOMAIN,
              "Error building APDU for command \"%s\" (%d)",
@@ -960,7 +935,7 @@ LC_CLIENT_RESULT LC_Client_ExecCommand(LC_CLIENT *cl,
 
   /* parse answer */
   DBG_INFO(LC_LOGDOMAIN, "- parsing response");
-  if (LC_Client_ParseAnswer(cl, node, rbuf, rspData)) {
+  if (_parseAnswer(cl, node, rbuf, rspData)) {
     DBG_INFO(LC_LOGDOMAIN, "Error parsing answer");
     GWEN_Buffer_free(rbuf);
     return LC_Client_ResultCmdError;

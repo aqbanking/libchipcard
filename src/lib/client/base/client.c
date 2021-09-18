@@ -75,6 +75,15 @@ GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
 
 
 
+static int _getReaderAndDriverType(const LC_CLIENT *cl,
+                                   const char *readerName,
+                                   GWEN_BUFFER *driverType,
+                                   GWEN_BUFFER *readerType,
+                                   uint32_t *pReaderFlags);
+
+
+
+
 GWEN_DB_NODE *LC_Client_GetCommonConfig()
 {
   return lc_client__config;
@@ -538,7 +547,7 @@ LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
   DBG_INFO(LC_LOGDOMAIN, "Getting reader- and driver type");
   bDriverType=GWEN_Buffer_new(0, 32, 0, 1);
   bReaderType=GWEN_Buffer_new(0, 32, 0, 1);
-  res=LC_Client_GetReaderAndDriverType(cl,
+  res=_getReaderAndDriverType(cl,
                                        readerName,
                                        bDriverType,
                                        bReaderType,
@@ -740,11 +749,11 @@ GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl)
 
 
 
-int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
-                                     const char *readerName,
-                                     GWEN_BUFFER *driverType,
-                                     GWEN_BUFFER *readerType,
-                                     uint32_t *pReaderFlags)
+int _getReaderAndDriverType(const LC_CLIENT *cl,
+                            const char *readerName,
+                            GWEN_BUFFER *driverType,
+                            GWEN_BUFFER *readerType,
+                            uint32_t *pReaderFlags)
 {
   GWEN_DB_NODE *dbDriver;
 

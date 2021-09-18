@@ -51,69 +51,10 @@ struct LC_CLIENT {
 };
 
 
-static int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
-                                            const char *readerName,
-                                            GWEN_BUFFER *driverType,
-                                            GWEN_BUFFER *readerType,
-                                            uint32_t *pReaderFlags);
-
-
 static int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
                                   const char *basedir,
                                   const char *tPlural,
                                   const char *tSingular);
-
-static GWEN_XMLNODE *
-LC_Client_FindCommandInCardFamily(GWEN_XMLNODE *cardNodes,
-                                  GWEN_STRINGLIST *handled,
-                                  const char *cardType,
-                                  const char *commandName,
-                                  const char *driverType,
-                                  const char *readerType);
-static GWEN_XMLNODE *
-LC_Client_FindCommandInCardTypes(GWEN_XMLNODE *cardNodes,
-                                 const GWEN_STRINGLIST *cardTypes,
-                                 const char *commandName,
-                                 const char *driverType,
-                                 const char *readerType);
-
-
-static GWEN_XMLNODE *LC_Client_FindResultInNode(GWEN_XMLNODE *node,
-                                                int sw1, int sw2);
-
-static GWEN_XMLNODE *LC_Client_FindResult(LC_CLIENT *cl,
-                                          GWEN_XMLNODE *cmdNode,
-                                          int sw1, int sw2);
-
-
-static GWEN_XMLNODE *LC_Client_FindResponseInNode(GWEN_XMLNODE *cmd,
-                                                  const char *typ);
-
-static GWEN_XMLNODE *LC_Client_FindResponse(LC_CLIENT *cl,
-                                            GWEN_XMLNODE *cmdNode,
-                                            const char *typ);
-
-
-
-static LC_CLIENT_RESULT LC_Client__BuildApdu(LC_CLIENT *cl,
-                                             GWEN_XMLNODE *node,
-                                             GWEN_DB_NODE *cmdData,
-                                             GWEN_BUFFER *gbuf);
-
-static int LC_Client_ParseResult(LC_CLIENT *cl,
-                                 GWEN_XMLNODE *node,
-                                 GWEN_BUFFER *gbuf,
-                                 GWEN_DB_NODE *rspData);
-
-static int LC_Client_ParseResponse(LC_CLIENT *cl,
-                                   GWEN_XMLNODE *node,
-                                   GWEN_BUFFER *gbuf,
-                                   GWEN_DB_NODE *rspData);
-
-static int LC_Client_ParseAnswer(LC_CLIENT *cl,
-                                 GWEN_XMLNODE *node,
-                                 GWEN_BUFFER *gbuf,
-                                 GWEN_DB_NODE *rspData);
 
 
 
