@@ -11,6 +11,9 @@
 #define CHIPCARD_CLIENT_CLIENT_XML_H
 
 
+#include <chipcard/client.h>
+
+
 int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root, const char *basedir, const char *tPlural, const char *tSingular);
 GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName);
 GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName);

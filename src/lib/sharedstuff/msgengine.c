@@ -56,10 +56,8 @@ GWEN_MSGENGINE *LC_MsgEngine_new()
 
 void GWENHYWFAR_CB LC_MsgEngine_FreeData(void *bp, void *p)
 {
-  GWEN_MSGENGINE *e;
   LC_MSGENGINE *le;
 
-  e=(GWEN_MSGENGINE *)bp;
   le=(LC_MSGENGINE *)p;
 
   /* free all objects inside LC_MsgEngine */
@@ -1000,7 +998,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     const char *p;
     unsigned int tagType;
     unsigned int tagLength;
-    const char *tagData;
+    /*const char *tagData;*/
     unsigned int size;
     unsigned int pos;
     unsigned int j;
@@ -1094,7 +1092,7 @@ int LC_MsgEngine_BinTypeRead(GWEN_MSGENGINE *e,
     }
     pos++;
     tagLength=j;
-    tagData=p+pos;
+    /*tagData=p+pos;*/
     GWEN_Buffer_SetPos(vbuf, pos);
 
     DBG_VERBOUS(LC_LOGDOMAIN, "Tag: %02x (%d bytes)", tagType, tagLength);

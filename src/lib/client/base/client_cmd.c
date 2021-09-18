@@ -1,5 +1,32 @@
+/***************************************************************************
+    begin       : Mon Mar 01 2004
+    copyright   : (C) 2021 by Martin Preuss
+    email       : martin@libchipcard.de
+
+ ***************************************************************************
+ *          Please see toplevel file COPYING for license details           *
+ ***************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "client_cmd.h"
+#include "client_xml.h"
+#include "client_p.h"
+#include "card_l.h"
+
+#include <gwenhywfar/debug.h>
+#include <gwenhywfar/text.h>
+
+#include <ctype.h>
 
 
+
+/* ------------------------------------------------------------------------------------------------
+ * forward declarations
+ * ------------------------------------------------------------------------------------------------
+ */
 
 static GWEN_XMLNODE *_internalFindCommandInCardNode(GWEN_XMLNODE *node,
                                                       const char *commandName,
@@ -32,6 +59,10 @@ static int _parseAnswer(LC_CLIENT *cl, GWEN_XMLNODE *node, GWEN_BUFFER *gbuf, GW
 
 
 
+/* ------------------------------------------------------------------------------------------------
+ * code
+ * ------------------------------------------------------------------------------------------------
+ */
 
 int LC_Client_AddCardTypesByAtr(LC_CLIENT *cl, LC_CARD *card)
 {

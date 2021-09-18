@@ -11,8 +11,6 @@
 # include <config.h>
 #endif
 
-#define LC_CARD_EXTEND_CLIENT
-
 #include "client_p.h"
 #include "client_xml.h"
 #include "card_l.h"
@@ -20,24 +18,14 @@
 #include <chipcard/sharedstuff/driverinfo.h>
 
 #include <gwenhywfar/gwenhywfar.h>
-#include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/directory.h>
-#include <gwenhywfar/xml.h>
-#include <gwenhywfar/stringlist.h>
 #include <gwenhywfar/pathmanager.h>
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
 
-#include <stdlib.h>
 #include <assert.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
-#include <ctype.h>
 
 #include <winscard.h>
 
@@ -75,6 +63,11 @@ GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
 
 
 
+/* ------------------------------------------------------------------------------------------------
+ * forward declarations
+ * ------------------------------------------------------------------------------------------------
+ */
+
 static int _getReaderAndDriverType(const LC_CLIENT *cl,
                                    const char *readerName,
                                    GWEN_BUFFER *driverType,
@@ -87,6 +80,11 @@ static int _initCommon();
 static void _finiCommon();
 
 
+
+/* ------------------------------------------------------------------------------------------------
+ * code
+ * ------------------------------------------------------------------------------------------------
+ */
 
 
 int _initCommon()
@@ -1049,17 +1047,6 @@ LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card)
 
   return LC_Client_ResultOk;
 }
-
-
-
-
-
-
-
-
-
-#include "client_xml.c"
-#include "client_cmd.c"
 
 
 

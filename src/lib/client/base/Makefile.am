@@ -4,8 +4,6 @@ noinst_LTLIBRARIES=libbase.la
 
 EXTRA_DIST=\
   card_iso.c \
-  client_cmd.c \
-  client_xml.c \
   README.apps README.cards
 
 
@@ -25,12 +23,15 @@ iheader_HEADERS=\
 
 noinst_HEADERS=\
  client_l.h client_p.h \
+ client_cmd.h \
  client_xml.h \
  card_p.h \
  tlv_p.h
 
 libbase_la_SOURCES=\
  client.c \
+ client_cmd.c \
+ client_xml.c \
  card.c \
  tlv.c
 

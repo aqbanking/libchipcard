@@ -7,10 +7,152 @@
  *          Please see toplevel file COPYING for license details           *
  ***************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include "client_xml.h"
+#include "client_p.h"
+
+#include <gwenhywfar/debug.h>
+#include <gwenhywfar/directory.h>
+
+#include <sys/stat.h>
+#include <errno.h>
+
+
+#ifdef OS_WIN32
+# define DIRSEP "\\"
+#else
+# define DIRSEP "/"
+#endif
+
+
+/* ------------------------------------------------------------------------------------------------
+ * forward declarations
+ * ------------------------------------------------------------------------------------------------
+ */
 
 static void _sampleXmlFiles(const char *where, GWEN_STRINGLIST *sl);
 static int _mergeXMLDefs(GWEN_XMLNODE *destNode, GWEN_XMLNODE *node);
 
+
+
+
+/* ------------------------------------------------------------------------------------------------
+ * code
+ * ------------------------------------------------------------------------------------------------
+ */
+
+int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
+                           const char *basedir,
+                           const char *tPlural,
+                           const char *tSingular)
+{
+  GWEN_STRINGLIST *sl;
+  GWEN_STRINGLISTENTRY *se;
+  GWEN_BUFFER *buf;
+  int filesLoaded=0;
+
+  /* prepare path */
+  sl=GWEN_StringList_new();
+  buf=GWEN_Buffer_new(0, 256, 0, 1);
+  GWEN_Buffer_AppendString(buf, basedir);
+  GWEN_Buffer_AppendString(buf, DIRSEP);
+  GWEN_Buffer_AppendString(buf, tPlural);
+
+  DBG_DEBUG(0, "Reading XML file (%s) from here: %s",
+            tPlural,
+            GWEN_Buffer_GetStart(buf));
+
+  /* sample all XML files from that path */
+  _sampleXmlFiles(GWEN_Buffer_GetStart(buf), sl);
+
+  /* load all files from the list */
+  se=GWEN_StringList_FirstEntry(sl);
+  while (se) {
+    GWEN_XMLNODE *n;
+
+    n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, tSingular);
+    if (GWEN_XML_ReadFile(n,
+                          GWEN_StringListEntry_Data(se),
+                          GWEN_XML_FLAGS_DEFAULT)) {
+      DBG_ERROR(LC_LOGDOMAIN, "Could not read XML file \"%s\"",
+                GWEN_StringListEntry_Data(se));
+    }
+    else {
+      GWEN_XMLNODE *nn;
+
+      nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, tPlural);
+      if (!nn) {
+        DBG_WARN(LC_LOGDOMAIN, "File \"%s\" does not contain <%s>",
+                 GWEN_StringListEntry_Data(se), tPlural);
+      }
+      else {
+        if (_mergeXMLDefs(root, nn)) {
+          DBG_ERROR(LC_LOGDOMAIN, "Could not merge file \"%s\"",
+                    GWEN_StringListEntry_Data(se));
+        }
+        else {
+          filesLoaded++;
+        }
+      }
+    }
+    GWEN_XMLNode_free(n);
+
+    se=GWEN_StringListEntry_Next(se);
+  }
+
+  /* cleanup */
+  GWEN_Buffer_free(buf);
+  GWEN_StringList_free(sl);
+
+  /* done */
+  if (filesLoaded==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "No %s files loaded", tSingular);
+    return -1;
+  }
+
+  return 0;
+}
+
+
+
+GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName)
+{
+  GWEN_XMLNODE *node;
+
+  assert(cl);
+  node=GWEN_XMLNode_FindFirstTag(cl->appNodes,
+                                 "app",
+                                 "name",
+                                 appName);
+  if (node==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "App \"%s\" not found", appName);
+    return 0;
+  }
+
+  return node;
+}
+
+
+
+GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName)
+{
+  GWEN_XMLNODE *node;
+
+  assert(cl);
+  node=GWEN_XMLNode_FindFirstTag(cl->cardNodes,
+                                 "card",
+                                 "name",
+                                 cardName);
+  if (node==0) {
+    DBG_ERROR(LC_LOGDOMAIN, "Card \"%s\" not found", cardName);
+    return 0;
+  }
+
+  return node;
+}
 
 
 
@@ -169,128 +311,6 @@ int _mergeXMLDefs(GWEN_XMLNODE *destNode, GWEN_XMLNODE *node)
 
   return 0;
 }
-
-
-
-int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
-                           const char *basedir,
-                           const char *tPlural,
-                           const char *tSingular)
-{
-  GWEN_STRINGLIST *sl;
-  GWEN_STRINGLISTENTRY *se;
-  GWEN_BUFFER *buf;
-  int filesLoaded=0;
-
-  /* prepare path */
-  sl=GWEN_StringList_new();
-  buf=GWEN_Buffer_new(0, 256, 0, 1);
-  GWEN_Buffer_AppendString(buf, basedir);
-  GWEN_Buffer_AppendString(buf, DIRSEP);
-  GWEN_Buffer_AppendString(buf, tPlural);
-
-  DBG_DEBUG(0, "Reading XML file (%s) from here: %s",
-            tPlural,
-            GWEN_Buffer_GetStart(buf));
-
-  /* sample all XML files from that path */
-  _sampleXmlFiles(GWEN_Buffer_GetStart(buf), sl);
-
-  /* load all files from the list */
-  se=GWEN_StringList_FirstEntry(sl);
-  while (se) {
-    GWEN_XMLNODE *n;
-
-    n=GWEN_XMLNode_new(GWEN_XMLNodeTypeTag, tSingular);
-    if (GWEN_XML_ReadFile(n,
-                          GWEN_StringListEntry_Data(se),
-                          GWEN_XML_FLAGS_DEFAULT)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Could not read XML file \"%s\"",
-                GWEN_StringListEntry_Data(se));
-    }
-    else {
-      GWEN_XMLNODE *nn;
-
-      nn=GWEN_XMLNode_FindNode(n, GWEN_XMLNodeTypeTag, tPlural);
-      if (!nn) {
-        DBG_WARN(LC_LOGDOMAIN, "File \"%s\" does not contain <%s>",
-                 GWEN_StringListEntry_Data(se), tPlural);
-      }
-      else {
-        if (_mergeXMLDefs(root, nn)) {
-          DBG_ERROR(LC_LOGDOMAIN, "Could not merge file \"%s\"",
-                    GWEN_StringListEntry_Data(se));
-        }
-        else {
-          filesLoaded++;
-        }
-      }
-    }
-    GWEN_XMLNode_free(n);
-
-    se=GWEN_StringListEntry_Next(se);
-  }
-
-  /* cleanup */
-  GWEN_Buffer_free(buf);
-  GWEN_StringList_free(sl);
-
-  /* done */
-  if (filesLoaded==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "No %s files loaded", tSingular);
-    return -1;
-  }
-
-  return 0;
-}
-
-
-
-GWEN_XMLNODE *LC_Client_GetAppNode(LC_CLIENT *cl, const char *appName)
-{
-  GWEN_XMLNODE *node;
-
-  assert(cl);
-  node=GWEN_XMLNode_FindFirstTag(cl->appNodes,
-                                 "app",
-                                 "name",
-                                 appName);
-  if (node==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "App \"%s\" not found", appName);
-    return 0;
-  }
-
-  return node;
-}
-
-
-
-GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName)
-{
-  GWEN_XMLNODE *node;
-
-  assert(cl);
-  node=GWEN_XMLNode_FindFirstTag(cl->cardNodes,
-                                 "card",
-                                 "name",
-                                 cardName);
-  if (node==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "Card \"%s\" not found", cardName);
-    return 0;
-  }
-
-  return node;
-}
-
-
-
-
-
-
-
-
-
-
 
 
 

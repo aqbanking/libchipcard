@@ -17,6 +17,8 @@
 
 #include "card_p.h"
 #include "client_l.h"
+#include "client_cmd.h"
+#include "client_xml.h"
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
@@ -801,9 +803,7 @@ GWEN_XMLNODE *LC_Card_FindFileById(LC_CARD *card,
 {
   GWEN_XMLNODE *n;
   GWEN_XMLNODE *currDF;
-  GWEN_XMLNODE *nn;
   int isSameLevel;
-  int fid;
   char sidstr[10];
 
   currDF=card->dfNode;
@@ -1069,7 +1069,6 @@ LC_CLIENT_RESULT LC_Card_SelectEfById(LC_CARD *card, const int  sid)
 
 LC_CLIENT_RESULT LC_Card_SelectEfByID(LC_CARD *card, const int fid)
 {
-  GWEN_XMLNODE *n;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   const char *cmd;
@@ -1077,8 +1076,7 @@ LC_CLIENT_RESULT LC_Card_SelectEfByID(LC_CARD *card, const int fid)
 
 
   dbReq=GWEN_DB_Group_new("request");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                      "fileId", fid);
+  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS, "fileId", fid);
   cmd="SelectEFS";
 
 

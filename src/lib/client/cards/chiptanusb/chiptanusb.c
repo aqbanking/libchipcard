@@ -84,8 +84,6 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_Reopen(LC_CARD *card)
 {
   LC_CLIENT_RESULT res;
   LC_CHIPTANCARD *gk;
-  GWEN_BUFFER *mbuf;
-  GWEN_DB_NODE *dbRecord;
 
   DBG_INFO(LC_LOGDOMAIN, "Re-Opening Ciptanusb card");
 
