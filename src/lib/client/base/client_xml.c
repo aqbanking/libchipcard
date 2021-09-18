@@ -1,8 +1,12 @@
 
 
+static void _sampleXmlFiles(const char *where, GWEN_STRINGLIST *sl);
+static int _mergeXMLDefs(GWEN_XMLNODE *destNode, GWEN_XMLNODE *node);
 
-void LC_Client__SampleXmlFiles(const char *where,
-                               GWEN_STRINGLIST *sl)
+
+
+
+void _sampleXmlFiles(const char *where, GWEN_STRINGLIST *sl)
 {
   GWEN_BUFFER *buf;
   GWEN_DIRECTORY *d;
@@ -66,7 +70,7 @@ void LC_Client__SampleXmlFiles(const char *where,
     /* now read subfolders */
     se=GWEN_StringList_FirstEntry(slDirs);
     while (se) {
-      LC_Client__SampleXmlFiles(GWEN_StringListEntry_Data(se), sl);
+      _sampleXmlFiles(GWEN_StringListEntry_Data(se), sl);
       se=GWEN_StringListEntry_Next(se);
     }
     GWEN_StringList_free(slDirs);
@@ -82,8 +86,7 @@ void LC_Client__SampleXmlFiles(const char *where,
 
 
 
-int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
-                           GWEN_XMLNODE *node)
+int _mergeXMLDefs(GWEN_XMLNODE *destNode, GWEN_XMLNODE *node)
 {
   GWEN_XMLNODE *nsrc, *ndst;
 
@@ -183,7 +186,7 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
             GWEN_Buffer_GetStart(buf));
 
   /* sample all XML files from that path */
-  LC_Client__SampleXmlFiles(GWEN_Buffer_GetStart(buf), sl);
+  _sampleXmlFiles(GWEN_Buffer_GetStart(buf), sl);
 
   /* load all files from the list */
   se=GWEN_StringList_FirstEntry(sl);
@@ -206,7 +209,7 @@ int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
                  GWEN_StringListEntry_Data(se), tPlural);
       }
       else {
-        if (LC_Client_MergeXMLDefs(root, nn)) {
+        if (_mergeXMLDefs(root, nn)) {
           DBG_ERROR(LC_LOGDOMAIN, "Could not merge file \"%s\"",
                     GWEN_StringListEntry_Data(se));
         }

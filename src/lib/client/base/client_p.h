@@ -58,12 +58,6 @@ static int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
                                             uint32_t *pReaderFlags);
 
 
-static void LC_Client__SampleXmlFiles(const char *where,
-                                      GWEN_STRINGLIST *sl);
-
-static int LC_Client_MergeXMLDefs(GWEN_XMLNODE *destNode,
-                                  GWEN_XMLNODE *node);
-
 static int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
                                   const char *basedir,
                                   const char *tPlural,
