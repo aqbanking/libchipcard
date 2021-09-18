@@ -49,20 +49,6 @@ struct LC_CLIENT {
 };
 
 
-static int LC_Client_ReadXmlFiles(GWEN_XMLNODE *root,
-                                  const char *basedir,
-                                  const char *tPlural,
-                                  const char *tSingular);
-
-
-
-static int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName);
-
-
-static LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
-                                              const char *readerName,
-                                              LC_CARD **pCard);
-
 
 #endif /* CHIPCARD_CLIENT_CLIENT_P_H */
 

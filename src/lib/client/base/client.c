@@ -80,18 +80,16 @@ static int _getReaderAndDriverType(const LC_CLIENT *cl,
                                    GWEN_BUFFER *driverType,
                                    GWEN_BUFFER *readerType,
                                    uint32_t *pReaderFlags);
+static int _updateReaderStates(LC_CLIENT *cl);
+static int _findReaderState(LC_CLIENT *cl, const char *readerName);
+static LC_CLIENT_RESULT _connectCard(LC_CLIENT *cl, const char *readerName, LC_CARD **pCard);
+static int _initCommon();
+static void _finiCommon();
 
 
 
 
-GWEN_DB_NODE *LC_Client_GetCommonConfig()
-{
-  return lc_client__config;
-}
-
-
-
-int LC_Client_InitCommon()
+int _initCommon()
 {
   if (lc_client__initcounter==0) {
     int rv;
@@ -164,59 +162,6 @@ int LC_Client_InitCommon()
                              LCC_PM_LIBNAME,
                              LCC_PM_DATADIR,
                              LC_CLIENT_XML_DIR);
-#endif
-
-    /* load configuration file */
-#if 0
-    paths=GWEN_PathManager_GetPaths(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
-    if (paths) {
-      GWEN_DB_NODE *db;
-      GWEN_BUFFER *fbuf;
-
-      db=GWEN_DB_Group_new("config");
-      fbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      rv=GWEN_Directory_FindFileInPaths(paths,
-                                        LC_CLIENT_CONFIG_FILE,
-                                        fbuf);
-      if (rv) {
-        DBG_INFO(LC_LOGDOMAIN,
-                 "Trying config file with suffix \".default\"");
-        rv=GWEN_Directory_FindFileInPaths(paths,
-                                          LC_CLIENT_CONFIG_FILE".default",
-                                          fbuf);
-      }
-      GWEN_StringList_free(paths);
-      if (rv) {
-        DBG_WARN(LC_LOGDOMAIN,
-                 "No configuration file found, using defaults");
-      }
-      else {
-        DBG_INFO(LC_LOGDOMAIN,
-                 "Reading configuration file \"%s\"",
-                 GWEN_Buffer_GetStart(fbuf));
-        rv=GWEN_DB_ReadFile(db, GWEN_Buffer_GetStart(fbuf),
-                            GWEN_DB_FLAGS_DEFAULT |
-                            GWEN_PATH_FLAGS_CREATE_GROUP);
-        if (rv<0) {
-          DBG_ERROR(LC_LOGDOMAIN,
-                    "Error in configuration file \"%s\" (%d)",
-                    GWEN_Buffer_GetStart(fbuf), rv);
-          GWEN_Buffer_free(fbuf);
-          /* undo all init stuff so far */
-          GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
-          GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
-          return rv;
-        }
-      }
-      GWEN_Buffer_free(fbuf);
-      lc_client__config=db;
-    }
-    else {
-      DBG_ERROR(LC_LOGDOMAIN, "Internal error: Paths not found");
-      return GWEN_ERROR_INTERNAL;
-    }
-#else
-    lc_client__config=GWEN_DB_Group_new("config");
 #endif
 
     /* load XML files */
@@ -343,7 +288,7 @@ LC_CLIENT *LC_Client_new(const char *programName, const char *programVersion)
   assert(programName);
   assert(programVersion);
 
-  if (LC_Client_InitCommon()) {
+  if (_initCommon()) {
     DBG_ERROR(0, "Unable to initialize, aborting");
     return NULL;
   }
@@ -372,19 +317,12 @@ void LC_Client_free(LC_CLIENT *cl)
 
     GWEN_FREE_OBJECT(cl);
 
-    LC_Client_FiniCommon();
+    _finiCommon();
   }
 }
 
 
 
-
-
-/* _________________________________________________________________________
- * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
- * I                         Virtual functions                             I
- * YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
- */
 
 
 LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl)
@@ -430,7 +368,7 @@ LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl)
                 "SCardEstablishContext: %ld (%04lx)", (long int) rv,
                 rv);
     }
-    LC_Client_FiniCommon();
+    _finiCommon();
     return LC_Client_ResultIoError;
   }
 
@@ -447,7 +385,7 @@ LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl)
   if (rv!=SCARD_S_SUCCESS) {
     DBG_ERROR(LC_LOGDOMAIN,
               "SCardReleaseContext: %04lx", (long unsigned int) rv);
-    LC_Client_FiniCommon();
+    _finiCommon();
     return LC_Client_ResultIoError;
   }
 
@@ -456,9 +394,47 @@ LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl)
 
 
 
-LC_CLIENT_RESULT LC_Client_ConnectCard(LC_CLIENT *cl,
-                                       const char *rname,
-                                       LC_CARD **pCard)
+const char *LC_Client_GetProgramName(const LC_CLIENT *cl)
+{
+  assert(cl);
+  return cl->programName;
+}
+
+
+
+const char *LC_Client_GetProgramVersion(const LC_CLIENT *cl)
+{
+  assert(cl);
+  return cl->programVersion;
+}
+
+
+
+GWEN_XMLNODE *LC_Client_GetAppNodes(const LC_CLIENT *cl)
+{
+  assert(cl);
+  return cl->appNodes;
+}
+
+
+
+GWEN_XMLNODE *LC_Client_GetCardNodes(const LC_CLIENT *cl)
+{
+  assert(cl);
+  return cl->cardNodes;
+}
+
+
+
+GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl)
+{
+  assert(cl);
+  return cl->msgEngine;
+}
+
+
+
+LC_CLIENT_RESULT _connectCard(LC_CLIENT *cl, const char *rname, LC_CARD **pCard)
 {
   LC_CLIENT_RESULT res;
   LONG rv;
@@ -688,53 +664,6 @@ LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
 
 
 
-/* _________________________________________________________________________
- * AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
- * I                     Informational functions                           I
- * YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
- */
-
-
-const char *LC_Client_GetProgramName(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->programName;
-}
-
-
-
-const char *LC_Client_GetProgramVersion(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->programVersion;
-}
-
-
-
-GWEN_XMLNODE *LC_Client_GetAppNodes(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->appNodes;
-}
-
-
-
-GWEN_XMLNODE *LC_Client_GetCardNodes(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->cardNodes;
-}
-
-
-
-GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->msgEngine;
-}
-
-
-
 int _getReaderAndDriverType(const LC_CLIENT *cl,
                             const char *readerName,
                             GWEN_BUFFER *driverType,
@@ -790,15 +719,7 @@ int _getReaderAndDriverType(const LC_CLIENT *cl,
 
 
 
-GWEN_DB_NODE *LC_Client_GetConfig(const LC_CLIENT *cl)
-{
-  assert(cl);
-  return cl->dbConfig;
-}
-
-
-
-int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName)
+int _findReaderState(LC_CLIENT *cl, const char *readerName)
 {
   int i;
 
@@ -813,7 +734,7 @@ int LC_Client_FindReaderState(LC_CLIENT *cl, const char *readerName)
 
 
 
-int LC_Client_UpdateReaderStates(LC_CLIENT *cl)
+int _updateReaderStates(LC_CLIENT *cl)
 {
   LONG rv;
   LPSTR mszGroups=0;
@@ -886,7 +807,7 @@ int LC_Client_UpdateReaderStates(LC_CLIENT *cl)
   p=(const char *)mszReaders;
   while (*p) {
 
-    i=LC_Client_FindReaderState(cl, p);
+    i=_findReaderState(cl, p);
     if (i!=-1) {
       DBG_INFO(LC_LOGDOMAIN, "Reader \"%s\" already listed", p);
     }
@@ -913,7 +834,7 @@ int LC_Client_UpdateReaderStates(LC_CLIENT *cl)
   } /* while */
 
   if (cl->pnpAvailable) {
-    if (-1==LC_Client_FindReaderState(cl, "\\\\?PnP?\\Notification")) {
+    if (-1==_findReaderState(cl, "\\\\?PnP?\\Notification")) {
       /* add pnp reader */
       if (cl->readerCount<MAX_READERS) {
         cl->readerStates[cl->readerCount].szReader = "\\\\?PnP?\\Notification";
@@ -956,7 +877,7 @@ LC_CLIENT_RESULT LC_Client_Start(LC_CLIENT *cl)
     cl->pnpAvailable=1;
 #endif
 
-  rv=LC_Client_UpdateReaderStates(cl);
+  rv=_updateReaderStates(cl);
   if (rv<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", (int) rv);
     return LC_Client_ResultGeneric;
@@ -1036,7 +957,7 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
         DBG_DEBUG(LC_LOGDOMAIN, "Pseudo reader, updating reader list (%08x, %08x)",
                   (unsigned int)(cl->readerStates[i].dwCurrentState),
                   (unsigned int)(cl->readerStates[i].dwEventState));
-        LC_Client_UpdateReaderStates(cl);
+        _updateReaderStates(cl);
         cl->lastUsedReader=-1;
         break;
       }
@@ -1049,7 +970,7 @@ LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeo
 
           /* card inserted and not used by another application */
           DBG_DEBUG(LC_LOGDOMAIN, "Found usable card in reader [%s]", cl->readerStates[i].szReader);
-          res=LC_Client_ConnectCard(cl, cl->readerStates[i].szReader, &card);
+          res=_connectCard(cl, cl->readerStates[i].szReader, &card);
           if (res==LC_Client_ResultOk) {
             /* card csuccessfully connected, return */
             *pCard=card;

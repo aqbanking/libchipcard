@@ -50,11 +50,6 @@ GWEN_XMLNODE *LC_Client_GetCardNode(LC_CLIENT *cl, const char *cardName);
 
 GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl);
 
-int LC_Client_InitCommon();
-void LC_Client_FiniCommon();
-
-GWEN_DB_NODE *LC_Client_GetCommonConfig();
-
 
 #endif /* CHIPCARD_CLIENT_CLIENT_L_H */
 
