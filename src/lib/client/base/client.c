@@ -14,6 +14,7 @@
 #define LC_CARD_EXTEND_CLIENT
 
 #include "client_p.h"
+#include "client_xml.h"
 #include "card_l.h"
 #include <chipcard/sharedstuff/msgengine.h>
 #include <chipcard/sharedstuff/driverinfo.h>
