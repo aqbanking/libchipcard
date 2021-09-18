@@ -35,8 +35,6 @@ struct LC_CLIENT {
   char *programName;
   char *programVersion;
 
-  GWEN_DB_NODE *dbConfig;
-
   GWEN_MSGENGINE *msgEngine;
   GWEN_XMLNODE *cardNodes;
   GWEN_XMLNODE *appNodes;

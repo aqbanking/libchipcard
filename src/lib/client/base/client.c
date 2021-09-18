@@ -69,7 +69,6 @@ static int lc_client__initcounter=0;
 static GWEN_XMLNODE *lc_client__card_nodes=NULL;
 static GWEN_XMLNODE *lc_client__app_nodes=NULL;
 static GWEN_DB_NODE *lc_client__driver_db=NULL;
-static GWEN_DB_NODE *lc_client__config=NULL;
 
 
 GWEN_INHERIT_FUNCTIONS(LC_CLIENT)
@@ -237,8 +236,6 @@ int LC_Client_InitCommon()
         DBG_ERROR(LC_LOGDOMAIN, "Data files not found (%d)", rv);
         /* undo all init stuff so far */
         GWEN_Buffer_free(fbuf);
-        GWEN_DB_Group_free(lc_client__config);
-        lc_client__config=NULL;
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
         return rv;
@@ -253,8 +250,6 @@ int LC_Client_InitCommon()
         GWEN_XMLNode_free(n);
         /* undo all init stuff so far */
         GWEN_Buffer_free(fbuf);
-        GWEN_DB_Group_free(lc_client__config);
-        lc_client__config=NULL;
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
         return GWEN_ERROR_GENERIC;
@@ -272,8 +267,6 @@ int LC_Client_InitCommon()
         GWEN_XMLNode_free(lc_client__card_nodes);
         lc_client__card_nodes=NULL;
         GWEN_Buffer_free(fbuf);
-        GWEN_DB_Group_free(lc_client__config);
-        lc_client__config=NULL;
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
         return GWEN_ERROR_GENERIC;
@@ -295,8 +288,6 @@ int LC_Client_InitCommon()
         GWEN_XMLNode_free(lc_client__card_nodes);
         lc_client__card_nodes=NULL;
         GWEN_Buffer_free(fbuf);
-        GWEN_DB_Group_free(lc_client__config);
-        lc_client__config=NULL;
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
         GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
         return rv;
@@ -310,8 +301,6 @@ int LC_Client_InitCommon()
     else {
       DBG_ERROR(LC_LOGDOMAIN, "No data files found.");
       /* undo all init stuff so far */
-      GWEN_DB_Group_free(lc_client__config);
-      lc_client__config=NULL;
       GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_DATADIR);
       GWEN_PathManager_UndefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
       return GWEN_ERROR_GENERIC;
@@ -324,13 +313,11 @@ int LC_Client_InitCommon()
 
 
 
-void LC_Client_FiniCommon()
+void _finiCommon()
 {
   if (lc_client__initcounter==1) {
     GWEN_DB_Group_free(lc_client__driver_db);
     lc_client__driver_db=NULL;
-    GWEN_DB_Group_free(lc_client__config);
-    lc_client__config=0;
     GWEN_XMLNode_free(lc_client__app_nodes);
     lc_client__app_nodes=0;
     GWEN_XMLNode_free(lc_client__card_nodes);
@@ -369,8 +356,6 @@ LC_CLIENT *LC_Client_new(const char *programName, const char *programVersion)
   cl->cardNodes=lc_client__card_nodes;
   cl->appNodes=lc_client__app_nodes;
   cl->msgEngine=LC_MsgEngine_new();
-
-  cl->dbConfig=lc_client__config;
 
   return cl;
 }
