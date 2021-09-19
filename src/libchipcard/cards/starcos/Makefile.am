@@ -9,13 +9,12 @@ AM_CPPFLAGS= $(gwenhywfar_includes) \
 
 EXTRA_DIST=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml starcos-card.xml types.xml
 
-typefiles=types.xml
+typefiles=starcos_keydescr.xml
 
 
 noinst_LTLIBRARIES=libcards-starcos.la
 noinst_HEADERS=\
   starcos_p.h \
-  starcos_keydescr_l.h \
   starcos_keydescr_p.h
 
 
@@ -29,13 +28,16 @@ libcards_starcos_la_SOURCES=\
   starcos_keydescr.c
 
 
-types: $(typefiles)
-	typemaker -d CHIPCARD_API $(typefiles)
-
-
 
 appdatadir=@lc_client_xml_dir@/apps
 appdata_DATA=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml
 
 carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=starcos-card.xml
+
+
+types: $(typefiles)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+
+typedefs: $(typefiles)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)

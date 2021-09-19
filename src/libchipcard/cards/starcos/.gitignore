@@ -2,3 +2,6 @@ starcos_keydescr.c
 starcos_keydescr.h
 starcos_keydescr_l.h
 starcos_keydescr_p.h
+lc_starcos_keydescr.tm2
+lc_starcos_keydescr_list.tm2
+lc_starcos_keydescr_list2.tm2
