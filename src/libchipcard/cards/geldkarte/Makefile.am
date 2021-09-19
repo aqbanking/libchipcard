@@ -7,19 +7,19 @@ AM_CPPFLAGS= $(gwenhywfar_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-EXTRA_DIST=geldkarte-app.xml geldkarte-card.xml types.xml
+EXTRA_DIST=geldkarte-app.xml geldkarte-card.xml
 
-typefiles=types.xml
+typefiles=\
+  geldkarte_blog.xml \
+  geldkarte_llog.xml \
+  geldkarte_values.xml
 
 
 noinst_LTLIBRARIES=libcards-geldkarte.la
 noinst_HEADERS=\
   geldkarte_p.h \
-  geldkarte_blog_l.h \
   geldkarte_blog_p.h \
-  geldkarte_llog_l.h \
   geldkarte_llog_p.h \
-  geldkarte_values_l.h \
   geldkarte_values_p.h
 
 
@@ -36,12 +36,15 @@ libcards_geldkarte_la_SOURCES=\
   geldkarte_llog.c \
   geldkarte_values.c
 
-types: $(typefiles)
-	typemaker -d CHIPCARD_API $(typefiles)
-
 appdatadir=@lc_client_xml_dir@/apps
 appdata_DATA=geldkarte-app.xml
 
 carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=geldkarte-card.xml
 
+
+types: $(typefiles)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+
+typedefs: $(typefiles)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)

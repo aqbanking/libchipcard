@@ -14,8 +14,8 @@
 
 
 #include "geldkarte_p.h"
-#include "geldkarte_blog_l.h"
-#include "geldkarte_llog_l.h"
+#include "geldkarte_blog.h"
+#include "geldkarte_llog.h"
 
 #include <libchipcard/chipcard.h>
 #include <libchipcard/cards/processorcard/processorcard.h>

@@ -1,0 +1,178 @@
+<?xml?>
+
+<tm2>
+  <type id="LC_GELDKARTE_BLOG" type="pointer">
+    <descr>
+    </descr>
+
+    <lang id="c">
+      <identifier>LC_GELDKARTE_BLOG</identifier>
+      <prefix>LC_GeldKarte_BLog</prefix>
+      
+      <baseFileName>geldkarte_blog</baseFileName>
+      
+      <flags>
+        with_db
+        with_xml
+        with_list1
+        with_list2
+        nocopy
+      </flags>
+      
+      <headers>
+        <header type="sys" loc="pre">libchipcard/chipcard.h</header>
+        <header type="sys" loc="pre">gwenhywfar/gwentime.h</header>
+        <header type="sys" loc="pre">gwenhywfar/types.h</header>
+      </headers>
+
+
+
+      <inlines>
+
+        <inline loc="end" access="public">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+             $(api) int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl);
+          </content>
+        </inline>
+
+        <inline loc="code">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+
+             static $(struct_type) *$(struct_prefix)_List2__freeAll_cb($(struct_type) *t, void *user_data) {
+               $(struct_prefix)_free(t);
+               return NULL;
+             }
+
+
+             int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl) {
+               if (tl) {
+                 $(struct_prefix)_List2_ForEach(tl, $(struct_prefix)_List2__freeAll_cb, NULL);
+                 $(struct_prefix)_List2_free(tl); 
+               }
+               else {
+                 DBG_ERROR(LC_LOGDOMAIN, "List missing");
+                 return GWEN_ERROR_INVALID;
+               }
+               return 0;
+             }
+          </content>
+        </inline>
+
+      </inlines>
+
+
+    </lang>
+
+    <enums>
+    </enums>
+
+    <defines>
+    </defines>
+
+
+    <members>
+
+      <member name="status" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="bSeq" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="lSeq" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="value" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="merchantId" type="char_ptr" maxlen="256" >
+        <descr>
+        </descr>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+      <member name="hSeq" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="sSeq" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="loaded" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="time" type="gwen_time" maxlen="64" >
+        <aqdb_type>AQDB_DataType_String</aqdb_type>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+        <default>NULL</default>
+        <preset>NULL</preset>
+      </member>
+
+      <member name="keyId" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+    </members>
+
+    
+  </type>
+  
+</tm2>
+
+
+
