@@ -219,12 +219,43 @@ AQ_DISTRIBUTION
 
 
 ###-------------------------------------------------------------------------
-# check for Gwenhywfar
+#
+# Check for Gwen
 #
 
-AC_GWENHYWFAR(4,99,8,0)
+# Variable used in libchipcard-config.cmake
+AC_SUBST(GWENHYWFAR_MINIMUM_VERSION, "5.5.1.1")
+AC_GWENHYWFAR(5,5,1,1)
 
-all_includes="$all_includes $gwenhywfar_includes"
+
+
+###-------------------------------------------------------------------------
+#
+# check typemaker2
+#
+
+AC_MSG_CHECKING(typemaker2 binary)
+AC_ARG_WITH(typemaker2-exe, 
+  [  --with-typemaker2-exe=EXE      path and name of the executable typemaker2],
+  [typemaker2_exe="$withval"],
+  [typemaker2_exe="\$(gwenhywfar_bindir)/typemaker2"]
+)
+AC_MSG_RESULT($typemaker2_exe)
+AC_SUBST(typemaker2_exe)
+
+
+
+###-------------------------------------------------------------------------
+#
+# check xmlmerge
+#
+AC_MSG_CHECKING(xmlmerge)
+AC_ARG_WITH(xmlmerge, [  --with-xmlmerge=PATH path and name of tool xmlmerge],
+  [XMLMERGE="$withval"],
+  [XMLMERGE="$gwenhywfar_dir/bin/xmlmerge"])
+AC_SUBST(XMLMERGE)
+AC_MSG_RESULT($XMLMERGE)
+
 
 
 ###-------------------------------------------------------------------------
