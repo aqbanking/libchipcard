@@ -84,9 +84,6 @@
 #include <inttypes.h>
 
 
-#define LC_DEFAULT_PORT 7392 /* FIXME: make this adjustable by configure */
-#define LC_DEFAULT_UDS_SOCK "/var/run/chipcard.comm"
-
 /** Error codes */
 /*@{*/
 #define LC_ERROR_NONE                  0x00000000
@@ -115,7 +112,7 @@
 const char *LC_Error_toString(uint32_t err);
 
 
-#define LC_LOGDOMAIN "ccclient"
+#define LC_LOGDOMAIN "libchipcard"
 
 /** Reader flags */
 /*@{*/
