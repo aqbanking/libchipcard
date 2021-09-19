@@ -1,9 +1,6 @@
 /***************************************************************************
- $RCSfile$
- -------------------
- cvs         : $Id$
  begin       : Sat Jun 23 2018
- copyright   : (C) 2018 by Martin Preuss, Stefan Bayer
+ copyright   : (C) 2021 by Martin Preuss, Stefan Bayer
  email       : martin@libchipcard.de, stefan.bayer@stefanbayer.net
 
 
@@ -18,19 +15,23 @@
 
 #include "global.h"
 
+#include <libchipcard/base/client.h>
+#include <libchipcard/cards/zkacard/zkacard.h>
+#include <libchipcard/ct/ct_card.h>
+
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/gui.h>
-#include <chipcard/client.h>
-#include <chipcard/cards/zkacard.h>
-#include <chipcard/ct/ct_card.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 
+
 #define LC_CT_ZKA_NUM_CONTEXT 31
+
 
 static uint32_t BeginEnterPin(GWEN_UNUSED GWEN_CRYPT_PINTYPE pt,
                               uint32_t gid)

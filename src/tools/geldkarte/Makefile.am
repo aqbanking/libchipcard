@@ -1,12 +1,15 @@
 bin_PROGRAMS=geldkarte
 
 AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 noinst_HEADERS=global.h
 
 geldkarte_SOURCES=\
   main.c
-geldkarte_LDADD=../../lib/client/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
+geldkarte_LDADD=../../libchipcard/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
 geldkarte_LDFLAGS=@STRIPALL@
 
 if IS_WINDOWS

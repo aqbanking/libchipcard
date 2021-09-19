@@ -1,4 +1,4 @@
-SUBDIRS=bin data doc m4 src tutorials
+SUBDIRS=data doc m4 src tutorials
 
 EXTRA_DIST= \
  AUTHORS \

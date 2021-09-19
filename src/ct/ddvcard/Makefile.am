@@ -1,4 +1,6 @@
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=ddvcard.xml
@@ -12,6 +14,6 @@ noinst_HEADERS=ddvcard_p.h
 ddvcard_la_SOURCES=dummy.c
 
 ddvcard_la_LDFLAGS=-module -no-undefined -avoid-version
-ddvcard_la_LIBADD=libct_ddvcard.la ../../lib/client/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
+ddvcard_la_LIBADD=libct_ddvcard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,6 +14,10 @@
 
 #include "starcoscard_p.h"
 
+#include <libchipcard/cards/starcos/starcos.h>
+#include <libchipcard/cards/processorcard/processorcard.h>
+#include <libchipcard/ct/ct_card.h>
+
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ctplugin_be.h>
@@ -21,10 +25,6 @@
 #include <gwenhywfar/padd.h>
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
-
-#include <chipcard/cards/starcos.h>
-#include <chipcard/cards/processorcard.h>
-#include <chipcard/ct/ct_card.h>
 
 
 #define I18N(message) GWEN_I18N_Translate("libchipcard", message)

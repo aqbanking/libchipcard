@@ -12,7 +12,7 @@
 #define CHIPCARD_CT_CHIPTANUSB_H
 
 
-#include <chipcard/card.h>
+#include <libchipcard/base/card.h>
 
 
 

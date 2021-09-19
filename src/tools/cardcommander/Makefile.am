@@ -1,9 +1,11 @@
 bin_PROGRAMS=cardcommander
 
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 cardcommander_SOURCES = cardcommander.cpp
-cardcommander_LDADD = ../../lib/client/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@ -lstdc++
+cardcommander_LDADD = ../../libchipcard/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@ -lstdc++
 cardcommander_LDFLAGS=@STRIPALL@
 
 if IS_WINDOWS

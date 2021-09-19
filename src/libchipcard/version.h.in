@@ -1,0 +1,23 @@
+/***************************************************************************
+    begin       : Tue Dec 23 2003
+    copyright   : (C) 2021 by Martin Preuss
+    email       : martin@libchipcard.de
+
+ ***************************************************************************
+ *          Please see toplevel file COPYING for license details           *
+ ***************************************************************************/
+
+
+#ifndef CHIPCARD6_VERSION_H
+#define CHIPCARD6_VERSION_H
+
+#define CHIPCARD_VERSION_MAJOR @CHIPCARD_VERSION_MAJOR@
+#define CHIPCARD_VERSION_MINOR @CHIPCARD_VERSION_MINOR@
+#define CHIPCARD_VERSION_PATCHLEVEL @CHIPCARD_VERSION_PATCHLEVEL@
+#define CHIPCARD_VERSION_BUILD @CHIPCARD_VERSION_BUILD@
+#define CHIPCARD_VERSION_TAG "@CHIPCARD_VERSION_TAG@"
+#define CHIPCARD_VERSION_FULL_STRING "@CHIPCARD_VERSION_FULL_STRING@"
+#define CHIPCARD_VERSION_STRING "@CHIPCARD_VERSION_STRING@"
+
+
+#endif /* CHIPCARD6_VERSION_H */

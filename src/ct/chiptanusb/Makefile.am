@@ -1,4 +1,6 @@
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=chiptanusb.xml
@@ -15,6 +17,6 @@ noinst_HEADERS= \
 chiptanusb_la_SOURCES=dummy.c
 
 chiptanusb_la_LDFLAGS=-module -no-undefined -avoid-version
-chiptanusb_la_LIBADD=libct_chiptanusb.la ../../lib/client/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
+chiptanusb_la_LIBADD=libct_chiptanusb.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

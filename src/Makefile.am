@@ -1,2 +1,2 @@
-SUBDIRS=lib tools ct PCSC
+SUBDIRS=libchipcard tools ct
 

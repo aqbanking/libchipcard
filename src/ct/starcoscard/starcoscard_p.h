@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -12,9 +12,10 @@
 #define CHIPCARD_CT_DDV_P_H
 
 
+#include <libchipcard/base/card.h>
+
 #include <gwenhywfar/ct_be.h>
 #include <gwenhywfar/ctplugin.h>
-#include <chipcard/card.h>
 
 
 #define LC_CT_STARCOS_NUM_CONTEXT 5

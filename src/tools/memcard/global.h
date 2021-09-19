@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -12,9 +12,9 @@
 #define RSACARD_GLOBAL_H
 
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client.h>
-#include <chipcard/cards/memorycard.h>
+#include <libchipcard/chipcard.h>
+#include <libchipcard/base/client.h>
+#include <libchipcard/cards/memorycard/memorycard.h>
 
 #include <gwenhywfar/logger.h>
 

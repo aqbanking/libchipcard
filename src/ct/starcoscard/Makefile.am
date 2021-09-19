@@ -1,4 +1,6 @@
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes) -I../../ -I../../client -I../../cards
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 crypttokenplugindir=$(gwenhywfar_plugins)/ct
 crypttokenplugin_DATA=starcoscard.xml
@@ -14,6 +16,6 @@ noinst_HEADERS=\
 starcoscard_la_SOURCES=dummy.c
 
 starcoscard_la_LDFLAGS=-module -no-undefined -avoid-version
-starcoscard_la_LIBADD=libct_starcoscard.la ../../lib/client/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
+starcoscard_la_LIBADD=libct_starcoscard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 

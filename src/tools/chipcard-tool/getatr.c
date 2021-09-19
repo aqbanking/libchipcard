@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -15,10 +15,13 @@
 
 
 #include "global.h"
+
+#include <libchipcard/base/client.h>
+
+#include <gwenhywfar/debug.h>
+
 #include <time.h>
 #include <assert.h>
-#include <chipcard/client.h>
-#include <gwenhywfar/debug.h>
 
 
 

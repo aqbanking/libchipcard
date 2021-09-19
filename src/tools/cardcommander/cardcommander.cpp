@@ -1,6 +1,6 @@
 /***************************************************************************
  begin       : Fri Dec 13 2002
- copyright   : (C) 2002-2010 by Martin Preuss
+ copyright   : (C) 2021 by Martin Preuss
  email       : martin@libchipcard.de
 
  ****************************************************************************
@@ -28,10 +28,8 @@
 #define I18N(m) m
 #define I18NT(m) m
 
-#include <stdio.h>
-#include <errno.h>
-#include <cctype>
-#include <string>
+#include <libchipcard/chipcard.h>
+#include <libchipcard/base/client.h>
 
 #include <gwenhywfar/logger.h>
 #include <gwenhywfar/args.h>
@@ -39,8 +37,11 @@
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/cgui.h>
 
-#include <chipcard/chipcard.h>
-#include <chipcard/client.h>
+#include <stdio.h>
+#include <errno.h>
+#include <cctype>
+#include <string>
+
 
 using namespace std;
 

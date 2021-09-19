@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Tue Jun 21 2011
-    copyright   : (C) 2011 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -14,6 +14,10 @@
 
 #include "zkacard_p.h"
 
+#include <libchipcard/cards/zkacard/zkacard.h>
+#include <libchipcard/cards/processorcard/processorcard.h>
+#include <libchipcard/ct/ct_card.h>
+
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ctplugin_be.h>
@@ -22,10 +26,6 @@
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
 #include <gwenhywfar/tlv.h>
-
-#include <chipcard/cards/zkacard.h>
-#include <chipcard/cards/processorcard.h>
-#include <chipcard/ct/ct_card.h>
 
 
 #define I18N(message) GWEN_I18N_Translate("libchipcard", message)

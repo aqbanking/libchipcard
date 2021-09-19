@@ -15,10 +15,10 @@ AC_CONFIG_HEADER([config.h])
 #
 
 CHIPCARD_VERSION_MAJOR=5
-CHIPCARD_VERSION_MINOR=1
-CHIPCARD_VERSION_PATCHLEVEL=6
+CHIPCARD_VERSION_MINOR=99
+CHIPCARD_VERSION_PATCHLEVEL=0
 CHIPCARD_VERSION_BUILD=0
-CHIPCARD_VERSION_TAG="stable"
+CHIPCARD_VERSION_TAG="git"
 
 CHIPCARD_VERSION_FULL_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL.$CHIPCARD_VERSION_BUILD${CHIPCARD_VERSION_TAG}"
 CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCARD_VERSION_PATCHLEVEL"
@@ -26,9 +26,9 @@ CHIPCARD_VERSION_STRING="$CHIPCARD_VERSION_MAJOR.$CHIPCARD_VERSION_MINOR.$CHIPCA
 #
 # SO version
 #
-LIBCHIPCARD_SO_CURRENT=7
-LIBCHIPCARD_SO_AGE=1
-LIBCHIPCARD_SO_REVISION=6
+LIBCHIPCARD_SO_CURRENT=8
+LIBCHIPCARD_SO_AGE=0
+LIBCHIPCARD_SO_REVISION=0
 LIBCHIPCARD_SO_EFFECTIVE="`echo \$(($LIBCHIPCARD_SO_CURRENT-$LIBCHIPCARD_SO_AGE))`"
 
 #
@@ -613,7 +613,6 @@ AC_CONFIG_FILES([Makefile
                  Doxyfile
                  libchipcard.spec
                  libchipcard-client.pc
-                 bin/Makefile
                  data/Makefile
                  data/drivers/Makefile
                  data/drivers/posix/Makefile
@@ -624,25 +623,22 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/win32/generic_pcsc/Makefile
                  doc/Makefile
                  src/Makefile
-                 src/PCSC/Makefile
-                 src/lib/Makefile
-                 src/lib/version.h
-                 src/lib/chipcard.h
-                 src/lib/sharedstuff/Makefile
-                 src/lib/client/Makefile
-                 src/lib/client/ressource.rc
-                 src/lib/client/base/Makefile
-                 src/lib/client/cards/Makefile
-                 src/lib/client/cards/ddvcard/Makefile
-                 src/lib/client/cards/egkcard/Makefile
-                 src/lib/client/cards/geldkarte/Makefile
-                 src/lib/client/cards/memorycard/Makefile
-                 src/lib/client/cards/kvkcard/Makefile
-                 src/lib/client/cards/processorcard/Makefile
-                 src/lib/client/cards/starcos/Makefile
-                 src/lib/client/cards/zkacard/Makefile
-                 src/lib/client/cards/chiptanusb/Makefile
-                 src/lib/client/ct/Makefile
+                 src/libchipcard/Makefile
+                 src/libchipcard/version.h
+                 src/libchipcard/chipcard.h
+                 src/libchipcard/PCSC/Makefile
+                 src/libchipcard/base/Makefile
+                 src/libchipcard/cards/Makefile
+                 src/libchipcard/cards/ddvcard/Makefile
+                 src/libchipcard/cards/egkcard/Makefile
+                 src/libchipcard/cards/geldkarte/Makefile
+                 src/libchipcard/cards/memorycard/Makefile
+                 src/libchipcard/cards/kvkcard/Makefile
+                 src/libchipcard/cards/processorcard/Makefile
+                 src/libchipcard/cards/starcos/Makefile
+                 src/libchipcard/cards/zkacard/Makefile
+                 src/libchipcard/cards/chiptanusb/Makefile
+                 src/libchipcard/ct/Makefile
                  src/ct/Makefile
                  src/ct/ddvcard/Makefile
                  src/ct/ddvcard/ddvcard.xml
@@ -664,143 +660,6 @@ AC_CONFIG_FILES([Makefile
                  m4/Makefile
                 ])
 AC_OUTPUT
-
-
-
-###-------------------------------------------------------------------------
-# create header directory for all, make symlinks
-#
-
-rm -Rf libchipcard5
-mkdir libchipcard5
-mkdir libchipcard5/chipcard
-
-# These two headers here are generated and hence reside in builddir,
-# not in srcdir!
-lprefix=`pwd`
-AQ_HEADER_FILES="${lprefix}/src/lib/version.h ${lprefix}/src/lib/chipcard.h"
-ln -s "${lprefix}/src/lib/version.h" libchipcard5/chipcard/version.h
-ln -s "${lprefix}/src/lib/chipcard.h" libchipcard5/chipcard/chipcard.h
-
-
-###-------------------------------------------------------------------------
-# create symlinks for PC/SC on MacOSX
-#
-if test "$OSYSTEM" = "osx" ; then
-  ln -s /System/Library/Frameworks/PCSC.framework/Headers "libchipcard5/PCSC"
-fi
-
-
-
-###-------------------------------------------------------------------------
-# create header directory for server, make symlinks
-#
-
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-# symlink all headers from src/lib/sharedstuff/*
-mkdir libchipcard5/chipcard/sharedstuff
-hfiles=`( cd "${srcdir}/src/lib/sharedstuff" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/sharedstuff/${f}"
-  case ${f} in
-    *_p.h)
-          ;;
-    *_l.h)
-          ;;
-    *)   
-          ln -s "${lprefix}/src/lib/sharedstuff/${f}" "libchipcard5/chipcard/sharedstuff/${f}"
-          ;;
-  esac
-done
-
-
-
-
-###-------------------------------------------------------------------------
-# create header directory for client, make symlinks
-#
-
-lc_modules="cards ct"
-lc_client_card_modules="ddvcard egkcard geldkarte kvkcard starcos zkacard chiptanusb memorycard processorcard"
-
-
-lprefix="${srcdir}"
-lprefix=`( cd ${lprefix} ; pwd )`
-
-# symlink all headers from src/lib/client
-hfiles=`( cd "${srcdir}/src/lib/client" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${f}"
-  case ${f} in
-    *_p.h | *version.h | *chipcard.h)
-              ;;
-    *)
-              ln -s "${lprefix}/src/lib/client/${f}" "libchipcard5/chipcard/${f}"
-              ;;
-  esac
-done
-
-
-# symlink all headers from src/lib/client/base
-hfiles=`( cd "${srcdir}/src/lib/client/base" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/base/${f}"
-  case ${f} in
-    *_p.h | *_l.h)
-      ;;
-    *)   
-      ln -s "${lprefix}/src/lib/client/base/${f}" "libchipcard5/chipcard/${f}"
-      ;;
-  esac
-done
-
-
-# symlink all headers from src/lib/client/*
-for sm in $lc_modules; do
-  mkdir libchipcard5/chipcard/${sm}
-  hfiles=`( cd "${srcdir}/src/lib/client/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/${sm}/${f}"
-    case ${f} in
-      *_p.h | *_l.h)
-        ;;
-      *)   
-        ln -s "${lprefix}/src/lib/client/${sm}/${f}" "libchipcard5/chipcard/${sm}/${f}"
-        ;;
-    esac
-  done
-done
-
-
-# symlink all headers from src/lib/client/cards
-hfiles=`( cd "${srcdir}/src/lib/client/cards" && ls *.h 2>/dev/null )`
-for f in ${hfiles}; do
-  AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/cards/${f}"
-  case ${f} in
-    *_p.h | *_l.h)
-      ;;
-    *)   
-      ln -s "${lprefix}/src/lib/client/cards/${f}" "libchipcard5/chipcard/cards/${f}"
-      ;;
-  esac
-done
-
-# symlink all headers from src/lib/client/cards/*
-for sm in $lc_client_card_modules; do
-  hfiles=`( cd "${srcdir}/src/lib/client/cards/${sm}" && ls *.h 2>/dev/null )`
-  for f in ${hfiles}; do
-    AQ_HEADER_FILES="${AQ_HEADER_FILES} ${lprefix}/src/lib/client/cards/${f}"
-    case ${f} in
-      *_p.h | *_l.h)
-        ;;
-      *)   
-        ln -s "${lprefix}/src/lib/client/cards/${sm}/${f}" "libchipcard5/chipcard/cards/${f}"
-        ;;
-    esac
-  done
-done
 
 
 

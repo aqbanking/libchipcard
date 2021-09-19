@@ -1,6 +1,7 @@
 /***************************************************************************
     begin       : Thu Jan 09 2020
     copyright   : (C) 2020 by Herbert Ellebruch
+    copyright   : 2021 Martin Preuss
     email       :
 
  ***************************************************************************
@@ -14,6 +15,10 @@
 
 #include "chiptanusb.h"
 
+#include <libchipcard/cards/chiptanusb/chiptanusb.h>
+#include <libchipcard/cards/processorcard/processorcard.h>
+#include <libchipcard/ct/ct_card.h>
+
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ctplugin_be.h>
@@ -22,10 +27,6 @@
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
 #include <gwenhywfar/tlv.h>
-
-#include <chipcard/cards/chiptanusb.h>
-#include <chipcard/cards/processorcard.h>
-#include <chipcard/ct/ct_card.h>
 
 #define PROGRAM_VERSION "1.0"
 

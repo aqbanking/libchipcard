@@ -1,6 +1,8 @@
 bin_PROGRAMS=zkacard-tool
 
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
+AM_CPPFLAGS= $(gwenhywfar_includes) \
+  -I$(top_srcdir) -I$(top_builddir) \
+  -I$(top_srcdir)/src -I$(top_builddir)/src
 
 noinst_HEADERS=global.h
 
@@ -9,7 +11,7 @@ zkacard_tool_SOURCES=\
   getpublickey.c \
   shownotepad.c \
   resetptc.c
-zkacard_tool_LDADD=../../lib/client/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
+zkacard_tool_LDADD=../../libchipcard/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
 zkacard_tool_LDFLAGS=@STRIPALL@
 
 if IS_WINDOWS

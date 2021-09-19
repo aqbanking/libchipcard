@@ -18,7 +18,7 @@
 #ifndef CHIPCARD_CARD_EXAMPLECARD_H
 #define CHIPCARD_CARD_EXAMPLECARD_H
 
-#include <chipcard/card.h>
+#include <libchipcard/base/card.h>
 
 
 int ExampleCard_ExtendCard(LC_CARD *card);

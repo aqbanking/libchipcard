@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Tue Jun 21 2011
-    copyright   : (C) 2011 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -12,9 +12,10 @@
 #define CHIPCARD_CT_ZKA_P_H
 
 
+#include <libchipcard/base/card.h>
+
 #include <gwenhywfar/ct_be.h>
 #include <gwenhywfar/ctplugin.h>
-#include <chipcard/card.h>
 
 
 #define LC_CT_ZKA_NUM_CONTEXT 31
