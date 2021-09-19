@@ -15,6 +15,7 @@
 #include <libchipcard/chipcard.h>
 #include <libchipcard/base/client.h>
 #include <libchipcard/cards/kvkcard/kvkcard.h>
+#include <libchipcard/cards/egkcard/egkcard.h>
 #include <libchipcard/cards/hipersonaldata.h>
 #include <libchipcard/cards/hiinsurancedata.h>
 
