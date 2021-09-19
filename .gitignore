@@ -9,6 +9,7 @@
 *.sln
 *.vcproj
 *~
+core
 .deps
 .libs
 Makefile
@@ -53,6 +54,8 @@ i18nsources
 libchipcard5/*
 libchipcard6/*
 *.rc
+
+
 src/lib/chipcard.h
 src/lib/version.h
 
