@@ -613,7 +613,6 @@ AC_CONFIG_FILES([Makefile
                  Doxyfile
                  libchipcard.spec
                  libchipcard-client.pc
-                 libchipcard-server.pc
                  bin/Makefile
                  data/Makefile
                  data/drivers/Makefile
@@ -624,7 +623,6 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/win32/cyberjack_ctapi/Makefile
                  data/drivers/win32/generic_pcsc/Makefile
                  doc/Makefile
-                 etc/Makefile
                  src/Makefile
                  src/PCSC/Makefile
                  src/lib/Makefile

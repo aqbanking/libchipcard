@@ -1,4 +1,4 @@
-SUBDIRS=bin data etc doc m4 src tutorials
+SUBDIRS=bin data doc m4 src tutorials
 
 EXTRA_DIST= \
  AUTHORS \
@@ -25,7 +25,7 @@ chipcard-config: chipcard-config.in
 	chmod a+x chipcard-config
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libchipcard-client.pc libchipcard-server.pc
+pkgconfig_DATA = libchipcard-client.pc
 
 rpm:    $(PACKAGE).spec dist
 	rpmbuild="rpm" && \
