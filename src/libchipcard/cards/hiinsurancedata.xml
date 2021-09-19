@@ -1,0 +1,163 @@
+<?xml?>
+
+<tm2>
+  <type id="LC_HI_INSURANCE_DATA" type="pointer">
+    <descr>
+    </descr>
+
+    <lang id="c">
+      <identifier>LC_HI_INSURANCE_DATA</identifier>
+      <prefix>LC_HIInsuranceData</prefix>
+      
+      <baseFileName>hiinsurancedata</baseFileName>
+      
+      <flags>
+        with_db
+        with_xml
+        with_list1
+        with_list2
+        nocopy
+      </flags>
+      
+      <headers>
+        <header type="sys" loc="pre">libchipcard/chipcard.h</header>
+        <header type="sys" loc="pre">gwenhywfar/gwendate.h</header>
+        <header type="sys" loc="pre">gwenhywfar/types.h</header>
+      </headers>
+
+
+
+      <inlines>
+
+        <inline loc="end" access="public">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+             $(api) int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl);
+          </content>
+        </inline>
+
+        <inline loc="code">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+
+             static $(struct_type) *$(struct_prefix)_List2__freeAll_cb($(struct_type) *t, void *user_data) {
+               $(struct_prefix)_free(t);
+               return NULL;
+             }
+
+
+             int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl) {
+               if (tl) {
+                 $(struct_prefix)_List2_ForEach(tl, $(struct_prefix)_List2__freeAll_cb, NULL);
+                 $(struct_prefix)_List2_free(tl); 
+               }
+               else {
+                 DBG_ERROR(LC_LOGDOMAIN, "List missing");
+                 return GWEN_ERROR_INVALID;
+               }
+               return 0;
+             }
+          </content>
+        </inline>
+
+      </inlines>
+
+
+    </lang>
+
+    <enums>
+
+    </enums>
+
+    <defines>
+    </defines>
+
+
+    <members>
+
+      <member name="institutionId" type="char_ptr" maxlen="256" >
+        <descr>
+        </descr>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+      <member name="institutionName" type="char_ptr" maxlen="256" >
+        <descr>
+        </descr>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+      <member name="coverBegin" type="gwen_date" maxlen="16" >
+        <aqdb_type>AQDB_DataType_String</aqdb_type>
+        <access>public</access>
+        <flags>own with_hash</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+        <default>NULL</default>
+        <preset>NULL</preset>
+      </member>
+
+      <member name="coverEnd" type="gwen_date" maxlen="16" >
+        <aqdb_type>AQDB_DataType_String</aqdb_type>
+        <access>public</access>
+        <flags>own with_hash</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+        <default>NULL</default>
+        <preset>NULL</preset>
+      </member>
+
+      <member name="status" type="char_ptr" maxlen="256" >
+        <descr>
+          1: selbstversichert
+        </descr>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+      <member name="group" type="char_ptr" maxlen="256" >
+        <descr>
+          '1': x="west"; break;
+          '9': x="ost"; break;
+          '6': x="BVG"; break;
+          '7': x="SVA, nach Aufwand, dt.-nl Grenzgaenger"; break;
+          '8': x="SVA, pauschal"; break;
+          'M': x="DMP Diabetes mellitus Typ 2, west"; break;
+          'X': x="DMP Diabetes mellitus Typ 2, ost"; break;
+          'A': x="DMP Brustkrebs, west"; break;
+          'C': x="DMP Brustkrebs, ost"; break;
+          'K': x="DMP KHK, west"; break;
+          'L': x="DMP KHK, ost"; break;
+          '4': x="nichtversicherter Sozialhilfe-Empfaenger"; break;
+          'E': x="DMP Diabetes mellitus Typ 1, west"; break;
+          'N': x="DMP Diabetes mellitus Typ 1, ost"; break;
+          'D': x="DMP Asthma bronchiale, west"; break;
+          'F': x="DMP Asthma bronchiale, ost"; break;
+          'S': x="DMP COPD, west"; break;
+          'P': x="DMP COPD, ost"; break;
+        </descr>
+        <access>public</access>
+        <flags>own</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+    </members>
+
+    
+  </type>
+  
+</tm2>
+
+
+

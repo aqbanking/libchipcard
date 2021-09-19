@@ -470,9 +470,9 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,
 
   s=GWEN_XMLNode_GetCharValue(n, "Geburtsdatum", NULL);
   if (s) {
-    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-    LC_HIPersonalData_SetDateOfBirth(d, ti);
-    GWEN_Time_free(ti);
+    GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+    LC_HIPersonalData_SetDateOfBirth(d, dt);
+    GWEN_Date_free(dt);
   }
   s=GWEN_XMLNode_GetCharValue(n, "Vorname", NULL);
   LC_HIPersonalData_SetPrename(d, s);
@@ -536,10 +536,11 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_3_0_0(GWEN_XMLNODE *n,
 
       s=GWEN_XMLNode_GetCharValue(nn, "Geburtsdatum", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIPersonalData_SetDateOfBirth(d, ti);
-        GWEN_Time_free(ti);
+        GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIPersonalData_SetDateOfBirth(d, dt);
+        GWEN_Date_free(dt);
       }
+
       s=GWEN_XMLNode_GetCharValue(nn, "Vorname", NULL);
       LC_HIPersonalData_SetPrename(d, s);
       s=GWEN_XMLNode_GetCharValue(nn, "Nachname", NULL);
@@ -613,9 +614,9 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_5_1_0(GWEN_XMLNODE *n,
 
       s=GWEN_XMLNode_GetCharValue(nn, "Geburtsdatum", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIPersonalData_SetDateOfBirth(d, ti);
-        GWEN_Time_free(ti);
+        GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIPersonalData_SetDateOfBirth(d, dt);
+        GWEN_Date_free(dt);
       }
       s=GWEN_XMLNode_GetCharValue(nn, "Vorname", NULL);
       LC_HIPersonalData_SetPrename(d, s);

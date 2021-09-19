@@ -13,7 +13,7 @@ static int storeCardData(const char *fname,
   GWEN_TIME *ti;
   const char *CRLF;
   const char *s;
-  const GWEN_TIME *cti;
+  const GWEN_DATE *cdt;
 
   ti=GWEN_CurrentTime();
   assert(ti);
@@ -136,12 +136,12 @@ static int storeCardData(const char *fname,
   fprintf(f, "Namenszusatz:%s%s", s?s:"", CRLF);
   s=LC_HIPersonalData_GetName(pData);
   fprintf(f, "Familienname:%s%s", s?s:"", CRLF);
-  cti=LC_HIPersonalData_GetDateOfBirth(pData);
-  if (cti) {
+  cdt=LC_HIPersonalData_GetDateOfBirth(pData);
+  if (cdt) {
     GWEN_BUFFER *tbuf;
 
     tbuf=GWEN_Buffer_new(0, 32, 0, 1);
-    GWEN_Time_toUtcString(cti, "DDMMYYYY", tbuf);
+    GWEN_Date_toStringWithTemplate(cdt, "DDMMYYYY", tbuf);
     fprintf(f, "Geburtsdatum:%s%s",
             GWEN_Buffer_GetStart(tbuf), CRLF);
     GWEN_Buffer_free(tbuf);
@@ -156,23 +156,23 @@ static int storeCardData(const char *fname,
   s=LC_HIPersonalData_GetAddrCity(pData);
   fprintf(f, "Ort:%s%s", s?s:"", CRLF);
 
-  cti=LC_HIInsuranceData_GetCoverBegin(iData);
-  if (cti) {
+  cdt=LC_HIInsuranceData_GetCoverBegin(iData);
+  if (cdt) {
     GWEN_BUFFER *tbuf;
 
     tbuf=GWEN_Buffer_new(0, 32, 0, 1);
-    GWEN_Time_toUtcString(cti, "DDMMYY", tbuf);
+    GWEN_Date_toStringWithTemplate(cdt, "DDMMYYYY", tbuf);
     fprintf(f, "gueltig-seit:%s%s",
             GWEN_Buffer_GetStart(tbuf), CRLF);
     GWEN_Buffer_free(tbuf);
   }
 
-  cti=LC_HIInsuranceData_GetCoverEnd(iData);
-  if (cti) {
+  cdt=LC_HIInsuranceData_GetCoverEnd(iData);
+  if (cdt) {
     GWEN_BUFFER *tbuf;
 
     tbuf=GWEN_Buffer_new(0, 32, 0, 1);
-    GWEN_Time_toUtcString(cti, "MMYY", tbuf);
+    GWEN_Date_toStringWithTemplate(cdt, "DDMMYYYY", tbuf);
     fprintf(f, "gueltig-bis:%s%s",
             GWEN_Buffer_GetStart(tbuf), CRLF);
     GWEN_Buffer_free(tbuf);

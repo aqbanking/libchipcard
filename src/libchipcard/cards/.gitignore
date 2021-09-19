@@ -2,7 +2,14 @@ hiinsurancedata.h
 hiinsurancedata.c
 hiinsurancedata_l.h
 hiinsurancedata_p.h
+lc_hi_insurance_data.tm2
+lc_hi_insurance_data_list.tm2
+lc_hi_insurance_data_list2.tm2
+
 hipersonaldata.h
 hipersonaldata_l.h
 hipersonaldata_p.h
 hipersonaldata.c
+lc_hi_personal_data.tm2
+lc_hi_personal_data_list.tm2
+lc_hi_personal_data_list2.tm2

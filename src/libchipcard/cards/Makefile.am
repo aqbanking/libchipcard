@@ -8,7 +8,9 @@ AM_CPPFLAGS= $(gwenhywfar_includes) $(pcsc_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-typefiles=hidata.xml
+typefiles=\
+  hipersonaldata.xml \
+  hiinsurancedata.xml
 
 EXTRA_DIST=card.xml $(typefiles)
 
@@ -24,9 +26,7 @@ iheader_HEADERS=\
   hipersonaldata.h
 
 noinst_HEADERS=\
-  hiinsurancedata_l.h \
   hiinsurancedata_p.h \
-  hipersonaldata_l.h \
   hipersonaldata_p.h
 
 libcards_la_LIBADD=\
@@ -41,15 +41,15 @@ libcards_la_LIBADD=\
   processorcard/libcards-processorcard.la
 
 appdatadir=@lc_client_xml_dir@/apps
+appdata_DATA=
+
 carddatadir=@lc_client_xml_dir@/cards
+carddata_DATA=card.xml
 
-
-install-card-data:
-	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/card.xml
-
-install-data-local: install-card-data
 
 types: $(typefiles)
-	typemaker -d CHIPCARD_API $(typefiles)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+
+typedefs: $(typefiles)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
 
