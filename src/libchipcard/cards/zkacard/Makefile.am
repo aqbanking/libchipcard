@@ -7,7 +7,7 @@ AM_CPPFLAGS= $(gwenhywfar_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-EXTRA_DIST=app.xml card.xml
+EXTRA_DIST=zkacard-app.xml zkacard-card.xml
 
 typefiles=types.xml
 
@@ -31,15 +31,8 @@ types: $(typefiles)
 
 
 appdatadir=@lc_client_xml_dir@/apps
+appdata_DATA=zkacard-app.xml
+
 carddatadir=@lc_client_xml_dir@/cards
-
-install-app-data:
-	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/zkacard.xml
-
-install-card-data:
-	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/zkacard.xml
-
-install-data-local: install-app-data install-card-data
+carddata_DATA=zkacard-card.xml
 

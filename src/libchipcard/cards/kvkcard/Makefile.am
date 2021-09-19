@@ -7,7 +7,7 @@ AM_CPPFLAGS= $(gwenhywfar_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-EXTRA_DIST=app.xml card.xml
+EXTRA_DIST=kvkcard-app.xml kvkcard-card.xml
 
 
 noinst_LTLIBRARIES=libcards-kvk.la
@@ -24,16 +24,9 @@ libcards_kvk_la_SOURCES=\
 
 
 appdatadir=@lc_client_xml_dir@/apps
+appdata_DATA=kvkcard-app.xml
+
 carddatadir=@lc_client_xml_dir@/cards
-
-install-app-data:
-	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/kvkcard.xml
-
-install-card-data:
-	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/kvkcard.xml
-
-install-data-local: install-app-data install-card-data
+carddata_DATA=kvkcard-card.xml
 
 

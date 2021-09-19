@@ -7,7 +7,7 @@ AM_CPPFLAGS= $(gwenhywfar_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-EXTRA_DIST=app-hvb.xml app-vr.xml app.xml card.xml types.xml
+EXTRA_DIST=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml starcos-card.xml types.xml
 
 typefiles=types.xml
 
@@ -35,17 +35,7 @@ types: $(typefiles)
 
 
 appdatadir=@lc_client_xml_dir@/apps
+appdata_DATA=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml
+
 carddatadir=@lc_client_xml_dir@/cards
-
-install-app-data:
-	$(INSTALL) -d $(DESTDIR)$(appdatadir)
-	cp $(srcdir)/app.xml $(DESTDIR)$(appdatadir)/starcoscard.xml
-	cp $(srcdir)/app-hvb.xml $(DESTDIR)$(appdatadir)/starcoscard-hvb.xml
-	cp $(srcdir)/app-vr.xml $(DESTDIR)$(appdatadir)/starcoscard-vr.xml
-
-install-card-data:
-	$(INSTALL) -d $(DESTDIR)$(carddatadir)
-	cp $(srcdir)/card.xml $(DESTDIR)$(carddatadir)/starcoscard.xml
-
-install-data-local: install-app-data install-card-data
-
+carddata_DATA=starcos-card.xml
