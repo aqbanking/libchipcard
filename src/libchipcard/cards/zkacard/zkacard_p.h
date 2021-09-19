@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Sat Nov 13 2010
-    copyright   : (C) 2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -13,7 +13,7 @@
 
 #include "zkacard.h"
 #include "libchipcard/base/card_imp.h"
-#include "libchipcard/base/pininfo_l.h"
+#include "libchipcard/base/pininfo.h"
 
 
 

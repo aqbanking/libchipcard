@@ -37,7 +37,6 @@ noinst_HEADERS=\
  tlv_p.h \
  driverinfo_p.h \
  msgengine_p.h \
- pininfo_l.h \
  pininfo_p.h
 
 libbase_la_SOURCES=\
@@ -65,5 +64,8 @@ install-card-data:
 install-data-local: install-app-data install-card-data
 
 types: $(typefiles)
-	$(gwenhywfar_dir)/bin/typemaker -d CHIPCARD_API $(typefiles)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+
+typedefs: $(typefiles)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
 

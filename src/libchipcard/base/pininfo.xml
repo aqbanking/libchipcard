@@ -1,33 +1,161 @@
-<typedefs>
-  <type id="uint32_t" dbtype="int" />
-  <type id="GWEN_CRYPT_PINENCODING" dbtype="int" />
-</typedefs>
+<?xml?>
+
+<tm2>
+  <type id="LC_PININFO" type="pointer">
+    <descr>
+    </descr>
+
+    <lang id="c">
+      <identifier>LC_PININFO</identifier>
+      <prefix>LC_PinInfo</prefix>
+      
+      <baseFileName>pininfo</baseFileName>
+      
+      <flags>
+        with_db
+        with_xml
+        with_list1
+        with_list2
+        nocopy
+      </flags>
+      
+      <headers>
+        <header type="sys" loc="pre">libchipcard/chipcard.h</header>
+        <header type="sys" loc="pre">gwenhywfar/types.h</header>
+        <header type="sys" loc="pre">gwenhywfar/cryptdefs.h</header>
+      </headers>
 
 
-<types>
-  <type id="LC_PININFO" 
-        prefix="LC_PinInfo" 
-        class="PinInfo"
-        access="public"
-        filename="pininfo"
-        inherit="public" 
-        list="lib"
-        list2="public" >
 
-    <headers>
-      <header type="sys" >gwenhywfar/types.h</header>
-      <header type="sys" >gwenhywfar/cryptdefs.h</header>
-      <header type="sys" >libchipcard/chipcard.h</header>
-    </headers>
-    
-    <elem name="name" type="char" ptr="1" />
-    <elem name="id" type="uint32_t" />
-    <elem name="encoding" type="int" />
-    <elem name="minLength" type="int" />
-    <elem name="maxLength" type="int" />
-    <elem name="allowChange" type="int" />
-    <elem name="filler" type="int" />
-    <elem name="recordNum" type="int" access="lib" />
+      <inlines>
+
+        <inline loc="end" access="public">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+             $(api) int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl);
+          </content>
+        </inline>
+
+        <inline loc="code">
+          <typeFlagsMask>with_list2</typeFlagsMask>
+          <typeFlagsValue>with_list2</typeFlagsValue>
+          <content>
+
+             static $(struct_type) *$(struct_prefix)_List2__freeAll_cb($(struct_type) *t, void *user_data) {
+               $(struct_prefix)_free(t);
+               return NULL;
+             }
+
+
+             int $(struct_prefix)_List2_freeAll($(struct_type)_LIST2 *tl) {
+               if (tl) {
+                 $(struct_prefix)_List2_ForEach(tl, $(struct_prefix)_List2__freeAll_cb, NULL);
+                 $(struct_prefix)_List2_free(tl); 
+               }
+               else {
+                 DBG_ERROR(LC_LOGDOMAIN, "List missing");
+                 return GWEN_ERROR_INVALID;
+               }
+               return 0;
+             }
+          </content>
+        </inline>
+
+      </inlines>
+
+
+    </lang>
+
+    <enums>
+    </enums>
+
+    <defines>
+    </defines>
+
+
+    <members>
+
+      <member name="name" type="char_ptr" maxlen="256" >
+        <descr>
+        </descr>
+        <access>public</access>
+        <flags>own with_hash</flags>
+        <setflags>const dup</setflags>
+        <getflags>const</getflags>
+      </member>
+
+
+      <member name="id" type="uint32_t" maxlen="8">
+        <descr>
+        </descr>
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>with_hash</flags>
+      </member>
+
+
+      <member name="encoding" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="minLength" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="maxLength" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="allowChange" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="filler" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+      <member name="recordNum" type="int" maxlen="8" >
+        <default>0</default>
+        <preset>0</preset>
+        <access>public</access>
+        <flags>none</flags>
+        <setflags>none</setflags>
+        <getflags>none</getflags>
+      </member>
+
+    </members>
+
     
   </type>
-</types>
+  
+</tm2>
+
+
+

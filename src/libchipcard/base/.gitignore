@@ -2,3 +2,6 @@ pininfo.c
 pininfo.h
 pininfo_l.h
 pininfo_p.h
+lc_pininfo.tm2
+lc_pininfo_list.tm2
+lc_pininfo_list2.tm2
