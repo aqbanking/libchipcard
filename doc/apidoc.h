@@ -1,14 +1,14 @@
 
-/** @defgroup chipcard_libs Libchipcard3 Libraries
- * @short Libraries provided by Libchipcard3
+/** @defgroup chipcard_libs Libchipcard6 Libraries
+ * @short Libraries provided by Libchipcard6
  *
- * This group contains the libraries provided by Libchipcard3.
+ * This group contains the libraries provided by Libchipcard6.
  */
 
 
 /** @defgroup chipcard_client Libchipcard3 Client Library
  * @ingroup chipcard_libs
- * @short Client Library of Libchipcard3
+ * @short Client Library of Libchipcard6
  *
  */
 /** @defgroup chipcardc_client_app Client Interface for Applications
@@ -36,11 +36,6 @@
  */
 
 /** @defgroup chipcardc_client_ct Chipcard CryptTokens
- * @ingroup chipcard_client
- */
-
-
-/** @defgroup chipcardc_mon Monitoring Server Activities
  * @ingroup chipcard_client
  */
 
