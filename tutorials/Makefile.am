@@ -38,3 +38,8 @@ tutorial3_SOURCES=tutorial3.c examplecard.c
 tutorial3_LDADD=../src/libchipcard/libchipcard.la $(mingw_ldflags) @gwenhywfar_libs@
 
 
+typefiles:
+
+typedefs:
+
+

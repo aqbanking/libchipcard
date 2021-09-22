@@ -21,7 +21,10 @@ endif
 MAINTAINERCLEANFILES=Makefile.in
 
 sources:
-	for f in $(zkacard_tool_SOURCES) $(EXTRA_DIST); do \
+	for f in $(zkacard_tool_SOURCES); do \
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
 
+typefiles:
+
+typedefs:

@@ -22,7 +22,10 @@ MAINTAINERCLEANFILES=Makefile.in
 
 
 sources:
-	for f in $(kvkcard_SOURCES) $(EXTRA_DIST); do \
+	for f in $(kvkcard_SOURCES); do \
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
 
+typefiles:
+
+typedefs:

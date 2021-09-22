@@ -25,11 +25,6 @@ libcards_zkacard_la_SOURCES=\
   zkacard.c
 
 
-types: $(typefiles)
-	typemaker -d CHIPCARD_API $(typefiles)
-
-
-
 appdatadir=@lc_client_xml_dir@/apps
 appdata_DATA=zkacard-app.xml
 
@@ -40,3 +35,7 @@ sources:
 	for f in $(libcards_zkacard_la_SOURCES) $(extra_sources); do \
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
+
+typefiles:
+
+typedefs:

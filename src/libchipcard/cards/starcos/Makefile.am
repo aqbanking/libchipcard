@@ -36,7 +36,7 @@ carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=starcos-card.xml
 
 
-types: $(typefiles)
+typefiles: $(typefiles)
 	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
 
 typedefs: $(typefiles)

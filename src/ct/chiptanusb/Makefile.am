@@ -24,3 +24,7 @@ sources:
 	for f in $(libct_chiptanusb_la_SOURCES) $(extra_sources); do \
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
+
+typefiles:
+
+typedefs:

@@ -3,3 +3,8 @@ EXTRA_DIST=\
   CONFIG \
   IPCCOMMANDS \
   apidoc.h
+
+typefiles:
+
+typedefs:
+

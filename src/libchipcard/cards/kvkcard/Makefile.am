@@ -35,3 +35,6 @@ sources:
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
 
+typefiles:
+
+typedefs:

@@ -17,7 +17,10 @@ geldkarte_LDFLAGS+=-mconsole
 endif
 
 sources:
-	for f in $(geldkarte_SOURCES) $(EXTRA_DIST); do \
+	for f in $(geldkarte_SOURCES); do \
 	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
 	done
 
+typefiles:
+
+typedefs:

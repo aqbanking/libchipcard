@@ -8,3 +8,7 @@ noinst_HEADERS=\
   wintypes.h
 
 sources:
+
+typefiles:
+
+typedefs:

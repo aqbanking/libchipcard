@@ -16,3 +16,6 @@ EXTRA_DIST=\
 
 MAINTAINERCLEANFILES=Makefile.in
 
+typefiles:
+
+typedefs:

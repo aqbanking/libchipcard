@@ -64,7 +64,7 @@ install-card-data:
 
 install-data-local: install-app-data install-card-data
 
-types: $(typefiles)
+typefiles: $(typefiles)
 	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
 
 typedefs: $(typefiles)

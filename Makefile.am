@@ -246,3 +246,13 @@ CLEANFILES += $(I18NCATALOGS)
 endif # if USE_I18N
 
 
+typefiles:
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d typefiles; \
+	done
+
+typedefs:
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d typedefs; \
+	done
+
