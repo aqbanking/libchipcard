@@ -1,0 +1,319 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: aqbanking-user@lists.aqbanking.de\n"
+"POT-Creation-Date: 2021-09-22 23:19+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/libchipcard/base/client.c:363
+msgid ""
+"The PC/SC service is not running.\n"
+"Please make sure that the package \"pcscd\" is\n"
+"installed along with the appropriate driver.\n"
+"For cyberJack devices you will need to install\n"
+"the package \"ifd-cyberjack\" (Debian) or\n"
+"\"cyberjack-ifd\" (SuSE).\n"
+"For most other readers the package \"libccid\"\n"
+"needs to be installed.<html><p>The PC/SC service is not running.</"
+"p><p>Please make sure that the package <b>pcscd</b> is installed along with "
+"the appropriate driver.</p><p>For cyberJack devices you will need to install "
+"the package <b>ifd-cyberjack</b> (Debian) or <b>cyberjack-ifd</b> (SuSE).</"
+"p><p>For most other readers the package <b>libccid</b> needs to be installed."
+"</p></html>"
+msgstr ""
+
+#: src/libchipcard/base/client.c:962
+msgid "Waiting for card to be inserted"
+msgstr ""
+
+#: src/tools/geldkarte/main.c:255
+#, c-format
+msgid "Card is loaded with %6.2f %s\n"
+msgstr ""
+
+#: src/tools/geldkarte/main.c:350
+#, c-format
+msgid "Card can be loaded with %6.2f %s\n"
+msgstr ""
+
+#: src/tools/geldkarte/main.c:445
+#, c-format
+msgid "Card can transfer up to %6.2f %s\n"
+msgstr ""
+
+#: src/tools/geldkarte/main.c:569
+msgid "No BLogs on the card\n"
+msgstr ""
+
+#: src/tools/geldkarte/main.c:605
+#, c-format
+msgid ""
+"General usage: %s COMMAND [OPTIONS]\n"
+"Allowed Commands:\n"
+" This tool accepts the following commands:\n"
+"  loaded\n"
+"    show the amount of money stored on the card\n"
+"  maxload\n"
+"    show the maximum amount to be stored on the card\n"
+"  maxxfer\n"
+"    show the maximum amount which can be transferred in one session.\n"
+"\n"
+"Allowed Options:\n"
+msgstr ""
+
+#: src/tools/chipcard-tool/main.c:187 src/tools/zkacard/main.c:182
+msgid "Usage: "
+msgstr ""
+
+#: src/tools/chipcard-tool/main.c:190 src/tools/zkacard/main.c:185
+msgid " [GLOBAL OPTIONS] COMMAND [LOCAL OPTIONS]\n"
+msgstr ""
+
+#: src/tools/chipcard-tool/main.c:198 src/tools/zkacard/main.c:193
+msgid ""
+"\n"
+"Commands:\n"
+"\n"
+msgstr ""
+
+#: src/tools/chipcard-tool/main.c:200
+msgid ""
+"  atr:\n"
+"    Read the ATR data from a chipcard\n"
+"\n"
+msgstr ""
+
+#: src/tools/memcard/main.c:157
+msgid ""
+"MemCard2 - A tool to read/write data from/to a memory chip card\n"
+"(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
+"This library is free software; you can redistribute it and/or\n"
+"modify it under the terms of the GNU Lesser General Public\n"
+"License as published by the Free Software Foundation; either\n"
+"version 2.1 of the License, or (at your option) any later version.\n"
+"\n"
+msgstr ""
+
+#: src/tools/memcard/main.c:327 src/tools/memcard/main.c:484
+#, c-format
+msgid "ERROR: Could not open file (%s).\n"
+msgstr ""
+
+#: src/tools/memcard/main.c:388
+#, c-format
+msgid "ERROR: Could not write to file (%s).\n"
+msgstr ""
+
+#: src/tools/memcard/main.c:418 src/tools/memcard/main.c:693
+#, c-format
+msgid "ERROR: Could not close file (%s).\n"
+msgstr ""
+
+#: src/tools/memcard/main.c:601
+#, c-format
+msgid "ERROR: Could not read from file (%s).\n"
+msgstr ""
+
+#: src/tools/kvkcard/main.c:150
+#, c-format
+msgid ""
+"KVKCard3 - A tool to read information from a German medical card.\n"
+"(c) 2007 Martin Preuss<martin@libchipcard.de>\n"
+"This library is free software; you can redistribute it and/or\n"
+"modify it under the terms of the GNU Lesser General Public\n"
+"License as published by the Free Software Foundation; either\n"
+"version 2.1 of the License, or (at your option) any later version.\n"
+"\n"
+"Usage: %s COMMAND [OPTIONS]\n"
+"\n"
+"Available commands:\n"
+"  read   : read data from a German medical card\n"
+"\n"
+"Available options:\n"
+"%s\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:116
+#, c-format
+msgid ""
+"CardCommander - A command line tool to manipulate a chip card.\n"
+"(c) 2003-2010 Martin Preuss<martin@libchipcard.de>\n"
+"This library is free software; you can redistribute it and/or\n"
+"modify it under the terms of the GNU Lesser General Public\n"
+"License as published by the Free Software Foundation; either\n"
+"version 2.1 of the License, or (at your option) any later version.\n"
+"\n"
+"Usage: %s [OPTIONS]\n"
+"\n"
+"Available options:\n"
+"%s\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:217
+msgid "Card is already open, try \"close\" first.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:221
+msgid "Waiting for a card to be inserted...\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:235
+msgid "Card is open, info follows:\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:240
+#: src/tools/cardcommander/cardcommander.cpp:269
+#: src/tools/cardcommander/cardcommander.cpp:328
+#: src/tools/cardcommander/cardcommander.cpp:374
+msgid "Card is not open, try \"open\" first.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:244
+msgid "Closing card.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:276
+#: src/tools/cardcommander/cardcommander.cpp:335
+msgid "Only hex bytes are allowed.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:280
+#: src/tools/cardcommander/cardcommander.cpp:339
+msgid "Sending APDU:\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:284
+msgid "No last APDU.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:290
+msgid "Resending APDU:\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:293
+#: src/tools/cardcommander/cardcommander.cpp:342
+msgid "An APDU needs at least 4 bytes.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:315
+#: src/tools/cardcommander/cardcommander.cpp:364
+#, c-format
+msgid ""
+"Result: %02x/%02x\n"
+"Response: "
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:383
+msgid "Closing card before exiting...\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:395
+msgid "Exiting.\n"
+msgstr ""
+
+#: src/tools/cardcommander/cardcommander.cpp:403
+msgid ""
+"List of commands:\n"
+"open  - connects the card\n"
+"close - disconnects the card \n"
+"apdu xx xx xx xx [xx...] - sends a command to the card\n"
+"rapdu xx xx xx xx [xx...] - sends a command to the reader\n"
+"info  - shows some information about the reader the \n"
+"        currently open card is inserted in\n"
+"help  - shows this little help screen\n"
+"quit  - exits\n"
+msgstr ""
+
+#: src/tools/zkacard/main.c:195
+msgid ""
+"  getkey:\n"
+"    get public part of a rsa key\n"
+"\n"
+msgstr ""
+
+#: src/tools/zkacard/main.c:198
+msgid ""
+"  shownotepad:\n"
+"    show HBCI info from the NOTEPAD\n"
+"\n"
+msgstr ""
+
+#: src/tools/zkacard/main.c:201
+msgid ""
+"  resetptc:\n"
+"    reset pin try counter\n"
+"\n"
+msgstr ""
+
+#: src/tools/zkacard/getpublickey.c:142
+msgid "User context not found on crypt token"
+msgstr ""
+
+#: src/tools/zkacard/getpublickey.c:176
+msgid "Key info not found on crypt token"
+msgstr ""
+
+#: src/tools/zkacard/shownotepad.c:45
+msgid ""
+"Please enter your PIN into the card reader.<html>Please enter your PIN into "
+"the card reader.</html>"
+msgstr ""
+
+#: src/tools/zkacard/shownotepad.c:50
+msgid "Secure PIN Input"
+msgstr ""
+
+#: src/ct/ddvcard/ddvcard.c:157 src/ct/starcoscard/starcoscard.c:156
+#: src/ct/zkacard/zkacard.c:157
+msgid "Insert card"
+msgstr ""
+
+#: src/ct/ddvcard/ddvcard.c:158 src/ct/starcoscard/starcoscard.c:157
+#: src/ct/zkacard/zkacard.c:158
+msgid ""
+"Please insert a chipcard into the reader and click a button.<html>Please "
+"insert a chipcard into the reader and click a button.</html>"
+msgstr ""
+
+#: src/ct/ddvcard/ddvcard.c:164 src/ct/starcoscard/starcoscard.c:163
+#: src/ct/zkacard/zkacard.c:164
+msgid "Ok"
+msgstr ""
+
+#: src/ct/ddvcard/ddvcard.c:165 src/ct/starcoscard/starcoscard.c:164
+#: src/ct/zkacard/zkacard.c:165
+msgid "Abort"
+msgstr ""
+
+#: src/ct/ddvcard/ddvcard.c:176 src/ct/starcoscard/starcoscard.c:175
+#: src/ct/zkacard/zkacard.c:176
+msgid "Error while waiting for card"
+msgstr ""
+
+#: src/ct/starcoscard/starcoscard.c:690
+msgid "User Sign Key"
+msgstr ""
+
+#: src/ct/starcoscard/starcoscard.c:697
+msgid "User Crypt Key"
+msgstr ""
+
+#: src/ct/starcoscard/starcoscard.c:704
+msgid "Peer Sign Key"
+msgstr ""
+
+#: src/ct/starcoscard/starcoscard.c:710
+msgid "Peer Crypt Key"
+msgstr ""
