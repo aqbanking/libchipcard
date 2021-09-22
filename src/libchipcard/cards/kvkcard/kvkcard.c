@@ -456,9 +456,9 @@ LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
 
   s=GWEN_DB_GetCharValue(kvk->dbData, "dateOfBirth", 0, NULL);
   if (s) {
-    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "DDMMYYYY");
-    LC_HIPersonalData_SetDateOfBirth(pData, ti);
-    GWEN_Time_free(ti);
+    GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "DDMMYYYY");
+    LC_HIPersonalData_SetDateOfBirth(pData, dt);
+    GWEN_Date_free(dt);
   }
 
   s=GWEN_DB_GetCharValue(kvk->dbData, "addrState", 0, NULL);
@@ -478,9 +478,9 @@ LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
 
   s=GWEN_DB_GetCharValue(kvk->dbData, "bestBefore", 0, NULL);
   if (s) {
-    GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "MMYY");
-    LC_HIInsuranceData_SetCoverEnd(iData, ti);
-    GWEN_Time_free(ti);
+    GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "MMYY");
+    LC_HIInsuranceData_SetCoverEnd(iData, dt);
+    GWEN_Date_free(dt);
   }
 
   LC_HIPersonalData_SetAddrCountry(pData, "de");
