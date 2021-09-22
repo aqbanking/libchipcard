@@ -262,12 +262,12 @@ AC_MSG_RESULT($XMLMERGE)
 # OS dependent settings
 #
 
-libchipcard_includes="-I\${prefix}/include/libchipcard5"
+libchipcard_includes="-I\${prefix}/include/libchipcard6"
 libchipcardc_libs="-L\${libdir} -lchipcard"
 
-libchipcard_headerdir_am="\$(includedir)/libchipcard5/chipcard"
-libchipcard_headerdir="\${includedir}/libchipcard5/chipcard"
-libchipcard_symlinkdir="\$(top_builddir)/libchipcard5"
+libchipcard_headerdir_am="\$(includedir)/libchipcard6/chipcard"
+libchipcard_headerdir="\${includedir}/libchipcard6/chipcard"
+
 
 case "$OS_TYPE" in
     posix)
@@ -303,8 +303,6 @@ AC_SUBST(libchipcard_headerdir_am)
 AC_SUBST(libchipcard_headerdir)
 
 AC_SUBST(lc_os_driver_dir)
-
-AC_SUBST(libchipcard_symlinkdir)
 
 AC_SUBST(all_includes)
 AC_SUBST(all_libraries)
