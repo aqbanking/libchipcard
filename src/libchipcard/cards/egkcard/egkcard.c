@@ -755,15 +755,15 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_old(GWEN_XMLNODE *n,
   if (nn) {
     s=GWEN_XMLNode_GetCharValue(nn, "Begin", NULL);
     if (s) {
-      GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-      LC_HIInsuranceData_SetCoverBegin(d, ti);
-      GWEN_Time_free(ti);
+      GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+      LC_HIInsuranceData_SetCoverBegin(d, dt);
+      GWEN_Date_free(dt);
     }
     s=GWEN_XMLNode_GetCharValue(nn, "Ende", NULL);
     if (s) {
-      GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-      LC_HIInsuranceData_SetCoverEnd(d, ti);
-      GWEN_Time_free(ti);
+      GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+      LC_HIInsuranceData_SetCoverEnd(d, dt);
+      GWEN_Date_free(dt);
     }
     s=GWEN_XMLNode_GetCharValue(nn, "Kostentraegerkennung", NULL);
     DBG_ERROR(0, "KT-Kennung: %s", s);
@@ -812,15 +812,15 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_3_0_0(GWEN_XMLNODE *n,
 
       s=GWEN_XMLNode_GetCharValue(nn, "Beginn", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIInsuranceData_SetCoverBegin(d, ti);
-        GWEN_Time_free(ti);
+        GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIInsuranceData_SetCoverBegin(d, dt);
+        GWEN_Date_free(dt);
       }
       s=GWEN_XMLNode_GetCharValue(nn, "Ende", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIInsuranceData_SetCoverEnd(d, ti);
-        GWEN_Time_free(ti);
+	GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIInsuranceData_SetCoverEnd(d, dt);
+        GWEN_Date_free(dt);
       }
 
       nnn=GWEN_XMLNode_FindFirstTag(nn,
@@ -875,15 +875,15 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
 
       s=GWEN_XMLNode_GetCharValue(nn, "Beginn", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIInsuranceData_SetCoverBegin(d, ti);
-        GWEN_Time_free(ti);
+	GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIInsuranceData_SetCoverBegin(d, dt);
+	GWEN_Date_free(dt);
       }
       s=GWEN_XMLNode_GetCharValue(nn, "Ende", NULL);
       if (s) {
-        GWEN_TIME *ti=GWEN_Time_fromUtcString(s, "YYYYMMDD");
-        LC_HIInsuranceData_SetCoverEnd(d, ti);
-        GWEN_Time_free(ti);
+        GWEN_DATE *dt=GWEN_Date_fromStringWithTemplate(s, "YYYYMMDD");
+        LC_HIInsuranceData_SetCoverEnd(d, dt);
+        GWEN_Date_free(dt);
       }
 
       nnn=GWEN_XMLNode_FindFirstTag(nn,
