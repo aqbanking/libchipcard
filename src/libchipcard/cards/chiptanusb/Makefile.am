@@ -28,3 +28,9 @@ appdata_DATA=chiptanusb-app.xml
 carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=chiptanusb-card.xml
 
+sources:
+	for f in $(libcards_chiptanusb_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+
+

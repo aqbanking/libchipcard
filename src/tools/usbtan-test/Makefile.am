@@ -15,3 +15,9 @@ endif
 
 MAINTAINERCLEANFILES=Makefile.in
 
+
+sources:
+	for f in $(usbtan_test_SOURCES) $(EXTRA_DIST); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

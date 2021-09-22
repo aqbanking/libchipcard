@@ -70,3 +70,13 @@ types: $(typefiles)
 typedefs: $(typefiles)
 	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
 
+
+sources:
+	for f in $(libbase_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d sources; \
+	done
+
+

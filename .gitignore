@@ -17,6 +17,7 @@ Makefile.in
 ChangeLog
 Doxyfile
 INSTALL
+i18nsources
 
 aclocal.m4
 autom4te.cache/

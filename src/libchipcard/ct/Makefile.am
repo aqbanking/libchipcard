@@ -16,3 +16,7 @@ iheader_HEADERS=\
 liblcct_la_SOURCES=\
   ct_card.c
 
+sources:
+	for f in $(liblcct_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done

@@ -7,3 +7,4 @@ noinst_HEADERS=\
   winscard.h \
   wintypes.h
 
+sources:

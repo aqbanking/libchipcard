@@ -19,3 +19,8 @@ zkacard_la_LDFLAGS=-module -no-undefined -avoid-version
 zkacard_la_LIBADD=libct_zkacard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 
+sources:
+	for f in $(libct_zkacard_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

@@ -1,4 +1,4 @@
-SUBDIRS=data doc m4 src tutorials
+SUBDIRS=data doc m4 src po tutorials
 
 EXTRA_DIST= \
  AUTHORS \
@@ -111,5 +111,138 @@ format:
 	    --break-after-logical \
 	    --preserve-date \
 	    --suffix=none \{\} \;
+
+
+if IF_MAKE_I18N_FILES
+
+# We directly read that file list. For old make programs, you would
+# set this to an empty variable, because they are only needed by the
+# developers and release technicians.
+I18NFILES=$(shell cat $(srcdir)/i18nsources)
+DLGFILES=$(shell cat $(srcdir)/dlgsources)
+PDFILES=$(shell cat $(srcdir)/pdsources)
+
+# Current build rule:
+sources:
+	rm -f $(srcdir)/i18nsources $(srcdir)/dlgsources $(srcdir)/pdsources
+	$(MAKE) -C $(top_builddir)/src sources
+$(srcdir)/i18nsources $(srcdir)/dlgsources $(srcdir)/pdsources:
+	$(MAKE) sources
+
+# Could also be solved this way: Read the I18NFILES variable from file
+#include $(srcdir)/i18nsources
+# (Needs the following build rule:)
+#sources:
+#	rm -f $(srcdir)/i18nsources
+#	$(MAKE) -C $(top_srcdir)/src sources
+#	mv $(srcdir)/i18nsources $(srcdir)/i18nsources.tmp
+#	echo "I18NFILES = \\" > $(srcdir)/i18nsources
+#	$(SED) 's!\(^.*$$\)!$$(top_srcdir)/\1 \\!' \
+#	  $(srcdir)/i18nsources.tmp >> $(srcdir)/i18nsources
+#	echo '$$(top_srcdir)/config.h' >> $(srcdir)/i18nsources
+#	rm -f $(srcdir)/i18nsources.tmp
+#	$(MAKE) Makefile
+
+# The list of available languages (makes file name transformations much easier)
+ALL_LINGUAS = $(basename $(notdir $(shell ls $(srcdir)/po/*.po)))
+# For old make programs, the locales would directly be written here:
+#ALL_LINGUAS = de
+
+# List of po files. Only necessary in the dependency of the catalogs
+# rule. For old make programs, you would simpy set this to an empty
+# variable.
+I18NLINGUAS = $(foreach lang,$(ALL_LINGUAS),$(srcdir)/po/$(lang).po)
+
+# List of mo files. Only necessary for cleanup. For old make programs,
+# you would simply set this to an empty variable.
+I18NCATALOGS = $(foreach lang,$(ALL_LINGUAS),$(top_builddir)/po/$(lang).mo)
+I18NCATALOGS += $(foreach lang,$(ALL_LINGUAS),$(top_builddir)/po/$(lang).qm)
+
+po/$(PACKAGE).pot: i18nsources dlgsources pdsources $(I18NFILES)
+	rm -f po/tmp*
+	if test -n "$(I18NFILES)"; then \
+	  $(XGETTEXT) -C -c -ki18n -ktr2i18n -kI18N -kI18S\
+	    -kI18N_NOOP -ktranslate -kaliasLocale \
+            -ktr -ktrUtf8 \
+	    '--msgid-bugs-address=aqbanking-user@lists.aqbanking.de' \
+	    -o po/tmppot \
+	    $(I18NFILES) ; \
+	fi
+	for i in $(DLGFILES); do \
+          po4a-gettextize -f xml -m $$i -p po/tmppot1 -o attributes=text && \
+	  msghack -o po/tmppot2 --append po/tmppot po/tmppot1 && \
+	  mv po/tmppot2 po/tmppot; \
+	done
+	for i in $(PDFILES); do \
+          po4a-gettextize -f xml -m $$i -p po/tmppot1 -o wrap \
+	    -o translated="<plugin><short> <plugin><descr>" \
+	    -o untranslated="<plugin><version> <plugin><author>" \
+	    && \
+	  msghack -o po/tmppot2 --append po/tmppot po/tmppot1 && \
+	  mv po/tmppot2 po/tmppot; \
+	done
+	mv po/tmppot po/$(PACKAGE).pot
+	rm -f po/tmppot1
+
+
+# This rule is not called automatically. It is necessary only for
+# the translators, so translators only call this manually.
+merge: po/$(PACKAGE).pot
+	@catalogs=$(I18NLINGUAS); \
+	for cat in $$catalogs; do \
+	echo msgmerge -o $$cat.new $$cat ./po/$(PACKAGE).pot ; \
+	msgmerge -o $$cat.new $$cat ./po/$(PACKAGE).pot ; \
+	if test -s $$cat.new; then \
+	  grep -v "\"POT-Creation" $$cat.new | grep -v '^#' > $$cat.new.2 ; \
+	  grep -v "\"POT-Creation" $$cat | grep -v '^#' >> $$cat.new.1; \
+	  if diff $$cat.new.1 $$cat.new.2; then \
+		echo "  $$cat unchanged; leaving existing po file untouched."; \
+		rm $$cat.new;  \
+	  else  \
+		mv $$cat.new $$cat ; \
+	fi; \
+	rm -f $$cat.new.1 $$cat.new.2 ;\
+	fi ;\
+	done
+
+catalogs: $(I18NLINGUAS)
+	@for i in $(ALL_LINGUAS); do \
+	  filelingua=$(srcdir)/po/$$i.po; \
+	  filecat=$(top_builddir)/po/$$i.mo; \
+	  fileqm=$(top_builddir)/po/$$i.qm; \
+	  echo "Creating translation catalogs for language \"$$i\""; \
+	  $(MSGFMT) -c -o $${filecat} $${filelingua} || touch $${filelingua}; \
+	  if test $(MSGFMT_SUPPORTS_QT) = "yes"; then \
+	    $(MSGFMT) -o $${fileqm} --qt $${filelingua} || touch $${filelingua}; \
+	  else \
+	    echo "$(MSGFMT) does not have the option --qt; ignoring qt translations"; \
+	  fi; \
+	done
+
+
+
+ilocaledir = $(datadir)/locale
+install-mo-catalogs: catalogs
+	@for i in $(ALL_LINGUAS); do \
+	  filecat=$(top_builddir)/po/$$i.mo; \
+	  fileqm=$(top_builddir)/po/$$i.qm; \
+          echo "Installing translation catalog for language \"$$i\""; \
+          $(mkinstalldirs) "$(DESTDIR)$(ilocaledir)/$$i/LC_MESSAGES"; \
+          $(INSTALL_DATA) $${filecat} $(DESTDIR)$(ilocaledir)/$$i/LC_MESSAGES/$(PACKAGE).mo; \
+        done
+uninstall-mo-catalogs:
+	@$(NORMAL_UNINSTALL)
+	@for i in $(ALL_LINGUAS); do \
+	  echo " rm -f '$(DESTDIR)$(ilocaledir)/$$i/LC_MESSAGES/$(PACKAGE).mo'"; \
+	  rm -f "$(DESTDIR)$(ilocaledir)/$$i/LC_MESSAGES/$(PACKAGE).mo"; \
+	done
+
+
+install-data-local: install-mo-catalogs
+uninstall-local: uninstall-mo-catalogs
+
+CLEANFILES += $(I18NCATALOGS)
+
+endif # if USE_I18N
 
 

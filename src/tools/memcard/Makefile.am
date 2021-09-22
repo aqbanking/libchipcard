@@ -15,3 +15,8 @@ if IS_WINDOWS
 memcard_LDFLAGS+=-mconsole
 endif
 
+sources:
+	for f in $(memcard_SOURCES) $(EXTRA_DIST); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

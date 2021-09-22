@@ -18,3 +18,8 @@ endif
 
 MAINTAINERCLEANFILES=Makefile.in
 
+sources:
+	for f in $(chipcard_tool_SOURCES) $(EXTRA_DIST); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

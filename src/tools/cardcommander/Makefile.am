@@ -11,3 +11,10 @@ cardcommander_LDFLAGS=@STRIPALL@
 if IS_WINDOWS
 cardcommander_LDFLAGS+=-mconsole
 endif
+
+
+sources:
+	for f in $(cardcommander_SOURCES) $(EXTRA_DIST); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

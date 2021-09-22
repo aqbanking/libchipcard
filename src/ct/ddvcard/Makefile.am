@@ -17,3 +17,8 @@ ddvcard_la_LDFLAGS=-module -no-undefined -avoid-version
 ddvcard_la_LIBADD=libct_ddvcard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 
+sources:
+	for f in $(libct_ddvcard_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

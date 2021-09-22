@@ -20,3 +20,7 @@ chiptanusb_la_LDFLAGS=-module -no-undefined -avoid-version
 chiptanusb_la_LIBADD=libct_chiptanusb.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
 
 
+sources:
+	for f in $(libct_chiptanusb_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done

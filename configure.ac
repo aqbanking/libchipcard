@@ -591,29 +591,52 @@ AC_SUBST(DOXYGEN_TAGFILES)
 
 
 ###-------------------------------------------------------------------------
-# Search for gettext
+#
+# check for I18N
 #
 
-AC_CHECK_HEADERS([libintl.h],[have_libintl_h=yes],[have_libintl_h=no])
-LIBS=""
-I18N_CATALOG=""
-AC_CHECK_PROGS(XGETTEXT, xgettext, missing)
-if test "$XGETTEXT" != "missing"; then
-  AC_SEARCH_LIBS(gettext,intl c,[have_gettext_fn=yes], [have_gettext_fn=no])
-  i18n_library=$LIBS
-  LIBS=""
-  AC_MSG_CHECKING(for working i18n environment)
-  if test "$have_libintl_h" = "yes" -a "$have_gettext_fn" = "yes" -a "$XGETTEXT" != "missing"; then
-    I18N_PATH="`eval echo $prefix/share`/locale"
-    AC_DEFINE_UNQUOTED(I18N_PATH,"$I18N_PATH",[Path for locales])
-    AC_DEFINE(HAVE_GETTEXT_ENVIRONMENT,1,[if gettext is available])
-    I18N_CATALOG="catalog"
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
+
+# check whether i18n files are to be created
+AC_CHECK_PROG(XGETTEXT,xgettext,xgettext, missing)
+
+MAKE_I18N_FILES="yes"
+if test "$XGETTEXT" = "missing"; then
+  MAKE_I18N_FILES="no"
+  AC_MSG_WARN([xgettext is missing. Locale suport is disabled.])
 fi
-AC_SUBST(I18N_CATALOG)
+
+AC_PATH_PROG([MSGFMT], [msgfmt], [missing])
+if test "$MSGFMT" = "missing"; then
+  MAKE_I18N_FILES="no"
+  AC_MSG_WARN([msgfmt is missing. Locale suport is disabled.])
+fi
+
+AC_SUBST(MAKE_I18N_FILES)
+AM_CONDITIONAL(IF_MAKE_I18N_FILES, [test "$MAKE_I18N_FILES" = "yes"])
+
+
+# then check whether i18n support is to be compiled in
+i18n_libs=""
+HAVE_I18N="yes"
+AC_CHECK_HEADERS([locale.h libintl.h], [], [HAVE_I18N="no"])
+AC_CHECK_FUNCS([setlocale])
+
+if test "$OS_TYPE" != "windows"; then
+  oldlibs="$LIBS"
+  LIBS=""
+  AC_SEARCH_LIBS(gettext, intl, [], [HAVE_I18N="no"])
+  i18n_libs="$LIBS"
+  LIBS="$oldlibs"
+else
+  i18n_libs="-lintl"
+fi
+
+if test "$HAVE_I18N" != "NO"; then
+  AC_DEFINE_UNQUOTED(HAVE_I18N, 1, [whether I18N is available])
+fi
+
+AC_SUBST(HAVE_I18N)
+AC_SUBST(i18n_libs)
 
 
 
@@ -653,6 +676,7 @@ AC_CONFIG_FILES([Makefile
                  data/drivers/win32/cyberjack_ctapi/Makefile
                  data/drivers/win32/generic_pcsc/Makefile
                  doc/Makefile
+                 po/Makefile
                  src/Makefile
                  src/libchipcard/Makefile
                  src/libchipcard/version.h

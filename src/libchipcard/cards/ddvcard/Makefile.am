@@ -30,3 +30,9 @@ appdata_DATA=ddvcard-app.xml ddvcard-app-ddv0.xml ddvcard-app-ddv1.xml
 carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=ddvcard-card-ddv0.xml ddvcard-card-ddv1.xml
 
+
+sources:
+	for f in $(libcards_ddv_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

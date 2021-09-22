@@ -34,3 +34,8 @@ libtest_SOURCES=libtest.c
 libtest_LDADD=@gwenhywfar_libs@ libchipcard.la
 
 
+sources:
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d sources; \
+	done
+

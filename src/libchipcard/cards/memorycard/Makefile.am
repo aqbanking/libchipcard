@@ -28,3 +28,9 @@ appdata_DATA=memorycard-app.xml
 carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=memorycard-card.xml
 
+
+sources:
+	for f in $(libcards_memorycard_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+

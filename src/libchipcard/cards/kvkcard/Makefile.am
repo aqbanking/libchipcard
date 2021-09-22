@@ -30,3 +30,8 @@ carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=kvkcard-card.xml
 
 
+sources:
+	for f in $(libcards_kvk_la_SOURCES) $(extra_sources); do \
+	  echo $(subdir)/$$f >>$(top_srcdir)/i18nsources; \
+	done
+
