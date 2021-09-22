@@ -133,6 +133,18 @@ int _initCommon()
       }
     }
 
+    /* setup locale */
+    rv=GWEN_I18N_BindTextDomain_Dir(PACKAGE, LC_CLIENT_LOCALE_DIR);
+    if (rv) {
+      DBG_ERROR(LC_LOGDOMAIN, "Could not bind textdomain (%d)", rv);
+    }
+    else {
+      rv=GWEN_I18N_BindTextDomain_Codeset(PACKAGE, "UTF-8");
+      if (rv) {
+	DBG_ERROR(LC_LOGDOMAIN, "Could not set codeset (%d)", rv);
+      }
+    }
+
     /* define sysconf path */
     GWEN_PathManager_DefinePath(LCC_PM_LIBNAME, LCC_PM_SYSCONFDIR);
 #if defined(OS_WIN32) || defined(ENABLE_LOCAL_INSTALL)
