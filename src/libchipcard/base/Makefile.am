@@ -9,7 +9,8 @@ DEFS += \
   -DBUILDING_CHIPCARD \
   -DLC_CLIENT_CONFIG_DIR=\"@lc_cfg_searchdir@\" \
   -DLC_CLIENT_CONFIG_FILE=\"@lc_client_config_file@\" \
-  -DLC_CLIENT_XML_DIR=\"@lc_data_searchdir@\"
+  -DLC_CLIENT_XML_DIR=\"@lc_data_searchdir@\" \
+  -DLC_CLIENT_LOCALE_DIR=\"@lc_locale_searchdir@\"
 
 AM_CFLAGS=$(visibility_cflags)
 AM_CPPFLAGS= $(gwenhywfar_includes) $(pcsc_includes) \
