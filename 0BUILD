@@ -1,0 +1,203 @@
+<?xml?>
+
+
+<gwbuild>
+
+  <project name="libchipcard"
+           vmajor="5" vminor="99" vpatchlevel="0" vbuild="0" vtag="git"
+           so_current="8" so_age="0" so_revision="0"
+           write_config_h="TRUE"
+           >
+
+    <setVar name="package">$(project_name)</setVar>
+    <define name="PACKAGE" value="$(package)"  quoted="TRUE" />
+    <setVar name="VERSION">
+      $(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)$(project_vtag)
+    </setVar>
+
+    <!-- version vars (for SED)-->
+    <setVar name="CHIPCARD_VERSION_MAJOR">$(project_vmajor)</setVar>
+    <setVar name="CHIPCARD_VERSION_MINOR">$(project_vminor)</setVar>
+    <setVar name="CHIPCARD_VERSION_PATCHLEVEL">$(project_vpatchlevel)</setVar>
+    <setVar name="CHIPCARD_VERSION_BUILD">$(project_vbuild)</setVar>
+    <setVar name="CHIPCARD_VERSION_TAG">$(project_vtag)</setVar>
+    <setVar name="CHIPCARD_SO_CURRENT">$(project_so_current)</setVar>
+    <setVar name="CHIPCARD_SO_REVISION">$(project_so_revision)</setVar>
+    <setVar name="CHIPCARD_SO_AGE">$(project_so_age)</setVar>
+    <setVar name="CHIPCARD_SO_EFFECTIVE">$(project_so_effective)</setVar>
+    <setVar name="CHIPCARD_VERSION_STRING">
+      $(project_vmajor).$(project_vminor).$(project_vpatchlevel)
+    </setVar>
+    <setVar name="CHIPCARD_VERSION_FULL_STRING">
+      $(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)$(project_vtag)
+    </setVar>
+
+
+    <!-- version defines -->
+    <define name="CHIPCARD_VERSION_TAG"        value="testing" quoted="TRUE" />
+    <define name="CHIPCARD_VERSION_MAJOR"      value="$(project_vmajor)" />
+    <define name="CHIPCARD_VERSION_MINOR"      value="$(project_vminor)" />
+    <define name="CHIPCARD_VERSION_PATCHLEVEL" value="$(project_vpatchlevel)" />
+    <define name="CHIPCARD_VERSION_BUILD"      value="$(project_vbuild)" />
+    <define name="CHIPCARD_VERSION_FULL_STRING" quoted="TRUE" 
+            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)-testing" />
+    <define name="CHIPCARD_VERSION_STRING"      quoted="TRUE" 
+            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)" />
+
+    <define name="CHIPCARD_SO_CURRENT"         value="$(project_so_current)" />
+    <define name="CHIPCARD_SO_REVISION"        value="$(project_so_revision)" />
+    <define name="CHIPCARD_SO_AGE"             value="$(project_so_age)" />
+    <define name="CHIPCARD_SO_EFFECTIVE"       value="$(project_so_effective)" />
+
+
+    <!-- prefix handling -->
+    <option id="prefix" type="string">
+      <default>/usr/local</default>
+    </option>
+    <setVar name="prefix">$(option_prefix)</setVar>
+    <setVar name="exec_prefix">$(option_prefix)/bin</setVar>
+    <setVar name="sysconfdir">$(option_prefix)/etc</setVar>
+    <setVar name="bindir">$(option_prefix)/bin</setVar>
+    <setVar name="libdir">$(option_prefix)/lib</setVar>
+    <setVar name="includedir">$(option_prefix)/include</setVar>
+    <setVar name="datarootdir">$(option_prefix)/share</setVar>
+    <setVar name="datadir">$(option_prefix)/share</setVar>
+    <setVar name="localedir">$(option_prefix)/share/locale</setVar>
+
+    <setVar name="pkglibdir">$(libdir)/$(package)</setVar>
+    <setVar name="pkgincludedir">$(includedir)/$(package)</setVar>
+    <setVar name="pkgdatadir">$(datadir)/$(package)</setVar>
+
+
+
+    <!-- enable test code -->
+    <option id="enable_testcode" type="string">
+      <default>TRUE</default>
+      <choices>TRUE FALSE</choices>
+    </option>
+    <ifVarMatches name="option_enable_testcode" value="TRUE" >
+      <define name="CHIPCARD_ENABLE_TESTCODE" value="1" />
+    </ifVarMatches>
+
+    <!-- local installation -->
+    <option id="local_install" type="string">
+      <default>FALSE</default>
+      <choices>TRUE FALSE</choices>
+    </option>
+    <ifVarMatches name="option_local_install" value="TRUE" >
+      <define name="ENABLE_LOCAL_INSTALL" value="1" />
+    </ifVarMatches>
+
+
+    <!-- paths -->
+    <ifVarMatches name="GWBUILD_SYSTEM" value="windows" > <!-- long version of IF statement with THEN and ELSE -->
+      <then>
+        <define       name="OS_WIN32" value="1" />
+        <setVar       name="chipcard_sys_is_windows">1</setVar>
+        <setVar       name="lc_client_xml_dir">share/chipcard</setVar>
+        <setVar       name="lc_locale_searchdir">share/locale</setVar>
+        <setVar       name="lc_os_driver_dir">win32</setVar>
+        <setVar       name="libchipcardc_libs">-L $(libdir) -lchipcard</setVar>
+      </then>
+      <else>
+        <define       name="OS_POSIX" value="1" />
+        <setVar       name="chipcard_sys_is_windows">0</setVar>
+        <setVar       name="lc_os_driver_dir">posix</setVar>
+        <setVar       name="libchipcardc_libs">-L $(libdir) -lchipcard</setVar>
+        <ifVarMatches name="option_local_install"     value="TRUE" >
+          <then>
+            <setVar   name="lc_client_xml_dir">share/chipcard</setVar>
+            <setVar   name="lc_locale_searchdir">share/locale</setVar>
+          </then>
+          <else>
+            <setVar   name="lc_client_xml_dir">$(datadir)/chipcard</setVar>
+            <setVar   name="lc_locale_searchdir">$(datadir)/locale</setVar>
+          </else>
+        </ifVarMatches>
+      </else>
+    </ifVarMatches>
+    <define name="CHIPCARD_SYS_IS_WINDOWS" value="$(chipcard_sys_is_windows)" />
+  
+  
+    <!-- dependencies ( pkg-config and libs) -->
+    <dependencies>
+      <dep id="gwenhywfar" name="gwenhywfar" minversion="1.0" required="TRUE" >
+        <variables>plugindir</variables>
+      </dep>
+
+      <ifNotVarMatches name="GWBUILD_SYSTEM" value="windows" >
+        <dep id="pcsc" name="libpcsclite" required="TRUE" />
+      </ifNotVarMatches>
+
+    </dependencies>
+
+
+    <setVar name="have_pcsc">yes</setVar>
+    <ifVarMatches name="GWBUILD_SYSTEM" value="windows" >
+      <setVar name="pcsc_libs">-lwinscard</setVar>
+    </ifVarMatches>
+      
+
+    <!-- symbol visibility -->
+    <checkCompiler>
+      <arg name="has_symbol_visibility">-fvisibility=hidden</arg>
+    </checkCompiler>
+    
+    <ifVarMatches name="has_symbol_visibility" value="TRUE" >
+      <setVar name="visibility_cflags">-fvisibility=hidden</setVar>
+      <define name="GCC_WITH_VISIBILITY_ATTRIBUTE" />
+    </ifVarMatches>
+
+
+
+    <checkheaders>
+      locale.h libintl.h iconv.h
+      fcntl.h stdlib.h string.h unistd.h
+      assert.h ctype.h errno.h fcntl.h stdio.h stdlib.h string.h strings.h locale.h
+      netinet/in.h
+    </checkheaders>
+  
+  
+    <checkfunctions type="c" >
+      setlocale
+      memmove 
+      memset 
+      strcasecmp 
+      strdup 
+      strerror 
+      snprintf
+    </checkfunctions>
+
+
+
+    <!-- compatibility defines/vars with Makefile.am -->
+    <setVar name="chipcard_ldflags">-L$${libdir}</setVar>
+    <setVar name="chipcard_libs">-lchipcard</setVar>
+    <setVar name="libchipcard_includes">-I$${includedir}/libchipcard6</setVar>
+    <setVar name="gwenhywfar_includes">$(gwenhywfar_cflags)</setVar>
+    <setVar name="OSYSTEM">$(GWBUILD_SYSTEM)</setVar>
+
+    <define name="LOCALEDIR"              value="$(datadir)/locale"                           quoted="TRUE" />
+
+    <define name="OS_TYPE"      value="$(GWBUILD_SYSTEM)"    quoted="TRUE" />
+    <define name="OS_SHORTNAME" value="$(GWBUILD_SYSTEM)"    quoted="TRUE" />
+
+
+
+
+    <data dist="TRUE" install="$(libdir)/pkgconfig" generated="true">
+      libchipcard.pc
+    </data>
+  
+  
+    <subdirs>
+      src
+    </subdirs>
+
+    <writeFile name="libchipcard-client.pc" />
+
+
+  </project>
+  
+</gwbuild>
+

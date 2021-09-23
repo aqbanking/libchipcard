@@ -1,0 +1,104 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="ConvenienceLibrary" name="cards" >
+
+    <includes type="c" >
+      $(gwenhywfar_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+
+    <includes type="tm2" >
+      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
+      --include=$(builddir)
+    </includes>
+
+  
+    <define name="BUILDING_CHIPCARD" />
+    
+    <setVar name="local/cflags">$(visibility_cflags)</setVar>
+
+    <setVar name="tm2flags" >
+      --api=CHIPCARD_API
+    </setVar>
+
+  
+    <setVar name="local/typefiles" >
+      hipersonaldata.xml
+      hiinsurancedata.xml
+    </setVar>
+  
+    <setVar name="local/built_sources" >
+      hiinsurancedata.c
+      hipersonaldata.c
+    </setVar>
+  
+    <setVar name="local/built_headers_pub">
+      hiinsurancedata.h
+      hipersonaldata.h
+    </setVar>
+  
+  
+    <setVar name="local/built_headers_priv" >
+      hiinsurancedata_p.h
+      hipersonaldata_p.h
+    </setVar>
+  
+  
+    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/ddvcard" >
+      $(local/built_headers_pub)
+    </headers>
+
+
+    <headers dist="true" >
+      $(local/built_headers_priv)
+    </headers>
+  
+  
+    <sources>
+      $(local/typefiles)
+    </sources>
+
+
+    <data dist="true" install="$(datadir)/chipcard/cards">
+      card.xml
+    </data>
+
+    <extradist>
+    </extradist>
+
+
+    <useTargets>
+      cards_chiptanusb
+      cards-ddv
+      cards-egk
+      cards-geldkarte
+      cards-kvk
+      cards-starcos
+      cards-zkacard
+      cards-chiptanusb
+      cards-memorycard
+      cards-processorcard
+    </useTargets>
+
+
+    <subdirs>
+      chiptanusb
+      ddvcard
+      egkcard
+      geldkarte
+      kvkcard
+      memorycard
+      processorcard
+      starcos
+      zkacard
+    </subdirs>
+
+
+  </target>
+
+</gwbuild>

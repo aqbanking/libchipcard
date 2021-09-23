@@ -1,0 +1,9 @@
+<?xml?>
+
+<gwbuild>
+
+  <subdirs>
+    libchipcard
+  </subdirs>
+
+</gwbuild>

@@ -49,3 +49,4 @@ libchipcard.spec
 libchipcard5/
 libchipcard6/
 patches/
+build/

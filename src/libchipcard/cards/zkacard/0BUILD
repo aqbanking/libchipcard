@@ -1,0 +1,85 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="ConvenienceLibrary" name="cards_zkacard" >
+
+    <includes type="c" >
+      $(gwenhywfar_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+
+    <includes type="tm2" >
+      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
+      --include=$(builddir)
+    </includes>
+
+  
+    <define name="BUILDING_CHIPCARD" />
+    
+    <setVar name="local/cflags">$(visibility_cflags)</setVar>
+
+    <setVar name="tm2flags" >
+      --api=CHIPCARD_API
+    </setVar>
+
+  
+    <setVar name="local/typefiles" >
+    </setVar>
+  
+    <setVar name="local/built_sources" >
+    </setVar>
+  
+    <setVar name="local/built_headers_pub">
+    </setVar>
+  
+  
+    <setVar name="local/built_headers_priv" >
+    </setVar>
+  
+  
+    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/zkacard" >
+      $(local/built_headers_pub)
+
+      zkacard.h
+    </headers>
+
+
+    <headers dist="true" >
+      $(local/built_headers_priv)
+
+      zkacard_p.h
+    </headers>
+  
+  
+    <sources>
+      $(local/typefiles)
+
+      zkacard.c
+    </sources>
+
+
+    <data dist="true" install="$(datadir)/chipcard/apps">
+      zkacard-app.xml
+    </data>
+
+    <data dist="true" install="$(datadir)/chipcard/cards">
+      zkacard-card.xml
+    </data>
+
+    <extradist>
+    </extradist>
+
+
+    <useTargets>
+    </useTargets>
+
+    <subdirs>
+    </subdirs>
+
+  </target>
+  
+</gwbuild>

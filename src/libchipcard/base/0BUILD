@@ -1,0 +1,102 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="ConvenienceLibrary" name="base" >
+
+    <includes type="c" >
+      $(gwenhywfar_cflags)
+      $(pcsc_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+
+    <includes type="tm2" >
+      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
+      --include=$(builddir)
+    </includes>
+
+  
+    <define name="BUILDING_CHIPCARD" />
+    
+    <define name="LC_CLIENT_XML_DIR" quoted="TRUE">$(lc_client_xml_dir)</define>
+    <define name="LC_CLIENT_LOCALE_DIR" quoted="TRUE">$(lc_locale_searchdir)</define>
+
+    <setVar name="local/cflags">$(visibility_cflags)</setVar>
+
+    <setVar name="tm2flags" >
+      --api=CHIPCARD_API
+    </setVar>
+
+  
+    <setVar name="local/typefiles" >
+      pininfo.xml
+    </setVar>
+  
+    <setVar name="local/built_sources" >
+      pininfo.c
+    </setVar>
+  
+    <setVar name="local/built_headers_pub">
+      pininfo.h
+    </setVar>
+  
+  
+    <setVar name="local/built_headers_priv" >
+      pininfo_p.h
+    </setVar>
+  
+  
+    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/base" >
+      $(local/built_headers_pub)
+
+      client.h
+      card.h card_imp.h
+      tlv.h
+    </headers>
+
+
+    <headers dist="true" >
+      $(local/built_headers_priv)
+
+      client_l.h client_p.h client_cmd.h client_xml.h
+      card_l.h card_p.h
+      tlv_p.h
+      driverinfo.h driverinfo_p.h
+      msgengine.h msgengine_p.h
+    </headers>
+  
+  
+    <sources>
+      $(local/typefiles)
+
+      client.c
+      client_cmd.c
+      client_io.c
+      client_xml.c
+      card.c
+      card_data.c
+      card_files.c
+      card_iso.c
+      tlv.c
+      driverinfo.c
+      misc.c
+      msgengine.c
+    </sources>
+
+
+    <extradist>
+    </extradist>
+
+
+    <useTargets>
+    </useTargets>
+
+    <subdirs>
+    </subdirs>
+
+  </target>
+  
+</gwbuild>

@@ -273,8 +273,6 @@ case "$OS_TYPE" in
     posix)
         lc_sys_is_windows=0
         
-        lc_client_config_dir="\${sysconfdir}/chipcard"
-        lc_client_config_file="chipcardc.conf"
         lc_client_xml_dir="\${datadir}/chipcard"
         lc_os_driver_dir="posix"
     	;;
@@ -282,8 +280,6 @@ case "$OS_TYPE" in
         AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
         lc_sys_is_windows=1
 
-        lc_client_config_dir="\${sysconfdir}/chipcard"
-        lc_client_config_file="chipcardc.conf"
         lc_client_xml_dir="\${datadir}/chipcard"
         lc_os_driver_dir="win32"
     	;;
@@ -292,8 +288,6 @@ esac
 AM_CONDITIONAL(IS_WINDOWS, [test "$OS_TYPE" = "windows"])
 AC_SUBST(lc_sys_is_windows)
 
-AC_SUBST(lc_client_config_dir)
-AC_SUBST(lc_client_config_file)
 AC_SUBST(lc_client_xml_dir)
 
 AC_SUBST(libchipcardc_libs)
@@ -377,33 +371,6 @@ fi
 
 AC_SUBST(lc_locale_searchdir)
 AC_MSG_RESULT($lc_locale_searchdir)
-
-
-
-###-------------------------------------------------------------------------
-#
-# check cfg search dir
-#
-AC_MSG_CHECKING(cfg search dir)
-AC_ARG_WITH(cfg-searchdir, [  --with-cfg-searchdir=DIR where to search for cfg files],
-  [lc_cfg_searchdir="$withval"],
-  [lc_cfg_searchdir=""])
-
-if test -z "${lc_cfg_searchdir}"; then
-  if test "$OSYSTEM" = "windows"; then
-    lc_cfg_searchdir="etc/chipcard"
-  else
-    if test "$enable_local_install" != "no"; then
-      lc_cfg_searchdir="etc/chipcard"
-    else
-      lc_cfg_searchdir="$lc_client_config_dir"
-    fi
-  fi
-fi
-
-
-AC_SUBST(lc_cfg_searchdir)
-AC_MSG_RESULT($lc_cfg_searchdir)
 
 
 
