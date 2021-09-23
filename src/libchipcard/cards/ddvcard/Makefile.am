@@ -17,7 +17,7 @@ noinst_HEADERS=\
   ddvcard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/ddvcard
 iheader_HEADERS=\
   ddvcard.h
 

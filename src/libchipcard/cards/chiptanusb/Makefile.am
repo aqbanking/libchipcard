@@ -14,7 +14,7 @@ noinst_HEADERS=\
   chiptanusb_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/chiptanusb
 iheader_HEADERS=\
   chiptanusb.h
 

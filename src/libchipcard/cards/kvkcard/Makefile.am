@@ -15,7 +15,7 @@ noinst_HEADERS=\
   kvkcard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/kvkcard
 iheader_HEADERS=\
   kvkcard.h
 

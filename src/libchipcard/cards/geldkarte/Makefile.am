@@ -23,7 +23,7 @@ noinst_HEADERS=\
   geldkarte_values_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/geldkarte
 iheader_HEADERS=\
   geldkarte.h \
   geldkarte_blog.h \

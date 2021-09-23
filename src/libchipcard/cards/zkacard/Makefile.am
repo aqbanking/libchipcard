@@ -17,7 +17,7 @@ noinst_HEADERS=\
   zkacard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/zkacard
 iheader_HEADERS=\
   zkacard.h
 

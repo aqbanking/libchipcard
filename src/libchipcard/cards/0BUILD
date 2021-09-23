@@ -49,7 +49,7 @@
     </setVar>
   
   
-    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/ddvcard" >
+    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards" >
       $(local/built_headers_pub)
     </headers>
 

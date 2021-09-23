@@ -15,7 +15,7 @@ noinst_HEADERS=\
   processorcard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/processorcard
 iheader_HEADERS=\
   processorcard.h
 

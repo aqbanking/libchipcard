@@ -15,7 +15,7 @@ noinst_HEADERS=\
   egkcard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/egkcard
 iheader_HEADERS=\
   egkcard.h
 

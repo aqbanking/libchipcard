@@ -16,7 +16,7 @@
     
     <setVar name="local/cflags">$(visibility_cflags)</setVar>
 
-    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/ddvcard" >
+    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/chiptanusb" >
       chiptanusb.h
     </headers>
 

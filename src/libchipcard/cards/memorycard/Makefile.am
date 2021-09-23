@@ -15,7 +15,7 @@ noinst_HEADERS=\
   memorycard_p.h
 
 
-iheaderdir=@libchipcard_headerdir_am@/cards
+iheaderdir=@libchipcard_headerdir_am@/cards/memorycard
 iheader_HEADERS=\
   memorycard.h
 
