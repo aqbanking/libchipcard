@@ -75,7 +75,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
 
   if ((pt!=GWEN_Crypt_PinType_Manage) &&
       (LC_Card_GetReaderFlags(hcard) & LC_READER_FLAGS_KEYPAD)) {
-    uint32_t bid;
+    /*uint32_t bid;*/
     int triesLeft=-1;
 
     DBG_INFO(LC_LOGDOMAIN, "Terminal has a keypad, will ask for pin.");
@@ -320,23 +320,23 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
 {
 
   GWEN_DB_NODE *db=NULL;
-  GWEN_DB_NODE *dbNotePad;
-  GWEN_DB_NODE *dbRecord;
+  /*GWEN_DB_NODE *dbNotePad;*/
+  /*GWEN_DB_NODE *dbRecord;*/
   int rv;
-  int keyNumber;
-  int j;
-  const char *s;
+  /*int keyNumber;*/
+  /*int j;*/
+  /*const char *s;*/
   int i;
   int res;
-  GWEN_BUFFER *mbuf;
-  const GWEN_CRYPT_TOKEN_CONTEXT *cctx;
-  uint8_t cnt;
+  /*GWEN_BUFFER *mbuf;*/
+  /*const GWEN_CRYPT_TOKEN_CONTEXT *cctx;*/
+  /*uint8_t cnt;*/
   LC_CARD *hcard=0;
   LC_CLIENT *lc;
   uint8_t v=0;
   uint8_t haveAccessPin=0;
   const LC_PININFO *pi;
-  uint8_t guuid=0;
+  /*uint8_t guuid=0;*/
 
   const GWEN_ARGS args[]= {
     {
@@ -393,9 +393,9 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   }
 
   for (i=0;; i++) {
-    const GWEN_STRINGLIST *sl;
-    GWEN_STRINGLISTENTRY *se;
-    uint8_t found = 0;
+    /*const GWEN_STRINGLIST *sl;*/
+    /*GWEN_STRINGLISTENTRY *se;*/
+    /*uint8_t found = 0;*/
     if (v>0) {
       fprintf(stderr, "Waiting for card...\n");
     }
@@ -459,20 +459,19 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   pi=LC_ZkaCard_GetPinInfo(hcard, 3);
   if (pi == NULL)
     pi=LC_Card_GetPinInfoByName(hcard, "ch_pin");
+  if (pi == NULL) {
+    fprintf(stderr, "No pininfo.\n");
+    return RETURNVALUE_WORK;
+  }
 
   while (!haveAccessPin) {
     int rv;
 
     /* enter pin */
-    if (pi)
-      rv=EnterPinWithPinInfo(hcard,
-                             GWEN_Crypt_PinType_Access,
-                             pi,
-                             0);
-    else {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
-    }
+    rv=EnterPinWithPinInfo(hcard,
+                           GWEN_Crypt_PinType_Access,
+                           pi,
+                           0);
     if (rv) {
       DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
       return rv;

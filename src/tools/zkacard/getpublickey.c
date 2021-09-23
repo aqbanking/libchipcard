@@ -33,8 +33,8 @@ int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv)
   GWEN_DB_NODE *db=NULL;
   int rv;
   int keyNumber;
-  int j;
-  const char *s;
+ /* int j;*/
+  /*const char *s;*/
   uint32_t kid;
   const GWEN_CRYPT_TOKEN_KEYINFO *keyInfo=NULL;
   GWEN_PLUGIN_MANAGER *pm;

@@ -307,9 +307,9 @@ int _readBytesDec(const char *p, int len)
 {
   int r = 0;
   int i;
-  const char *pSave;
+  /*const char *pSave;*/
 
-  pSave = p;
+  /*pSave = p;*/
   for (i = 0; i < len; i++) {
     uint8_t c;
 
@@ -525,13 +525,13 @@ typedef int(*GetTanfromUSB_GeneratorFn)(unsigned char *HHDCommand, int fullHHD_L
 
 int main(int argc, char **argv)
 {
-  const char *s;
-  const char *cmd;
+  /*const char *s;*/
+  /*const char *cmd;*/
 
-  LC_CLIENT *cl;
-  int v;
-  LC_CARD *card = 0;
-  int res;
+  /*LC_CLIENT *cl;*/
+  /*int v;*/
+  /*LC_CARD *card = 0;*/
+  /*int res;*/
 
   int rv;
   int i;
@@ -553,7 +553,7 @@ int main(int argc, char **argv)
 
   GWEN_PLUGIN_MANAGER *pm;
   GWEN_PLUGIN *pl;
-  GWEN_CRYPT_TOKEN *ct;
+  /*GWEN_CRYPT_TOKEN *ct;*/
   GWEN_LIBLOADER *ll;
 
   void *p;
@@ -573,12 +573,12 @@ int main(int argc, char **argv)
   pHHDDest = &HHDCommand[8];
   HHD_Generator_Len = GWEN_Buffer_GetUsedBytes(cbuf) / 2;
   fullHHD_Len = HHD_Generator_Len + sizeof(cardPrefix) + 1;
-  pHHDSrc = GWEN_Buffer_GetStart(cbuf);
+  pHHDSrc = (unsigned char*) GWEN_Buffer_GetStart(cbuf);
   memcpy(HHDCommand, cardPrefix, sizeof(cardPrefix));
   HHDCommand[sizeof(cardPrefix)] = HHD_Generator_Len;
 
   for (i = 0; i < HHD_Generator_Len; i++) {
-    *pHHDDest++ = _readBytesHex(pHHDSrc, 2);
+    *pHHDDest++ = _readBytesHex((const char*)pHHDSrc, 2);
     pHHDSrc++;
     pHHDSrc++;
   }

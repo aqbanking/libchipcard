@@ -1320,14 +1320,13 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
   GWEN_BUFFER *scratchBuf;
   GWEN_DB_NODE *dbRecord;
   int i;
-  int recnum;
-  uint8_t *modData;
-  uint8_t *expData;
+  /*int recnum=1;*/
+  /*uint8_t *modData;*/
+  /*uint8_t *expData;*/
   int locModLen;
   int locExpLen;
   int keyNum;
   uint8_t byte;
-  recnum=1;
   char keyChar[4]="\0";
 
   assert(ct);
@@ -1384,13 +1383,11 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
   if (res<0) {
     if (LC_Card_GetLastSW1(lct->card)==0x6a &&
         LC_Card_GetLastSW2(lct->card)==0x83) {
-      DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
-
+      DBG_INFO(LC_LOGDOMAIN, "All records read");
     }
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Error reading record 0 of EF_KEYD (%d)", res);
-      if (i>1)
-        GWEN_Buffer_free(mbuf);
+      GWEN_Buffer_free(mbuf);
       return GWEN_ERROR_IO;
     }
 
@@ -1471,19 +1468,18 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
   LC_CT_ZKA *lct;
   int res;
   GWEN_BUFFER *mbuf;
-  GWEN_BUFFER *scratchBuf;
+  /*GWEN_BUFFER *scratchBuf;*/
   GWEN_DB_NODE *dbSsd;
   GWEN_DB_NODE *dbTemplate;
   GWEN_DB_NODE *dbFileId;
-  int i;
-  int recnum;
-  uint8_t *modData;
-  uint8_t *expData;
-  int locModLen;
-  int locExpLen;
+  /*int i;*/
+  /*int recnum=1;*/
+  /*uint8_t *modData;*/
+  /*uint8_t *expData;*/
+  /*int locModLen;*/
+  /*int locExpLen;*/
   int keyNum;
-  uint8_t byte;
-  recnum=1;
+  /*uint8_t byte;*/
   char keyChar[4]="\0";
   const char *ssd_tag;
   int sid;
@@ -1586,8 +1582,8 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
     GWEN_Buffer_Rewind(mbuf);
     /* certificate length should be TLV coded... */
     if (certPtr[0] != 0) {
-      uint32_t tag_len_len;
-      uint32_t data_len=GWEN_TLV_ParseLength(mbuf, &tag_len_len);
+      /*uint32_t tag_len_len;*/
+      /*uint32_t data_len=GWEN_TLV_ParseLength(mbuf, &tag_len_len);*/
       /*GWEN_Crypt_Token_KeyInfo_SetCertificate(ki,GWEN_Buffer_GetStart(mbuf),data_len+tag_len_len);*/
       GWEN_Crypt_Token_KeyInfo_SetCertificate(ki, (const uint8_t *) GWEN_Buffer_GetStart(mbuf), recordLen);
       /* Certificate on zka cards is always X.509 */
@@ -1824,7 +1820,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
       dbT=GWEN_DB_GetGroup(dbCtx, GWEN_PATH_FLAGS_NAMEMUSTEXIST, "institute");
       if (dbT) {
         uint32_t hashAlgo=0;
-        int      keyStatus=0;
+        /*int      keyStatus=0;*/
 
         s=GWEN_DB_GetCharValue(dbT, "bankName", 0, NULL);
         if (s)
@@ -2038,13 +2034,13 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
         if (rdhVersion >= 3) {
           /* CID is in EF_ID */
           LC_CT_ZKA *lct;
-          int res;
+          /*int res;*/
           GWEN_BUFFER *ef_id_bin;
-          GWEN_BUFFER *cid_str;
-          GWEN_DB_NODE *ef_id_db;
-          char branchKeyChar[3]="\0\0\0";
-          char checkSumChar[2]="\0\0";
-          int i_val;
+          /*GWEN_BUFFER *cid_str;*/
+          /*GWEN_DB_NODE *ef_id_db;*/
+          /*char branchKeyChar[3]="\0\0\0";*/
+          /*char checkSumChar[2]="\0\0";*/
+          /*int i_val;*/
 
           lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
           assert(lct);

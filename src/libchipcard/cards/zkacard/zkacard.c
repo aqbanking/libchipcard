@@ -427,8 +427,8 @@ int LC_ZkaCard_Sign(LC_CARD *card,
 
   assert(card);
 
-  uint8_t *jptr;
-  jptr= (uint8_t *) ptr;
+  /*uint8_t *jptr;
+  jptr= (uint8_t *) ptr;*/
 
   combinedKid=keyId;
   if (globalKey)
@@ -507,8 +507,8 @@ int LC_ZkaCard_Decipher(LC_CARD *card,
 
   assert(card);
 
-  uint8_t *jptr;
-  jptr= (uint8_t *) ptr;
+  /*uint8_t *jptr;
+  jptr= (uint8_t *) ptr;*/
 
   combinedKid=keyId;
   if (globalKey)
@@ -770,12 +770,14 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
   return 0;
 }
 
+
+#if 0
 int LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
-                                                uint32_t flags,
-                                                int recNum,
-                                                const char *searchPattern,
-                                                unsigned int searchPatternSize,
-                                                GWEN_BUFFER *buf)
+                                   uint32_t flags,
+                                   int recNum,
+                                   const char *searchPattern,
+                                   unsigned int searchPatternSize,
+                                   GWEN_BUFFER *buf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -830,12 +832,13 @@ int LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   return res;
 }
+#endif
 
 int LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
 {
   int res= 0;
   LC_ZKACARD *xc;
-  GWEN_BUFFER *mbuf;
+  /*GWEN_BUFFER *mbuf;*/
   GWEN_DB_NODE *dbRecord;
   int remLen;
 

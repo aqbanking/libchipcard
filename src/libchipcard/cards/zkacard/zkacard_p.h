@@ -48,17 +48,21 @@ static int CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
                                                             int *currentErrors);
 
 
-static int LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);
+/*static int LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);*/
 static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf);
 
 
 static int LC_ZkaCard__ReadPwdd(LC_CARD *card);
 static int LC_ZkaCard__ParseDfSigSSD(LC_CARD *card);
+#if 0
 static int LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
-                                                       uint32_t flags,
-                                                       int recNum,
-                                                       const char *searchPattern,
-                                                       unsigned int searchPatternSize,
-                                                       GWEN_BUFFER *buf);
+                                          uint32_t flags,
+                                          int recNum,
+                                          const char *searchPattern,
+                                          unsigned int searchPatternSize,
+                                          GWEN_BUFFER *buf);
+#endif
+
+
 #endif
 
