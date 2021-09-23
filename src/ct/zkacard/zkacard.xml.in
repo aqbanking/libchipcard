@@ -2,7 +2,7 @@
 
 <plugin type="ct" name="zkacard" device="card" >
   <version>@CHIPCARD_VERSION_STRING@</version>
-  <author>Martin Preuss (martin@libchipcard.de)</author>
+  <author>Martin Preuss (martin at libchipcard.de)</author>
   <short>ZKACard Chipcard Medium</short>
 
   <descr>

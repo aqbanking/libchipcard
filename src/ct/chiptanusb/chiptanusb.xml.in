@@ -2,7 +2,7 @@
 
 <plugin type="ct" name="chiptanusb" device="card" >
   <version>@CHIPCARD_VERSION_STRING@</version>
-  <author>Martin Preuss (martin@libchipcard.de)</author>
+  <author>Martin Preuss (martin at libchipcard.de)</author>
   <short>ChipTAN USB Medium</short>
 
   <descr>

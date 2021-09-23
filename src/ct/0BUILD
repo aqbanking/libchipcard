@@ -3,8 +3,10 @@
 <gwbuild>
 
   <subdirs>
-    libchipcard
-    ct
+    ddvcard
+    chiptanusb
+    starcoscard
+    zkacard
   </subdirs>
 
 </gwbuild>
