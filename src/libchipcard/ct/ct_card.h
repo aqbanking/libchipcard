@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -20,7 +20,7 @@
 /** @addtogroup chipcardc_client_ct
  * @short Chipcard-based CryptTokens
  *
- * Libchipcard2 provides CryptToken plugins for Gwenhywfar. These plugins
+ * Libchipcard provides CryptToken plugins for Gwenhywfar. These plugins
  * can be used by AqBanking.
  *
  * The following CryptToken plugins are provided:
@@ -46,19 +46,17 @@
  * a pin which is then relayed to the card.
  * Used by ddvcard, starcos, zkacard.
  */
-CHIPCARD_API
-int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
-                             LC_CARD *hcard,
-                             GWEN_CRYPT_PINTYPE pinType,
-                             uint32_t guiid);
+CHIPCARD_API int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
+                                          LC_CARD *hcard,
+                                          GWEN_CRYPT_PINTYPE pinType,
+                                          uint32_t guiid);
 
 /* used by zkacard */
-CHIPCARD_API
-int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
-                                        LC_CARD *hcard,
-                                        GWEN_CRYPT_PINTYPE pinType,
-                                        const LC_PININFO *pinInfo,
-                                        uint32_t guiid);
+CHIPCARD_API int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
+                                                     LC_CARD *hcard,
+                                                     GWEN_CRYPT_PINTYPE pinType,
+                                                     const LC_PININFO *pinInfo,
+                                                     uint32_t guiid);
 
 
 /**
@@ -66,22 +64,20 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
  * secure input will be used. Otherwise the user will be asked to enter
  * a pin which is then relayed to the card.
  */
-CHIPCARD_API
-int LC_Crypt_Token_ModifyPin(GWEN_CRYPT_TOKEN *ct,
-			     LC_CARD *hcard,
-			     GWEN_CRYPT_PINTYPE pinType,
-			     int initial,
-			     uint32_t guiid);
+CHIPCARD_API int LC_Crypt_Token_ModifyPin(GWEN_CRYPT_TOKEN *ct,
+                                          LC_CARD *hcard,
+                                          GWEN_CRYPT_PINTYPE pinType,
+                                          int initial,
+                                          uint32_t guiid);
 
 /**
  * Let the chipcard change a pin. If the card reader has a keypad then
  * secure input will be used. Otherwise the user will be asked to enter
  * a pin which is then relayed to the card.
  */
-CHIPCARD_API
-int LC_Crypt_Token_ModifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct, LC_CARD *hcard,
-					GWEN_CRYPT_PINTYPE pinType, const LC_PININFO *pinInfo, int initial,
-					uint32_t guiid);
+CHIPCARD_API int LC_Crypt_Token_ModifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct, LC_CARD *hcard,
+                                                     GWEN_CRYPT_PINTYPE pinType, const LC_PININFO *pinInfo, int initial,
+                                                     uint32_t guiid);
 
 /*@}*/
 

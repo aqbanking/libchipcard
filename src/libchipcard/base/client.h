@@ -26,10 +26,6 @@
 extern "C" {
 #endif
 
-#define LC_DEFAULT_SHORT_TIMEOUT     10
-#define LC_DEFAULT_LONG_TIMEOUT      30
-#define LC_DEFAULT_VERY_LONG_TIMEOUT 60
-
 
 
 typedef struct LC_CLIENT LC_CLIENT;
@@ -71,15 +67,13 @@ extern "C" {
  * @param programName name of the program which wants to create the client
  * @param programVersion version string of that program
  */
-CHIPCARD_API
-LC_CLIENT *LC_Client_new(const char *programName, const char *programVersion);
+CHIPCARD_API LC_CLIENT *LC_Client_new(const char *programName, const char *programVersion);
 
 /**
  * Release all ressources associated with Libchipcard3. This must be called
  * at the end of the application to avoid memory leaks.
  */
-CHIPCARD_API
-void LC_Client_free(LC_CLIENT *cl);
+CHIPCARD_API void LC_Client_free(LC_CLIENT *cl);
 
 /**
  * Init Libchipcard. This functions reads the configuration file and
@@ -87,30 +81,24 @@ void LC_Client_free(LC_CLIENT *cl);
  * (see @ref LC_Client_Start), so it is perfectly save to call this function
  * upon startup of the application.
  */
-CHIPCARD_API
-int LC_Client_Init(LC_CLIENT *cl);
+CHIPCARD_API int LC_Client_Init(LC_CLIENT *cl);
 
 /**
  * Deinit Libchipcard. Unloads all data files.
  *
  */
-CHIPCARD_API
-int LC_Client_Fini(LC_CLIENT *cl);
+CHIPCARD_API int LC_Client_Fini(LC_CLIENT *cl);
 
 
 
-CHIPCARD_API
-int LC_Client_Start(LC_CLIENT *cl);
+CHIPCARD_API int LC_Client_Start(LC_CLIENT *cl);
 
-CHIPCARD_API
-int LC_Client_Stop(LC_CLIENT *cl);
+CHIPCARD_API int LC_Client_Stop(LC_CLIENT *cl);
 
 
-CHIPCARD_API
-int LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeout);
+CHIPCARD_API int LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeout);
 
-CHIPCARD_API
-int LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card);
+CHIPCARD_API int LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card);
 
 
 /*@}*/
@@ -120,11 +108,9 @@ int LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card);
  *
  */
 /*{@*/
-CHIPCARD_API
-const char *LC_Client_GetProgramName(const LC_CLIENT *cl);
+CHIPCARD_API const char *LC_Client_GetProgramName(const LC_CLIENT *cl);
 
-CHIPCARD_API
-const char *LC_Client_GetProgramVersion(const LC_CLIENT *cl);
+CHIPCARD_API const char *LC_Client_GetProgramVersion(const LC_CLIENT *cl);
 
 /*@}*/
 
