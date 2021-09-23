@@ -44,18 +44,20 @@
  * Let the chipcard verify a pin. If the card reader has a keypad then
  * secure input will be used. Otherwise the user will be asked to enter
  * a pin which is then relayed to the card.
+ * Used by ddvcard, starcos, zkacard.
  */
 CHIPCARD_API
 int LC_Crypt_Token_VerifyPin(GWEN_CRYPT_TOKEN *ct,
                              LC_CARD *hcard,
-                             GWEN_CRYPT_PINTYPE pt,
+                             GWEN_CRYPT_PINTYPE pinType,
                              uint32_t guiid);
 
+/* used by zkacard */
 CHIPCARD_API
 int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                                         LC_CARD *hcard,
-                                        GWEN_CRYPT_PINTYPE pt,
-                                        const LC_PININFO *pi,
+                                        GWEN_CRYPT_PINTYPE pinType,
+                                        const LC_PININFO *pinInfo,
                                         uint32_t guiid);
 
 
@@ -65,17 +67,22 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
  * a pin which is then relayed to the card.
  */
 CHIPCARD_API
-int LC_Crypt_Token_ChangePin(GWEN_CRYPT_TOKEN *ct,
-                             LC_CARD *hcard,
-                             GWEN_CRYPT_PINTYPE pt,
-                             int initial,
-                             uint32_t guiid);
+int LC_Crypt_Token_ModifyPin(GWEN_CRYPT_TOKEN *ct,
+			     LC_CARD *hcard,
+			     GWEN_CRYPT_PINTYPE pinType,
+			     int initial,
+			     uint32_t guiid);
 
 /**
- * Convert the given client result code to one of Gwenhywfars error codes.
+ * Let the chipcard change a pin. If the card reader has a keypad then
+ * secure input will be used. Otherwise the user will be asked to enter
+ * a pin which is then relayed to the card.
  */
 CHIPCARD_API
-int LC_Crypt_Token_ResultToError(int res);
+int LC_Crypt_Token_ModifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct, LC_CARD *hcard,
+					GWEN_CRYPT_PINTYPE pinType, const LC_PININFO *pinInfo, int initial,
+					uint32_t guiid);
+
 /*@}*/
 
 /*@}*/ /* addtogroup */
