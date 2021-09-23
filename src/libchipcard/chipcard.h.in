@@ -87,67 +87,16 @@
 #define LC_LOGDOMAIN "libchipcard"
 
 
-/** Error codes */
-/*@{*/
-#define LC_ERROR_NONE                  0x00000000
-#define LC_ERROR_GENERIC               0x00000001
-#define LC_ERROR_INVALID               0x00000002
-#define LC_ERROR_CARD_REMOVED          0x00000003
-#define LC_ERROR_CARD_NOT_OWNED        0x00000004
-#define LC_ERROR_NOT_SUPPORTED         0x00000005
-#define LC_ERROR_SETUP                 0x00000006
-#define LC_ERROR_NO_DATA               0x00000007
-#define LC_ERROR_LOCKED_BY_OTHER       0x00000008
-#define LC_ERROR_NOT_LOCKED            0x00000009
-
-#define LC_ERROR_BAD_RESPONSE          0x0000000a
-#define LC_ERROR_NO_SLOTS_CONNECTED    0x0000000b
-#define LC_ERROR_NO_SLOTS_DISCONNECTED 0x0000000c
-#define LC_ERROR_NO_SLOTS_AVAILABLE    0x0000000d
-#define LC_ERROR_BAD_PIN               0x0000000e
-#define LC_ERROR_USER_ABORTED          0x0000000f
-#define LC_ERROR_CARD_DESTROYED        0x00000010
-#define LC_ERROR_READER_REMOVED        0x00000011
-#define LC_ERROR_TIMEOUT               0x00000012
-#define LC_ERROR_IPC                   0x00000013
-#define LC_ERROR_BUFFER_OVERFLOW       0x00000014
-/*@}*/
-
-
 /** Reader flags */
 /*@{*/
 #define LC_READER_FLAGS_KEYPAD             0x00010000
-#define LC_READER_FLAGS_DISPLAY            0x00020000
-#define LC_READER_FLAGS_NOINFO             0x00040000
-#define LC_READER_FLAGS_REMOTE             0x00080000
-#define LC_READER_FLAGS_AUTO               0x00100000
-#define LC_READER_FLAGS_SUSPENDED_CHECKS   0x00200000
-#define LC_READER_FLAGS_DRIVER_HAS_VERIFY  0x00400000
-#define LC_READER_FLAGS_KEEP_RUNNING       0x00800000
-#define LC_READER_FLAGS_LOW_WRITE_BOUNDARY 0x01000000
-#define LC_READER_FLAGS_NO_MEMORY_SW       0x02000000
+#define LC_READER_FLAGS_LOW_WRITE_BOUNDARY 0x00020000
 /*@}*/
 
 CHIPCARD_API uint32_t LC_ReaderFlags_fromXml(GWEN_XMLNODE *node, const char *name);
 CHIPCARD_API uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name);
 CHIPCARD_API void LC_ReaderFlags_toDb(GWEN_DB_NODE *db, const char *name, uint32_t fl);
 
-
-
-typedef enum {
-  LC_CardStatusInserted=0,
-  LC_CardStatusRemoved,
-  LC_CardStatusOrphaned,
-
-  LC_CardStatusUnknown=999
-} LC_CARD_STATUS;
-
-
-typedef enum {
-  LC_CardTypeUnknown=0,
-  LC_CardTypeProcessor,
-  LC_CardTypeMemory
-} LC_CARD_TYPE;
 
 
 #endif /* CHIPCARD_CHIPCARD_H */
