@@ -157,7 +157,7 @@ int _initCommon()
       uint32_t bpos;
 
       fbuf=GWEN_Buffer_new(0, 256, 0, 1);
-      rv=GWEN_Directory_FindPathForFile(paths, "cards/README", fbuf);
+      rv=GWEN_Directory_FindPathForFile(paths, "cards/card.xml", fbuf);
       GWEN_StringList_free(paths);
       if (rv) {
         DBG_ERROR(LC_LOGDOMAIN, "Data files not found (%d)", rv);
