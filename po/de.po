@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: aqbanking-user@lists.aqbanking.de\n"
-"POT-Creation-Date: 2021-09-22 23:19+0200\n"
+"POT-Creation-Date: 2021-09-24 00:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/libchipcard/base/client.c:363
+#: ../src/libchipcard/base/client.c:319
 msgid ""
 "The PC/SC service is not running.\n"
 "Please make sure that the package \"pcscd\" is\n"
@@ -34,30 +34,95 @@ msgid ""
 "</p></html>"
 msgstr ""
 
-#: src/libchipcard/base/client.c:962
+#: ../src/libchipcard/base/client_io.c:106
 msgid "Waiting for card to be inserted"
 msgstr ""
 
-#: src/tools/geldkarte/main.c:255
+#: ../src/ct/ddvcard/ddvcard.c:157 ../src/ct/starcoscard/starcoscard.c:156
+#: ../src/ct/zkacard/zkacard.c:157
+msgid "Insert card"
+msgstr ""
+
+#: ../src/ct/ddvcard/ddvcard.c:158 ../src/ct/starcoscard/starcoscard.c:157
+#: ../src/ct/zkacard/zkacard.c:158
+msgid ""
+"Please insert a chipcard into the reader and click a button.<html>Please "
+"insert a chipcard into the reader and click a button.</html>"
+msgstr ""
+
+#: ../src/ct/ddvcard/ddvcard.c:164 ../src/ct/starcoscard/starcoscard.c:163
+#: ../src/ct/zkacard/zkacard.c:164
+msgid "Ok"
+msgstr ""
+
+#: ../src/ct/ddvcard/ddvcard.c:165 ../src/ct/starcoscard/starcoscard.c:164
+#: ../src/ct/zkacard/zkacard.c:165
+msgid "Abort"
+msgstr ""
+
+#: ../src/ct/ddvcard/ddvcard.c:176 ../src/ct/starcoscard/starcoscard.c:175
+#: ../src/ct/zkacard/zkacard.c:176
+msgid "Error while waiting for card"
+msgstr ""
+
+#: ../src/ct/starcoscard/starcoscard.c:690
+msgid "User Sign Key"
+msgstr ""
+
+#: ../src/ct/starcoscard/starcoscard.c:697
+msgid "User Crypt Key"
+msgstr ""
+
+#: ../src/ct/starcoscard/starcoscard.c:704
+msgid "Peer Sign Key"
+msgstr ""
+
+#: ../src/ct/starcoscard/starcoscard.c:710
+msgid "Peer Crypt Key"
+msgstr ""
+
+#: ../src/tools/chipcard-tool/main.c:137 ../src/tools/zkacard/main.c:131
+msgid "Usage: "
+msgstr ""
+
+#: ../src/tools/chipcard-tool/main.c:140 ../src/tools/zkacard/main.c:134
+msgid " [GLOBAL OPTIONS] COMMAND [LOCAL OPTIONS]\n"
+msgstr ""
+
+#: ../src/tools/chipcard-tool/main.c:148 ../src/tools/zkacard/main.c:142
+msgid ""
+"\n"
+"Commands:\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/chipcard-tool/main.c:150
+msgid ""
+"  atr:\n"
+"    Read the ATR data from a chipcard\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/geldkarte/main.c:129
 #, c-format
 msgid "Card is loaded with %6.2f %s\n"
 msgstr ""
 
-#: src/tools/geldkarte/main.c:350
+#: ../src/tools/geldkarte/main.c:147
 #, c-format
 msgid "Card can be loaded with %6.2f %s\n"
 msgstr ""
 
-#: src/tools/geldkarte/main.c:445
+#: ../src/tools/geldkarte/main.c:165
 #, c-format
 msgid "Card can transfer up to %6.2f %s\n"
 msgstr ""
 
-#: src/tools/geldkarte/main.c:569
+#: ../src/tools/geldkarte/main.c:276
 msgid "No BLogs on the card\n"
 msgstr ""
 
-#: src/tools/geldkarte/main.c:605
+#: ../src/tools/geldkarte/main.c:401
 #, c-format
 msgid ""
 "General usage: %s COMMAND [OPTIONS]\n"
@@ -73,60 +138,7 @@ msgid ""
 "Allowed Options:\n"
 msgstr ""
 
-#: src/tools/chipcard-tool/main.c:187 src/tools/zkacard/main.c:182
-msgid "Usage: "
-msgstr ""
-
-#: src/tools/chipcard-tool/main.c:190 src/tools/zkacard/main.c:185
-msgid " [GLOBAL OPTIONS] COMMAND [LOCAL OPTIONS]\n"
-msgstr ""
-
-#: src/tools/chipcard-tool/main.c:198 src/tools/zkacard/main.c:193
-msgid ""
-"\n"
-"Commands:\n"
-"\n"
-msgstr ""
-
-#: src/tools/chipcard-tool/main.c:200
-msgid ""
-"  atr:\n"
-"    Read the ATR data from a chipcard\n"
-"\n"
-msgstr ""
-
-#: src/tools/memcard/main.c:157
-msgid ""
-"MemCard2 - A tool to read/write data from/to a memory chip card\n"
-"(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
-"This library is free software; you can redistribute it and/or\n"
-"modify it under the terms of the GNU Lesser General Public\n"
-"License as published by the Free Software Foundation; either\n"
-"version 2.1 of the License, or (at your option) any later version.\n"
-"\n"
-msgstr ""
-
-#: src/tools/memcard/main.c:327 src/tools/memcard/main.c:484
-#, c-format
-msgid "ERROR: Could not open file (%s).\n"
-msgstr ""
-
-#: src/tools/memcard/main.c:388
-#, c-format
-msgid "ERROR: Could not write to file (%s).\n"
-msgstr ""
-
-#: src/tools/memcard/main.c:418 src/tools/memcard/main.c:693
-#, c-format
-msgid "ERROR: Could not close file (%s).\n"
-msgstr ""
-
-#: src/tools/memcard/main.c:601
-#, c-format
-msgid "ERROR: Could not read from file (%s).\n"
-msgstr ""
-
-#: src/tools/kvkcard/main.c:150
+#: ../src/tools/kvkcard/main.c:150
 #, c-format
 msgid ""
 "KVKCard3 - A tool to read information from a German medical card.\n"
@@ -145,7 +157,75 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:116
+#: ../src/tools/memcard/main.c:154
+msgid ""
+"MemCard2 - A tool to read/write data from/to a memory chip card\n"
+"(c) 2006 Martin Preuss<martin@libchipcard.de>\n"
+"This library is free software; you can redistribute it and/or\n"
+"modify it under the terms of the GNU Lesser General Public\n"
+"License as published by the Free Software Foundation; either\n"
+"version 2.1 of the License, or (at your option) any later version.\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/memcard/main.c:273 ../src/tools/memcard/main.c:430
+#, c-format
+msgid "ERROR: Could not open file (%s).\n"
+msgstr ""
+
+#: ../src/tools/memcard/main.c:334
+#, c-format
+msgid "ERROR: Could not write to file (%s).\n"
+msgstr ""
+
+#: ../src/tools/memcard/main.c:364 ../src/tools/memcard/main.c:638
+#, c-format
+msgid "ERROR: Could not close file (%s).\n"
+msgstr ""
+
+#: ../src/tools/memcard/main.c:547
+#, c-format
+msgid "ERROR: Could not read from file (%s).\n"
+msgstr ""
+
+#: ../src/tools/zkacard/main.c:144
+msgid ""
+"  getkey:\n"
+"    get public part of a rsa key\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/zkacard/main.c:147
+msgid ""
+"  shownotepad:\n"
+"    show HBCI info from the NOTEPAD\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/zkacard/main.c:150
+msgid ""
+"  resetptc:\n"
+"    reset pin try counter\n"
+"\n"
+msgstr ""
+
+#: ../src/tools/zkacard/getpublickey.c:139
+msgid "User context not found on crypt token"
+msgstr ""
+
+#: ../src/tools/zkacard/getpublickey.c:173
+msgid "Key info not found on crypt token"
+msgstr ""
+
+#: ../src/tools/zkacard/shownotepad.c:40
+msgid "Waiting for pin entry on card reader..."
+msgstr ""
+
+#: ../src/tools/zkacard/shownotepad.c:51
+msgid "Pin entry on card reader finished."
+msgstr ""
+
+#: ../src/tools/cardcommander/cardcommander.cpp:116
 #, c-format
 msgid ""
 "CardCommander - A command line tool to manipulate a chip card.\n"
@@ -161,69 +241,69 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:217
+#: ../src/tools/cardcommander/cardcommander.cpp:170
 msgid "Card is already open, try \"close\" first.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:221
+#: ../src/tools/cardcommander/cardcommander.cpp:174
 msgid "Waiting for a card to be inserted...\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:235
+#: ../src/tools/cardcommander/cardcommander.cpp:188
 msgid "Card is open, info follows:\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:240
-#: src/tools/cardcommander/cardcommander.cpp:269
-#: src/tools/cardcommander/cardcommander.cpp:328
-#: src/tools/cardcommander/cardcommander.cpp:374
+#: ../src/tools/cardcommander/cardcommander.cpp:193
+#: ../src/tools/cardcommander/cardcommander.cpp:222
+#: ../src/tools/cardcommander/cardcommander.cpp:281
+#: ../src/tools/cardcommander/cardcommander.cpp:327
 msgid "Card is not open, try \"open\" first.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:244
+#: ../src/tools/cardcommander/cardcommander.cpp:197
 msgid "Closing card.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:276
-#: src/tools/cardcommander/cardcommander.cpp:335
+#: ../src/tools/cardcommander/cardcommander.cpp:229
+#: ../src/tools/cardcommander/cardcommander.cpp:288
 msgid "Only hex bytes are allowed.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:280
-#: src/tools/cardcommander/cardcommander.cpp:339
+#: ../src/tools/cardcommander/cardcommander.cpp:233
+#: ../src/tools/cardcommander/cardcommander.cpp:292
 msgid "Sending APDU:\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:284
+#: ../src/tools/cardcommander/cardcommander.cpp:237
 msgid "No last APDU.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:290
+#: ../src/tools/cardcommander/cardcommander.cpp:243
 msgid "Resending APDU:\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:293
-#: src/tools/cardcommander/cardcommander.cpp:342
+#: ../src/tools/cardcommander/cardcommander.cpp:246
+#: ../src/tools/cardcommander/cardcommander.cpp:295
 msgid "An APDU needs at least 4 bytes.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:315
-#: src/tools/cardcommander/cardcommander.cpp:364
+#: ../src/tools/cardcommander/cardcommander.cpp:268
+#: ../src/tools/cardcommander/cardcommander.cpp:317
 #, c-format
 msgid ""
 "Result: %02x/%02x\n"
 "Response: "
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:383
+#: ../src/tools/cardcommander/cardcommander.cpp:336
 msgid "Closing card before exiting...\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:395
+#: ../src/tools/cardcommander/cardcommander.cpp:348
 msgid "Exiting.\n"
 msgstr ""
 
-#: src/tools/cardcommander/cardcommander.cpp:403
+#: ../src/tools/cardcommander/cardcommander.cpp:356
 msgid ""
 "List of commands:\n"
 "open  - connects the card\n"
@@ -234,86 +314,4 @@ msgid ""
 "        currently open card is inserted in\n"
 "help  - shows this little help screen\n"
 "quit  - exits\n"
-msgstr ""
-
-#: src/tools/zkacard/main.c:195
-msgid ""
-"  getkey:\n"
-"    get public part of a rsa key\n"
-"\n"
-msgstr ""
-
-#: src/tools/zkacard/main.c:198
-msgid ""
-"  shownotepad:\n"
-"    show HBCI info from the NOTEPAD\n"
-"\n"
-msgstr ""
-
-#: src/tools/zkacard/main.c:201
-msgid ""
-"  resetptc:\n"
-"    reset pin try counter\n"
-"\n"
-msgstr ""
-
-#: src/tools/zkacard/getpublickey.c:142
-msgid "User context not found on crypt token"
-msgstr ""
-
-#: src/tools/zkacard/getpublickey.c:176
-msgid "Key info not found on crypt token"
-msgstr ""
-
-#: src/tools/zkacard/shownotepad.c:45
-msgid ""
-"Please enter your PIN into the card reader.<html>Please enter your PIN into "
-"the card reader.</html>"
-msgstr ""
-
-#: src/tools/zkacard/shownotepad.c:50
-msgid "Secure PIN Input"
-msgstr ""
-
-#: src/ct/ddvcard/ddvcard.c:157 src/ct/starcoscard/starcoscard.c:156
-#: src/ct/zkacard/zkacard.c:157
-msgid "Insert card"
-msgstr ""
-
-#: src/ct/ddvcard/ddvcard.c:158 src/ct/starcoscard/starcoscard.c:157
-#: src/ct/zkacard/zkacard.c:158
-msgid ""
-"Please insert a chipcard into the reader and click a button.<html>Please "
-"insert a chipcard into the reader and click a button.</html>"
-msgstr ""
-
-#: src/ct/ddvcard/ddvcard.c:164 src/ct/starcoscard/starcoscard.c:163
-#: src/ct/zkacard/zkacard.c:164
-msgid "Ok"
-msgstr ""
-
-#: src/ct/ddvcard/ddvcard.c:165 src/ct/starcoscard/starcoscard.c:164
-#: src/ct/zkacard/zkacard.c:165
-msgid "Abort"
-msgstr ""
-
-#: src/ct/ddvcard/ddvcard.c:176 src/ct/starcoscard/starcoscard.c:175
-#: src/ct/zkacard/zkacard.c:176
-msgid "Error while waiting for card"
-msgstr ""
-
-#: src/ct/starcoscard/starcoscard.c:690
-msgid "User Sign Key"
-msgstr ""
-
-#: src/ct/starcoscard/starcoscard.c:697
-msgid "User Crypt Key"
-msgstr ""
-
-#: src/ct/starcoscard/starcoscard.c:704
-msgid "Peer Sign Key"
-msgstr ""
-
-#: src/ct/starcoscard/starcoscard.c:710
-msgid "Peer Crypt Key"
 msgstr ""
