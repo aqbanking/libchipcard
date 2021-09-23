@@ -1,7 +1,6 @@
 noinst_LTLIBRARIES=libbase.la
 
 EXTRA_DIST=\
-  card_iso.c \
   README.apps README.cards
 
 
@@ -23,28 +22,27 @@ typefiles=pininfo.xml
 iheaderdir=@libchipcard_headerdir_am@
 iheader_HEADERS=\
  client.h \
- card.h card_imp.h card_l.h \
+ card.h card_imp.h \
  tlv.h \
- driverinfo.h \
- msgengine.h \
- misc.h \
  pininfo.h
 
 noinst_HEADERS=\
- client_l.h client_p.h \
- client_cmd.h \
- client_xml.h \
- card_p.h \
+ client_l.h client_p.h client_cmd.h client_xml.h \
+ card_l.h card_p.h \
  tlv_p.h \
- driverinfo_p.h \
- msgengine_p.h \
+ driverinfo.h driverinfo_p.h \
+ msgengine.h msgengine_p.h \
  pininfo_p.h
 
 libbase_la_SOURCES=\
  client.c \
  client_cmd.c \
+ client_io.c \
  client_xml.c \
  card.c \
+ card_data.c \
+ card_files.c \
+ card_iso.c \
  tlv.c \
  driverinfo.c \
  misc.c \

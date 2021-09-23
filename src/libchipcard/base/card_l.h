@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -32,12 +32,8 @@ LC_CARD *LC_Card_new(LC_CLIENT *cl,
                      unsigned int atrLen);
 
 
-GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card,
-                                  const char *commandName);
+GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card, const char *commandName);
 
-int LC_Card_IsConnected(const LC_CARD *card);
-
-void LC_Card_SetConnected(LC_CARD *card, int b);
 
 
 SCARDHANDLE LC_Card_GetSCardHandle(const LC_CARD *card);

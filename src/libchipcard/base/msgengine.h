@@ -32,7 +32,6 @@ extern "C" {
  * </ul>
  */
 
-CHIPCARD_API
 GWEN_MSGENGINE *LC_MsgEngine_new();
 
 

@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -12,9 +12,6 @@
 # include <config.h>
 #endif
 
-#define LC_CARD_EXTEND_CLIENT
-
-
 #include "card_p.h"
 #include "client_l.h"
 #include "client_cmd.h"
@@ -25,7 +22,6 @@
 #include <gwenhywfar/inherit.h>
 #include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
-#include <gwenhywfar/gwentime.h>
 
 #ifdef OS_WIN32
 # define CM_IOCTL_GET_FEATURE_REQUEST SCARD_CTL_CODE(3400)
@@ -108,6 +104,13 @@ GWEN_INHERIT_FUNCTIONS(LC_CARD)
 GWEN_LIST2_FUNCTIONS(LC_CARD, LC_Card)
 
 
+
+static int CHIPCARD_CB _cardOpen(LC_CARD *card);
+static int CHIPCARD_CB _cardClose(LC_CARD *card);
+
+
+
+
 LC_CARD *LC_Card_new(LC_CLIENT *cl,
                      SCARDHANDLE scardHandle,
                      const char *readerName,
@@ -136,8 +139,8 @@ LC_CARD *LC_Card_new(LC_CLIENT *cl,
     GWEN_Buffer_AppendBytes(cd->atr, (const char *)atrBuf, atrLen);
   }
 
-  cd->openFn=LC_Card__Open;
-  cd->closeFn=LC_Card__Close;
+  cd->openFn=_cardOpen;
+  cd->closeFn=_cardClose;
 
   /* determine card types by comparing the ATR to known ATRs */
   if (cd->atr) {
@@ -170,10 +173,6 @@ void LC_Card_free(LC_CARD *cd)
     cd->usage--;
     if (cd->usage==0) {
       GWEN_INHERIT_FINI(LC_CARD, cd);
-      if (cd->connected) {
-        DBG_WARN(LC_LOGDOMAIN,
-                 "Card to be deleted is still connected");
-      }
       free(cd->readerName);
       free(cd->cardType);
       free(cd->lastResult);
@@ -218,22 +217,6 @@ SCARDHANDLE LC_Card_GetSCardHandle(const LC_CARD *card)
 {
   assert(card);
   return card->scardHandle;
-}
-
-
-
-int LC_Card_IsConnected(const LC_CARD *card)
-{
-  assert(card);
-  return card->connected;
-}
-
-
-
-void LC_Card_SetConnected(LC_CARD *card, int b)
-{
-  assert(card);
-  card->connected=b;
 }
 
 
@@ -602,14 +585,14 @@ int LC_Card_Close(LC_CARD *card)
 
 
 
-int CHIPCARD_CB LC_Card__Open(LC_CARD *card)
+int _cardOpen(LC_CARD *card)
 {
   return 0;
 }
 
 
 
-int CHIPCARD_CB LC_Card__Close(LC_CARD *card)
+int _cardClose(LC_CARD *card)
 {
   return 0;
 }
@@ -617,46 +600,36 @@ int CHIPCARD_CB LC_Card__Close(LC_CARD *card)
 
 
 int LC_Card_ExecApdu(LC_CARD *card,
-                                  const char *apdu,
-                                  unsigned int len,
-                                  GWEN_BUFFER *rbuf,
-                                  LC_CLIENT_CMDTARGET t)
+                     const char *apdu,
+                     unsigned int len,
+                     GWEN_BUFFER *rbuf,
+                     LC_CLIENT_CMDTARGET t)
 {
   assert(card);
   assert(card->client);
   LC_Card_SetLastResult(card, 0, 0, -1, -1);
-  return LC_Client_ExecApdu(card->client,
-                            card,
-                            apdu,
-                            len,
-                            rbuf,
-                            t);
+  return LC_Client_ExecApdu(card->client, card, apdu, len, rbuf, t);
 }
 
 
 
 int LC_Card_ExecCommand(LC_CARD *card,
-                                     const char *commandName,
-                                     GWEN_DB_NODE *cmdData,
-                                     GWEN_DB_NODE *rspData)
+                        const char *commandName,
+                        GWEN_DB_NODE *cmdData,
+                        GWEN_DB_NODE *rspData)
 {
   int res;
 
   assert(card);
   assert(card->client);
   LC_Card_SetLastResult(card, 0, 0, -1, -1);
-  res=LC_Client_ExecCommand(card->client,
-                            card,
-                            commandName,
-                            cmdData,
-                            rspData);
+  res=LC_Client_ExecCommand(card->client, card, commandName, cmdData, rspData);
   return res;
 }
 
 
 
-GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card,
-                                  const char *commandName)
+GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card, const char *commandName)
 {
   GWEN_DB_NODE *db;
   GWEN_XMLNODE *node;
@@ -675,12 +648,10 @@ GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card,
   }
 
   node=(GWEN_XMLNODE *)GWEN_DB_GetPtrValue(db, commandName, 0, 0);
-  if (node==0) {
+  if (node==NULL) {
     node=LC_Client_FindCardCommand(card->client, card, commandName);
     if (node)
-      GWEN_DB_SetPtrValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                          commandName,
-                          (void *) node);
+      GWEN_DB_SetPtrValue(db, GWEN_DB_FLAGS_OVERWRITE_VARS, commandName, (void *) node);
   }
   else {
     DBG_INFO(LC_LOGDOMAIN, "Found command \"%s\" in cache", commandName);
@@ -692,17 +663,13 @@ GWEN_XMLNODE *LC_Card_FindCommand(LC_CARD *card,
 
 
 int LC_Card_BuildApdu(LC_CARD *card,
-                                   const char *command,
-                                   GWEN_DB_NODE *cmdData,
-                                   GWEN_BUFFER *gbuf)
+                      const char *command,
+                      GWEN_DB_NODE *cmdData,
+                      GWEN_BUFFER *gbuf)
 {
   assert(card);
   assert(card->client);
-  return LC_Client_BuildApdu(card->client,
-                             card,
-                             command,
-                             cmdData,
-                             gbuf);
+  return LC_Client_BuildApdu(card->client, card, command, cmdData, gbuf);
 
 }
 
@@ -718,8 +685,8 @@ int LC_Card_SelectApp(LC_CARD *card, const char *appName)
     return GWEN_ERROR_NOT_FOUND;
   }
   card->appNode=node;
-  card->dfNode=0;
-  card->efNode=0;
+  card->dfNode=NULL;
+  card->efNode=NULL;
   return 0;
 }
 
@@ -736,8 +703,8 @@ GWEN_XMLNODE *LC_Card_GetAppNode(const LC_CARD *card)
 int LC_Card_SelectCard(LC_CARD *card, const char *s)
 {
   assert(card);
-  if (s==0)
-    card->cardNode=0;
+  if (s==NULL)
+    card->cardNode=NULL;
   else {
     GWEN_XMLNODE *node;
 
@@ -763,343 +730,6 @@ GWEN_XMLNODE *LC_Card_GetCardNode(const LC_CARD *card)
 
 
 
-
-GWEN_XMLNODE *LC_Card_FindFile(LC_CARD *card,
-                               const char *type,
-                               const char *fname)
-{
-  GWEN_XMLNODE *n;
-  GWEN_XMLNODE *currDF;
-  int isSameLevel;
-
-  currDF=card->dfNode;
-  if (!currDF)
-    currDF=card->appNode;
-
-  isSameLevel=1;
-  while (currDF) {
-    n=GWEN_XMLNode_FindNode(currDF, GWEN_XMLNodeTypeTag, "files");
-    if (n) {
-      n=GWEN_XMLNode_FindFirstTag(n, type, "name", fname);
-      if (n) {
-        if (isSameLevel) {
-          return n;
-        }
-        if (atoi(GWEN_XMLNode_GetProperty(n, "inAnyDF", "0"))!=0) {
-          DBG_DEBUG(LC_LOGDOMAIN, "Returning file from level above");
-          return n;
-        }
-      }
-    }
-    currDF=GWEN_XMLNode_GetParent(currDF);
-    isSameLevel=0;
-  }
-  DBG_DEBUG(LC_LOGDOMAIN, "%s \"%s\" not found", type, fname);
-  return 0;
-}
-
-GWEN_XMLNODE *LC_Card_FindFileById(LC_CARD *card,
-                                   const char *type,
-                                   const int sid)
-{
-  GWEN_XMLNODE *n;
-  GWEN_XMLNODE *currDF;
-  int isSameLevel;
-  char sidstr[10];
-
-  currDF=card->dfNode;
-  if (!currDF)
-    currDF=card->appNode;
-
-  isSameLevel=1;
-
-  sprintf(sidstr, "%#x", sid);
-
-  while (currDF) {
-    n=GWEN_XMLNode_FindNode(currDF, GWEN_XMLNodeTypeTag, "files");
-    if (n) {
-      n=GWEN_XMLNode_FindFirstTag(n, type, "sid", sidstr);
-      if (n) {
-        if (isSameLevel) {
-          return n;
-        }
-        if (atoi(GWEN_XMLNode_GetProperty(n, "inAnyDF", "0"))!=0) {
-          DBG_DEBUG(LC_LOGDOMAIN, "Returning file from level above");
-          return n;
-        }
-      }
-    }
-    currDF=GWEN_XMLNode_GetParent(currDF);
-    isSameLevel=0;
-  }
-  DBG_DEBUG(LC_LOGDOMAIN, "%s \"%s\" not found", type, sidstr);
-  return 0;
-}
-
-
-int LC_Card_SelectMf(LC_CARD *card)
-{
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  int res;
-
-  dbReq=GWEN_DB_Group_new("request");
-  dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, "SelectMF", dbReq, dbRsp);
-  GWEN_DB_Group_free(dbRsp);
-  GWEN_DB_Group_free(dbReq);
-  if (res<0) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    return res;
-  }
-  card->dfNode=0;
-
-  return 0;
-}
-
-
-
-int LC_Card_SelectDf(LC_CARD *card, const char *fname)
-{
-  GWEN_XMLNODE *n;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  const char *cmd;
-  int fid;
-  int res;
-
-  n=LC_Card_FindFile(card, "DF", fname);
-  if (!n) {
-    DBG_ERROR(LC_LOGDOMAIN, "DF \"%s\" not found", fname);
-    return GWEN_ERROR_IO;
-  }
-
-  if (1!=sscanf(GWEN_XMLNode_GetProperty(n, "sid", "-1"), "%i", &fid)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Bad id for DF \"%s\"", fname);
-    return GWEN_ERROR_IO;
-  }
-
-  dbReq=GWEN_DB_Group_new("request");
-  if (fid==-1) {
-    GWEN_BUFFER *buf;
-    const char *lid;
-
-    buf=GWEN_Buffer_new(0, 64, 0, 1);
-    lid=GWEN_XMLNode_GetProperty(n, "lid", 0);
-    if (!lid) {
-      DBG_ERROR(LC_LOGDOMAIN, "No long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_IO;
-    }
-    if (GWEN_Text_FromHexBuffer(lid, buf)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Bad long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_IO;
-    }
-
-    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId",
-                        GWEN_Buffer_GetStart(buf),
-                        GWEN_Buffer_GetUsedBytes(buf));
-    cmd="SelectDFL";
-
-  }
-  else {
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId", fid);
-    cmd="SelectDFS";
-  }
-
-  dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
-  GWEN_DB_Group_free(dbRsp);
-  GWEN_DB_Group_free(dbReq);
-  if (res<0) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    return res;
-  }
-  card->dfNode=n;
-  card->efNode=0;
-
-  return 0;
-}
-
-
-
-GWEN_XMLNODE *LC_Card_GetDfNode(const LC_CARD *card)
-{
-  assert(card);
-  return card->dfNode;
-}
-
-
-
-int LC_Card_SelectEf(LC_CARD *card, const char *fname)
-{
-  GWEN_XMLNODE *n;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  const char *cmd;
-  int fid;
-  int res;
-
-  n=LC_Card_FindFile(card, "EF", fname);
-  if (!n) {
-    DBG_ERROR(LC_LOGDOMAIN, "EF \"%s\" not found", fname);
-    return GWEN_ERROR_IO;
-  }
-
-  if (1!=sscanf(GWEN_XMLNode_GetProperty(n, "sid", "-1"), "%i", &fid)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Bad id for DF \"%s\"", fname);
-    return GWEN_ERROR_IO;
-  }
-
-  dbReq=GWEN_DB_Group_new("request");
-  if (fid==-1) {
-    GWEN_BUFFER *buf;
-    const char *lid;
-
-    buf=GWEN_Buffer_new(0, 64, 0, 1);
-    lid=GWEN_XMLNode_GetProperty(n, "lid", 0);
-    if (!lid) {
-      DBG_ERROR(LC_LOGDOMAIN, "No long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_BAD_DATA;
-    }
-    if (GWEN_Text_FromHexBuffer(lid, buf)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Bad long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_BAD_DATA;
-    }
-
-    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId",
-                        GWEN_Buffer_GetStart(buf),
-                        GWEN_Buffer_GetUsedBytes(buf));
-    cmd="SelectEFL";
-
-  }
-  else {
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId", fid);
-    cmd="SelectEFS";
-  }
-
-  dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
-  GWEN_DB_Group_free(dbRsp);
-  GWEN_DB_Group_free(dbReq);
-  if (res<0) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    return res;
-  }
-  card->efNode=n;
-
-  return 0;
-}
-
-int LC_Card_SelectEfById(LC_CARD *card, const int  sid)
-{
-  GWEN_XMLNODE *n;
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  const char *cmd;
-  int fid;
-  int res;
-
-  n=LC_Card_FindFileById(card, "EF", sid);
-  if (!n) {
-    DBG_ERROR(LC_LOGDOMAIN, "EF \"%d\" not found", sid);
-    return GWEN_ERROR_IO;
-  }
-
-  if (1!=sscanf(GWEN_XMLNode_GetProperty(n, "sid", "-1"), "%i", &fid)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Bad id for DF \"%d\"", sid);
-    return GWEN_ERROR_IO;
-  }
-
-  dbReq=GWEN_DB_Group_new("request");
-  if (fid==-1) {
-    GWEN_BUFFER *buf;
-    const char *lid;
-
-    buf=GWEN_Buffer_new(0, 64, 0, 1);
-    lid=GWEN_XMLNode_GetProperty(n, "lid", 0);
-    if (!lid) {
-      DBG_ERROR(LC_LOGDOMAIN, "No long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_BAD_DATA;
-    }
-    if (GWEN_Text_FromHexBuffer(lid, buf)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Bad long id given in XML file");
-      GWEN_Buffer_free(buf);
-      GWEN_DB_Group_free(dbReq);
-      return GWEN_ERROR_BAD_DATA;
-    }
-
-    GWEN_DB_SetBinValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId",
-                        GWEN_Buffer_GetStart(buf),
-                        GWEN_Buffer_GetUsedBytes(buf));
-    cmd="SelectEFL";
-
-  }
-  else {
-    GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS,
-                        "fileId", fid);
-    cmd="SelectEFS";
-  }
-
-  dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
-  GWEN_DB_Group_free(dbRsp);
-  GWEN_DB_Group_free(dbReq);
-  if (res<0) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    return res;
-  }
-  card->efNode=n;
-
-  return 0;
-}
-
-int LC_Card_SelectEfByID(LC_CARD *card, const int fid)
-{
-  GWEN_DB_NODE *dbReq;
-  GWEN_DB_NODE *dbRsp;
-  const char *cmd;
-  int res;
-
-
-  dbReq=GWEN_DB_Group_new("request");
-  GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_OVERWRITE_VARS, "fileId", fid);
-  cmd="SelectEFS";
-
-
-  dbRsp=GWEN_DB_Group_new("response");
-  res=LC_Card_ExecCommand(card, cmd, dbReq, dbRsp);
-  GWEN_DB_Group_free(dbRsp);
-  GWEN_DB_Group_free(dbReq);
-  if (res<0) {
-    DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-    return res;
-  }
-
-  return 0;
-}
-
-
-
-GWEN_XMLNODE *LC_Card_GetEfNode(const LC_CARD *card)
-{
-  assert(card);
-  return card->efNode;
-}
 
 
 
@@ -1138,20 +768,11 @@ LC_PININFO *LC_Card_GetPinInfoById(LC_CARD *card, uint32_t pid)
 
               pi=LC_PinInfo_new();
               LC_PinInfo_SetId(pi, pid);
-              s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
-              LC_PinInfo_SetName(pi, s);
-              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "minLen", "0"),
-                            "%i", &i))
-                LC_PinInfo_SetMinLength(pi, i);
-              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "maxLen", "0"),
-                            "%i", &i))
-                LC_PinInfo_SetMaxLength(pi, i);
-              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "allowChange", "0"),
-                            "%i", &i))
-                LC_PinInfo_SetAllowChange(pi, i);
-              if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "filler", "0"),
-                            "%i", &i))
-                LC_PinInfo_SetFiller(pi, i);
+              LC_PinInfo_SetName(pi, GWEN_XMLNode_GetProperty(nnn, "name", NULL));
+              LC_PinInfo_SetMinLength(pi, GWEN_XMLNode_GetIntProperty(nnn, "minLen", 0));
+              LC_PinInfo_SetMaxLength(pi, GWEN_XMLNode_GetIntProperty(nnn, "maxLen", 0));
+              LC_PinInfo_SetAllowChange(pi, GWEN_XMLNode_GetIntProperty(nnn, "allowChange", 0));
+              LC_PinInfo_SetFiller(pi, GWEN_XMLNode_GetIntProperty(nnn, "filler", 0));
               s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
               if (s)
                 LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_fromString(s));
@@ -1218,20 +839,13 @@ LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name)
 
             pi=LC_PinInfo_new();
             LC_PinInfo_SetId(pi, (uint32_t)i);
-            s=GWEN_XMLNode_GetProperty(nnn, "name", 0);
-            LC_PinInfo_SetName(pi, s);
-            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "minLen", "0"),
-                          "%i", &i))
-              LC_PinInfo_SetMinLength(pi, i);
-            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "maxLen", "0"),
-                          "%i", &i))
-              LC_PinInfo_SetMaxLength(pi, i);
-            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "allowChange", "0"),
-                          "%i", &i))
-              LC_PinInfo_SetAllowChange(pi, i);
-            if (1==sscanf(GWEN_XMLNode_GetProperty(nnn, "filler", "0"),
-                          "%i", &i))
-              LC_PinInfo_SetFiller(pi, i);
+
+            LC_PinInfo_SetName(pi, GWEN_XMLNode_GetProperty(nnn, "name", NULL));
+            LC_PinInfo_SetMinLength(pi, GWEN_XMLNode_GetIntProperty(nnn, "minLen", 0));
+            LC_PinInfo_SetMaxLength(pi, GWEN_XMLNode_GetIntProperty(nnn, "maxLen", 0));
+            LC_PinInfo_SetAllowChange(pi, GWEN_XMLNode_GetIntProperty(nnn, "allowChange", 0));
+            LC_PinInfo_SetFiller(pi, GWEN_XMLNode_GetIntProperty(nnn, "filler", 0));
+
             s=GWEN_XMLNode_GetProperty(nnn, "encoding", 0);
             if (s)
               LC_PinInfo_SetEncoding(pi, GWEN_Crypt_PinEncoding_fromString(s));
@@ -1252,201 +866,17 @@ LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name)
 
 
 
-int LC_Card_ParseData(LC_CARD *card,
-                                   const char *format,
-                                   GWEN_BUFFER *buf,
-                                   GWEN_DB_NODE *dbData)
-{
-  GWEN_XMLNODE *dataNode;
-  GWEN_MSGENGINE *e;
-
-  /* find format node */
-  assert(card->appNode);
-  e=LC_Client_GetMsgEngine(card->client);
-  assert(e);
-  if (!GWEN_Buffer_GetBytesLeft(buf)) {
-    DBG_ERROR(LC_LOGDOMAIN, "End of buffer reached");
-    return GWEN_ERROR_NO_DATA;
-  }
-  dataNode=GWEN_XMLNode_FindFirstTag(card->appNode, "formats", 0, 0);
-  if (dataNode==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "No formats for this card application");
-    return GWEN_ERROR_NOT_FOUND;
-  }
-
-  dataNode=GWEN_XMLNode_FindFirstTag(dataNode, "format", "name", format);
-  if (!dataNode) {
-    DBG_ERROR(LC_LOGDOMAIN, "Format \"%s\" not found", format);
-    return GWEN_ERROR_NOT_FOUND;
-  }
-
-  /* node found, parse data */
-  DBG_DEBUG(LC_LOGDOMAIN, "Parsing data");
-  if (GWEN_MsgEngine_ParseMessage(e,
-                                  dataNode,
-                                  buf,
-                                  dbData,
-                                  GWEN_MSGENGINE_READ_FLAGS_DEFAULT)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error parsing data in format \"%s\"", format);
-    return GWEN_ERROR_BAD_DATA;
-  }
-
-  return 0;
-}
-
-
-
-int LC_Card_CreateData(LC_CARD *card,
-                                    const char *format,
-                                    GWEN_BUFFER *buf,
-                                    GWEN_DB_NODE *dbData)
-{
-  GWEN_XMLNODE *dataNode;
-  GWEN_MSGENGINE *e;
-
-  /* find record node */
-  assert(card->appNode);
-  e=LC_Client_GetMsgEngine(card->client);
-  assert(e);
-
-  dataNode=GWEN_XMLNode_FindFirstTag(card->appNode, "formats", 0, 0);
-  if (dataNode==0) {
-    DBG_ERROR(LC_LOGDOMAIN, "No formats for this card application");
-    return GWEN_ERROR_NO_DATA;
-  }
-
-  dataNode=GWEN_XMLNode_FindFirstTag(dataNode, "format", "name", format);
-  if (!dataNode) {
-    DBG_ERROR(LC_LOGDOMAIN, "Format \"%s\" not found", format);
-    return GWEN_ERROR_NO_DATA;
-  }
-
-  /* node found, parse data */
-  DBG_DEBUG(LC_LOGDOMAIN, "Creating data");
-  if (GWEN_MsgEngine_CreateMessageFromNode(e,
-                                           dataNode,
-                                           buf,
-                                           dbData)) {
-    DBG_ERROR(LC_LOGDOMAIN, "Error creating data for format \"%s\"", format);
-    return GWEN_ERROR_BAD_DATA;
-  }
-
-  return 0;
-}
-
-
-
-int LC_Card_ParseRecord(LC_CARD *card,
-                                     int recNum,
-                                     GWEN_BUFFER *buf,
-                                     GWEN_DB_NODE *dbRecord)
-{
-  GWEN_XMLNODE *recordNode;
-  GWEN_MSGENGINE *e;
-
-  /* find record node */
-  assert(card->efNode);
-  e=LC_Client_GetMsgEngine(card->client);
-  assert(e);
-  if (!GWEN_Buffer_GetBytesLeft(buf)) {
-    DBG_ERROR(LC_LOGDOMAIN, "End of buffer reached");
-    return GWEN_ERROR_NO_DATA;
-  }
-  recordNode=GWEN_XMLNode_FindFirstTag(card->efNode, "record", 0, 0);
-  while (recordNode) {
-    int lrecNum;
-
-    if (1==sscanf(GWEN_XMLNode_GetProperty(recordNode,
-                                           "recnum", "-1"),
-                  "%i", &lrecNum)) {
-      if (lrecNum!=-1 && recNum==lrecNum)
-        break;
-    }
-    recordNode=GWEN_XMLNode_FindNextTag(recordNode, "record", 0, 0);
-  } /* while */
-  if (!recordNode)
-    recordNode=GWEN_XMLNode_FindFirstTag(card->efNode, "record", 0, 0);
-
-  if (recordNode) {
-    /* node found, parse data */
-    DBG_DEBUG(LC_LOGDOMAIN, "Parsing record data");
-    if (GWEN_MsgEngine_ParseMessage(e,
-                                    recordNode,
-                                    buf,
-                                    dbRecord,
-                                    GWEN_MSGENGINE_READ_FLAGS_DEFAULT)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error parsing response");
-      return GWEN_ERROR_BAD_DATA;
-    }
-  } /* if record found */
-  else {
-    DBG_ERROR(LC_LOGDOMAIN, "Record not found");
-    return GWEN_ERROR_NOT_FOUND;
-  }
-  return 0;
-}
-
-
-
-int LC_Card_CreateRecord(LC_CARD *card,
-                                      int recNum,
-                                      GWEN_BUFFER *buf,
-                                      GWEN_DB_NODE *dbRecord)
-{
-  GWEN_XMLNODE *recordNode;
-  GWEN_MSGENGINE *e;
-
-  /* find record node */
-  assert(card->efNode);
-  e=LC_Client_GetMsgEngine(card->client);
-  assert(e);
-  recordNode=GWEN_XMLNode_FindFirstTag(card->efNode, "record", 0, 0);
-  while (recordNode) {
-    int lrecNum;
-
-    if (1==sscanf(GWEN_XMLNode_GetProperty(recordNode,
-                                           "recnum", "-1"),
-                  "%i", &lrecNum)) {
-      if (lrecNum!=-1 && recNum==lrecNum)
-        break;
-    }
-    recordNode=GWEN_XMLNode_FindNextTag(recordNode, "record", 0, 0);
-  } /* while */
-  if (!recordNode)
-    recordNode=GWEN_XMLNode_FindFirstTag(card->efNode, "record", 0, 0);
-
-  if (recordNode) {
-    /* node found, parse data */
-    DBG_DEBUG(LC_LOGDOMAIN, "Creating record data");
-    if (GWEN_MsgEngine_CreateMessageFromNode(e,
-                                             recordNode,
-                                             buf,
-                                             dbRecord)) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error creating record");
-      return GWEN_ERROR_BAD_DATA;
-    }
-  } /* if record found */
-  else {
-    DBG_ERROR(LC_LOGDOMAIN, "Record not found");
-    return GWEN_ERROR_NOT_FOUND;
-  }
-  return 0;
-}
-
-
-
 int LC_Card_GetPinStatus(LC_CARD *card,
-                                      unsigned int pid,
-                                      int *maxErrors,
-                                      int *currentErrors)
+                         unsigned int pid,
+                         int *maxErrors,
+                         int *currentErrors)
 {
   assert(card);
   if (card->getPinStatusFn) {
     return card->getPinStatusFn(card, pid, maxErrors, currentErrors);
   }
   else {
-    DBG_INFO(LC_LOGDOMAIN,
-             "no getInitialPin function set");
+    DBG_INFO(LC_LOGDOMAIN, "no getPinStatus function set");
     return GWEN_ERROR_NOT_SUPPORTED;
   }
 }
@@ -1464,8 +894,7 @@ int LC_Card_GetInitialPin(LC_CARD *card,
     return card->getInitialPinFn(card, id, buffer, maxLen, pinLength);
   }
   else {
-    DBG_ERROR(LC_LOGDOMAIN,
-              "no getInitialPin function set");
+    DBG_ERROR(LC_LOGDOMAIN, "no getInitialPin function set");
     return GWEN_ERROR_NOT_SUPPORTED;
   }
 }
@@ -1623,8 +1052,7 @@ int LC_Card_ReadBinary(LC_CARD *card,
       t=252;
     else
       t=size;
-    res=LC_Card_IsoReadBinary(card, 0,
-                              offset, t, buf);
+    res=LC_Card_IsoReadBinary(card, 0, offset, t, buf);
     if (res<0) {
       if (res==GWEN_ERROR_NO_DATA && bytesRead)
         return 0;
@@ -1646,14 +1074,6 @@ int LC_Card_ReadBinary(LC_CARD *card,
 
   return 0;
 }
-
-
-
-#include "card_iso.c"
-
-
-
-
 
 
 

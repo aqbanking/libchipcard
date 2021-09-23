@@ -22,7 +22,6 @@
 
 
 #define LCC_PM_LIBNAME    "libchipcard"
-#define LCC_PM_SYSCONFDIR "sysconfdir"
 #define LCC_PM_DATADIR    "datadir"
 
 

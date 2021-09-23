@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2004-2010 by Martin Preuss
+    copyright   : (C) 2021 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -25,6 +25,13 @@ int LC_Client_ExecApdu(LC_CLIENT *cl,
                        LC_CLIENT_CMDTARGET t);
 
 GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl);
+
+
+int LC_Client_GetReaderAndDriverType(const LC_CLIENT *cl,
+                                     const char *readerName,
+                                     GWEN_BUFFER *driverType,
+                                     GWEN_BUFFER *readerType,
+                                     uint32_t *pReaderFlags);
 
 
 #endif /* CHIPCARD_CLIENT_CLIENT_L_H */

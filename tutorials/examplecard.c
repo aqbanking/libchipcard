@@ -128,19 +128,19 @@ int CHIPCARD_CB ExampleCard_Open(LC_CARD *card)
   assert(xc);
 
   res=xc->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=ExampleCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     xc->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
@@ -158,19 +158,19 @@ int ExampleCard_Reopen(LC_CARD *card)
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting Example card application");
   res=LC_Card_SelectApp(card, "ExampleCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
@@ -190,7 +190,7 @@ int CHIPCARD_CB ExampleCard_Close(LC_CARD *card)
   assert(xc);
 
   res=xc->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
