@@ -34,7 +34,7 @@ int testPcsc1(int argc, char **argv)
 int testPcsc2(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   cl=LC_Client_new("test", "0.1");
   if (!cl) {
@@ -43,7 +43,7 @@ int testPcsc2(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
@@ -57,7 +57,7 @@ int testPcsc2(int argc, char **argv)
 int testPcsc3(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   cl=LC_Client_new("test", "0.1");
   if (!cl) {
@@ -66,14 +66,14 @@ int testPcsc3(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -87,7 +87,7 @@ int testPcsc3(int argc, char **argv)
 int testPcsc4(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   cl=LC_Client_new("test", "0.1");
   if (!cl) {
@@ -96,28 +96,28 @@ int testPcsc4(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -131,7 +131,7 @@ int testPcsc4(int argc, char **argv)
 int testPcsc5(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *card;
 
   cl=LC_Client_new("test", "0.1");
@@ -141,21 +141,21 @@ int testPcsc5(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: No card found (%d).\n",
             res);
     return 2;
@@ -165,7 +165,7 @@ int testPcsc5(int argc, char **argv)
   LC_Card_Dump(card, 2);
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to release card (%d).\n",
             res);
     return 2;
@@ -173,14 +173,14 @@ int testPcsc5(int argc, char **argv)
   LC_Card_free(card);
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -194,7 +194,7 @@ int testPcsc5(int argc, char **argv)
 int testPcsc6(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *card;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
@@ -206,21 +206,21 @@ int testPcsc6(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: No card found (%d).\n",
             res);
     return 2;
@@ -237,7 +237,7 @@ int testPcsc6(int argc, char **argv)
 
   fprintf(stderr, "INFO: Opening card\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to open card (%d).\n", res);
     return 2;
   }
@@ -245,7 +245,7 @@ int testPcsc6(int argc, char **argv)
 
   fprintf(stderr, "Selecting EF...\n");
   res=LC_Card_SelectEf(card, "EF_BNK");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -255,7 +255,7 @@ int testPcsc6(int argc, char **argv)
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                             1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -284,7 +284,7 @@ int testPcsc6(int argc, char **argv)
 
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to release card (%d).\n",
             res);
     return 2;
@@ -293,14 +293,14 @@ int testPcsc6(int argc, char **argv)
 
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -313,7 +313,7 @@ int testPcsc6(int argc, char **argv)
 int testPcsc7(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *card;
   uint8_t cmdSelectDF[]= {
     0x00, 0xa4, 0x04, 0x00,
@@ -332,7 +332,7 @@ int testPcsc7(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
@@ -340,7 +340,7 @@ int testPcsc7(int argc, char **argv)
 
   fprintf(stderr, "Client Start\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
@@ -348,7 +348,7 @@ int testPcsc7(int argc, char **argv)
 
   fprintf(stderr, "GetNextCard\n");
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: No card found (%d).\n",
             res);
     return 2;
@@ -364,7 +364,7 @@ int testPcsc7(int argc, char **argv)
 
   fprintf(stderr, "INFO: Opening card\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to open card (%d).\n", res);
     return 2;
   }
@@ -374,7 +374,7 @@ int testPcsc7(int argc, char **argv)
 
   res=LC_Card_ExecApdu(card, (const char *)cmdSelectDF, sizeof(cmdSelectDF),
                        mbuf, LC_Client_CmdTargetCard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -385,7 +385,7 @@ int testPcsc7(int argc, char **argv)
       cmdReadRecord[2]=j; /* record number */
       res=LC_Card_ExecApdu(card, (const char *)cmdReadRecord, sizeof(cmdReadRecord),
                            mbuf, LC_Client_CmdTargetCard);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         fprintf(stderr, "ERROR: Wait timed out.\n");
       }
       else {
@@ -398,7 +398,7 @@ int testPcsc7(int argc, char **argv)
   }
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to release card (%d).\n",
             res);
     return 2;
@@ -407,14 +407,14 @@ int testPcsc7(int argc, char **argv)
 
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -428,7 +428,7 @@ int testPcsc7(int argc, char **argv)
 int testPcsc8(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *card;
   uint8_t cmdSelectDF[]= {
     0x00, 0xa4, 0x04, 0x00,
@@ -446,7 +446,7 @@ int testPcsc8(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
@@ -454,7 +454,7 @@ int testPcsc8(int argc, char **argv)
 
   fprintf(stderr, "Client Start\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
@@ -462,7 +462,7 @@ int testPcsc8(int argc, char **argv)
 
   fprintf(stderr, "GetNextCard\n");
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: No card found (%d).\n",
             res);
     return 2;
@@ -478,7 +478,7 @@ int testPcsc8(int argc, char **argv)
 
   fprintf(stderr, "INFO: Opening card\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to open card (%d).\n", res);
     return 2;
   }
@@ -488,7 +488,7 @@ int testPcsc8(int argc, char **argv)
 
   res=LC_Card_ExecApdu(card, (const char *)cmdSelectDF, sizeof(cmdSelectDF),
                        mbuf, LC_Client_CmdTargetCard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -497,7 +497,7 @@ int testPcsc8(int argc, char **argv)
     cmdReadRecord[2]=i; /* record number */
     res=LC_Card_ExecApdu(card, (const char *)cmdReadRecord, sizeof(cmdReadRecord),
                          mbuf, LC_Client_CmdTargetCard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       fprintf(stderr, "ERROR: Wait timed out.\n");
     }
     else {
@@ -508,7 +508,7 @@ int testPcsc8(int argc, char **argv)
   }
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to release card (%d).\n",
             res);
     return 2;
@@ -517,14 +517,14 @@ int testPcsc8(int argc, char **argv)
 
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;
@@ -538,7 +538,7 @@ int testPcsc8(int argc, char **argv)
 int testPcsc9(int argc, char **argv)
 {
   LC_CLIENT *cl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *card;
   GWEN_BUFFER *mbuf;
   LC_PININFO *pi;
@@ -558,21 +558,21 @@ int testPcsc9(int argc, char **argv)
   }
 
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not init client (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not start using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: No card found (%d).\n",
             res);
     return 2;
@@ -589,7 +589,7 @@ int testPcsc9(int argc, char **argv)
 
   fprintf(stderr, "INFO: Opening card\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to open card (%d).\n", res);
     return 2;
   }
@@ -597,7 +597,7 @@ int testPcsc9(int argc, char **argv)
 
   fprintf(stderr, "Selecting MF...\n");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -605,7 +605,7 @@ int testPcsc9(int argc, char **argv)
 
   fprintf(stderr, "Selecting DF_NOTEPAD...\n");
   res=LC_Card_SelectDf(card, "DF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -631,7 +631,7 @@ int testPcsc9(int argc, char **argv)
 
   fprintf(stderr, "Verifying pin...\n");
   res=LC_Card_IsoPerformVerification(card, 0, pi, &triesLeft);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -639,7 +639,7 @@ int testPcsc9(int argc, char **argv)
 
   fprintf(stderr, "Selecting EF_NOTEPAD...\n");
   res=LC_Card_SelectEf(card, "EF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -649,7 +649,7 @@ int testPcsc9(int argc, char **argv)
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                             1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Wait timed out.\n");
     return 2;
   }
@@ -679,7 +679,7 @@ int testPcsc9(int argc, char **argv)
 #endif
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Unable to release card (%d).\n",
             res);
     return 2;
@@ -688,14 +688,14 @@ int testPcsc9(int argc, char **argv)
 
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not stop using cards (%d).\n",
             res);
     return 2;
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not fini client (%d).\n",
             res);
     return 2;

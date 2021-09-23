@@ -31,7 +31,7 @@
 
 
 void usage(const char *name, const char *ustr);
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
+void showError(LC_CARD *card, int res, const char *x);
 
 void okBeep();
 void errorBeep();

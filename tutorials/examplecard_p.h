@@ -42,8 +42,8 @@ struct EXAMPLE_CARD {
 void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card);
+int CHIPCARD_CB ExampleCard_Open(LC_CARD *card);
+int CHIPCARD_CB ExampleCard_Close(LC_CARD *card);
 
 
 

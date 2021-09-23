@@ -22,51 +22,9 @@
 
 
 
-int LC_Crypt_Token_ResultToError(LC_CLIENT_RESULT res)
+int LC_Crypt_Token_ResultToError(int res)
 {
-  int rv;
-
-  switch (res) {
-  case LC_Client_ResultOk:
-    rv=0;
-    break;
-  case LC_Client_ResultWait:
-    rv=GWEN_ERROR_TIMEOUT;
-    break;
-  case LC_Client_ResultIpcError:
-  case LC_Client_ResultCmdError:
-  case LC_Client_ResultDataError:
-    rv=GWEN_ERROR_IO;
-    break;
-
-  case LC_Client_ResultAborted:
-    rv=GWEN_ERROR_USER_ABORTED;
-    break;
-
-  case LC_Client_ResultInvalid:
-    rv=GWEN_ERROR_INVALID;
-    break;
-
-  case LC_Client_ResultNoData:
-    rv=GWEN_ERROR_NO_DATA;
-    break;
-
-  case LC_Client_ResultCardRemoved:
-    rv=GWEN_ERROR_REMOVED;
-    break;
-
-  case LC_Client_ResultNotSupported:
-    rv=GWEN_ERROR_NOT_SUPPORTED;
-    break;
-
-  case LC_Client_ResultInternal:
-  case LC_Client_ResultGeneric:
-  default:
-    rv=GWEN_ERROR_GENERIC;
-    break;
-  }
-
-  return rv;
+  return res;
 }
 
 
@@ -92,7 +50,7 @@ int LC_Crypt_Token__GetPin(GWEN_CRYPT_TOKEN *ct,
                              pinLength,
                              guiid);
   if (rv==GWEN_ERROR_DEFAULT_VALUE) {
-    LC_CLIENT_RESULT res;
+    int res;
 
     res=LC_Card_GetInitialPin(hcard, pid, buffer, maxLength,
                               pinLength);
@@ -130,7 +88,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
                               int initial,
                               uint32_t guiid)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PININFO *pi;
   int maxErrors;
   int currentErrors;
@@ -154,8 +112,8 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
                            LC_PinInfo_GetId(pi),
                            &maxErrors,
                            &currentErrors);
-  if (res!=LC_Client_ResultNotSupported) {
-    if (res!=LC_Client_ResultOk) {
+  if (res!=GWEN_ERROR_NOT_SUPPORTED) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
@@ -189,7 +147,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
 
     res=LC_Card_IsoPerformModification(hcard, 0, pi, &triesLeft);
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       /* tell the user about end of pin verification */
       GWEN_Crypt_Token_EndEnterPin(ct, pt, 0, guiid);
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
@@ -254,7 +212,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
     if (!pinMaxLen || pinMaxLen>sizeof(pinBuffer1)-1)
       pinMaxLen=sizeof(pinBuffer1)-1;
     if (initial) {
-      LC_CLIENT_RESULT res;
+      int res;
 
       res=LC_Card_GetInitialPin(hcard,
                                 LC_PinInfo_GetId(pi),
@@ -343,7 +301,7 @@ int LC_Crypt_Token__ChangePin(GWEN_CRYPT_TOKEN *ct,
                              pinBuffer2,
                              pinLength2,
                              &triesLeft);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),
@@ -397,7 +355,7 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                                         const LC_PININFO *pi,
                                         uint32_t guiid)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int maxErrors;
   int currentErrors;
 
@@ -419,8 +377,8 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                            LC_PinInfo_GetId(pi),
                            &maxErrors,
                            &currentErrors);
-  if (res!=LC_Client_ResultNotSupported) {
-    if (res!=LC_Client_ResultOk) {
+  if (res!=GWEN_ERROR_NOT_SUPPORTED) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
@@ -459,7 +417,7 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
 
     res=LC_Card_IsoPerformVerification(hcard, 0, pi, &triesLeft);
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       /* tell the user about end of pin verification */
       GWEN_Crypt_Token_EndEnterPin(ct, pt, 0, bid);
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
@@ -568,7 +526,7 @@ int LC_Crypt_Token__EnterPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
                              pinBuffer,
                              pinLength,
                              &triesLeft);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),

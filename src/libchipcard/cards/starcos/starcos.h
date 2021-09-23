@@ -34,7 +34,7 @@ int LC_Starcos_ExtendCard(LC_CARD *card);
 CHIPCARD_API
 int LC_Starcos_UnextendCard(LC_CARD *card);
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card);
+int LC_Starcos_Reopen(LC_CARD *card);
 
 
 CHIPCARD_API
@@ -56,33 +56,33 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card);
  * @param kid use 0x8e for crypt keys and 0x8f for sign keys
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
+int LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
                                             int bits);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
+int LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
                                             int dstKid,
                                             const LC_STARCOS_KEYDESCR *descr);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
+int LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
                                         LC_STARCOS_KEYDESCR **pDescr);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
+int LC_Starcos_SaveKeyDescr(LC_CARD *card,
                                          const LC_STARCOS_KEYDESCR *d);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
+int LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
                                            const uint8_t *pModulus,
                                            uint32_t lModulus,
                                            const uint8_t *pExponent,
                                            uint32_t lExponent);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
+int LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
                                           GWEN_BUFFER *bModulus,
                                           GWEN_BUFFER *bExponent);
 
@@ -107,12 +107,12 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
  *
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
+int LC_Starcos_ReadInstituteData(LC_CARD *card,
                                               int idx,
                                               GWEN_DB_NODE *dbData);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
+int LC_Starcos_WriteInstituteData(LC_CARD *card,
                                                int idx,
                                                GWEN_DB_NODE *dbData);
 /*@}*/
@@ -124,14 +124,14 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
+int LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
                                            uint32_t *pSeq);
 
 /**
  * returns 8 random bytes
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf);
+int LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf);
 
 
 /*@}*/

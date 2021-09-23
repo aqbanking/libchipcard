@@ -29,7 +29,7 @@
 #define RETURNVALUE_DEINIT  4
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
+void showError(LC_CARD *card, int res, const char *x);
 
 int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
 

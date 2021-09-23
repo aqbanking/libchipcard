@@ -35,7 +35,7 @@
 int getPublicKey(GWEN_DB_NODE *dbArgs, int argc, char **argv);
 int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv);
 int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv);
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x);
+void showError(LC_CARD *card, int res, const char *x);
 
 
 #endif /* RSACARD_GLOBAL_H */

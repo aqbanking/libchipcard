@@ -32,15 +32,15 @@ struct LC_DDVCARD {
 void GWENHYWFAR_CB LC_DDVCard_freeData(void *bp, void *p);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card);
+int CHIPCARD_CB LC_DDVCard_Open(LC_CARD *card);
+int CHIPCARD_CB LC_DDVCard_Close(LC_CARD *card);
 
-LC_CLIENT_RESULT LC_DDVCard_SignHash0(LC_CARD *card,
-                                      GWEN_BUFFER *hbuf,
-                                      GWEN_BUFFER *obuf);
-LC_CLIENT_RESULT LC_DDVCard_SignHash1(LC_CARD *card,
-                                      GWEN_BUFFER *hbuf,
-                                      GWEN_BUFFER *obuf);
+int LC_DDVCard_SignHash0(LC_CARD *card,
+                         GWEN_BUFFER *hbuf,
+                         GWEN_BUFFER *obuf);
+int LC_DDVCard_SignHash1(LC_CARD *card,
+                         GWEN_BUFFER *hbuf,
+                         GWEN_BUFFER *obuf);
 
 int LC_DDVCard_GetCryptKeyVersion0(LC_CARD *card);
 int LC_DDVCard_GetSignKeyVersion0(LC_CARD *card);

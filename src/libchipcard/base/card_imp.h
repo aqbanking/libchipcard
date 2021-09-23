@@ -28,16 +28,16 @@ GWEN_LIST_FUNCTION_LIB_DEFS(LC_CARD, LC_Card, CHIPCARD_API)
  *
  */
 /*@{*/
-typedef LC_CLIENT_RESULT CHIPCARD_CB(*LC_CARD_OPEN_FN)(LC_CARD *card);
-typedef LC_CLIENT_RESULT CHIPCARD_CB(*LC_CARD_CLOSE_FN)(LC_CARD *card);
+typedef int CHIPCARD_CB(*LC_CARD_OPEN_FN)(LC_CARD *card);
+typedef int CHIPCARD_CB(*LC_CARD_CLOSE_FN)(LC_CARD *card);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_GETPINSTATUS_FN)(LC_CARD *card,
                            unsigned int pid,
                            int *maxErrors,
                            int *currentErrors);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_GETINITIALPIN_FN)(LC_CARD *card,
                             int id,
                             unsigned char *buffer,
@@ -45,14 +45,14 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                             unsigned int *pinLength);
 
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOREADBINARY_FN)(LC_CARD *card,
                             uint32_t flags,
                             int offset,
                             int size,
                             GWEN_BUFFER *buf);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOWRITEBINARY_FN)(LC_CARD *card,
                              uint32_t flags,
                              int offset,
@@ -60,46 +60,46 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                              unsigned int size);
 
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOUPDATEBINARY_FN)(LC_CARD *card,
                               uint32_t flags,
                               int offset,
                               const char *ptr,
                               unsigned int size);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOERASEBINARY_FN)(LC_CARD *card,
                              uint32_t flags,
                              int offset,
                              unsigned int size);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOREADRECORD_FN)(LC_CARD *card,
                             uint32_t flags,
                             int recNum,
                             GWEN_BUFFER *buf);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOWRITERECORD_FN)(LC_CARD *card,
                              uint32_t flags,
                              int recNum,
                              const char *ptr,
                              unsigned int size);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOAPPENDRECORD_FN)(LC_CARD *card,
                               uint32_t flags,
                               const char *ptr,
                               unsigned int size);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOUPDATERECORD_FN)(LC_CARD *card,
                               uint32_t flags,
                               int recNum,
                               const char *ptr,
                               unsigned int size);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOVERIFYPIN_FN)(LC_CARD *card,
                            uint32_t flags,
                            const LC_PININFO *pi,
@@ -107,7 +107,7 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                            unsigned int size,
                            int *triesLeft);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOMODIFYPIN_FN)(LC_CARD *card,
                            uint32_t flags,
                            const LC_PININFO *pi,
@@ -117,51 +117,51 @@ typedef LC_CLIENT_RESULT CHIPCARD_CB
                            unsigned int newsize,
                            int *triesLeft);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOPERFORMVERIFICATION_FN)(LC_CARD *card,
                                      uint32_t flags,
                                      const LC_PININFO *pi,
                                      int *triesLeft);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOPERFORMMODIFICATION_FN)(LC_CARD *card,
                                      uint32_t flags,
                                      const LC_PININFO *pi,
                                      int *triesLeft);
 
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOMANAGESE_FN)(LC_CARD *card,
                           int tmpl,
                           int kids, int kidp,
                           int ar);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOSIGN_FN)(LC_CARD *card,
                       const char *ptr,
                       unsigned int size,
                       GWEN_BUFFER *sigBuf);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOVERIFY_FN)(LC_CARD *card,
                         const char *dptr,
                         unsigned int dsize,
                         const char *sigptr,
                         unsigned int sigsize);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOENCIPHER_FN)(LC_CARD *card,
                           const char *ptr,
                           unsigned int size,
                           GWEN_BUFFER *codeBuf);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISODECIPHER_FN)(LC_CARD *card,
                           const char *ptr,
                           unsigned int size,
                           GWEN_BUFFER *codeBuf);
 
-typedef LC_CLIENT_RESULT CHIPCARD_CB
+typedef int CHIPCARD_CB
 (*LC_CARD_ISOINTERNALAUTH_FN)(LC_CARD *card,
                               int kid,
                               const unsigned char *ptr,

@@ -59,7 +59,7 @@ GWEN_PLUGIN *LC_Crypt_TokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_DDV *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   pl=GWEN_Crypt_Token_Plugin_new(pm, GWEN_Crypt_Token_Device_Card, modName, fileName);
 
@@ -71,7 +71,7 @@ GWEN_PLUGIN *LC_Crypt_TokenDDV_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
     return NULL;
   }
   res=LC_Client_Init(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Error initialising libchipcard (%d), chipcards will not be available",
               res);
@@ -125,7 +125,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
 {
   GWEN_PLUGIN_MANAGER *pm;
   LC_CT_PLUGIN_DDV *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   const char *currCardNumber;
   int i;
@@ -138,17 +138,17 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
   assert(pm);
 
   res=LC_Client_Start(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
     return GWEN_ERROR_IO;
   }
 
   for (i=0; i<10; i++) {
     res=LC_Client_GetNextCard(cpl->client, &hcard, i==0?5:10);
-    if (res==LC_Client_ResultOk)
+    if (res>=0)
       break;
     else {
-      if (res==LC_Client_ResultWait) {
+      if (res==GWEN_ERROR_TIMEOUT) {
         int mres;
 
         mres=GWEN_Gui_MessageBox(GWEN_GUI_MSG_FLAGS_SEVERITY_NORMAL |
@@ -180,7 +180,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
   }
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "No card within specified timeout (%d)", res);
     LC_Client_Stop(cpl->client);
@@ -203,7 +203,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
 
     res=LC_Card_Open(hcard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       DBG_NOTICE(LC_LOGDOMAIN,
@@ -311,7 +311,7 @@ void GWENHYWFAR_CB LC_Crypt_TokenDDV_FreeData(void *bp, void *p)
 int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   int first;
   const char *currCardNumber;
@@ -324,7 +324,7 @@ int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
   name=GWEN_Crypt_Token_GetTokenName(ct);
 
   res=LC_Client_Start(lct->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_IO;
   }
@@ -342,8 +342,8 @@ int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 
     if (hcard==0) {
       res=LC_Client_GetNextCard(lct->client, &hcard, timeout);
-      if (res!=LC_Client_ResultOk &&
-          res!=LC_Client_ResultWait) {
+      if (res<0 &&
+          res!=GWEN_ERROR_TIMEOUT) {
         DBG_ERROR(LC_LOGDOMAIN, "Error while waiting for card (%d)", res);
         return GWEN_ERROR_IO;
       }
@@ -373,7 +373,7 @@ int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
       }
 
       res=LC_Card_Open(hcard);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
         hcard=0;
@@ -416,10 +416,10 @@ int LC_Crypt_TokenDDV__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
         hcard=0;
 
         res=LC_Client_GetNextCard(lct->client, &hcard, GWEN_TIMEOUT_NONE);
-        if (res!=LC_Client_ResultOk) {
+        if (res<0) {
           int mres;
 
-          if (res!=LC_Client_ResultWait) {
+          if (res!=GWEN_ERROR_TIMEOUT) {
             DBG_ERROR(LC_LOGDOMAIN,
                       "Communication error (%d)", res);
             LC_Client_Stop(lct->client);
@@ -526,7 +526,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Close(GWEN_CRYPT_TOKEN *ct,
                                           uint32_t guiid)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_DDV, ct);
@@ -538,7 +538,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Close(GWEN_CRYPT_TOKEN *ct,
   }
 
   res=LC_Card_Close(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     LC_Client_ReleaseCard(lct->client, lct->card);
     LC_Card_free(lct->card);
     lct->card=0;
@@ -548,7 +548,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Close(GWEN_CRYPT_TOKEN *ct,
   res=LC_Client_ReleaseCard(lct->client, lct->card);
   LC_Card_free(lct->card);
   lct->card=0;
-  if (res!=LC_Client_ResultOk)
+  if (res<0)
     return GWEN_ERROR_IO;
 
   return 0;
@@ -561,7 +561,7 @@ int LC_Crypt_TokenDDV__ReadSignSeq(GWEN_CRYPT_TOKEN *ct,
                                    uint32_t *pSigCounter)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
   int seq;
@@ -583,7 +583,7 @@ int LC_Crypt_TokenDDV__ReadSignSeq(GWEN_CRYPT_TOKEN *ct,
 
   /* read signature sequence counter from card */
   res=LC_Card_SelectEf(lct->card, "EF_SEQ");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     return GWEN_ERROR_IO;
   }
@@ -591,7 +591,7 @@ int LC_Crypt_TokenDDV__ReadSignSeq(GWEN_CRYPT_TOKEN *ct,
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
   res=LC_Card_IsoReadRecord(lct->card,
                             LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return GWEN_ERROR_IO;
@@ -628,7 +628,7 @@ int LC_Crypt_TokenDDV__WriteSignSeq(GWEN_CRYPT_TOKEN *ct,
                                     uint32_t sigCounter)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
   int seq;
@@ -650,7 +650,7 @@ int LC_Crypt_TokenDDV__WriteSignSeq(GWEN_CRYPT_TOKEN *ct,
 
   /* read signature sequence counter from card */
   res=LC_Card_SelectEf(lct->card, "EF_SEQ");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     return GWEN_ERROR_IO;
   }
@@ -658,7 +658,7 @@ int LC_Crypt_TokenDDV__WriteSignSeq(GWEN_CRYPT_TOKEN *ct,
   mbuf=GWEN_Buffer_new(0, 4, 0, 1);
   res=LC_Card_IsoReadRecord(lct->card,
                             LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return GWEN_ERROR_IO;
@@ -698,7 +698,7 @@ int LC_Crypt_TokenDDV__WriteSignSeq(GWEN_CRYPT_TOKEN *ct,
 
   GWEN_DB_Group_free(dbRecord);
   GWEN_Buffer_free(mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return GWEN_ERROR_IO;
   }
@@ -919,7 +919,7 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenDDV_GetContext(GWEN_
     return NULL;
 
   if (lct->contexts[id-1]==NULL) {
-    LC_CLIENT_RESULT res;
+    int res;
     GWEN_DB_NODE *dbData;
     GWEN_DB_NODE *dbCtx;
     GWEN_CRYPT_TOKEN_CONTEXT *ctx;
@@ -927,7 +927,7 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenDDV_GetContext(GWEN_
 
     dbData=GWEN_DB_Group_new("institute");
     res=LC_DDVCard_ReadInstituteData(lct->card, id, dbData);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "No context available");
       GWEN_DB_Group_free(dbData);
       return NULL;
@@ -1028,7 +1028,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Sign(GWEN_CRYPT_TOKEN *ct,
                                          uint32_t gid)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *srcBuf;
   GWEN_BUFFER *dstBuf;
   uint32_t seq;
@@ -1067,7 +1067,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Sign(GWEN_CRYPT_TOKEN *ct,
   dstBuf=GWEN_Buffer_new(0, 8, 0, 1);
   res=LC_DDVCard_SignHash(lct->card, srcBuf, dstBuf);
   GWEN_Buffer_free(srcBuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error signing hash (%d)", res);
     GWEN_Buffer_free(dstBuf);
     return GWEN_ERROR_IO;
@@ -1105,7 +1105,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Verify(GWEN_CRYPT_TOKEN *ct,
                                            uint32_t gid)
 {
   LC_CT_DDV *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *srcBuf;
   GWEN_BUFFER *dstBuf;
   int rv;
@@ -1143,7 +1143,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Verify(GWEN_CRYPT_TOKEN *ct,
   dstBuf=GWEN_Buffer_new(0, 8, 0, 1);
   res=LC_DDVCard_SignHash(lct->card, srcBuf, dstBuf);
   GWEN_Buffer_free(srcBuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error signing hash (%d)", res);
     GWEN_Buffer_free(dstBuf);
     return GWEN_ERROR_IO;
@@ -1222,12 +1222,12 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Encipher(GWEN_CRYPT_TOKEN *ct,
   p=GWEN_Buffer_GetStart(srcBuf);
   i=GWEN_Buffer_GetUsedBytes(srcBuf)/8;
   while (i--) {
-    LC_CLIENT_RESULT res;
+    int res;
 
     res=LC_DDVCard_CryptCharBlock(lct->card, p,
                                   8,
                                   dstBuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error encrypting hash (%d)", res);
       GWEN_Buffer_free(dstBuf);
       GWEN_Buffer_free(srcBuf);
@@ -1302,10 +1302,10 @@ int GWENHYWFAR_CB LC_Crypt_TokenDDV_Decipher(GWEN_CRYPT_TOKEN *ct,
   p=(const char *)pInData;
   i=inLen/8;
   while (i--) {
-    LC_CLIENT_RESULT res;
+    int res;
 
     res=LC_DDVCard_CryptCharBlock(lct->card, p, 8, dstBuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "Error encrypting hash (%d)", res);
       GWEN_Buffer_free(dstBuf);
       return GWEN_ERROR_IO;

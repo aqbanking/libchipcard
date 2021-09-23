@@ -130,55 +130,8 @@ void usage(const char *name, const char *ustr) {
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x) {
-  const char *s;
-
-  switch(res) {
-  case LC_Client_ResultOk:
-    s="Ok.";
-    break;
-  case LC_Client_ResultWait:
-    s="Timeout.";
-    break;
-  case LC_Client_ResultIpcError:
-    s="IPC error.";
-    break;
-  case LC_Client_ResultCmdError:
-    s="Command error.";
-    break;
-  case LC_Client_ResultDataError:
-    s="Data error.";
-    break;
-  case LC_Client_ResultAborted:
-    s="Aborted.";
-    break;
-  case LC_Client_ResultInvalid:
-    s="Invalid argument to command.";
-    break;
-  case LC_Client_ResultInternal:
-    s="Internal error.";
-    break;
-  case LC_Client_ResultGeneric:
-    s="Generic error.";
-    break;
-  default:
-    s="Unknown error.";
-    break;
-  }
-
-  fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (card && res==LC_Client_ResultCmdError) {
-    fprintf(stderr, "  Last card command result:\n");
-    fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
-            LC_Card_GetLastSW1(card),
-            LC_Card_GetLastSW2(card));
-    s=LC_Card_GetLastResult(card);
-    if (s)
-      fprintf(stderr, "   Result: %s\n", s);
-    s=LC_Card_GetLastText(card);
-    if (s)
-      fprintf(stderr, "   Text  : %s\n", s);
-  }
+void showError(LC_CARD *card, int res, const char *x) {
+  LC_Card_PrintResult(card, x, res);
 }
 
 
@@ -191,7 +144,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
   string cm;
   static string lastAPDU;
   LC_CARD *tcard;
-  LC_CLIENT_RESULT res;
+  int res;
 
   // skip leading blanks
   i=0;
@@ -220,7 +173,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 
     fprintf(stdout, I18N("Waiting for a card to be inserted...\n"));
     res=LC_Client_GetNextCard(cl, &tcard, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(0, res, "GetNextCard");
       return 3;
     }
@@ -228,7 +181,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     *card=tcard;
 
     res=LC_Card_Open(*card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(*card, res, "CardOpen");
       return 3;
     }
@@ -243,7 +196,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
 
     fprintf(stdout, I18N("Closing card.\n"));
     res=LC_Card_Close(*card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(*card, res, "CardClose");
       LC_Client_ReleaseCard(cl, *card);
       LC_Card_free(*card);
@@ -251,7 +204,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
       return 3;
     }
     res=LC_Client_ReleaseCard(cl, *card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(*card, res, "ReleaseCard");
       LC_Card_free(*card);
       *card=0;
@@ -306,7 +259,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
                          rbuf,
                          LC_Client_CmdTargetCard);
     GWEN_Buffer_free(abuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(*card, res, "ExecAPDU");
       GWEN_Buffer_free(rbuf);
       return 3;
@@ -355,7 +308,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
                          rbuf,
                          LC_Client_CmdTargetReader);
     GWEN_Buffer_free(abuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(*card, res, "ExecAPDU");
       GWEN_Buffer_free(rbuf);
       return 3;
@@ -382,7 +335,7 @@ int execCommand(GWEN_DB_NODE *dbArgs,
     if (*card) {
       fprintf(stdout,I18N("Closing card before exiting...\n"));
       res=LC_Card_Close(*card);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
 	showError(*card, res, "CardClose");
         LC_Client_ReleaseCard(cl, *card);
         LC_Card_free(*card);
@@ -434,7 +387,7 @@ int main(int argc, char **argv) {
   const char *s;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_GUI *gui;
 
   gui=GWEN_Gui_CGui_new();
@@ -490,14 +443,14 @@ int main(int argc, char **argv) {
 
   cl=LC_Client_new("cardcommander", "0");
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
     return 2;
   }
 
   fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Start");
     return 3;
   }
@@ -516,7 +469,7 @@ int main(int argc, char **argv) {
   }
 
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Stop");
   }
 

@@ -52,7 +52,7 @@ CHIPCARD_API int LC_GeldKarte_UnextendCard(LC_CARD *card);
  * after opening you can call this function here to let the card do some
  * necessary work before other functions of this group can be used.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card);
+CHIPCARD_API int LC_GeldKarte_Reopen(LC_CARD *card);
 /*@}*/
 
 
@@ -98,7 +98,7 @@ GWEN_BUFFER *LC_GeldKarte_GetAccountDataAsBuffer(const LC_CARD *card);
  * transfer amount limit).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
+int LC_GeldKarte_ReadValues(LC_CARD *card,
                                          LC_GELDKARTE_VALUES *val);
 
 /**
@@ -107,7 +107,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
  * (see @ref LC_GELDKARTE_BLOG).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
+int LC_GeldKarte_ReadBLogs(LC_CARD *card,
                                         LC_GELDKARTE_BLOG_LIST2 *bll);
 
 /**
@@ -117,7 +117,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
  * (see @ref LC_GELDKARTE_LLOG).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
+int LC_GeldKarte_ReadLLogs(LC_CARD *card,
                                         LC_GELDKARTE_LLOG_LIST2 *bll);
 /*@}*/
 

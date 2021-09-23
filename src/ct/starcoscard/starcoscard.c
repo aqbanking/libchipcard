@@ -58,7 +58,7 @@ GWEN_PLUGIN *LC_Crypt_TokenStarcos_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_STARCOS *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   pl=GWEN_Crypt_Token_Plugin_new(pm,
                                  GWEN_Crypt_Token_Device_Card,
@@ -70,7 +70,7 @@ GWEN_PLUGIN *LC_Crypt_TokenStarcos_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                        LC_Crypt_TokenStarcos_Plugin_FreeData);
   cpl->client=LC_Client_new("LC_Crypt_TokenStarcos", VERSION);
   res=LC_Client_Init(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Error initialising libchipcard (%d), chipcards will not be available",
               res);
@@ -124,7 +124,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
 {
   GWEN_PLUGIN_MANAGER *pm;
   LC_CT_PLUGIN_STARCOS *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   const char *currCardNumber;
   int i;
@@ -137,17 +137,17 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
   assert(pm);
 
   res=LC_Client_Start(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
     return GWEN_ERROR_IO;
   }
 
   for (i=0; i<10; i++) {
     res=LC_Client_GetNextCard(cpl->client, &hcard, i==0?5:10);
-    if (res==LC_Client_ResultOk)
+    if (res>=0)
       break;
     else {
-      if (res==LC_Client_ResultWait) {
+      if (res==GWEN_ERROR_TIMEOUT) {
         int mres;
 
         mres=GWEN_Gui_MessageBox(GWEN_GUI_MSG_FLAGS_SEVERITY_NORMAL |
@@ -179,7 +179,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
   }
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "No card within specified timeout (%d)", res);
     LC_Client_Stop(cpl->client);
@@ -202,7 +202,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
 
     res=LC_Card_Open(hcard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       DBG_NOTICE(LC_LOGDOMAIN,
@@ -312,7 +312,7 @@ void GWENHYWFAR_CB LC_Crypt_TokenStarcos_FreeData(void *bp, void *p)
 int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   int first;
   const char *currCardNumber;
@@ -325,7 +325,7 @@ int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
   name=GWEN_Crypt_Token_GetTokenName(ct);
 
   res=LC_Client_Start(lct->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_IO;
   }
@@ -343,8 +343,8 @@ int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 
     if (hcard==0) {
       res=LC_Client_GetNextCard(lct->client, &hcard, timeout);
-      if (res!=LC_Client_ResultOk &&
-          res!=LC_Client_ResultWait) {
+      if (res<0 &&
+          res!=GWEN_ERROR_TIMEOUT) {
         DBG_ERROR(LC_LOGDOMAIN, "Error while waiting for card (%d)", res);
         return GWEN_ERROR_IO;
       }
@@ -374,7 +374,7 @@ int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
       }
 
       res=LC_Card_Open(hcard);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
         hcard=0;
@@ -422,10 +422,10 @@ int LC_Crypt_TokenStarcos__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
         hcard=0;
 
         res=LC_Client_GetNextCard(lct->client, &hcard, GWEN_TIMEOUT_NONE);
-        if (res!=LC_Client_ResultOk) {
+        if (res<0) {
           int mres;
 
-          if (res!=LC_Client_ResultWait) {
+          if (res!=GWEN_ERROR_TIMEOUT) {
             DBG_ERROR(LC_LOGDOMAIN,
                       "Communication error (%d)", res);
             LC_Client_Stop(lct->client);
@@ -568,7 +568,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Close(GWEN_CRYPT_TOKEN *ct,
                                               uint32_t guiid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_STARCOS, ct);
@@ -580,7 +580,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Close(GWEN_CRYPT_TOKEN *ct,
   }
 
   res=LC_Card_Close(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     LC_Client_ReleaseCard(lct->client, lct->card);
     LC_Card_free(lct->card);
     lct->card=0;
@@ -590,7 +590,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Close(GWEN_CRYPT_TOKEN *ct,
   res=LC_Client_ReleaseCard(lct->client, lct->card);
   LC_Card_free(lct->card);
   lct->card=0;
-  if (res!=LC_Client_ResultOk)
+  if (res<0)
     return GWEN_ERROR_IO;
 
   return 0;
@@ -654,7 +654,7 @@ int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
     int i;
     int rv;
     LC_STARCOS_KEYDESCR *kdescr;
-    LC_CLIENT_RESULT res;
+    int res;
     GWEN_BUFFER *bModulus;
     GWEN_BUFFER *bExponent;
 
@@ -667,7 +667,7 @@ int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
     /* read key descriptor */
     res=LC_Starcos_GetKeyDescr(lct->card, kid, &kdescr);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
       return GWEN_ERROR_IO;
     }
@@ -676,7 +676,7 @@ int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
     bModulus=GWEN_Buffer_new(0, 256, 0, 1);
     bExponent=GWEN_Buffer_new(0, 256, 0, 1);
     res=LC_Starcos_ReadPublicKey(lct->card, kid, bModulus, bExponent);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "No public key (%d)", res);
       GWEN_Buffer_free(bModulus);
       bModulus=NULL;
@@ -745,11 +745,11 @@ int LC_Crypt_TokenStarcos__ReadKeyInfo(GWEN_CRYPT_TOKEN *ct,
 
   if (kid>=0x81 && kid<=0x85) {
     uint32_t seq;
-    LC_CLIENT_RESULT res;
+    int res;
 
     /* read signature counter for user sign keys in any case */
     res=LC_Starcos_ReadSigCounter(lct->card, kid, &seq);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_WARN(LC_LOGDOMAIN, "No signature counter for key 0x%02x (%d)", kid, res);
     }
     else {
@@ -806,11 +806,11 @@ const GWEN_CRYPT_TOKEN_KEYINFO *GWENHYWFAR_CB LC_Crypt_TokenStarcos_GetKeyInfo(G
 
   if (kid>=0x81 && kid<=0x85) {
     uint32_t seq;
-    LC_CLIENT_RESULT res;
+    int res;
 
     /* read signature counter for user sign keys in any case */
     res=LC_Starcos_ReadSigCounter(lct->card, kid, &seq);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_WARN(LC_LOGDOMAIN, "No signature counter for key 0x%02x (%d)", kid, res);
     }
     else {
@@ -891,12 +891,12 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
   if ((fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYVERSION) ||
       (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASKEYNUMBER) ||
       (fl & GWEN_CRYPT_TOKEN_KEYFLAGS_HASSTATUS)) {
-    LC_CLIENT_RESULT res;
+    int res;
     LC_STARCOS_KEYDESCR *descr;
 
     DBG_INFO(LC_LOGDOMAIN, "Loading key descriptor");
     res=LC_Starcos_GetKeyDescr(lct->card, kid, &descr);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
       return GWEN_ERROR_IO;
     }
@@ -957,7 +957,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
     /* save descriptor after changing */
     DBG_INFO(LC_LOGDOMAIN, "Saving key descriptor");
     res=LC_Starcos_SaveKeyDescr(lct->card, descr);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
       return GWEN_ERROR_IO;
     }
@@ -972,7 +972,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
       return GWEN_ERROR_INVALID;
     }
     else {
-      LC_CLIENT_RESULT res;
+      int res;
       const uint8_t *pModulus;
       uint32_t lModulus;
       const uint8_t *pExponent;
@@ -987,7 +987,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_SetKeyInfo(GWEN_CRYPT_TOKEN *ct,
       res=LC_Starcos_WritePublicKey(lct->card, kid,
                                     pModulus, lModulus,
                                     pExponent, lExponent);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
         return GWEN_ERROR_IO;
       }
@@ -1043,7 +1043,7 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenStarcos_GetContext(G
   }
 
   if (lct->contexts[id-1]==NULL) {
-    LC_CLIENT_RESULT res;
+    int res;
     GWEN_DB_NODE *dbData;
     GWEN_CRYPT_TOKEN_CONTEXT *ctx;
     int rv;
@@ -1059,7 +1059,7 @@ const GWEN_CRYPT_TOKEN_CONTEXT *GWENHYWFAR_CB LC_Crypt_TokenStarcos_GetContext(G
 
     dbData=GWEN_DB_Group_new("institute");
     res=LC_Starcos_ReadInstituteData(lct->card, id, dbData);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "No context available");
       GWEN_DB_Group_free(dbData);
       return NULL;
@@ -1138,7 +1138,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
                                                     uint32_t gid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   uint32_t nkeyId;
   LC_STARCOS_KEYDESCR *kdescr;
   int rv;
@@ -1170,7 +1170,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
 
   /* read key descriptor */
   res=LC_Starcos_GetKeyDescr(lct->card, kid, &kdescr);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1184,7 +1184,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
 
   /* first generate temporary key */
   res=LC_Starcos_GenerateKeyPair(lct->card, nkeyId, 768);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     LC_Starcos_KeyDescr_free(kdescr);
     return GWEN_ERROR_IO;
@@ -1192,7 +1192,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
 
   LC_Starcos_KeyDescr_SetStatus(kdescr, LC_STARCOS_KEY_STATUS_INACTIVE_FREE);
   res=LC_Starcos_SaveKeyDescr(lct->card, kdescr);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     LC_Starcos_KeyDescr_free(kdescr);
     return GWEN_ERROR_IO;
@@ -1205,7 +1205,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_GenerateKey(GWEN_CRYPT_TOKEN *ct,
   LC_Starcos_KeyDescr_SetStatus(kdescr, LC_STARCOS_KEY_STATUS_ACTIVE);
 
   res=LC_Starcos_ActivateKeyPair(lct->card, nkeyId, kid, kdescr);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     LC_Starcos_KeyDescr_free(kdescr);
     return GWEN_ERROR_IO;
@@ -1228,7 +1228,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
                                              uint32_t gid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *dbuf;
   uint32_t seq;
   int rv;
@@ -1261,7 +1261,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
 
   /* get current signature counter */
   res=LC_Starcos_ReadSigCounter(lct->card, kid, &seq);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error reading signature counter (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1271,7 +1271,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
                           kid & 0xff,
                           kid & 0xff,
                           0x25); /* assume RMD160 and 9796-2 */
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error preparing signing (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1282,7 +1282,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Sign(GWEN_CRYPT_TOKEN *ct,
                       (const char *)pInData,
                       inLen,
                       dbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error signing hash (%d)", res);
     GWEN_Buffer_free(dbuf);
     return GWEN_ERROR_IO;
@@ -1320,7 +1320,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Verify(GWEN_CRYPT_TOKEN *ct,
                                                uint32_t gid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   int rv;
 
   assert(ct);
@@ -1358,7 +1358,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Verify(GWEN_CRYPT_TOKEN *ct,
                           0,
                           kid & 0xff,
                           0x25); /* assume RMD160 and 9796-2 */
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error preparing verification (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1369,7 +1369,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Verify(GWEN_CRYPT_TOKEN *ct,
                         inLen,
                         (const char *)pSignatureData,
                         signatureLen);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error signing hash (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1390,7 +1390,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Encipher(GWEN_CRYPT_TOKEN *ct,
                                                  uint32_t gid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *dbuf;
   int rv;
   const uint8_t *p;
@@ -1426,7 +1426,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Encipher(GWEN_CRYPT_TOKEN *ct,
                           0,
                           kid & 0xff,
                           0x03); /* leftzero */
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error preparing encrypting (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1437,7 +1437,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Encipher(GWEN_CRYPT_TOKEN *ct,
                           (const char *)pInData,
                           inLen,
                           dbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error encrypting (%d)", res);
     GWEN_Buffer_free(dbuf);
     return GWEN_ERROR_IO;
@@ -1485,7 +1485,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Decipher(GWEN_CRYPT_TOKEN *ct,
                                                  uint32_t gid)
 {
   LC_CT_STARCOS *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *dbuf;
   int rv;
 
@@ -1517,7 +1517,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Decipher(GWEN_CRYPT_TOKEN *ct,
                           kid & 0xff,
                           kid & 0xff,
                           0x03); /* leftzero */
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error preparing decrypting (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1533,7 +1533,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenStarcos_Decipher(GWEN_CRYPT_TOKEN *ct,
                           (const char *)pInData,
                           inLen,
                           dbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error decrypting (%d)", res);
     GWEN_Buffer_free(dbuf);
     return GWEN_ERROR_IO;

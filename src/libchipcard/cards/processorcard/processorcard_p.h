@@ -25,9 +25,9 @@ struct LC_PROCESSORCARD {
 
 void GWENHYWFAR_CB LC_ProcessorCard_freeData(void *bp, void *p);
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card);
+int CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card);
+int LC_ProcessorCard_Reopen(LC_CARD *card);
+int CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card);
 
 
 

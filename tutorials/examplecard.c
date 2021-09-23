@@ -116,9 +116,9 @@ void GWENHYWFAR_CB ExampleCard_freeData(void *bp, void *p)
  * may later be used again, because the function LC_Card_Open() also does
  * the connection work and must therefore only be called *once*.
  */
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card)
+int CHIPCARD_CB ExampleCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   EXAMPLE_CARD *xc;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening card as ExampleCard");
@@ -145,9 +145,9 @@ LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Open(LC_CARD *card)
 
 
 /* As discussed above this is the card specific setup. */
-LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card)
+int ExampleCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   EXAMPLE_CARD *xc;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening ExampleCard");
@@ -180,9 +180,9 @@ LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card)
  * Additionally, you can do your own deinit stuff here before actually
  * releasing the card.
  */
-LC_CLIENT_RESULT CHIPCARD_CB ExampleCard_Close(LC_CARD *card)
+int CHIPCARD_CB ExampleCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   EXAMPLE_CARD *xc;
 
   assert(card);

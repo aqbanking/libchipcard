@@ -108,9 +108,9 @@ void GWENHYWFAR_CB LC_Starcos_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Open(LC_CARD *card)
+int CHIPCARD_CB LC_Starcos_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_STARCOS *scos;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card as STARCOS card");
@@ -127,39 +127,39 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Open(LC_CARD *card)
 
   if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
     DBG_INFO(LC_LOGDOMAIN, "Not a processor card");
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
   }
 
   res=scos->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_Starcos_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     scos->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
 
-LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
+int LC_Starcos__ReadEfToDb(LC_CARD *card,
                                         const char *efName,
                                         const char *formatName,
                                         GWEN_DB_NODE *db)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF...");
   res=LC_Card_SelectEf(card, efName);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -167,7 +167,7 @@ LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
   DBG_INFO(LC_LOGDOMAIN, "Reading data...");
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 12, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -178,18 +178,18 @@ LC_CLIENT_RESULT LC_Starcos__ReadEfToDb(LC_CARD *card,
   if (LC_Card_ParseData(card, formatName, mbuf, db)) {
     DBG_ERROR(LC_LOGDOMAIN, "Error in STARCOS data for EF \"%s\"", efName);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   GWEN_Buffer_free(mbuf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
+int LC_Starcos_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_STARCOS *scos;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbData;
@@ -210,21 +210,21 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
   scos->bin_ef_gd_0=0;
 
   res=LC_Card_SelectCard(card, "starcos");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   /* first select generic app for all STARCOS HBCI cards */
   res=LC_Card_SelectApp(card, "starcos");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -234,9 +234,8 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
   res=LC_Starcos__ReadEfToDb(card,
                              "EF_CARD_VERSION", "EF_CARD_VERSION",
                              dbVersion);
-  if (res!=LC_Client_ResultOk) {
-    if (res==LC_Client_ResultCmdError &&
-        LC_Card_GetLastSW1(card)==0x6a &&
+  if (res<0) {
+    if (LC_Card_GetLastSW1(card)==0x6a &&
         LC_Card_GetLastSW2(card)==0x82) {
       DBG_INFO(LC_LOGDOMAIN,
                "EF_CARD_VERSION not found, assuming normal HBCI card");
@@ -268,7 +267,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
 
     DBG_INFO(LC_LOGDOMAIN, "Selecting application \"%s\"", s);
     res=LC_Card_SelectApp(card, s);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here");
       return res;
     }
@@ -277,7 +276,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
   /* now read card data, initial pin etc */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF...");
   res=LC_Card_SelectEf(card, "EF_GD0");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -285,7 +284,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading data...");
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 12, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -293,7 +292,7 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
   if (GWEN_Buffer_GetUsedBytes(mbuf)<12) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   DBG_DEBUG(LC_LOGDOMAIN, "Parsing data...");
@@ -306,13 +305,13 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
     DBG_ERROR(LC_LOGDOMAIN, "Error in STARCOS card data");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   /* select banking DF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_BANKING...");
   res=LC_Card_SelectDf(card, "DF_BANKING");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
@@ -321,14 +320,14 @@ LC_CLIENT_RESULT LC_Starcos_Reopen(LC_CARD *card)
 
   scos->db_ef_gd_0=dbData;
   scos->bin_ef_gd_0=mbuf;
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Close(LC_CARD *card)
+int CHIPCARD_CB LC_Starcos_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_STARCOS *scos;
 
   assert(card);
@@ -337,7 +336,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_Close(LC_CARD *card)
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=scos->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -373,7 +372,7 @@ GWEN_BUFFER *LC_Starcos_GetCardDataAsBuffer(const LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
+int CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
                                                      unsigned int pid,
                                                      int *maxErrors,
                                                      int *currentErrors)
@@ -381,7 +380,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int v;
 
   assert(card);
@@ -394,7 +393,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
   GWEN_DB_SetIntValue(dbReq, GWEN_DB_FLAGS_DEFAULT,
                       "pid", pid);
   res=LC_Card_ExecCommand(card, "PinStatus", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error while executing PinStatus");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -406,7 +405,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetPinStatus(LC_CARD *card,
   GWEN_DB_Group_free(dbResp);
   if (v==0) {
     DBG_INFO(LC_LOGDOMAIN, "No pin status received");
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   if (maxErrors)
     *maxErrors=(((unsigned char)(v))>>4)&0xf;
@@ -436,11 +435,11 @@ int LC_Starcos__GetKeyDescrOffset(int kid)
 
 
 
-LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
+int LC_Starcos__GetKeyLogInfo(LC_CARD *card,
                                            unsigned int *pResult)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
 
   assert(card);
@@ -451,14 +450,14 @@ LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
     DBG_INFO(LC_LOGDOMAIN, "Reading keylog info");
 
     res=LC_Card_SelectEf(card, "EF_KEY_LOG");
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
       return res;
     }
 
     mbuf=GWEN_Buffer_new(0, 16, 0, 1);
     res=LC_Card_IsoReadBinary(card, 0, 0, 1, mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "Error reading info byte of EF_KEYLOG");
       GWEN_Buffer_free(mbuf);
       return res;
@@ -470,15 +469,15 @@ LC_CLIENT_RESULT LC_Starcos__GetKeyLogInfo(LC_CARD *card,
     GWEN_Buffer_free(mbuf);
   }
   *pResult=scos->keyLogInfo;
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card)
+int LC_Starcos__SaveKeyLogInfo(LC_CARD *card)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
 
   assert(card);
@@ -488,10 +487,10 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Writing keylog info");
 
   if (!scos->keyLogInfo)
-    return LC_Client_ResultOk;
+    return 0;
 
   res=LC_Card_SelectEf(card, "EF_KEY_LOG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
     return res;
   }
@@ -503,11 +502,11 @@ LC_CLIENT_RESULT LC_Starcos__SaveKeyLogInfo(LC_CARD *card)
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
   GWEN_Buffer_free(mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading info byte of EF_KEYLOG");
     return res;
   }
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
@@ -535,12 +534,12 @@ LC_STARCOS_KEYDESCR *LC_Starcos__FindKeyDescr(LC_CARD *card, int kid)
 
 
 
-LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
+int LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
                                           LC_STARCOS_KEYDESCR **pDescr)
 {
   LC_STARCOS *scos;
   LC_STARCOS_KEYDESCR *d;
-  LC_CLIENT_RESULT res;
+  int res;
   int offset;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbData;
@@ -552,18 +551,18 @@ LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
   offset=LC_Starcos__GetKeyDescrOffset(kid);
   if (offset==-1) {
     DBG_INFO(LC_LOGDOMAIN, "Key %02x not available", kid);
-    return LC_Client_ResultNotFound;
+    return GWEN_ERROR_NOT_FOUND;
   }
 
   res=LC_Card_SelectEf(card, "EF_KEY_LOG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
     return res;
   }
 
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, offset, 8, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading descriptor");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -572,7 +571,7 @@ LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
   dbData=GWEN_DB_Group_new("keyDescr");
   GWEN_Buffer_Rewind(mbuf);
   res=LC_Card_ParseData(card, "KeyLogDescr", mbuf, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading descriptor");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -583,7 +582,7 @@ LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
   if (!d) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing descriptor data");
     GWEN_DB_Group_free(dbData);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   LC_Starcos_KeyDescr_SetKeyId(d, kid);
   GWEN_DB_Group_free(dbData);
@@ -594,7 +593,7 @@ LC_CLIENT_RESULT LC_Starcos__LoadKeyDescr(LC_CARD *card, int kid,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
+int LC_Starcos_SaveKeyDescr(LC_CARD *card,
                                          const LC_STARCOS_KEYDESCR *d)
 {
   LC_STARCOS *scos;
@@ -602,7 +601,7 @@ LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
   GWEN_BUFFER *mbuf;
   int offset;
   int kid;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
@@ -613,13 +612,13 @@ LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
   offset=LC_Starcos__GetKeyDescrOffset(kid);
   if (offset==-1) {
     DBG_INFO(LC_LOGDOMAIN, "Key %02x not available", kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   res=LC_Card_SelectEf(card, "EF_KEY_LOG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "File EF_KEY_LOG not available");
-    return LC_Client_ResultGeneric;
+    return GWEN_ERROR_GENERIC;
   }
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
@@ -637,7 +636,7 @@ LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN, "Bad data in key descriptor");
     GWEN_Buffer_free(mbuf);
     GWEN_DB_Group_free(dbDescr);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   GWEN_DB_Group_free(dbDescr);
 
@@ -645,19 +644,19 @@ LC_CLIENT_RESULT LC_Starcos_SaveKeyDescr(LC_CARD *card,
   res=LC_Card_IsoUpdateBinary(card, 0, offset,
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error writing descriptor");
     GWEN_Buffer_free(mbuf);
     return res;
   }
   GWEN_Buffer_free(mbuf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
+int LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
                                         LC_STARCOS_KEYDESCR **pDescr)
 {
   LC_STARCOS *scos;
@@ -669,10 +668,10 @@ LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
 
   d=LC_Starcos__FindKeyDescr(card, kid);
   if (d==NULL) {
-    LC_CLIENT_RESULT res;
+    int res;
 
     res=LC_Starcos__LoadKeyDescr(card, kid, &d);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       return res;
     }
@@ -685,14 +684,14 @@ LC_CLIENT_RESULT LC_Starcos_GetKeyDescr(LC_CARD *card, int kid,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
+int LC_Starcos_GenerateKeyPair(LC_CARD *card,
                                             int kid,
                                             int bits)
 {
   LC_STARCOS *scos;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int kli;
 
   assert(card);
@@ -702,7 +701,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   DBG_INFO(LC_LOGDOMAIN, "Reading keylog info");
   res=LC_Starcos__GetKeyLogInfo(card, &kli);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
@@ -712,7 +711,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
       scos->keyLogInfo=kli;
       DBG_INFO(LC_LOGDOMAIN, "Saving keylog info");
       res=LC_Starcos__SaveKeyLogInfo(card);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
@@ -723,7 +722,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
       kli&=~0x80;
       scos->keyLogInfo=kli;
       res=LC_Starcos__SaveKeyLogInfo(card);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         DBG_INFO(LC_LOGDOMAIN, "here");
         return res;
       }
@@ -733,7 +732,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN,
               "Will only generate keys for KIDs 0x8e and 0x8f (%02x)",
               kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
@@ -753,7 +752,7 @@ LC_CLIENT_RESULT LC_Starcos_GenerateKeyPair(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
+int LC_Starcos_ActivateKeyPair(LC_CARD *card,
                                             int srcKid,
                                             int dstKid,
                                             const LC_STARCOS_KEYDESCR *descr)
@@ -762,7 +761,7 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbDescr;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int kli;
 
   assert(card);
@@ -771,7 +770,7 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Starcos__GetKeyLogInfo(card, &kli);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
@@ -780,34 +779,34 @@ LC_CLIENT_RESULT LC_Starcos_ActivateKeyPair(LC_CARD *card,
   if (srcKid==0x8e) {
     if (!(kli & 0x08)) {
       DBG_ERROR(LC_LOGDOMAIN, "No key, please create one");
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     if (dstKid<0x86 || dstKid>0x8a) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad combination: "
                 "Allowed for source KID 0x8e are 0x86-a (%02x)",
                 dstKid);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
   }
   else if (srcKid==0x8f) {
     if (!(kli & 0x80)) {
       DBG_ERROR(LC_LOGDOMAIN, "No key, please create one");
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     if (dstKid<0x81 || dstKid>0x85) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Bad combination: "
                 "Allowed for source KID 0x8f are 0x81-5 (%02x)",
                 dstKid);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN,
               "Only 0x8e and 0x8f are accepted as source KIDs(%02x)",
               srcKid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
@@ -856,7 +855,7 @@ int LC_Starcos__IsCryptKey(int kid)
 int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   int pos;
   int keyCount;
@@ -868,7 +867,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_SelectEf(card, "EF_IPF");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "File EF_IPF not available");
     return 0;
   }
@@ -876,7 +875,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
 
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "Error reading keycount from EF_IPF[%d]", 0);
     GWEN_Buffer_free(mbuf);
     return -1;
@@ -890,7 +889,7 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
     GWEN_Buffer_Reset(mbuf);
     LC_Card_SetLastResult(card, 0, 0, 0, 0);
     res=LC_Card_IsoReadBinary(card, 0, pos, 1, mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "Error reading kid from EF_IPF[%d]", pos);
       GWEN_Buffer_free(mbuf);
       return -1;
@@ -908,14 +907,14 @@ int LC_Starcos__GetIpfKeyOffset(LC_CARD *card, int kid)
 
 
 
-LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
+int LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
                                            const uint8_t *pModulus,
                                            uint32_t lModulus,
                                            const uint8_t *pExponent,
                                            uint32_t lExponent)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   int pos;
   unsigned char algoByte;
@@ -934,7 +933,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
     DBG_ERROR(LC_LOGDOMAIN,
               "Bad key id for writing (allowed: 0x91 <= x <= 0x9a, is:%02x)",
               kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   /* get write pos */
@@ -942,7 +941,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   pos=LC_Starcos__GetIpfKeyOffset(card, kid);
   if (pos==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "Key %02x not found in EF_IPF", kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
   DBG_ERROR(LC_LOGDOMAIN, "Key %02x is at %04x", kid, pos);
 
@@ -950,7 +949,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
   /* read AlgoByte */
   res=LC_Card_IsoReadBinary(card, 0, pos+6, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -986,7 +985,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   res=LC_Card_IsoUpdateBinary(card, 0, pos+20,
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -1000,7 +999,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   res=LC_Card_IsoUpdateBinary(card, 0, pos+14,
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -1014,7 +1013,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   res=LC_Card_IsoUpdateBinary(card, 0, pos+18,
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -1034,7 +1033,7 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
   res=LC_Card_IsoUpdateBinary(card, 0, pos+20+modLen,
                               GWEN_Buffer_GetStart(mbuf),
                               GWEN_Buffer_GetUsedBytes(mbuf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -1042,17 +1041,17 @@ LC_CLIENT_RESULT LC_Starcos_WritePublicKey(LC_CARD *card, int kid,
 
   GWEN_Buffer_free(mbuf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
+int LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
                                           GWEN_BUFFER *bModulus,
                                           GWEN_BUFFER *bExponent)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   int pos;
   GWEN_DB_NODE *dbData;
@@ -1077,7 +1076,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
     DBG_ERROR(LC_LOGDOMAIN,
               "Bad key id for reading (%02x)",
               kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   /* get read pos */
@@ -1085,14 +1084,14 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
   pos=LC_Starcos__GetIpfKeyOffset(card, kid);
   if (pos==-1) {
     DBG_ERROR(LC_LOGDOMAIN, "Key %02x not found in EF_IPF", kid);
-    return LC_Client_ResultNotFound;
+    return GWEN_ERROR_NOT_FOUND;
   }
 
   /* read key to buffer */
   mbuf=GWEN_Buffer_new(0, 128, 0, 1);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_IsoReadBinary(card, 0, pos, 121, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -1103,7 +1102,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
   dbData=GWEN_DB_Group_new("IpfKey");
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ParseData(card, "IpfKey", mbuf, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
@@ -1115,19 +1114,19 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
   if (!modLen) {
     DBG_ERROR(LC_LOGDOMAIN, "No modulus");
     GWEN_DB_Group_free(dbData);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
 
   }
   if (modLen>96) {
     DBG_ERROR(LC_LOGDOMAIN, "Modulus/exponent too long");
     GWEN_DB_Group_free(dbData);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   p=GWEN_DB_GetBinValue(dbData, "modAndExpo", 0, 0, 0, &bs);
   if (!p || bs<99) {
     DBG_ERROR(LC_LOGDOMAIN, "Modulus/exponent too small");
     GWEN_DB_Group_free(dbData);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   if (GWEN_DB_GetIntValue(dbData, "algoByte", 0, 0) & 0x08) {
@@ -1145,17 +1144,17 @@ LC_CLIENT_RESULT LC_Starcos_ReadPublicKey(LC_CARD *card, int kid,
 
   GWEN_Buffer_AppendBytes(bExponent, p+modLen, 3);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
+int LC_Starcos_ReadInstituteData(LC_CARD *card,
                                               int idx,
                                               GWEN_DB_NODE *dbData)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *buf;
 
   assert(card);
@@ -1165,7 +1164,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
 
   res=LC_Card_SelectEf(card, "EF_BNK");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -1173,7 +1172,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                             idx, buf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
     GWEN_Buffer_free(buf);
     return res;
@@ -1185,23 +1184,23 @@ LC_CLIENT_RESULT LC_Starcos_ReadInstituteData(LC_CARD *card,
       if (LC_Card_ParseRecord(card, idx, buf, dbData)) {
         DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d", idx);
         GWEN_Buffer_free(buf);
-        return LC_Client_ResultDataError;
+        return GWEN_ERROR_BAD_DATA;
       }
     } /* if buffer content is valid */
   } /* if buffer not empty */
   GWEN_Buffer_free(buf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
+int LC_Starcos_WriteInstituteData(LC_CARD *card,
                                                int idx,
                                                GWEN_DB_NODE *dbData)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *buf;
 
   assert(card);
@@ -1211,17 +1210,17 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   if (!idx || idx>5) {
     DBG_ERROR(LC_LOGDOMAIN, "Bad index");
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
   res=LC_Card_SelectEf(card, "EF_BNK");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_CreateRecord(card, idx, buf, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(buf);
     return res;
@@ -1232,23 +1231,23 @@ LC_CLIENT_RESULT LC_Starcos_WriteInstituteData(LC_CARD *card,
                               idx,
                               GWEN_Buffer_GetStart(buf),
                               GWEN_Buffer_GetUsedBytes(buf));
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(buf);
     return res;
   }
   GWEN_Buffer_free(buf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
+int LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
                                            uint32_t *pSeq)
 {
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int i;
   GWEN_BUFFER *buf;
   uint32_t seq;
@@ -1264,12 +1263,12 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
     DBG_ERROR(LC_LOGDOMAIN,
               "Bad key id (accepted: 0x81-0x85, is: %02x)",
               kid);
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
   i=kid-0x80;
 
   res=LC_Card_SelectEf(card, "EF_SEQ");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (res=%d)", res);
     return res;
   }
@@ -1277,7 +1276,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                             i, buf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (res=%d)", res);
     GWEN_Buffer_free(buf);
     return res;
@@ -1285,7 +1284,7 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
   GWEN_Buffer_Rewind(buf);
   dbData=GWEN_DB_Group_new("signcounter");
   res=LC_Card_ParseRecord(card, i, buf, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d (%d)", i, res);
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(buf);
@@ -1298,17 +1297,17 @@ LC_CLIENT_RESULT LC_Starcos_ReadSigCounter(LC_CARD *card, int kid,
     DBG_ERROR(LC_LOGDOMAIN, "No signature counter in data");
     GWEN_DB_Dump(dbData, 2);
     GWEN_DB_Group_free(dbData);
-    return LC_Client_ResultInternal;
+    return GWEN_ERROR_INTERNAL;
   }
   GWEN_DB_Group_free(dbData);
 
   *pSeq=seq;
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
+int CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
                                               const char *ptr,
                                               unsigned int size,
                                               GWEN_BUFFER *sigBuf)
@@ -1316,7 +1315,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   const void *p;
   unsigned int bs;
 
@@ -1333,7 +1332,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "PutHash", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbRsp);
     return res;
@@ -1346,7 +1345,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   dbRsp=GWEN_DB_Group_new("response");
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "Sign", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
@@ -1366,12 +1365,12 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Sign(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbRsp);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
+int CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                                                 const char *ptr,
                                                 unsigned int size,
                                                 const char *sigptr,
@@ -1380,7 +1379,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(card);
   scos=GWEN_INHERIT_GETDATA(LC_CARD, LC_STARCOS, card);
@@ -1395,7 +1394,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "PutHash", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
@@ -1412,7 +1411,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
                       sigptr, sigsize);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "Verify", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
@@ -1422,17 +1421,17 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos__Verify(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbRsp);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
+int LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   LC_STARCOS *scos;
-  LC_CLIENT_RESULT res;
+  int res;
   const void *p;
   unsigned int bs;
 
@@ -1448,7 +1447,7 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
 
   dbResp=GWEN_DB_Group_new("response");
   res=LC_Card_ExecCommand(card, "Challenge", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -1467,12 +1466,12 @@ LC_CLIENT_RESULT LC_Starcos_GetChallenge(LC_CARD *card, GWEN_BUFFER *mbuf)
 
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetInitialPin(LC_CARD *card,
+int CHIPCARD_CB LC_Starcos_GetInitialPin(LC_CARD *card,
                                                       int pid,
                                                       unsigned char *buffer,
                                                       unsigned int maxSize,
@@ -1486,7 +1485,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Starcos_GetInitialPin(LC_CARD *card,
 
   if (sizeof(scos->initialPin)>maxSize) {
     DBG_ERROR(LC_LOGDOMAIN, "Buffer too small");
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   memmove(buffer, scos->initialPin, sizeof(scos->initialPin));

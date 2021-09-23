@@ -88,9 +88,9 @@ void GWENHYWFAR_CB LC_EgkCard_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_EgkCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_EGKCARD *egk;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card as EGK card");
@@ -100,26 +100,26 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Open(LC_CARD *card)
   assert(egk);
 
   res=egk->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_EgkCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     egk->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card)
+int LC_EgkCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_EGKCARD *egk;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening eGK card");
@@ -129,39 +129,39 @@ LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card)
   assert(egk);
 
   res=LC_Card_SelectCard(card, "egk");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_Card_SelectApp(card, "egk");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF...");
   res=LC_Card_SelectDf(card, "DF_HCA");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_EgkCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_EGKCARD *egk;
 
   assert(card);
@@ -169,7 +169,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Close(LC_CARD *card)
   assert(egk);
 
   res=egk->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -179,10 +179,10 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_EgkCard_Close(LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_VerifyPin(LC_CARD *card, const char *pin)
+int LC_EgkCard_VerifyPin(LC_CARD *card, const char *pin)
 {
   LC_EGKCARD *egk;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PININFO *pi;
   int triesLeft=-1;
 
@@ -201,10 +201,10 @@ LC_CLIENT_RESULT LC_EgkCard_VerifyPin(LC_CARD *card, const char *pin)
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card)
+int LC_EgkCard_SecureVerifyPin(LC_CARD *card)
 {
   LC_EGKCARD *egk;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PININFO *pi;
   int triesLeft=-1;
 
@@ -221,7 +221,7 @@ LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
+int LC_EgkCard_Unzip(const char *src, unsigned int slen,
                                   GWEN_BUFFER *tbuf)
 {
   unsigned char buffer[256];
@@ -246,15 +246,15 @@ LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
     switch (rv) {
     case Z_VERSION_ERROR:
       DBG_ERROR(LC_LOGDOMAIN, "Non-matching version of ZLIB");
-      return LC_Client_ResultGeneric;
+      return GWEN_ERROR_GENERIC;
     case Z_STREAM_ERROR:
       DBG_ERROR(LC_LOGDOMAIN, "inflateInit: stream error (%d, %s)",
                 rv, (strm.msg)?strm.msg:"NULL");
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_BAD_DATA;
     default:
       DBG_ERROR(LC_LOGDOMAIN, "inflateInit: %d (%s)",
                 rv, (strm.msg)?strm.msg:"NULL");
-      return LC_Client_ResultGeneric;
+      return GWEN_ERROR_GENERIC;
     }
   }
 
@@ -273,7 +273,7 @@ LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
       DBG_ERROR(LC_LOGDOMAIN, "inflate: %d (%s)",
                 rv, (strm.msg)?strm.msg:"NULL");
       inflateEnd(&strm);
-      return LC_Client_ResultIoError;
+      return GWEN_ERROR_IO;
     }
     if (first)
       first=0;
@@ -283,7 +283,7 @@ LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
   if (rv!=Z_OK) {
     DBG_ERROR(LC_LOGDOMAIN, "inflateEnd: %d (%s)",
               rv, (strm.msg)?strm.msg:"NULL");
-    return LC_Client_ResultIoError;
+    return GWEN_ERROR_IO;
   }
 
   return 0;
@@ -291,10 +291,10 @@ LC_CLIENT_RESULT LC_EgkCard_Unzip(const char *src, unsigned int slen,
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
+int LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
 {
   LC_EGKCARD *egk;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *lbuf;
   int size;
   const unsigned char *p;
@@ -304,12 +304,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
   assert(egk);
 
   res=LC_Card_SelectEf(card, "EF_PD");
-  if (res!=LC_Client_ResultOk)
+  if (res<0)
     return res;
 
   lbuf=GWEN_Buffer_new(0, 2, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 2, lbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_Buffer_free(lbuf);
     return res;
   }
@@ -318,7 +318,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
     DBG_ERROR(LC_LOGDOMAIN, "Invalid response size (%d)",
               GWEN_Buffer_GetUsedBytes(lbuf));
     GWEN_Buffer_free(lbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   p=(const unsigned char *)GWEN_Buffer_GetStart(lbuf);
@@ -328,7 +328,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
   if (size<2) {
     DBG_ERROR(LC_LOGDOMAIN, "Invalid size spec in data (%d)", size);
     GWEN_Buffer_free(lbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   size-=2;
 
@@ -336,7 +336,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
 
   if (size) {
     res=LC_Card_ReadBinary(card, 2, size, lbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       GWEN_Buffer_free(lbuf);
       return res;
@@ -353,17 +353,17 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf)
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf)
+int LC_EgkCard_ReadPd(LC_CARD *card, GWEN_BUFFER *buf)
 {
   return LC_EgkCard_ReadRawPd(card, buf);
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
+int LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
 {
   LC_EGKCARD *egk;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *lbuf;
   int offs1, offs2;
   int end1, end2;
@@ -375,12 +375,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
   assert(egk);
 
   res=LC_Card_SelectEf(card, "EF_VD");
-  if (res!=LC_Client_ResultOk)
+  if (res<0)
     return res;
 
   lbuf=GWEN_Buffer_new(0, 8, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 8, lbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_Buffer_free(lbuf);
     return res;
   }
@@ -389,7 +389,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
     DBG_ERROR(LC_LOGDOMAIN, "Invalid response size (%d)",
               GWEN_Buffer_GetUsedBytes(lbuf));
     GWEN_Buffer_free(lbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   p=(const unsigned char *)GWEN_Buffer_GetStart(lbuf);
@@ -410,7 +410,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
 
   if (offs1!=0xffff && end1!=0xffff && size1>0) {
     res=LC_Card_ReadBinary(card, offs1, size1, lbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       GWEN_Buffer_free(lbuf);
       return res;
@@ -420,7 +420,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
   res=LC_EgkCard_Unzip(GWEN_Buffer_GetStart(lbuf),
                        GWEN_Buffer_GetUsedBytes(lbuf),
                        buf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(lbuf);
     return res;
@@ -430,7 +430,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
 
   if (offs2!=0xffff && end2!=0xffff && size2>0) {
     res=LC_Card_ReadBinary(card, offs2, size2, lbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       GWEN_Buffer_free(lbuf);
       return res;
@@ -440,7 +440,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
   res=LC_EgkCard_Unzip(GWEN_Buffer_GetStart(lbuf),
                        GWEN_Buffer_GetUsedBytes(lbuf),
                        buf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(lbuf);
     return res;
@@ -448,18 +448,18 @@ LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf)
 
   GWEN_Buffer_free(lbuf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf)
+int LC_EgkCard_ReadVd(LC_CARD *card, GWEN_BUFFER *buf)
 {
   return LC_EgkCard_ReadRawVd(card, buf);
 }
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,
                                                  LC_HI_PERSONAL_DATA *d)
 {
   const char *s;
@@ -510,12 +510,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_old(GWEN_XMLNODE *n,
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_3_0_0(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadPersonalData_3_0_0(GWEN_XMLNODE *n,
                                                    LC_HI_PERSONAL_DATA *d)
 {
   n=GWEN_XMLNode_FindFirstTag(n,
@@ -588,12 +588,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_3_0_0(GWEN_XMLNODE *n,
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_5_1_0(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadPersonalData_5_1_0(GWEN_XMLNODE *n,
                                                    LC_HI_PERSONAL_DATA *d)
 {
   n=GWEN_XMLNode_FindFirstTag(n,
@@ -664,19 +664,19 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData_5_1_0(GWEN_XMLNODE *n,
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
+int LC_EgkCard_ReadPersonalData(LC_CARD *card,
                                              LC_HI_PERSONAL_DATA **pData)
 {
   GWEN_BUFFER *dbuf;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_EgkCard_ReadPd(card, dbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(dbuf);
     return res;
@@ -692,7 +692,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
     if (root==NULL) {
       DBG_INFO(LC_LOGDOMAIN, "Invalid XML string");
       GWEN_Buffer_free(dbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_BAD_DATA;
     }
     GWEN_Buffer_free(dbuf);
 
@@ -724,7 +724,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
       else
         res=LC_EgkCard_ReadPersonalData_old(n, d);
 
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
         LC_HIPersonalData_free(d);
         GWEN_XMLNode_free(root);
@@ -737,13 +737,13 @@ LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
     GWEN_XMLNode_free(root);
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_old(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadInsuranceData_old(GWEN_XMLNODE *n,
                                                   LC_HI_INSURANCE_DATA *d)
 {
   const char *s;
@@ -789,12 +789,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_old(GWEN_XMLNODE *n,
     LC_HIInsuranceData_SetStatus(d, s);
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_3_0_0(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadInsuranceData_3_0_0(GWEN_XMLNODE *n,
                                                     LC_HI_INSURANCE_DATA *d)
 {
   const char *s;
@@ -852,12 +852,12 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_3_0_0(GWEN_XMLNODE *n,
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
+int LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
                                                     LC_HI_INSURANCE_DATA *d)
 {
   const char *s;
@@ -915,16 +915,16 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData_5_1_0(GWEN_XMLNODE *n,
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
+int LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
                                                LC_HI_INSURANCE_DATA **pData)
 {
-  LC_CLIENT_RESULT res;
+  int res;
 
   GWEN_XMLNODE *n;
   LC_HI_INSURANCE_DATA *d=NULL;
@@ -960,7 +960,7 @@ LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
       res=LC_EgkCard_ReadInsuranceData_old(n, d);
     }
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       LC_HIInsuranceData_free(d);
       return res;
@@ -969,24 +969,24 @@ LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
   else {
     DBG_ERROR(LC_LOGDOMAIN, "UC_allgemeineVersicherungsdatenXML not found, data follows:");
     GWEN_XMLNode_Dump(root, 2);
-    return LC_Client_ResultNotFound;
+    return GWEN_ERROR_NOT_FOUND;
   }
 
   *pData=d;
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
+int LC_EgkCard_ReadInsuranceData(LC_CARD *card,
                                               LC_HI_INSURANCE_DATA **pData)
 {
   GWEN_BUFFER *dbuf;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_EgkCard_ReadVd(card, dbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(dbuf);
     return res;
@@ -1001,7 +1001,7 @@ LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
     if (root==NULL) {
       DBG_INFO(LC_LOGDOMAIN, "Invalid XML string");
       GWEN_Buffer_free(dbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_BAD_DATA;
     }
     GWEN_Buffer_free(dbuf);
 

@@ -109,322 +109,96 @@ const GWEN_ARGS prg_args[]= {
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
-{
-  const char *s;
 
-  switch (res) {
-  case LC_Client_ResultOk:
-    s="Ok.";
-    break;
-  case LC_Client_ResultWait:
-    s="Timeout.";
-    break;
-  case LC_Client_ResultIpcError:
-    s="IPC error.";
-    break;
-  case LC_Client_ResultCmdError:
-    s="Command error.";
-    break;
-  case LC_Client_ResultDataError:
-    s="Data error.";
-    break;
-  case LC_Client_ResultAborted:
-    s="Aborted.";
-    break;
-  case LC_Client_ResultInvalid:
-    s="Invalid argument to command.";
-    break;
-  case LC_Client_ResultInternal:
-    s="Internal error.";
-    break;
-  case LC_Client_ResultGeneric:
-    s="Generic error.";
-    break;
-  default:
-    s="Unknown error.";
-    break;
-  }
+static LC_GELDKARTE_VALUES *_readValues(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs);
+static LC_CARD *_getNextGeldkarte(LC_CLIENT *cl, int v);
+static void _releaseCard(LC_CLIENT *cl, LC_CARD *card, int v);
 
-  fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (res==LC_Client_ResultCmdError) {
-    fprintf(stderr, "  Last card command result:\n");
-    fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
-            LC_Card_GetLastSW1(card),
-            LC_Card_GetLastSW2(card));
-    s=LC_Card_GetLastResult(card);
-    if (s)
-      fprintf(stderr, "   Result: %s\n", s);
-    s=LC_Card_GetLastText(card);
-    if (s)
-      fprintf(stderr, "   Text  : %s\n", s);
-  }
-}
 
 
 
 int loaded(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
-  LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
-  int rv;
-  int v;
 
-  v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
-  if (v>1)
-    fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Start");
+  values=_readValues(cl, dbArgs);
+  if (values==NULL)
     return RETURNVALUE_WORK;
-  }
-  if (v>1)
-    fprintf(stderr, "Connected.\n");
 
-  if (v>0)
-    fprintf(stderr, "Waiting for card...\n");
-  res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "GetNextCard");
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Found a card.\n");
-
-  if (LC_GeldKarte_ExtendCard(card)) {
-    fprintf(stderr, "ERROR: Could not extend card as GELDKARTE card\n");
-    return RETURNVALUE_WORK;
-  }
-
-  if (v>0)
-    fprintf(stderr, "Opening card.\n");
-  res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card is a GELDKARTE card as expected.\n");
-
-  if (v>1)
-    fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Stop");
-    return RETURNVALUE_WORK;
-  }
-
-  values=LC_GeldKarte_Values_new();
-  res=LC_GeldKarte_ReadValues(card, values);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReadValues");
-    rv=RETURNVALUE_WORK;
-  }
-  else
-    rv=0;
-
-  if (v>0)
-    fprintf(stderr, "Closing card.\n");
-  res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "CardClose");
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card closed.\n");
-
-  if (v>0)
-    fprintf(stderr, "Releasing card.\n");
-  res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReleaseCard");
-    rv=RETURNVALUE_WORK;
-  }
-  else
-    rv=0;
-  LC_Card_free(card);
-
-  if (v>0)
-    fprintf(stderr, "Card released.\n");
-
-  if (rv==0) {
-    fprintf(stdout,
-            I18N("Card is loaded with %6.2f %s\n"),
-            LC_GeldKarte_Values_GetLoaded(values)/100.0,
-            "EUR");
-  }
-  return rv;
+  fprintf(stdout,
+          I18N("Card is loaded with %6.2f %s\n"),
+          LC_GeldKarte_Values_GetLoaded(values)/100.0,
+          "EUR");
+  LC_GeldKarte_Values_free(values);
+  return 0;
 }
 
 
 
 int maxload(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
-  LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
-  int rv;
-  int v;
 
-  v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
-  if (v>1)
-    fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Start");
+  values=_readValues(cl, dbArgs);
+  if (values==NULL)
     return RETURNVALUE_WORK;
-  }
-  if (v>1)
-    fprintf(stderr, "Connected.\n");
 
-  if (v>0)
-    fprintf(stderr, "Waiting for card...\n");
-  res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "GetNextCard");
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Found a card.\n");
-
-  if (LC_GeldKarte_ExtendCard(card)) {
-    fprintf(stderr, "ERROR: Could not extend card as GELDKARTE card\n");
-    return RETURNVALUE_WORK;
-  }
-
-  if (v>0)
-    fprintf(stderr, "Opening card.\n");
-  res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card is a GELDKARTE card as expected.\n");
-
-  if (v>1)
-    fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Stop");
-    return RETURNVALUE_WORK;
-  }
-
-  values=LC_GeldKarte_Values_new();
-  res=LC_GeldKarte_ReadValues(card, values);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReadValues");
-    rv=RETURNVALUE_WORK;
-  }
-  else
-    rv=0;
-
-  if (v>0)
-    fprintf(stderr, "Closing card.\n");
-  res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "CardClose");
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card closed.\n");
-
-  if (v>0)
-    fprintf(stderr, "Releasing card.\n");
-  res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReleaseCard");
-    rv=RETURNVALUE_WORK;
-  }
-  else
-    rv=0;
-  LC_Card_free(card);
-
-  if (rv==0) {
-    fprintf(stdout,
-            I18N("Card can be loaded with %6.2f %s\n"),
-            LC_GeldKarte_Values_GetMaxLoad(values)/100.0,
-            "EUR");
-  }
-  return rv;
+  fprintf(stdout,
+          I18N("Card can be loaded with %6.2f %s\n"),
+          LC_GeldKarte_Values_GetMaxLoad(values)/100.0,
+          "EUR");
+  LC_GeldKarte_Values_free(values);
+  return 0;
 }
 
 
 
 int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
-  LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
   LC_GELDKARTE_VALUES *values;
-  int rv;
+
+  values=_readValues(cl, dbArgs);
+  if (values==NULL)
+    return RETURNVALUE_WORK;
+
+  fprintf(stdout,
+          I18N("Card can transfer up to %6.2f %s\n"),
+          LC_GeldKarte_Values_GetMaxXfer(values)/100.0,
+          "EUR");
+  LC_GeldKarte_Values_free(values);
+  return 0;
+}
+
+
+
+LC_GELDKARTE_VALUES *_readValues(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
+{
+  LC_CARD *card=NULL;
+  int res;
+  LC_GELDKARTE_VALUES *values;
   int v;
 
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
-  if (v>1)
-    fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Start");
-    return RETURNVALUE_WORK;
-  }
-  if (v>1)
-    fprintf(stderr, "Connected.\n");
 
-  if (v>0)
-    fprintf(stderr, "Waiting for card...\n");
-  res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "GetNextCard");
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Found a card.\n");
-
-  if (LC_GeldKarte_ExtendCard(card)) {
-    fprintf(stderr, "ERROR: Could not extend card as GELDKARTE card\n");
-    return RETURNVALUE_WORK;
-  }
-
-  if (v>0)
-    fprintf(stderr, "Opening card.\n");
-  res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
-  }
-  if (v>0)
-    fprintf(stderr, "Card is a GELDKARTE card as expected.\n");
-
-  if (v>1)
-    fprintf(stderr, "Telling the server that we need no more cards.\n");
-  res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Stop");
-    return RETURNVALUE_WORK;
-  }
+  card=_getNextGeldkarte(cl, v);
+  if (card==NULL)
+    return NULL;
 
   values=LC_GeldKarte_Values_new();
   res=LC_GeldKarte_ReadValues(card, values);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReadValues");
-    rv=RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "ReadValues", res);
+    LC_GeldKarte_Values_free(values);
+    values=NULL;
   }
-  else
-    rv=0;
 
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "CardClose");
-    return RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "CardClose", res);
+    LC_GeldKarte_Values_free(values);
+    return NULL;;
   }
   if (v>0)
     fprintf(stderr, "Card closed.\n");
@@ -432,21 +206,17 @@ int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReleaseCard");
-    rv=RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "ReleaseCard", res);
+    LC_GeldKarte_Values_free(values);
+    return NULL;;
   }
-  else
-    rv=0;
   LC_Card_free(card);
 
-  if (rv==0) {
-    fprintf(stdout,
-            I18N("Card can transfer up to %6.2f %s\n"),
-            LC_GeldKarte_Values_GetMaxXfer(values)/100.0,
-            "EUR");
-  }
-  return rv;
+  if (v>0)
+    fprintf(stderr, "Card released.\n");
+
+  return values;
 }
 
 
@@ -454,18 +224,75 @@ int maxxfer(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_GELDKARTE_BLOG_LIST2 *bll;
-  int rv;
   int v;
+  LC_GELDKARTE_BLOG_LIST2_ITERATOR *blli;
 
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
-  res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Start");
+
+  card=_getNextGeldkarte(cl, v);
+  if (card==NULL)
     return RETURNVALUE_WORK;
+
+  bll=LC_GeldKarte_BLog_List2_new();
+  res=LC_GeldKarte_ReadBLogs(card, bll);
+  if (res<0) {
+    LC_Card_PrintResult(card, "ReadBLogs", res);
+    _releaseCard(cl, card, v);
+    return RETURNVALUE_WORK;
+  }
+
+  _releaseCard(cl, card, v);
+
+  blli=LC_GeldKarte_BLog_List2_First(bll);
+  if (blli) {
+    LC_GELDKARTE_BLOG *bl;
+
+    bl=LC_GeldKarte_BLog_List2Iterator_Data(blli);
+    assert(bl);
+    fprintf(stdout,
+            "Status bSEQ lSEQ hSEQ sSEQ KeyId Merchant     Value   Loaded \n");
+    while (bl) {
+      fprintf(stdout,
+              "%6d %4d %4d %4d %4d %4d %12s %7.2f %7.2f\n",
+              LC_GeldKarte_BLog_GetStatus(bl),
+              LC_GeldKarte_BLog_GetBSeq(bl),
+              LC_GeldKarte_BLog_GetLSeq(bl),
+              LC_GeldKarte_BLog_GetHSeq(bl),
+              LC_GeldKarte_BLog_GetSSeq(bl),
+              LC_GeldKarte_BLog_GetKeyId(bl),
+              LC_GeldKarte_BLog_GetMerchantId(bl),
+              (float)(LC_GeldKarte_BLog_GetValue(bl)/100.0),
+              (float)(LC_GeldKarte_BLog_GetLoaded(bl)/100.0));
+
+      bl=LC_GeldKarte_BLog_List2Iterator_Next(blli);
+    }
+    LC_GeldKarte_BLog_List2Iterator_free(blli);
+  }
+  else {
+    fprintf(stdout, I18N("No BLogs on the card\n"));
+  }
+  LC_GeldKarte_BLog_List2_freeAll(bll);
+
+  return 0;
+}
+
+
+
+LC_CARD *_getNextGeldkarte(LC_CLIENT *cl, int v)
+{
+  LC_CARD *card=NULL;
+  int res;
+
+  if (v>1)
+    fprintf(stderr, "Connecting to server.\n");
+  res=LC_Client_Start(cl);
+  if (res<0) {
+    LC_Card_PrintResult(card, "Start", res);
+    return NULL;
   }
   if (v>1)
     fprintf(stderr, "Connected.\n");
@@ -473,26 +300,28 @@ int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Waiting for card...\n");
   res=LC_Client_GetNextCard(cl, &card, 20);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "GetNextCard");
-    return RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "GetNextCard", res);
+    return NULL;
   }
   if (v>0)
     fprintf(stderr, "Found a card.\n");
 
   if (LC_GeldKarte_ExtendCard(card)) {
     fprintf(stderr, "ERROR: Could not extend card as GELDKARTE card\n");
-    return RETURNVALUE_WORK;
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    return NULL;
   }
 
   if (v>0)
     fprintf(stderr, "Opening card.\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
-    fprintf(stderr,
-            "ERROR: Error executing command CardOpen (%d).\n",
-            res);
-    return RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "CardOpen", res);
+    LC_Client_ReleaseCard(cl, card);
+    LC_Card_free(card);
+    return NULL;
   }
   if (v>0)
     fprintf(stderr, "Card is a GELDKARTE card as expected.\n");
@@ -500,27 +329,26 @@ int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "Stop");
-    return RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "Stop", res);
+    _releaseCard(cl, card, v);
+    return NULL;
   }
 
+  return card;
+}
 
-  bll=LC_GeldKarte_BLog_List2_new();
-  res=LC_GeldKarte_ReadBLogs(card, bll);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReadBLogs");
-    return RETURNVALUE_WORK;
-  }
-  else
-    rv=0;
+
+
+void _releaseCard(LC_CLIENT *cl, LC_CARD *card, int v)
+{
+  int res;
 
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "CardClose");
-    return RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "CardClose", res);
   }
   if (v>0)
     fprintf(stderr, "Card closed.\n");
@@ -528,49 +356,17 @@ int b_logs(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
-    showError(card, res, "ReleaseCard");
-    rv=RETURNVALUE_WORK;
+  if (res<0) {
+    LC_Card_PrintResult(card, "ReleaseCard", res);
   }
-  else
-    rv=0;
   LC_Card_free(card);
 
-  if (rv==0) {
-    LC_GELDKARTE_BLOG_LIST2_ITERATOR *blli;
-
-    blli=LC_GeldKarte_BLog_List2_First(bll);
-    if (blli) {
-      LC_GELDKARTE_BLOG *bl;
-
-      bl=LC_GeldKarte_BLog_List2Iterator_Data(blli);
-      assert(bl);
-      fprintf(stdout,
-              "Status bSEQ lSEQ hSEQ sSEQ KeyId Merchant     Value   Loaded \n");
-      while (bl) {
-
-        fprintf(stdout,
-                "%6d %4d %4d %4d %4d %4d %12s %7.2f %7.2f\n",
-                LC_GeldKarte_BLog_GetStatus(bl),
-                LC_GeldKarte_BLog_GetBSeq(bl),
-                LC_GeldKarte_BLog_GetLSeq(bl),
-                LC_GeldKarte_BLog_GetHSeq(bl),
-                LC_GeldKarte_BLog_GetSSeq(bl),
-                LC_GeldKarte_BLog_GetKeyId(bl),
-                LC_GeldKarte_BLog_GetMerchantId(bl),
-                (float)(LC_GeldKarte_BLog_GetValue(bl)/100.0),
-                (float)(LC_GeldKarte_BLog_GetLoaded(bl)/100.0));
-
-        bl=LC_GeldKarte_BLog_List2Iterator_Next(blli);
-      }
-      LC_GeldKarte_BLog_List2Iterator_free(blli);
-    }
-    else {
-      fprintf(stdout, I18N("No BLogs on the card\n"));
-    }
-  }
-  return rv;
+  if (v>0)
+    fprintf(stderr, "Card released.\n");
 }
+
+
+
 
 
 
@@ -686,11 +482,5 @@ int main(int argc, char **argv)
   GWEN_DB_Group_free(db);
   return 0;
 }
-
-
-
-
-
-
 
 

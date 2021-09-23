@@ -56,7 +56,7 @@ CHIPCARD_API int LC_DDVCard_UnextendCard(LC_CARD *card);
  * after opening you can call this function here to let the card do some
  * necessary work before other functions of this group can be used.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card);
+CHIPCARD_API int LC_DDVCard_Reopen(LC_CARD *card);
 /*@}*/
 
 /** @name Pin Verification
@@ -66,13 +66,13 @@ CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_Reopen(LC_CARD *card);
 /**
  * Verify the given pin.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_VerifyPin(LC_CARD *card,
+CHIPCARD_API int LC_DDVCard_VerifyPin(LC_CARD *card,
                                                    const char *pin);
 /**
  * Secure pin verification. This can be used if the card's reader flags
  * indicate that the reader has a keypad.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card);
+CHIPCARD_API int LC_DDVCard_SecureVerifyPin(LC_CARD *card);
 /*@}*/
 
 /** @name Crypto Functions
@@ -83,14 +83,14 @@ CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_SecureVerifyPin(LC_CARD *card);
 /**
  * Let the card create an 8 byte random number.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_GetChallenge(LC_CARD *card,
+CHIPCARD_API int LC_DDVCard_GetChallenge(LC_CARD *card,
                                                       GWEN_BUFFER *mbuf);
 
 /**
  * Let the card encrypt/decrypt exactly 8 bytes of data (using GWEN_BUFFER
  * for input).
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
+CHIPCARD_API int LC_DDVCard_CryptBlock(LC_CARD *card,
                                                     GWEN_BUFFER *ibuf,
                                                     GWEN_BUFFER *obuf);
 
@@ -98,7 +98,7 @@ CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_CryptBlock(LC_CARD *card,
  * Let the card encrypt/decrypt exactly 8 bytes of data.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
+int LC_DDVCard_CryptCharBlock(LC_CARD *card,
                                            const char *data,
                                            unsigned int dlen,
                                            GWEN_BUFFER *obuf);
@@ -106,7 +106,7 @@ LC_CLIENT_RESULT LC_DDVCard_CryptCharBlock(LC_CARD *card,
 /**
  * Let the card sign exactly 20 bytes of data. Returns 8 bytes of data.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_DDVCard_SignHash(LC_CARD *card,
+CHIPCARD_API int LC_DDVCard_SignHash(LC_CARD *card,
                                                   GWEN_BUFFER *hbuf,
                                                   GWEN_BUFFER *obuf);
 /*@}*/
@@ -138,7 +138,7 @@ CHIPCARD_API GWEN_BUFFER *LC_DDVCard_GetCardDataAsBuffer(const LC_CARD *card);
  * Read institution data (including bank code, server address, user id etc).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
+int LC_DDVCard_ReadInstituteData(LC_CARD *card,
                                               int idx,
                                               GWEN_DB_NODE *dbData);
 
@@ -146,7 +146,7 @@ LC_CLIENT_RESULT LC_DDVCard_ReadInstituteData(LC_CARD *card,
  * Write institution data (including bank code, server address, user id etc).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_DDVCard_WriteInstituteData(LC_CARD *card,
+int LC_DDVCard_WriteInstituteData(LC_CARD *card,
                                                int idx,
                                                GWEN_DB_NODE *dbData);
 /*@}*/

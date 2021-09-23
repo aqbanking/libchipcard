@@ -32,18 +32,18 @@ struct LC_GELDKARTE {
 void GWENHYWFAR_CB LC_GeldKarte_freeData(void *bp, void *p);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card);
+int CHIPCARD_CB LC_GeldKarte_Open(LC_CARD *card);
+int CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card);
 
-LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
-                                          GWEN_DB_NODE *dbData);
+int LC_GeldKarte__ReadValues(LC_CARD *card,
+                             GWEN_DB_NODE *dbData);
 
-LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
-                                        int idx,
-                                        GWEN_DB_NODE *dbData);
-LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
-                                        int idx,
-                                        GWEN_DB_NODE *dbData);
+int LC_GeldKarte__ReadBLog(LC_CARD *card,
+                           int idx,
+                           GWEN_DB_NODE *dbData);
+int LC_GeldKarte__ReadLLog(LC_CARD *card,
+                           int idx,
+                           GWEN_DB_NODE *dbData);
 
 #endif /* CHIPCARD_CARD_GELDKARTE_P_H */
 

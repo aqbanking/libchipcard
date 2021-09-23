@@ -84,60 +84,60 @@ struct LC_CARD {
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__Close(LC_CARD *card);
+int CHIPCARD_CB LC_Card__Open(LC_CARD *card);
+int CHIPCARD_CB LC_Card__Close(LC_CARD *card);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
                                                     uint32_t flags,
                                                     int offset,
                                                     int size,
                                                     GWEN_BUFFER *buf);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
                                                       uint32_t flags,
                                                       int offset,
                                                       const char *ptr,
                                                       unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
                                                      uint32_t flags,
                                                      int offset,
                                                      const char *ptr,
                                                      unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
                                                      uint32_t flags,
                                                      int offset,
                                                      unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
                                                     uint32_t flags,
                                                     int recNum,
                                                     GWEN_BUFFER *buf);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
                                                      uint32_t flags,
                                                      int recNum,
                                                      const char *ptr,
                                                      unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
                                                       uint32_t flags,
                                                       int recNum,
                                                       const char *ptr,
                                                       unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
                                                       uint32_t flags,
                                                       const char *ptr,
                                                       unsigned int size);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
                                                    uint32_t flags,
                                                    const LC_PININFO *pi,
                                                    const unsigned char *ptr,
                                                    unsigned int size,
                                                    int *triesLeft);
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
                                                              uint32_t flags,
                                                              const LC_PININFO *pi,
                                                              int *triesLeft);
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
                                                    uint32_t flags,
                                                    const LC_PININFO *pi,
                                                    const unsigned char *oldptr,
@@ -146,19 +146,19 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
                                                    unsigned int newsize,
                                                    int *triesLeft);
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
                                                              uint32_t flags,
                                                              const LC_PININFO *pi,
                                                              int *triesLeft);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
                                                   int tmpl, int kids, int kidp, int ar);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
                                                   const char *ptr,
                                                   unsigned int size,
                                                   GWEN_BUFFER *codeBuf);
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
                                                   const char *ptr,
                                                   unsigned int size,
                                                   GWEN_BUFFER *plainBuf);

@@ -92,9 +92,9 @@ void GWENHYWFAR_CB LC_GeldKarte_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Open(LC_CARD *card)
+int CHIPCARD_CB LC_GeldKarte_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_GELDKARTE *gk;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card as Geldkarte");
@@ -115,30 +115,30 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Open(LC_CARD *card)
 
   if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
     DBG_ERROR(LC_LOGDOMAIN, "Not a processor card");
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
   }
 
   res=gk->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_GeldKarte_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     gk->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
+int LC_GeldKarte_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_GELDKARTE *gk;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
@@ -160,20 +160,20 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
   gk->bin_ef_id_1=0;
 
   res=LC_Card_SelectCard(card, "geldkarte");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_Card_SelectApp(card, "geldkarte");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -181,7 +181,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
   /* read first record of EF_ID */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF...");
   res=LC_Card_SelectEf(card, "EF_ID");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -189,7 +189,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -202,7 +202,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
     DBG_ERROR(LC_LOGDOMAIN, "Error in EF_ID");
     GWEN_DB_Group_free(dbRecord);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
 
   gk->db_ef_id_1=dbRecord;
@@ -211,7 +211,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
   /* select DF_BOERSE */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF...");
   res=LC_Card_SelectDf(card, "DF_BOERSE");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbRecord);
     GWEN_Buffer_free(mbuf);
@@ -220,7 +220,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
 
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF...");
   res=LC_Card_SelectEf(card, "EF_BOERSE");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -228,7 +228,7 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -241,19 +241,19 @@ LC_CLIENT_RESULT LC_GeldKarte_Reopen(LC_CARD *card)
     DBG_ERROR(LC_LOGDOMAIN, "Error in EF_ID");
     GWEN_DB_Group_free(dbRecord);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
 
   gk->db_ef_boerse_1=dbRecord;
   gk->bin_ef_boerse_1=mbuf;
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card)
+int CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_GELDKARTE *gk;
 
   assert(card);
@@ -261,7 +261,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_GeldKarte_Close(LC_CARD *card)
   assert(gk);
 
   res=gk->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -323,10 +323,10 @@ GWEN_BUFFER *LC_GeldKarte_GetAccountDataAsBuffer(const LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
+int LC_GeldKarte__ReadValues(LC_CARD *card,
                                           GWEN_DB_NODE *dbData)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbCurr;
   GWEN_BUFFER *buf;
   LC_GELDKARTE *gk;
@@ -336,14 +336,14 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
   assert(gk);
 
   res=LC_Card_SelectEf(card, "EF_BETRAG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   buf=GWEN_Buffer_new(0, 256, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, buf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(0, "here");
     GWEN_Buffer_free(buf);
     return res;
@@ -355,7 +355,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN, "Error parsing record");
     GWEN_DB_Group_free(dbCurr);
     GWEN_Buffer_free(buf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
   else {
     GWEN_DB_AddGroupChildren(dbData, dbCurr);
@@ -363,16 +363,16 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadValues(LC_CARD *card,
   GWEN_DB_Group_free(dbCurr);
   GWEN_Buffer_free(buf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
+int LC_GeldKarte_ReadValues(LC_CARD *card,
                                          LC_GELDKARTE_VALUES *val)
 {
   LC_GELDKARTE *gk;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbData;
 
   assert(card);
@@ -381,7 +381,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
 
   dbData=GWEN_DB_Group_new("values");
   res=LC_GeldKarte__ReadValues(card, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbData);
     return res;
   }
@@ -412,16 +412,16 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadValues(LC_CARD *card,
   }
 
   GWEN_DB_Group_free(dbData);
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
+int LC_GeldKarte__ReadBLog(LC_CARD *card,
                                         int idx,
                                         GWEN_DB_NODE *dbData)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbCurr;
   int i;
   unsigned int ctxCount;
@@ -433,7 +433,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
   assert(gk);
 
   res=LC_Card_SelectEf(card, "EF_BLOG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -448,7 +448,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
     GWEN_Buffer_Reset(buf);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                               idx?idx:i, buf);
-    if (res!=LC_Client_ResultOk)
+    if (res<0)
       break;
     dbCurr=GWEN_DB_Group_new("blog");
     GWEN_Buffer_Rewind(buf);
@@ -461,7 +461,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Invalid size of BLOG (%d)", len);
       GWEN_Buffer_free(buf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_IO;
     }
 
     if (LC_Card_ParseData(card, formatName, buf, dbCurr)) {
@@ -508,18 +508,18 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadBLog(LC_CARD *card,
   GWEN_Buffer_free(buf);
 
   if (!ctxCount) {
-    return LC_Client_ResultNoData;
+    return GWEN_ERROR_NO_DATA;
   }
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
+int LC_GeldKarte_ReadBLogs(LC_CARD *card,
                                         LC_GELDKARTE_BLOG_LIST2 *bll)
 {
   LC_GELDKARTE *gk;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbCurr;
   GWEN_DB_NODE *dbData;
   int count;
@@ -530,7 +530,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
 
   dbData=GWEN_DB_Group_new("blogs");
   res=LC_GeldKarte__ReadBLog(card, 0, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbData);
     return res;
   }
@@ -623,18 +623,18 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadBLogs(LC_CARD *card,
   }
 
   if (!count) {
-    return LC_Client_ResultNoData;
+    return GWEN_ERROR_NO_DATA;
   }
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
+int LC_GeldKarte__ReadLLog(LC_CARD *card,
                                         int idx,
                                         GWEN_DB_NODE *dbData)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbCurr;
   int i;
   unsigned int ctxCount;
@@ -646,7 +646,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
   assert(gk);
 
   res=LC_Card_SelectEf(card, "EF_LLOG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -658,7 +658,7 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
     GWEN_Buffer_Reset(buf);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                               idx?idx:i, buf);
-    if (res!=LC_Client_ResultOk)
+    if (res<0)
       break;
     dbCurr=GWEN_DB_Group_new("llog");
     GWEN_Buffer_Rewind(buf);
@@ -689,18 +689,18 @@ LC_CLIENT_RESULT LC_GeldKarte__ReadLLog(LC_CARD *card,
   GWEN_Buffer_free(buf);
 
   if (!ctxCount) {
-    return LC_Client_ResultNoData;
+    return GWEN_ERROR_NO_DATA;
   }
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
+int LC_GeldKarte_ReadLLogs(LC_CARD *card,
                                         LC_GELDKARTE_LLOG_LIST2 *bll)
 {
   LC_GELDKARTE *gk;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_DB_NODE *dbCurr;
   GWEN_DB_NODE *dbData;
   int count;
@@ -711,7 +711,7 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
 
   dbData=GWEN_DB_Group_new("llogs");
   res=LC_GeldKarte__ReadLLog(card, 0, dbData);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbData);
     return res;
   }
@@ -803,9 +803,9 @@ LC_CLIENT_RESULT LC_GeldKarte_ReadLLogs(LC_CARD *card,
   }
 
   if (!count) {
-    return LC_Client_ResultNoData;
+    return GWEN_ERROR_NO_DATA;
   }
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 

@@ -64,7 +64,7 @@ int LC_KVKCard_UnextendCard(LC_CARD *card);
  * necessary work before other functions of this group can be used.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card);
+int LC_KVKCard_Reopen(LC_CARD *card);
 /*@}*/
 
 
@@ -81,9 +81,9 @@ CHIPCARD_API CHIPCARD_DEPRECATED
 GWEN_DB_NODE *LC_KVKCard_GetCardData(const LC_CARD *card);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
-                                         LC_HI_PERSONAL_DATA **pPersonal,
-                                         LC_HI_INSURANCE_DATA **pInsurance);
+int LC_KvkCard_ReadCardData(LC_CARD *card,
+                            LC_HI_PERSONAL_DATA **pPersonal,
+                            LC_HI_INSURANCE_DATA **pInsurance);
 
 CHIPCARD_API
 const char *LC_KvkCard_GetCardNumber(const LC_CARD *card);

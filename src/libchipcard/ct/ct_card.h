@@ -75,7 +75,7 @@ int LC_Crypt_Token_ChangePin(GWEN_CRYPT_TOKEN *ct,
  * Convert the given client result code to one of Gwenhywfars error codes.
  */
 CHIPCARD_API
-int LC_Crypt_Token_ResultToError(LC_CLIENT_RESULT res);
+int LC_Crypt_Token_ResultToError(int res);
 /*@}*/
 
 /*@}*/ /* addtogroup */

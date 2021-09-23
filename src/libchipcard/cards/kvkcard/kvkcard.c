@@ -87,9 +87,9 @@ void GWENHYWFAR_CB LC_KVKCard_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
+int LC_KVKCard_ReadCardData(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   const char *p;
   unsigned int size;
   unsigned int pos;
@@ -110,7 +110,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
   mbuf=GWEN_Buffer_new(0, 256, 0, 1);
   DBG_DEBUG(LC_LOGDOMAIN, "Reading card data header");
   res=LC_Card_IsoReadBinary(card, 0, 0x1e, 5, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -126,7 +126,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
   if (size<2) {
     DBG_ERROR(LC_LOGDOMAIN, "Too few bytes for BER-TLV");
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
   j=(unsigned char)(p[pos]);
   if ((j & 0x1f)==0x1f) {
@@ -134,7 +134,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
     if (pos>=size) {
       DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
       GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_IO;
     }
     j=(unsigned char)(p[pos]);
   }
@@ -146,7 +146,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
   if (pos>=size) {
     DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
   j=(unsigned char)(p[pos]);
   if (j & 0x80) {
@@ -155,7 +155,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
       if (pos>=size) {
         DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
         GWEN_Buffer_free(mbuf);
-        return LC_Client_ResultDataError;
+        return GWEN_ERROR_IO;
       }
       j=(unsigned char)(p[pos]);
     } /* 0x81 */
@@ -163,7 +163,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
       if (pos+1>=size) {
         DBG_ERROR(LC_LOGDOMAIN, "Too few bytes");
         GWEN_Buffer_free(mbuf);
-        return LC_Client_ResultDataError;
+        return GWEN_ERROR_IO;
       }
       pos++;
       j=((unsigned char)(p[pos]))<<8;
@@ -173,7 +173,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Unexpected tag length modifier %02x", j);
       GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_IO;
     }
   } /* if tag length modifier */
   pos++;
@@ -187,7 +187,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
   /* now read the rest */
   DBG_DEBUG(LC_LOGDOMAIN, "Reading rest of card data");
   res=LC_Card_IsoReadBinary(card, 0, size+0x1e, j, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -200,7 +200,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
     DBG_ERROR(LC_LOGDOMAIN, "Error in KVK data");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
 
   /* perform checksum test */
@@ -221,7 +221,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
                     GWEN_Buffer_GetPos(mbuf));
           GWEN_DB_Group_free(dbData);
           GWEN_Buffer_free(mbuf);
-          return LC_Client_ResultDataError;
+          return GWEN_ERROR_IO;
         }
         if (LC_TLV_GetTagType(tlvLoop)==0x0e) {
           unsigned int i;
@@ -239,7 +239,7 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
             LC_TLV_free(tlvLoop);
             GWEN_DB_Group_free(dbData);
             GWEN_Buffer_free(mbuf);
-            return LC_Client_ResultDataError;
+            return GWEN_ERROR_IO;
           }
           DBG_INFO(LC_LOGDOMAIN, "Checksum ok");
           checksumOk=1;
@@ -252,21 +252,21 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
       DBG_ERROR(LC_LOGDOMAIN, "Empty card");
       GWEN_DB_Group_free(dbData);
       GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_IO;
     }
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN, "Internal: Bad TLVs in KVK data");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
 
   if (!checksumOk) {
     DBG_ERROR(LC_LOGDOMAIN, "Bad/missing checksum");
     GWEN_DB_Group_free(dbData);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_IO;
   }
 
   /* store card data */
@@ -277,15 +277,15 @@ LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card)
   GWEN_DB_Group_free(dbData);
   GWEN_Buffer_free(mbuf);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_KVKCARD *kvk;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening card as KVK card");
@@ -295,26 +295,26 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card)
   assert(kvk);
 
   res=kvk->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_KVKCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     kvk->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card)
+int LC_KVKCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_KVKCARD *kvk;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening KVK card");
@@ -325,46 +325,42 @@ LC_CLIENT_RESULT LC_KVKCard_Reopen(LC_CARD *card)
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting KVK card and app");
   res=LC_Card_SelectCard(card, "kvk");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
   res=LC_Card_SelectApp(card, "kvk");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
-    if (res==LC_Client_ResultDontExecute) {
+  if (res<0) {
+    if (res==GWEN_ERROR_NOT_REGISTERED) {
       DBG_INFO(LC_LOGDOMAIN, "Not executing SelectMF");
     }
-    else if (res==LC_Client_ResultCmdError) {
-      DBG_WARN(LC_LOGDOMAIN, "Could not select MF, ignoring");
-    }
     else {
-      DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
-      return res;
+      DBG_WARN(LC_LOGDOMAIN, "Could not select MF, ignoring");
     }
   }
 
   res=LC_KVKCard_ReadCardData(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
 
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_KVKCARD *kvk;
 
   assert(card);
@@ -372,7 +368,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card)
   assert(kvk);
 
   res=kvk->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -408,9 +404,9 @@ const char *LC_KvkCard_GetCardNumber(const LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
-                                         LC_HI_PERSONAL_DATA **pPersonal,
-                                         LC_HI_INSURANCE_DATA **pInsurance)
+int LC_KvkCard_ReadCardData(LC_CARD *card,
+                            LC_HI_PERSONAL_DATA **pPersonal,
+                            LC_HI_INSURANCE_DATA **pInsurance)
 {
   LC_KVKCARD *kvk;
   LC_HI_PERSONAL_DATA *pData;
@@ -488,7 +484,7 @@ LC_CLIENT_RESULT LC_KvkCard_ReadCardData(LC_CARD *card,
   *pPersonal=pData;
   *pInsurance=iData;
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 

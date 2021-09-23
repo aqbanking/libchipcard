@@ -24,7 +24,7 @@
 int ExampleCard_ExtendCard(LC_CARD *card);
 int ExampleCard_UnextendCard(LC_CARD *card);
 
-LC_CLIENT_RESULT ExampleCard_Reopen(LC_CARD *card);
+int ExampleCard_Reopen(LC_CARD *card);
 
 
 int ExampleCard_GetExampleData(const LC_CARD *card);

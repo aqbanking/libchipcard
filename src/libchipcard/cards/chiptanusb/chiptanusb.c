@@ -80,9 +80,9 @@ void GWENHYWFAR_CB LC_ChiptanusbCard_freeData(void *bp, void *p)
   GWEN_FREE_OBJECT(gk);
 }
 
-LC_CLIENT_RESULT LC_ChiptanusbCard_Reopen(LC_CARD *card)
+int LC_ChiptanusbCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CHIPTANCARD *gk;
 
   DBG_INFO(LC_LOGDOMAIN, "Re-Opening Ciptanusb card");
@@ -93,24 +93,24 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_Reopen(LC_CARD *card)
 
   /* select Tan card */
   res=LC_Card_SelectCard(card, "ChiptanusbCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   /* select UsbTan app */
   res=LC_Card_SelectApp(card, "chiptanusbcard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_ChiptanusbCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CHIPTANCARD *gk;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card as Chiptanusb Card");
@@ -121,28 +121,28 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Open(LC_CARD *card)
 
   if (strcasecmp(LC_Card_GetCardType(card), "PROCESSOR")!=0) {
     DBG_ERROR(LC_LOGDOMAIN, "Not a processor card");
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
   }
 
   res=gk->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res= LC_ChiptanusbCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     gk->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CHIPTANCARD *gk;
 
   assert(card);
@@ -151,7 +151,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card)
 
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=gk->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -159,7 +159,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ChiptanusbCard_Close(LC_CARD *card)
   return res;
 }
 
-LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
+int LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
                                                unsigned char *pCommand, int size, GWEN_BUFFER *buf)
 {
 
@@ -168,7 +168,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbReqQuit;
   GWEN_DB_NODE *dbRespQuit;
-  LC_CLIENT_RESULT res;
+  int res;
   dbReq=GWEN_DB_Group_new("request");
   dbResp=GWEN_DB_Group_new("response");
   const void *p;
@@ -179,7 +179,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
                         "data", pCommand, size);
   }
   res = LC_Card_ExecCommand(card, "GenerateTan", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -192,7 +192,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
 
   res = LC_Card_ExecCommand(card, "QuitTanResponce", dbReqQuit, dbRespQuit);
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     return res;
   }
 
@@ -213,7 +213,7 @@ LC_CLIENT_RESULT LC_ChiptanusbCard_GenerateTan(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   return res;
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 

@@ -140,9 +140,9 @@ int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf
 
 
 
-LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
+int LC_ZkaCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_ZKACARD *xc;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;
@@ -170,14 +170,14 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
 
   /* select ZKA card */
   res=LC_Card_SelectCard(card, "zkacard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   /* select ZKA app */
   res=LC_Card_SelectApp(card, "zkacard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -185,7 +185,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   /* select MF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -193,7 +193,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   /* read EF_ID */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_ID...");
   res=LC_Card_SelectEf(card, "EF_ID");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -202,7 +202,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   mbuf=GWEN_Buffer_new(0, 32, 0, 1);
   res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, 1, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -216,7 +216,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
     DBG_ERROR(LC_LOGDOMAIN, "Error in EF_ID");
     GWEN_DB_Group_free(dbRecord);
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
 
   xc->db_ef_id=dbRecord;
@@ -225,7 +225,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   /* read EG_GD0 */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_GD0...");
   res=LC_Card_SelectEf(card, "EF_GD0");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -233,7 +233,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading data...");
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_IsoReadBinary(card, 0, 0, 12, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
     return res;
@@ -241,13 +241,13 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   if (GWEN_Buffer_GetUsedBytes(mbuf)<12) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultDataError;
+    return GWEN_ERROR_BAD_DATA;
   }
   xc->bin_ef_gd_0=mbuf;
 
   /* read EF_PWDD */
   res=LC_ZkaCard__ReadPwdd(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -255,7 +255,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
   res=LC_Card_SelectDf(card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -263,7 +263,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   /* read EF_SSD */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_SSD...");
   res=LC_Card_SelectEf(card, "EF_SSD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -271,7 +271,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   DBG_INFO(LC_LOGDOMAIN, "Reading data...");
   mbuf=GWEN_Buffer_new(0, 16, 0, 1);
   res=LC_Card_ReadBinary(card, 0, 65535, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(mbuf);
     return res;
@@ -281,14 +281,14 @@ LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card)
   LC_ZkaCard__ParseDfSigSSD(card);
 
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_ZKACARD *xc;
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card as ZkaCard card");
@@ -311,26 +311,26 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card)
   LC_PinInfo_List_Clear(xc->pinInfoList);
 
   res=xc->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_ZkaCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     xc->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_ZKACARD *xc;
 
   assert(card);
@@ -340,7 +340,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card)
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   LC_PinInfo_List_Clear(xc->pinInfoList);
   res=xc->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -411,7 +411,7 @@ GWEN_BUFFER *LC_ZkaCard_GetCardDataAsBuffer(const LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
+int LC_ZkaCard_Sign(LC_CARD *card,
                                  int globalKey,
                                  int keyId,
                                  int keyVersion,
@@ -419,7 +419,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
                                  unsigned int size,
                                  GWEN_BUFFER *sigBuf)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int combinedKid;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -435,7 +435,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
     combinedKid|=0x80;
 
   res=LC_Card_IsoManageSe(card, 0xA4, combinedKid, 0, 0x46);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -453,7 +453,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
   //GWEN_DB_Dump(dbReq, 2);
   //GWEN_DB_Dump(dbResp, 2);
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -481,17 +481,17 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   return res;
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
+int LC_ZkaCard_Decipher(LC_CARD *card,
                                      int globalKey,
                                      int keyId,
                                      int keyVersion,
@@ -499,7 +499,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
                                      unsigned int size,
                                      GWEN_BUFFER *outBuf)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int combinedKid;
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
@@ -515,7 +515,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
     combinedKid|=0x80;
 
   res=LC_Card_IsoManageSe(card, 0xB8, combinedKid, 0, 0x1a);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -530,7 +530,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
 
   res=LC_Card_ExecCommand(card, "IsoDecipher", dbReq, dbResp);
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -558,17 +558,17 @@ LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   return res;
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
+int CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
                                                      unsigned int pid,
                                                      int *maxErrors,
                                                      int *currentErrors)
@@ -582,14 +582,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
 
   pi=LC_ZkaCard_GetPinInfo(card, pid);
   if (pi && LC_PinInfo_GetRecordNum(pi)>0) {
-    LC_CLIENT_RESULT res;
+    int res;
     GWEN_BUFFER *mbuf;
     const uint8_t *p;
 
     /* select MF */
     DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
     res=LC_Card_SelectMf(card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here");
       return res;
     }
@@ -597,7 +597,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
     /* read EF_ID */
     DBG_INFO(LC_LOGDOMAIN, "Selecting EF_FBZ...");
     res=LC_Card_SelectEf(card, "EF_FBZ");
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here");
       return res;
     }
@@ -606,7 +606,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
     DBG_INFO(LC_LOGDOMAIN, "Reading record...");
     mbuf=GWEN_Buffer_new(0, 32, 0, 1);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, LC_PinInfo_GetRecordNum(pi), mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
       GWEN_Buffer_free(mbuf);
       return res;
@@ -615,7 +615,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
     if (GWEN_Buffer_GetUsedBytes(mbuf)<2) {
       DBG_ERROR(LC_LOGDOMAIN, "Too few bytes returned (%d)", GWEN_Buffer_GetUsedBytes(mbuf));
       GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_BAD_DATA;
     }
 
     p=(const uint8_t *) GWEN_Buffer_GetStart(mbuf);
@@ -624,11 +624,11 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
     if (currentErrors)
       *currentErrors=p[1];
     GWEN_Buffer_free(mbuf);
-    return LC_Client_ResultOk;
+    return 0;
   }
   else {
     DBG_ERROR(LC_LOGDOMAIN, "No pin or invalid record number for PIN %d", pid);
-    return LC_Client_ResultInternal;
+    return GWEN_ERROR_INTERNAL;
   }
 }
 
@@ -637,7 +637,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
 int LC_ZkaCard__ReadPwdd(LC_CARD *card)
 {
   LC_ZKACARD *xc;
-  LC_CLIENT_RESULT res;
+  int res;
   int rec;
 
   assert(card);
@@ -649,7 +649,7 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
   /* select EF_PWDD */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_PWDD...");
   res=LC_Card_SelectEf(card, "EF_PWDD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -662,7 +662,7 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
     DBG_INFO(LC_LOGDOMAIN, "Reading record %d", rec);
     mbuf=GWEN_Buffer_new(0, 32, 0, 1);
     res=LC_Card_IsoReadRecord(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, rec, mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       if (LC_Card_GetLastSW1(card)==0x6a &&
           LC_Card_GetLastSW2(card)==0x83) {
         DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", rec-1);
@@ -681,7 +681,7 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
       DBG_ERROR(LC_LOGDOMAIN, "Error in EF_PWDD");
       GWEN_DB_Group_free(dbRecord);
       GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultDataError;
+      return GWEN_ERROR_BAD_DATA;
     }
     else {
       const uint8_t *p;
@@ -767,10 +767,10 @@ int LC_ZkaCard__ReadPwdd(LC_CARD *card)
     }
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
-LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
+int LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
                                                 uint32_t flags,
                                                 int recNum,
                                                 const char *searchPattern,
@@ -779,7 +779,7 @@ LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int bs;
   const void *p;
   unsigned char p2;
@@ -790,7 +790,7 @@ LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN,
               "Invalid flags %u"
               " (only RECSEL_GIVEN is allowed)", flags)
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
   p2|=0x04;
 
@@ -805,7 +805,7 @@ LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
                         "data", searchPattern, searchPatternSize);
   }
   res=LC_Card_ExecCommand(card, "SeccosSearchRecord", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -831,9 +831,9 @@ LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
   return res;
 }
 
-LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
+int LC_ZkaCard__ParseDfSigSSD(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res= LC_Client_ResultOk;
+  int res= 0;
   LC_ZKACARD *xc;
   GWEN_BUFFER *mbuf;
   GWEN_DB_NODE *dbRecord;

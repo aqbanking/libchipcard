@@ -166,60 +166,9 @@ void usage(const char *ustr)
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+void showError(LC_CARD *card, int res, const char *x)
 {
-  const char *s;
-
-  switch (res) {
-  case LC_Client_ResultOk:
-    s="Ok.";
-    break;
-  case LC_Client_ResultWait:
-    s="Timeout.";
-    break;
-  case LC_Client_ResultIpcError:
-    s="IPC error.";
-    break;
-  case LC_Client_ResultCmdError:
-    s="Command error.";
-    break;
-  case LC_Client_ResultDataError:
-    s="Data error.";
-    break;
-  case LC_Client_ResultAborted:
-    s="Aborted.";
-    break;
-  case LC_Client_ResultInvalid:
-    s="Invalid argument to command.";
-    break;
-  case LC_Client_ResultInternal:
-    s="Internal error.";
-    break;
-  case LC_Client_ResultGeneric:
-    s="Generic error.";
-    break;
-  default:
-    s="Unknown error.";
-    break;
-  }
-
-  fprintf(stderr, "Error in \"%s\": %s\n", x, s);
-  if (card && res==LC_Client_ResultCmdError) {
-    int sw1;
-    int sw2;
-
-    sw1=LC_Card_GetLastSW1(card);
-    sw2=LC_Card_GetLastSW2(card);
-    fprintf(stderr, "  Last card command result:\n");
-    if (sw1!=-1 && sw2!=-1)
-      fprintf(stderr, "   SW1=%02x, SW2=%02x\n", sw1, sw2);
-    s=LC_Card_GetLastResult(card);
-    if (s)
-      fprintf(stderr, "   Result: %s\n", s);
-    s=LC_Card_GetLastText(card);
-    if (s)
-      fprintf(stderr, "   Text  : %s\n", s);
-  }
+  LC_Card_PrintResult(card, x, res);
 }
 
 
@@ -227,7 +176,7 @@ void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
 int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   int rv;
   int v;
   const char *s;
@@ -246,7 +195,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "StartWait");
     return RETURNVALUE_WORK;
   }
@@ -257,7 +206,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "GetNextCard");
       return RETURNVALUE_WORK;
     }
@@ -272,7 +221,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Not a memory card, releasing.\n");
     res=LC_Client_ReleaseCard(cl, card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "ReleaseCard");
       return RETURNVALUE_WORK;
     }
@@ -295,7 +244,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Opening card.\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr,
             "ERROR: Error executing command CardOpen (%d).\n",
             res);
@@ -308,7 +257,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Stop");
     LC_Client_ReleaseCard(cl, card);
     return RETURNVALUE_WORK;
@@ -367,7 +316,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
                                  t,
                                  buf);
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "ReadBinary");
       if (fname)
         fclose(f);
@@ -426,7 +375,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "CardClose");
     return RETURNVALUE_WORK;
   }
@@ -436,7 +385,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "ReleaseCard");
     return RETURNVALUE_WORK;
   }
@@ -453,7 +402,7 @@ int memRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   int rv;
   int v;
   const char *s;
@@ -489,7 +438,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "StartWait");
     if (fname)
       fclose(f);
@@ -502,7 +451,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "GetNextCard");
       if (fname)
         fclose(f);
@@ -519,7 +468,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Not a memory card, releasing.\n");
     res=LC_Client_ReleaseCard(cl, card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "ReleaseCard");
       if (fname)
         fclose(f);
@@ -549,7 +498,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Opening card.\n");
   res=LC_Card_Open(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr,
             "ERROR: Error executing command CardOpen (%d).\n",
             res);
@@ -565,7 +514,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Stop");
     if (fname)
       fclose(f);
@@ -619,12 +568,11 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     }
 
     /* write bytes */
-    res=LC_Client_ResultOk;
     res=LC_MemoryCard_WriteBinary(card,
                                   offset,
                                   buf,
                                   t);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "WriteBinary");
       if (fname)
         fclose(f);
@@ -646,7 +594,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
                                    t,
                                    tbuf);
 
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         showError(card, res, "ReadBinary");
         if (fname)
           fclose(f);
@@ -702,7 +650,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "CardClose");
     return RETURNVALUE_WORK;
   }
@@ -710,7 +658,7 @@ int memWrite(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     fprintf(stderr, "Card closed.\n");
 
   res=LC_Client_ReleaseCard(cl, card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "ReleaseCard");
     return RETURNVALUE_WORK;
   }
@@ -733,7 +681,7 @@ int main(int argc, char **argv)
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_GUI *gui;
 
   gui=GWEN_Gui_CGui_new();
@@ -796,7 +744,7 @@ int main(int argc, char **argv)
 
   cl=LC_Client_new("memcard", PROGRAM_VERSION);
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
     return RETURNVALUE_SETUP;
   }
@@ -814,7 +762,7 @@ int main(int argc, char **argv)
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
   }
 

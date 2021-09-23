@@ -17,6 +17,7 @@
 /*@{*/
 
 #include <gwenhywfar/inherit.h>
+#include <gwenhywfar/error.h>
 
 #include <libchipcard/chipcard.h>
 
@@ -33,30 +34,6 @@ extern "C" {
 
 typedef struct LC_CLIENT LC_CLIENT;
 GWEN_INHERIT_FUNCTION_LIB_DEFS(LC_CLIENT, CHIPCARD_API)
-
-
-/**
- * Result codes for operations.
- */
-typedef enum {
-  LC_Client_ResultOk=0,
-  LC_Client_ResultWait,
-  LC_Client_ResultIpcError,
-  LC_Client_ResultCmdError,
-  LC_Client_ResultDataError,
-  LC_Client_ResultAborted,
-  LC_Client_ResultInvalid,
-  LC_Client_ResultInternal,
-  LC_Client_ResultGeneric,
-  LC_Client_ResultNoData,
-  LC_Client_ResultCardRemoved,
-  LC_Client_ResultNotSupported,
-  LC_Client_ResultCfgError,
-  LC_Client_ResultNotFound,
-  LC_Client_ResultIoError,
-  LC_Client_ResultBadPin,
-  LC_Client_ResultDontExecute,
-} LC_CLIENT_RESULT;
 
 
 /**
@@ -111,29 +88,29 @@ void LC_Client_free(LC_CLIENT *cl);
  * upon startup of the application.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_Init(LC_CLIENT *cl);
+int LC_Client_Init(LC_CLIENT *cl);
 
 /**
  * Deinit Libchipcard. Unloads all data files.
  *
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_Fini(LC_CLIENT *cl);
+int LC_Client_Fini(LC_CLIENT *cl);
 
 
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_Start(LC_CLIENT *cl);
+int LC_Client_Start(LC_CLIENT *cl);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_Stop(LC_CLIENT *cl);
+int LC_Client_Stop(LC_CLIENT *cl);
 
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeout);
+int LC_Client_GetNextCard(LC_CLIENT *cl, LC_CARD **pCard, int timeout);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card);
+int LC_Client_ReleaseCard(LC_CLIENT *cl, LC_CARD *card);
 
 
 /*@}*/

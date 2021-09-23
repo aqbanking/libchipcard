@@ -61,7 +61,7 @@ int LC_MemoryCard_UnextendCard(LC_CARD *card);
  * @param buf GWEN_BUFFER to receive the data read
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
+int LC_MemoryCard_ReadBinary(LC_CARD *card,
                                           int offset,
                                           int size,
                                           GWEN_BUFFER *buf);
@@ -74,7 +74,7 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
  * @param size number of bytes to write
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
+int LC_MemoryCard_WriteBinary(LC_CARD *card,
                                            int offset,
                                            const char *ptr,
                                            unsigned int size);

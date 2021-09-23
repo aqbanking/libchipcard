@@ -531,7 +531,7 @@ int main(int argc, char **argv)
   LC_CLIENT *cl;
   int v;
   LC_CARD *card = 0;
-  LC_CLIENT_RESULT res;
+  int res;
 
   int rv;
   int i;

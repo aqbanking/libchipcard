@@ -59,7 +59,7 @@ GWEN_PLUGIN *LC_Crypt_TokenZka_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
 {
   GWEN_PLUGIN *pl;
   LC_CT_PLUGIN_ZKA *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
 
   pl=GWEN_Crypt_Token_Plugin_new(pm,
                                  GWEN_Crypt_Token_Device_Card,
@@ -71,7 +71,7 @@ GWEN_PLUGIN *LC_Crypt_TokenZka_Plugin_new(GWEN_PLUGIN_MANAGER *pm,
                        LC_Crypt_TokenZka_Plugin_FreeData);
   cpl->client=LC_Client_new("LC_Crypt_TokenZka", VERSION);
   res=LC_Client_Init(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "Error initialising libchipcard (%d), chipcards will not be available",
               res);
@@ -125,7 +125,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
 {
   GWEN_PLUGIN_MANAGER *pm;
   LC_CT_PLUGIN_ZKA *cpl;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   const char *currCardNumber;
   int i;
@@ -138,17 +138,17 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
   assert(pm);
 
   res=LC_Client_Start(cpl->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send StartWait request");
     return GWEN_ERROR_IO;
   }
 
   for (i=0; i<10; i++) {
     res=LC_Client_GetNextCard(cpl->client, &hcard, i==0?5:10);
-    if (res==LC_Client_ResultOk)
+    if (res>=0)
       break;
     else {
-      if (res==LC_Client_ResultWait) {
+      if (res==GWEN_ERROR_TIMEOUT) {
         int mres;
 
         mres=GWEN_Gui_MessageBox(GWEN_GUI_MSG_FLAGS_SEVERITY_NORMAL |
@@ -180,7 +180,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
   }
 
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN,
               "No card within specified timeout (%d)", res);
     LC_Client_Stop(cpl->client);
@@ -203,7 +203,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Plugin_CheckToken(GWEN_PLUGIN *pl,
     }
 
     res=LC_Card_Open(hcard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       LC_Client_ReleaseCard(cpl->client, hcard);
       LC_Card_free(hcard);
       DBG_NOTICE(LC_LOGDOMAIN,
@@ -322,7 +322,7 @@ void GWENHYWFAR_CB LC_Crypt_TokenZka_FreeData(void *bp, void *p)
 int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_CARD *hcard=0;
   int first;
   const char *currCardNumber;
@@ -335,7 +335,7 @@ int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
   name=GWEN_Crypt_Token_GetTokenName(ct);
 
   res=LC_Client_Start(lct->client);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Could not send Start request");
     return GWEN_ERROR_IO;
   }
@@ -353,8 +353,8 @@ int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
 
     if (hcard==0) {
       res=LC_Client_GetNextCard(lct->client, &hcard, timeout);
-      if (res!=LC_Client_ResultOk &&
-          res!=LC_Client_ResultWait) {
+      if (res<0 &&
+          res!=GWEN_ERROR_TIMEOUT) {
         DBG_ERROR(LC_LOGDOMAIN, "Error while waiting for card (%d)", res);
         return GWEN_ERROR_IO;
       }
@@ -384,7 +384,7 @@ int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
       }
 
       res=LC_Card_Open(hcard);
-      if (res!=LC_Client_ResultOk) {
+      if (res<0) {
         LC_Client_ReleaseCard(lct->client, hcard);
         LC_Card_free(hcard);
         hcard=0;
@@ -424,10 +424,10 @@ int LC_Crypt_TokenZka__GetCard(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
         hcard=0;
 
         res=LC_Client_GetNextCard(lct->client, &hcard, GWEN_TIMEOUT_NONE);
-        if (res!=LC_Client_ResultOk) {
+        if (res<0) {
           int mres;
 
-          if (res!=LC_Client_ResultWait) {
+          if (res!=GWEN_ERROR_TIMEOUT) {
             DBG_ERROR(LC_LOGDOMAIN,
                       "Communication error (%d)", res);
             LC_Client_Stop(lct->client);
@@ -546,7 +546,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Open(GWEN_CRYPT_TOKEN *ct, int manage, uint3
 int GWENHYWFAR_CB LC_Crypt_TokenZka_Close(GWEN_CRYPT_TOKEN *ct, int abandon, uint32_t guiid)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(ct);
   lct=GWEN_INHERIT_GETDATA(GWEN_CRYPT_TOKEN, LC_CT_ZKA, ct);
@@ -558,7 +558,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Close(GWEN_CRYPT_TOKEN *ct, int abandon, uin
   }
 
   res=LC_Card_Close(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     LC_Client_ReleaseCard(lct->client, lct->card);
     LC_Card_free(lct->card);
     lct->card=0;
@@ -568,7 +568,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Close(GWEN_CRYPT_TOKEN *ct, int abandon, uin
   res=LC_Client_ReleaseCard(lct->client, lct->card);
   LC_Card_free(lct->card);
   lct->card=0;
-  if (res!=LC_Client_ResultOk)
+  if (res<0)
     return GWEN_ERROR_IO;
 
   return 0;
@@ -833,7 +833,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
                                          uint32_t gid)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *tbuf;
 
   DBG_INFO(LC_LOGDOMAIN, "LC_Crypt_TokenZka_Sign called with kid=%d (%s)!",
@@ -843,20 +843,20 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Sign(GWEN_CRYPT_TOKEN *ct,
   assert(lct);
 
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectDf(lct->card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_SIG (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   tbuf=GWEN_Buffer_new(0, 512, 0, 1);
   res=LC_ZkaCard_Sign(lct->card, 1, kid, -1, pInData, inLen, tbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(tbuf);
     return GWEN_ERROR_NOT_OPEN;
@@ -912,7 +912,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
                                              uint32_t gid)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *tbuf;
 
   DBG_INFO(LC_LOGDOMAIN, "LC_Crypt_TokenZka_Decipher called with kid=%d (%s)!\n",
@@ -923,20 +923,20 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
   assert(lct);
 
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectDf(lct->card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_SIG (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   tbuf=GWEN_Buffer_new(0, 1024, 0, 1);
   res=LC_ZkaCard_Decipher(lct->card, 1, kid, -1, pInData, inLen, tbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_Buffer_free(tbuf);
     return GWEN_ERROR_NOT_OPEN;
@@ -953,7 +953,7 @@ int GWENHYWFAR_CB LC_Crypt_TokenZka_Decipher(GWEN_CRYPT_TOKEN *ct,
 int GWENHYWFAR_CB LC_Crypt_TokenZka_ChangePin(GWEN_CRYPT_TOKEN *ct, int admin, uint32_t gid)
 {
   LC_CT_ZKA *lct;
-  //  LC_CLIENT_RESULT res;
+  //  int res;
 
   DBG_ERROR(LC_LOGDOMAIN, "LC_Crypt_TokenZka_ChangePin not implemented!");
   assert(ct);
@@ -973,7 +973,7 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
 {
   LC_CT_ZKA *lct;
   int i;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
 
   assert(ct);
@@ -981,19 +981,19 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
   assert(lct);
 
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectDf(lct->card, "DF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_NOTEPAD (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectEf(lct->card, "EF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting EF_NOTEPAD (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
@@ -1005,7 +1005,7 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
     DBG_INFO(LC_LOGDOMAIN, "Reading entry %d", i);
     res=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
     GWEN_Buffer_Rewind(mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       if (LC_Card_GetLastSW1(lct->card)==0x6a &&
           LC_Card_GetLastSW2(lct->card)==0x83) {
         DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
@@ -1028,7 +1028,7 @@ int LC_Crypt_TokenZka__ReadNotePad(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbNotePad
         dbEntry=GWEN_DB_Group_new("entry");
         GWEN_Buffer_Rewind(mbuf);
         res=LC_Card_ParseRecord(lct->card, i, mbuf, dbEntry);
-        if (res!=LC_Client_ResultOk) {
+        if (res<0) {
           DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d of EF_NOTEPAD (%d)", i, res);
           if (i>1)
             break;
@@ -1223,7 +1223,7 @@ int LC_TokenZkaCard__KeyInfoFromKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKey, 
 int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   int i;
   int recnum;
@@ -1237,7 +1237,7 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
   /* select MF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1245,7 +1245,7 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
   res=LC_Card_SelectDf(lct->card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1253,7 +1253,7 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
   /* read EF_ID */
   DBG_INFO(LC_LOGDOMAIN, "Selecting EF_KEYD...");
   res=LC_Card_SelectEf(lct->card, "EF_KEYD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1266,7 +1266,7 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
     /* read record */
     DBG_INFO(LC_LOGDOMAIN, "Reading record...");
     res=LC_Card_IsoReadRecord(lct->card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       if (LC_Card_GetLastSW1(lct->card)==0x6a &&
           LC_Card_GetLastSW2(lct->card)==0x83) {
         DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
@@ -1277,7 +1277,7 @@ int LC_TokenZkaCard__ReadKeyd(GWEN_CRYPT_TOKEN *ct, GWEN_DB_NODE *dbKeys)
         if (i>1)
           break;
         GWEN_Buffer_free(mbuf);
-        return LC_Client_ResultIoError;
+        return GWEN_ERROR_IO;
       }
 
       DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
@@ -1315,7 +1315,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
                                                const int expLen)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   GWEN_BUFFER *scratchBuf;
   GWEN_DB_NODE *dbRecord;
@@ -1337,7 +1337,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
   /* select MF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1345,7 +1345,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
   res=LC_Card_SelectDf(lct->card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1368,9 +1368,9 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
     sprintf(keyChar, "DS");
     break;
   default:
-    res=LC_Client_ResultDontExecute;
+    res=GWEN_ERROR_NOT_REGISTERED;
   }
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1381,7 +1381,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
   /* read record */
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   res=LC_Card_ReadBinary(lct->card, 0, 32768, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     if (LC_Card_GetLastSW1(lct->card)==0x6a &&
         LC_Card_GetLastSW2(lct->card)==0x83) {
       DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
@@ -1391,7 +1391,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
       DBG_ERROR(LC_LOGDOMAIN, "Error reading record 0 of EF_KEYD (%d)", res);
       if (i>1)
         GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultIoError;
+      return GWEN_ERROR_IO;
     }
 
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
@@ -1469,7 +1469,7 @@ int LC_TokenZkaCard__ReadKeyModulusAndExponent(GWEN_CRYPT_TOKEN *ct,
 int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_KEYINFO *ki)
 {
   LC_CT_ZKA *lct;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   GWEN_BUFFER *scratchBuf;
   GWEN_DB_NODE *dbSsd;
@@ -1495,7 +1495,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
   /* select MF */
   DBG_INFO(LC_LOGDOMAIN, "Selecting MF...");
   res=LC_Card_SelectMf(lct->card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1503,7 +1503,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
   /* select DF_SIG */
   DBG_INFO(LC_LOGDOMAIN, "Selecting DF_SIG...");
   res=LC_Card_SelectDf(lct->card, "DF_SIG");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1523,7 +1523,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
     sprintf(keyChar, "DS");
     break;
   default:
-    res=LC_Client_ResultDontExecute;
+    res=GWEN_ERROR_NOT_REGISTERED;
     return res;
   }
 
@@ -1550,7 +1550,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
 
   /* open corresponding certificate EF */
   res = LC_Card_SelectEfById(lct->card, sid);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return GWEN_ERROR_IO;
   }
@@ -1560,7 +1560,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
   /* read record */
   DBG_INFO(LC_LOGDOMAIN, "Reading record...");
   res=LC_Card_ReadBinary(lct->card, 0, 32768, mbuf);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
 #if 0
     if (LC_Card_GetLastSW1(lct->card)==0x6a &&
         LC_Card_GetLastSW2(lct->card)==0x83) {
@@ -1571,7 +1571,7 @@ int LC_TokenZkaCard__ReadKeyCertificate(GWEN_CRYPT_TOKEN *ct, GWEN_CRYPT_TOKEN_K
       DBG_ERROR(LC_LOGDOMAIN, "Error reading record %d of EF_KEYD (%d)", i, res);
       if (i>1)
         GWEN_Buffer_free(mbuf);
-      return LC_Client_ResultIoError;
+      return GWEN_ERROR_IO;
     }
 #endif
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
@@ -2038,7 +2038,7 @@ int LC_Crypt_TokenZka__ReadContextList(GWEN_CRYPT_TOKEN *ct, uint32_t guiid)
         if (rdhVersion >= 3) {
           /* CID is in EF_ID */
           LC_CT_ZKA *lct;
-          LC_CLIENT_RESULT res;
+          int res;
           GWEN_BUFFER *ef_id_bin;
           GWEN_BUFFER *cid_str;
           GWEN_DB_NODE *ef_id_db;

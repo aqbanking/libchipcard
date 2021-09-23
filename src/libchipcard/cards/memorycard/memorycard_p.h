@@ -29,9 +29,9 @@ struct LC_MEMORYCARD {
 
 void GWENHYWFAR_CB LC_MemoryCard_freeData(void *bp, void *p);
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card);
+int CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card);
+int LC_MemoryCard_Reopen(LC_CARD *card);
+int CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card);
 
 
 void LC_MemoryCard__CalculateCapacity(LC_CARD *card);

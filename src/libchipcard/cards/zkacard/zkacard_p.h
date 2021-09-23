@@ -40,21 +40,21 @@ struct LC_ZKACARD {
 
 
 static void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p);
-static LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card);
-static LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card);
-static LC_CLIENT_RESULT CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
+static int CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card);
+static int CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card);
+static int CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
                                                             unsigned int pid,
                                                             int *maxErrors,
                                                             int *currentErrors);
 
 
-static LC_CLIENT_RESULT LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);
+static int LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);
 static int LC_ZkaCard__ParsePseudoOids(const uint8_t *p, uint32_t bs, GWEN_BUFFER *mbuf);
 
 
 static int LC_ZkaCard__ReadPwdd(LC_CARD *card);
-static LC_CLIENT_RESULT LC_ZkaCard__ParseDfSigSSD(LC_CARD *card);
-static LC_CLIENT_RESULT LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
+static int LC_ZkaCard__ParseDfSigSSD(LC_CARD *card);
+static int LC_ZkaCard__SeccosSearchRecord(LC_CARD *card,
                                                        uint32_t flags,
                                                        int recNum,
                                                        const char *searchPattern,

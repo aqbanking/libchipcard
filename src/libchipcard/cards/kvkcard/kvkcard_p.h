@@ -28,11 +28,11 @@ struct LC_KVKCARD {
 void GWENHYWFAR_CB LC_KVKCard_freeData(void *bp, void *p);
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card);
-LC_CLIENT_RESULT CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card);
+int CHIPCARD_CB LC_KVKCard_Open(LC_CARD *card);
+int CHIPCARD_CB LC_KVKCard_Close(LC_CARD *card);
 
 
-LC_CLIENT_RESULT LC_KVKCard_ReadCardData(LC_CARD *card);
+int LC_KVKCard_ReadCardData(LC_CARD *card);
 
 
 

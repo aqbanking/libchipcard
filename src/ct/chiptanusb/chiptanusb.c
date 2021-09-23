@@ -166,7 +166,7 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
 
   LC_CLIENT *cl;
   LC_CARD *card;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
 
   cl = LC_Client_new("PinTanKarte", PROGRAM_VERSION);//  client.c
@@ -178,14 +178,14 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
 
   DBG_INFO(LC_LOGDOMAIN, "Connecting to server.");
   res = LC_Client_Start(cl);
-  if (res != LC_Client_ResultOk) {
+  if (res<0) {
     return GWEN_ERROR_NOT_CONNECTED;
   }
   DBG_INFO(LC_LOGDOMAIN, "Connected.");
 
   DBG_INFO(LC_LOGDOMAIN, "Waiting for card...");
   res = LC_Client_GetNextCard(cl, &card, 20);
-  if (res != LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "GetNextCard.");
     return GWEN_ERROR_REMOVED;
   }
@@ -198,7 +198,7 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
 
   DBG_INFO(LC_LOGDOMAIN, "Opening card.");
   res = LC_Card_Open(card);
-  if (res != LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error executing command CardOpen (%d).\n", res);
     return GWEN_ERROR_OPEN;
   }
@@ -207,7 +207,7 @@ int GetTanfromUSB_Generator(unsigned char *HHDCommand, int fullHHD_Len, int *pAT
 
   mbuf = GWEN_Buffer_new(0, 256, 0, 1);
   res = LC_ChiptanusbCard_GenerateTan(card, HHDCommand, fullHHD_Len, mbuf);
-  if (res != LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error Reading Tan from card.\n");
     GWEN_Buffer_free(mbuf);
     return GWEN_ERROR_READ;

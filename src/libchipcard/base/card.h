@@ -90,7 +90,7 @@ void LC_Card_List2_freeAll(LC_CARD_LIST2 *l);
  * LC_DdvCard).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
+int LC_Card_Open(LC_CARD *card);
 
 /**
  * Closes the given card.
@@ -98,7 +98,7 @@ LC_CLIENT_RESULT LC_Card_Open(LC_CARD *card);
  * LC_DdvCard).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
+int LC_Card_Close(LC_CARD *card);
 /*@}*/
 
 
@@ -126,11 +126,11 @@ LC_CLIENT_RESULT LC_Card_Close(LC_CARD *card);
  * Libchipcard via CTAPI).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
-                                  const char *apdu,
-                                  unsigned int len,
-                                  GWEN_BUFFER *rbuf,
-                                  LC_CLIENT_CMDTARGET t);
+int LC_Card_ExecApdu(LC_CARD *card,
+                     const char *apdu,
+                     unsigned int len,
+                     GWEN_BUFFER *rbuf,
+                     LC_CLIENT_CMDTARGET t);
 
 /**
  * Executes a command referenced by name.
@@ -143,20 +143,20 @@ LC_CLIENT_RESULT LC_Card_ExecApdu(LC_CARD *card,
  * the open-functions set by e.g. @ref LC_DDVCard_ExtendCard() etc.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_ExecCommand(LC_CARD *card,
-                                     const char *commandName,
-                                     GWEN_DB_NODE *cmdData,
-                                     GWEN_DB_NODE *rspData);
+int LC_Card_ExecCommand(LC_CARD *card,
+                        const char *commandName,
+                        GWEN_DB_NODE *cmdData,
+                        GWEN_DB_NODE *rspData);
 
 /**
  * This function is used internally by @ref LC_Card_ExecCommand to create
  * an APDU from a command for a particular combination of card and reader.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_BuildApdu(LC_CARD *card,
-                                   const char *command,
-                                   GWEN_DB_NODE *cmdData,
-                                   GWEN_BUFFER *gbuf);
+int LC_Card_BuildApdu(LC_CARD *card,
+                      const char *command,
+                      GWEN_DB_NODE *cmdData,
+                      GWEN_BUFFER *gbuf);
 
 /*@}*/
 
@@ -177,10 +177,10 @@ LC_CLIENT_RESULT LC_Card_BuildApdu(LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectCard(LC_CARD *card, const char *s);
+int LC_Card_SelectCard(LC_CARD *card, const char *s);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectApp(LC_CARD *card, const char *appName);
+int LC_Card_SelectApp(LC_CARD *card, const char *appName);
 /*@}*/
 
 
@@ -194,7 +194,7 @@ LC_CLIENT_RESULT LC_Card_SelectApp(LC_CARD *card, const char *appName);
  * filesystem).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card);
+int LC_Card_SelectMf(LC_CARD *card);
 
 /**
  * Select a dedicated file below the currently selected one (or the master
@@ -204,7 +204,7 @@ LC_CLIENT_RESULT LC_Card_SelectMf(LC_CARD *card);
  * either by short or long id (as determined by the XML files).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname);
+int LC_Card_SelectDf(LC_CARD *card, const char *fname);
 
 /**
  * Select an elementary file below the currently selected DF (or MF).
@@ -214,7 +214,7 @@ LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname);
  * either by short or long id (as determined by the XML files).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname);
+int LC_Card_SelectEf(LC_CARD *card, const char *fname);
 /*@}*/
 
 /**
@@ -225,7 +225,7 @@ LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname);
  * either by short or long id (as determined by the XML files).
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_SelectEfById(LC_CARD *card, const int sid);
+int LC_Card_SelectEfById(LC_CARD *card, const int sid);
 /*@}*/
 
 
@@ -318,23 +318,20 @@ LC_CLIENT *LC_Card_GetClient(const LC_CARD *cd);
  * @ref LC_Card_ExecCommand (nearly all functions internally call that one)
  */
 /*@{*/
-CHIPCARD_API
-int LC_Card_GetLastSW1(const LC_CARD *card);
+CHIPCARD_API int LC_Card_GetLastSW1(const LC_CARD *card);
 
-CHIPCARD_API
-int LC_Card_GetLastSW2(const LC_CARD *card);
+CHIPCARD_API int LC_Card_GetLastSW2(const LC_CARD *card);
 
-CHIPCARD_API
-const char *LC_Card_GetLastResult(const LC_CARD *card);
+CHIPCARD_API const char *LC_Card_GetLastResult(const LC_CARD *card);
 
-CHIPCARD_API
-const char *LC_Card_GetLastText(const LC_CARD *card);
+CHIPCARD_API const char *LC_Card_GetLastText(const LC_CARD *card);
 
-CHIPCARD_API
-void LC_Card_CreateResultString(const LC_CARD *card,
-                                const char *lastCommand,
-                                LC_CLIENT_RESULT res,
-                                GWEN_BUFFER *buf);
+CHIPCARD_API void LC_Card_CreateResultString(const LC_CARD *card,
+                                             const char *lastCommand,
+                                             int res,
+                                             GWEN_BUFFER *buf);
+
+CHIPCARD_API void LC_Card_PrintResult(const LC_CARD *card, const char *lastCommand, int res);
 /*@}*/
 
 
@@ -373,20 +370,20 @@ CHIPCARD_API
 LC_PININFO *LC_Card_GetPinInfoByName(LC_CARD *card, const char *name);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_GetPinStatus(LC_CARD *card,
+int LC_Card_GetPinStatus(LC_CARD *card,
                                       unsigned int pid,
                                       int *maxErrors,
                                       int *currentErrors);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_GetInitialPin(LC_CARD *card,
+int LC_Card_GetInitialPin(LC_CARD *card,
                                        int id,
                                        unsigned char *buffer,
                                        unsigned int maxLen,
                                        unsigned int *pinLength);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
+int LC_Card_IsoVerifyPin(LC_CARD *card,
                                       uint32_t flags,
                                       const LC_PININFO *pi,
                                       const unsigned char *ptr,
@@ -394,7 +391,7 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
                                       int *triesLeft);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
+int LC_Card_IsoModifyPin(LC_CARD *card,
                                       uint32_t flags,
                                       const LC_PININFO *pi,
                                       const unsigned char *oldptr,
@@ -404,13 +401,13 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
                                       int *triesLeft);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
+int LC_Card_IsoPerformVerification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
                                                 int *triesLeft);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
+int LC_Card_IsoPerformModification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
                                                 int *triesLeft);
@@ -424,14 +421,14 @@ LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
  */
 /*@{*/
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
+int LC_Card_IsoReadBinary(LC_CARD *card,
                                        uint32_t flags,
                                        int offset,
                                        int size,
                                        GWEN_BUFFER *buf);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
+int LC_Card_IsoWriteBinary(LC_CARD *card,
                                         uint32_t flags,
                                         int offset,
                                         const char *ptr,
@@ -439,14 +436,14 @@ LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
 
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
+int LC_Card_IsoUpdateBinary(LC_CARD *card,
                                          uint32_t flags,
                                          int offset,
                                          const char *ptr,
                                          unsigned int size);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
+int LC_Card_IsoEraseBinary(LC_CARD *card,
                                         uint32_t flags,
                                         int offset,
                                         unsigned int size);
@@ -457,7 +454,7 @@ LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
  * are read.
  */
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
+int LC_Card_ReadBinary(LC_CARD *card,
                                     int offset,
                                     int size,
                                     GWEN_BUFFER *buf);
@@ -471,25 +468,25 @@ LC_CLIENT_RESULT LC_Card_ReadBinary(LC_CARD *card,
 /*@{*/
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
+int LC_Card_IsoReadRecord(LC_CARD *card,
                                        uint32_t flags,
                                        int recNum,
                                        GWEN_BUFFER *buf);
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
+int LC_Card_IsoWriteRecord(LC_CARD *card,
                                         uint32_t flags,
                                         int recNum,
                                         const char *ptr,
                                         unsigned int size);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
+int LC_Card_IsoAppendRecord(LC_CARD *card,
                                          uint32_t flags,
                                          const char *ptr,
                                          unsigned int size);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
+int LC_Card_IsoUpdateRecord(LC_CARD *card,
                                          uint32_t flags,
                                          int recNum,
                                          const char *ptr,
@@ -504,35 +501,35 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 /*@{*/
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoManageSe(LC_CARD *card,
+int LC_Card_IsoManageSe(LC_CARD *card,
                                      int tmpl, int kids, int kidp, int ar);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoEncipher(LC_CARD *card,
+int LC_Card_IsoEncipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
                                      GWEN_BUFFER *codeBuf);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoDecipher(LC_CARD *card,
+int LC_Card_IsoDecipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
                                      GWEN_BUFFER *plainBuf);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoSign(LC_CARD *card,
+int LC_Card_IsoSign(LC_CARD *card,
                                  const char *ptr,
                                  unsigned int size,
                                  GWEN_BUFFER *sigBuf);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
+int LC_Card_IsoVerify(LC_CARD *card,
                                    const char *dptr,
                                    unsigned int dsize,
                                    const char *sigptr,
                                    unsigned int sigsize);
 
-LC_CLIENT_RESULT
+int
 LC_Card_IsoInternalAuth(LC_CARD *card,
                         int kid,
                         const unsigned char *ptr,
@@ -550,25 +547,25 @@ LC_Card_IsoInternalAuth(LC_CARD *card,
 /*@{*/
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_ParseData(LC_CARD *card,
+int LC_Card_ParseData(LC_CARD *card,
                                    const char *format,
                                    GWEN_BUFFER *buf,
                                    GWEN_DB_NODE *dbData);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_CreateData(LC_CARD *card,
+int LC_Card_CreateData(LC_CARD *card,
                                     const char *format,
                                     GWEN_BUFFER *buf,
                                     GWEN_DB_NODE *dbData);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_ParseRecord(LC_CARD *card,
+int LC_Card_ParseRecord(LC_CARD *card,
                                      int recNum,
                                      GWEN_BUFFER *buf,
                                      GWEN_DB_NODE *dbRecord);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_Card_CreateRecord(LC_CARD *card,
+int LC_Card_CreateRecord(LC_CARD *card,
                                       int recNum,
                                       GWEN_BUFFER *buf,
                                       GWEN_DB_NODE *dbRecord);

@@ -73,9 +73,9 @@ void GWENHYWFAR_CB LC_MemoryCard_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_MEMORYCARD *mc;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening card as memory card");
@@ -85,26 +85,26 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Open(LC_CARD *card)
   assert(mc);
 
   res=mc->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_MemoryCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     mc->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card)
+int LC_MemoryCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_MEMORYCARD *mc;
   int i;
 
@@ -116,12 +116,12 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card)
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting memory card and app");
   res=LC_Card_SelectCard(card, "MemoryCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
   res=LC_Card_SelectApp(card, "MemoryCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -131,14 +131,14 @@ LC_CLIENT_RESULT LC_MemoryCard_Reopen(LC_CARD *card)
     i=32;
   mc->writeBoundary=i;
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_MEMORYCARD *mc;
 
   assert(card);
@@ -146,7 +146,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card)
   assert(mc);
 
   res=mc->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
@@ -156,7 +156,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_MemoryCard_Close(LC_CARD *card)
 
 
 
-LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
+int LC_MemoryCard_ReadBinary(LC_CARD *card,
                                           int offset,
                                           int size,
                                           GWEN_BUFFER *buf)
@@ -164,7 +164,7 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
   int t;
   LC_MEMORYCARD *mc;
   int bytesRead=0;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(card);
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
@@ -177,9 +177,9 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
       t=size;
     res=LC_Card_IsoReadBinary(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                               offset, t, buf);
-    if (res!=LC_Client_ResultOk) {
-      if (res==LC_Client_ResultNoData && bytesRead)
-        return LC_Client_ResultOk;
+    if (res<0) {
+      if (res==GWEN_ERROR_NO_DATA && bytesRead)
+        return 0;
       return res;
     }
 
@@ -188,18 +188,18 @@ LC_CLIENT_RESULT LC_MemoryCard_ReadBinary(LC_CARD *card,
     bytesRead+=t;
   } /* while still data to read */
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
+int LC_MemoryCard_WriteBinary(LC_CARD *card,
                                            int offset,
                                            const char *ptr,
                                            unsigned int size)
 {
   LC_MEMORYCARD *mc;
-  LC_CLIENT_RESULT res;
+  int res;
 
   assert(card);
   mc=GWEN_INHERIT_GETDATA(LC_CARD, LC_MEMORYCARD, card);
@@ -218,7 +218,7 @@ LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
 
     res=LC_Card_IsoUpdateBinary(card, LC_CARD_ISO_FLAGS_RECSEL_GIVEN,
                                 offset, ptr, t);
-    if (res!=LC_Client_ResultOk)
+    if (res<0)
       return res;
 
     size-=t;
@@ -226,7 +226,7 @@ LC_CLIENT_RESULT LC_MemoryCard_WriteBinary(LC_CARD *card,
     ptr+=t;
   } /* while still data to write */
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 

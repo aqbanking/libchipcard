@@ -36,7 +36,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                         const LC_PININFO *pi,
                         uint32_t guiid)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int maxErrors;
   int currentErrors;
 
@@ -49,8 +49,8 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                            LC_PinInfo_GetId(pi),
                            &maxErrors,
                            &currentErrors);
-  if (res!=LC_Client_ResultNotSupported) {
-    if (res!=LC_Client_ResultOk) {
+  if (res!=GWEN_ERROR_NOT_SUPPORTED) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
@@ -86,7 +86,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
 
     res=LC_Card_IsoPerformVerification(hcard, 0, pi, &triesLeft);
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       /* tell the user about end of pin verification */
 
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
@@ -225,7 +225,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                              pinBuffer,
                              pinLength,
                              &triesLeft);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),
@@ -327,7 +327,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   int j;
   const char *s;
   int i;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
   const GWEN_CRYPT_TOKEN_CONTEXT *cctx;
   uint8_t cnt;
@@ -381,13 +381,13 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
 
   lc=LC_Client_new("zkacard", ZKACARDTOOL_PROGRAM_VERSION);
   res=LC_Client_Init(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
     return RETURNVALUE_SETUP;
   }
 
   res=LC_Client_Start(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "StartWait");
     return RETURNVALUE_WORK;
   }
@@ -400,7 +400,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
       fprintf(stderr, "Waiting for card...\n");
     }
     res=LC_Client_GetNextCard(lc, &hcard, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(hcard, res, "GetNextCard");
       return RETURNVALUE_WORK;
     }
@@ -431,7 +431,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
       fprintf(stderr, "Not a zka card, releasing.\n");
     }
     res=LC_Client_ReleaseCard(lc, hcard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(hcard, res, "ReleaseCard");
       return RETURNVALUE_WORK;
     }
@@ -447,7 +447,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Opening card.\n");
   res=LC_Card_Open(hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr,
             "ERROR: Error executing command CardOpen (%d).\n",
             res);
@@ -484,7 +484,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "CardClose");
     return RETURNVALUE_WORK;
   }
@@ -494,7 +494,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
   res=LC_Client_ReleaseCard(lc, hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "ReleaseCard");
     return RETURNVALUE_WORK;
   }
@@ -506,7 +506,7 @@ int resetPtc(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   return 0;
 
   res=LC_Client_Fini(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
   }
 

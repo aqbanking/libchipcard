@@ -201,7 +201,7 @@ int handleKvkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   const char *fname;
   int dobeep;
   int dosMode;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_HI_PERSONAL_DATA *pdata=NULL;
   LC_HI_INSURANCE_DATA *idata=NULL;
 
@@ -210,7 +210,7 @@ int handleKvkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   dosMode=GWEN_DB_GetIntValue(dbArgs, "dosMode", 0, 0);
 
   res=LC_KvkCard_ReadCardData(card, &pdata, &idata);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "LC_KvkCard_ReadCardData");
     if (dobeep)
       errorBeep();
@@ -248,7 +248,7 @@ int handleEgkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   const char *fname;
   int dobeep;
   int dosMode;
-  LC_CLIENT_RESULT res;
+  int res;
   LC_HI_PERSONAL_DATA *pdata=NULL;
   LC_HI_INSURANCE_DATA *idata=NULL;
 
@@ -257,7 +257,7 @@ int handleEgkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   dosMode=GWEN_DB_GetIntValue(dbArgs, "dosMode", 0, 0);
 
   res=LC_EgkCard_ReadPersonalData(card, &pdata);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "LC_EgkCard_ReadPersonalData");
     if (dobeep)
       errorBeep();
@@ -268,7 +268,7 @@ int handleEgkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
     pdata=LC_HIPersonalData_new();
 
   res=LC_EgkCard_ReadInsuranceData(card, &idata);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "LC_EgkCard_ReadInsuranceData");
     if (dobeep)
       errorBeep();
@@ -310,7 +310,7 @@ int handleEgkCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
 int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
 {
   int rv;
-  LC_CLIENT_RESULT res;
+  int res;
   int v;
   int dobeep;
 
@@ -328,7 +328,7 @@ int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Opening card as KVK card.\n");
   res=LC_Card_Open(card);
-  if (res==LC_Client_ResultOk) {
+  if (res>=0) {
     if (v>0)
       fprintf(stderr, "Card is a KVK card, handling it.\n");
     rv=handleKvkCard(card, dbArgs);
@@ -337,7 +337,7 @@ int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Closing card.\n");
     res=LC_Card_Close(card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "CardClose");
       return RETURNVALUE_WORK;
     }
@@ -363,7 +363,7 @@ int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Opening card as EGK card.\n");
   res=LC_Card_Open(card);
-  if (res==LC_Client_ResultOk) {
+  if (res>=0) {
     if (v>0)
       fprintf(stderr, "Card is a EGK card, handling it.\n");
     rv=handleEgkCard(card, dbArgs);
@@ -372,7 +372,7 @@ int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Closing card.\n");
     res=LC_Card_Close(card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "CardClose");
       return RETURNVALUE_WORK;
     }
@@ -398,7 +398,7 @@ int handleCard(LC_CARD *card, GWEN_DB_NODE *dbArgs)
 int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   int v;
   int i;
   int dobeep;
@@ -410,7 +410,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "StartWait");
     if (dobeep)
       errorBeep();
@@ -423,7 +423,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "GetNextCard");
       if (dobeep)
         errorBeep();
@@ -437,7 +437,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Releasing card.\n");
     res=LC_Client_ReleaseCard(cl, card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "ReleaseCard");
       if (dobeep)
         errorBeep();
@@ -465,7 +465,7 @@ int kvkRead(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Stop");
     if (dobeep)
       errorBeep();

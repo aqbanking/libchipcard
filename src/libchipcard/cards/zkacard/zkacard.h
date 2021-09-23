@@ -22,7 +22,7 @@ int LC_ZkaCard_ExtendCard(LC_CARD *card);
 CHIPCARD_API
 int LC_ZkaCard_UnextendCard(LC_CARD *card);
 CHIPCARD_API
-LC_CLIENT_RESULT LC_ZkaCard_Reopen(LC_CARD *card);
+int LC_ZkaCard_Reopen(LC_CARD *card);
 
 /** @name General Card Data
  *
@@ -64,7 +64,7 @@ CHIPCARD_API const LC_PININFO *LC_ZkaCard_GetPinInfo(const LC_CARD *card, int pi
 /*@{*/
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
+int LC_ZkaCard_Sign(LC_CARD *card,
                                  int globalKey,
                                  int keyId,
                                  int keyVersion,
@@ -74,7 +74,7 @@ LC_CLIENT_RESULT LC_ZkaCard_Sign(LC_CARD *card,
 
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_ZkaCard_Decipher(LC_CARD *card,
+int LC_ZkaCard_Decipher(LC_CARD *card,
                                      int globalKey,
                                      int keyId,
                                      int keyVersion,

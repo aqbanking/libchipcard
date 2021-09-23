@@ -1,6 +1,6 @@
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
                                                     uint32_t flags,
                                                     int offset,
                                                     int size,
@@ -8,7 +8,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int bs;
   const void *p;
 
@@ -19,7 +19,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
                 "(%u)", flags);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
     offset|=0x8000;
@@ -34,7 +34,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
                       "lr", size);
 
   res=LC_Card_ExecCommand(card, "IsoReadBinary", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -62,7 +62,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
                                                       uint32_t flags,
                                                       int offset,
                                                       const char *ptr,
@@ -70,7 +70,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
 
@@ -79,7 +79,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
                 "(%u)", flags);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
     offset|=0x8000;
@@ -98,7 +98,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
   }
 
   res=LC_Card_ExecCommand(card, "IsoUpdateBinary", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -112,7 +112,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
                                                      uint32_t flags,
                                                      int offset,
                                                      const char *ptr,
@@ -120,7 +120,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Writing binary %04x:%04x", offset, size);
 
@@ -129,7 +129,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
                 "(%u)", flags);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
     offset|=0x8000;
@@ -148,7 +148,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
   }
 
   res=LC_Card_ExecCommand(card, "IsoWriteBinary", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -162,14 +162,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
                                                      uint32_t flags,
                                                      int offset,
                                                      unsigned int size)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Erasing binary %04x:%04x", offset, size);
 
@@ -178,7 +178,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
       DBG_ERROR(LC_LOGDOMAIN,
                 "Offset too high when implicitly selecting EF "
                 "(%u)", flags);
-      return LC_Client_ResultInvalid;
+      return GWEN_ERROR_INVALID;
     }
     /* modify offset: highbyte is p1, lowbyte is p2 */
     offset|=0x8000;
@@ -194,7 +194,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
                         "len", size);
 
   res=LC_Card_ExecCommand(card, "IsoEraseBinary", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -208,14 +208,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEraseBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
                                                     uint32_t flags,
                                                     int recNum,
                                                     GWEN_BUFFER *buf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   unsigned int bs;
   const void *p;
   unsigned char p2;
@@ -226,7 +226,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
     DBG_ERROR(LC_LOGDOMAIN,
               "Invalid flags %u"
               " (only RECSEL_GIVEN is allowed)", flags)
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
   p2|=0x04;
 
@@ -238,7 +238,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
                       "p2", p2);
 
   res=LC_Card_ExecCommand(card, "IsoReadRecord", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -266,7 +266,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoReadRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
                                                      uint32_t flags,
                                                      int recNum,
                                                      const char *ptr,
@@ -274,7 +274,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbReq=GWEN_DB_Group_new("request");
   dbResp=GWEN_DB_Group_new("response");
@@ -289,7 +289,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
                         "data", ptr, size);
   }
   res=LC_Card_ExecCommand(card, "IsoWriteRecord", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -303,7 +303,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoWriteRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
                                                       uint32_t flags,
                                                       int recNum,
                                                       const char *ptr,
@@ -311,7 +311,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbReq=GWEN_DB_Group_new("request");
   dbResp=GWEN_DB_Group_new("response");
@@ -326,7 +326,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
                         "data", ptr, size);
   }
   res=LC_Card_ExecCommand(card, "IsoUpdateRecord", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -339,14 +339,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoUpdateRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
                                                       uint32_t flags,
                                                       const char *ptr,
                                                       unsigned int size)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbReq=GWEN_DB_Group_new("request");
   dbResp=GWEN_DB_Group_new("response");
@@ -359,7 +359,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
                         "data", ptr, size);
   }
   res=LC_Card_ExecCommand(card, "IsoAppendRecord", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -372,7 +372,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoAppendRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
                                                    uint32_t flags,
                                                    const LC_PININFO *pi,
                                                    const unsigned char *ptr,
@@ -382,7 +382,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
-  LC_CLIENT_RESULT res;
+  int res;
   const char *cmd;
 
   if (triesLeft)
@@ -404,7 +404,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
               GWEN_Crypt_PinEncoding_toString(LC_PinInfo_GetEncoding(pi)));
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   dbReq=GWEN_DB_Group_new("request");
@@ -420,10 +420,10 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
                         "pin", ptr, size);
   }
   res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
-    if (res==LC_Client_ResultCmdError && triesLeft) {
+    if (triesLeft) {
       if (LC_Card_GetLastSW1(card)==0x63) {
         int c;
 
@@ -442,7 +442,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoVerifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
                                                    uint32_t flags,
                                                    const LC_PININFO *pi,
                                                    const unsigned char *oldptr,
@@ -454,7 +454,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
-  LC_CLIENT_RESULT res;
+  int res;
   const char *cmd;
 
   if (triesLeft)
@@ -476,7 +476,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
               GWEN_Crypt_PinEncoding_toString(LC_PinInfo_GetEncoding(pi)));
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   dbReq=GWEN_DB_Group_new("request");
@@ -496,10 +496,10 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
                         "newpin", newptr, newsize);
   }
   res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
-    if (res==LC_Client_ResultCmdError && triesLeft) {
+    if (triesLeft) {
       if (LC_Card_GetLastSW1(card)==0x63) {
         int c;
 
@@ -518,7 +518,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoModifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
                                                              uint32_t flags,
                                                              const LC_PININFO *pi,
                                                              int *triesLeft)
@@ -526,7 +526,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
-  LC_CLIENT_RESULT res;
+  int res;
   const char *cmd;
 
   if (triesLeft)
@@ -548,7 +548,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
               GWEN_Crypt_PinEncoding_toString(LC_PinInfo_GetEncoding(pi)));
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   dbReq=GWEN_DB_Group_new("request");
@@ -561,11 +561,11 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
 
   res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
   DBG_DEBUG(LC_LOGDOMAIN, "ExecCommand returned %d", res);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
-    if (res==LC_Client_ResultCmdError && triesLeft) {
+    if (triesLeft) {
       if (LC_Card_GetLastSW1(card)==0x63) {
         int c;
 
@@ -584,7 +584,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformVerification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
                                                              uint32_t flags,
                                                              const LC_PININFO *pi,
                                                              int *triesLeft)
@@ -592,7 +592,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
   GWEN_DB_NODE *dbReq=0;
   GWEN_DB_NODE *dbResp;
   GWEN_DB_NODE *dbT;
-  LC_CLIENT_RESULT res;
+  int res;
   const char *cmd;
 
   if (triesLeft)
@@ -614,7 +614,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
   default:
     DBG_ERROR(LC_LOGDOMAIN, "Unhandled pin encoding \"%s\"",
               GWEN_Crypt_PinEncoding_toString(LC_PinInfo_GetEncoding(pi)));
-    return LC_Client_ResultInvalid;
+    return GWEN_ERROR_INVALID;
   }
 
   dbReq=GWEN_DB_Group_new("request");
@@ -626,10 +626,10 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
                       "pid", LC_PinInfo_GetId(pi));
 
   res=LC_Card_ExecCommand(card, cmd, dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
-    if (res==LC_Client_ResultCmdError && triesLeft) {
+    if (triesLeft) {
       if (LC_Card_GetLastSW1(card)==0x63) {
         int c;
 
@@ -648,12 +648,12 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoPerformModification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
                                                   int tmpl, int kids, int kidp, int ar)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *dbuf;
 
   assert(card);
@@ -690,7 +690,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
 
   dbResp=GWEN_DB_Group_new("response");
   res=LC_Card_ExecCommand(card, "IsoManageSE", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
@@ -698,12 +698,12 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoManageSe(LC_CARD *card,
   }
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbResp);
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
                                                       int kid,
                                                       const unsigned char *ptr,
                                                       unsigned int size,
@@ -711,7 +711,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbResp;
-  LC_CLIENT_RESULT res;
+  int res;
 
   dbReq=GWEN_DB_Group_new("request");
   dbResp=GWEN_DB_Group_new("response");
@@ -722,7 +722,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
                         "data", ptr, size);
   }
   res=LC_Card_ExecCommand(card, "IsoInternalAuth", dbReq, dbResp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbResp);
     return res;
@@ -754,14 +754,14 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoInternalAuth(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
                                                   const char *ptr,
                                                   unsigned int size,
                                                   GWEN_BUFFER *codeBuf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
-  LC_CLIENT_RESULT res;
+  int res;
   const void *p;
   unsigned int bs;
 
@@ -774,7 +774,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "IsoEncipher", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
@@ -794,19 +794,19 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoEncipher(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbRsp);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
+int CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
                                                   const char *ptr,
                                                   unsigned int size,
                                                   GWEN_BUFFER *plainBuf)
 {
   GWEN_DB_NODE *dbReq;
   GWEN_DB_NODE *dbRsp;
-  LC_CLIENT_RESULT res;
+  int res;
   const void *p;
   unsigned int bs;
 
@@ -819,7 +819,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
                       "data", ptr, size);
   LC_Card_SetLastResult(card, 0, 0, 0, 0);
   res=LC_Card_ExecCommand(card, "IsoDecipher", dbReq, dbRsp);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     GWEN_DB_Group_free(dbReq);
     GWEN_DB_Group_free(dbRsp);
@@ -838,7 +838,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
   GWEN_DB_Group_free(dbReq);
   GWEN_DB_Group_free(dbRsp);
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
@@ -847,7 +847,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_Card__IsoDecipher(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
+int LC_Card_IsoReadBinary(LC_CARD *card,
                                        uint32_t flags,
                                        int offset,
                                        int size,
@@ -862,7 +862,7 @@ LC_CLIENT_RESULT LC_Card_IsoReadBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
+int LC_Card_IsoWriteBinary(LC_CARD *card,
                                         uint32_t flags,
                                         int offset,
                                         const char *ptr,
@@ -877,7 +877,7 @@ LC_CLIENT_RESULT LC_Card_IsoWriteBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
+int LC_Card_IsoUpdateBinary(LC_CARD *card,
                                          uint32_t flags,
                                          int offset,
                                          const char *ptr,
@@ -893,7 +893,7 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
+int LC_Card_IsoEraseBinary(LC_CARD *card,
                                         uint32_t flags,
                                         int offset,
                                         unsigned int size)
@@ -907,7 +907,7 @@ LC_CLIENT_RESULT LC_Card_IsoEraseBinary(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
+int LC_Card_IsoReadRecord(LC_CARD *card,
                                        uint32_t flags,
                                        int recNum,
                                        GWEN_BUFFER *buf)
@@ -921,7 +921,7 @@ LC_CLIENT_RESULT LC_Card_IsoReadRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
+int LC_Card_IsoWriteRecord(LC_CARD *card,
                                         uint32_t flags,
                                         int recNum,
                                         const char *ptr,
@@ -936,7 +936,7 @@ LC_CLIENT_RESULT LC_Card_IsoWriteRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
+int LC_Card_IsoAppendRecord(LC_CARD *card,
                                          uint32_t flags,
                                          const char *ptr,
                                          unsigned int size)
@@ -951,7 +951,7 @@ LC_CLIENT_RESULT LC_Card_IsoAppendRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
+int LC_Card_IsoUpdateRecord(LC_CARD *card,
                                          uint32_t flags,
                                          int recNum,
                                          const char *ptr,
@@ -966,7 +966,7 @@ LC_CLIENT_RESULT LC_Card_IsoUpdateRecord(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
+int LC_Card_IsoVerifyPin(LC_CARD *card,
                                       uint32_t flags,
                                       const LC_PININFO *pi,
                                       const unsigned char *ptr,
@@ -984,7 +984,7 @@ LC_CLIENT_RESULT LC_Card_IsoVerifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
+int LC_Card_IsoModifyPin(LC_CARD *card,
                                       uint32_t flags,
                                       const LC_PININFO *pi,
                                       const unsigned char *oldptr,
@@ -1008,7 +1008,7 @@ LC_CLIENT_RESULT LC_Card_IsoModifyPin(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
+int LC_Card_IsoPerformVerification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
                                                 int *triesLeft)
@@ -1024,7 +1024,7 @@ LC_CLIENT_RESULT LC_Card_IsoPerformVerification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
+int LC_Card_IsoPerformModification(LC_CARD *card,
                                                 uint32_t flags,
                                                 const LC_PININFO *pi,
                                                 int *triesLeft)
@@ -1040,7 +1040,7 @@ LC_CLIENT_RESULT LC_Card_IsoPerformModification(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoManageSe(LC_CARD *card,
+int LC_Card_IsoManageSe(LC_CARD *card,
                                      int tmpl, int kids, int kidp, int ar)
 {
   assert(card);
@@ -1052,7 +1052,7 @@ LC_CLIENT_RESULT LC_Card_IsoManageSe(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoEncipher(LC_CARD *card,
+int LC_Card_IsoEncipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
                                      GWEN_BUFFER *codeBuf)
@@ -1066,7 +1066,7 @@ LC_CLIENT_RESULT LC_Card_IsoEncipher(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoDecipher(LC_CARD *card,
+int LC_Card_IsoDecipher(LC_CARD *card,
                                      const char *ptr,
                                      unsigned int size,
                                      GWEN_BUFFER *plainBuf)
@@ -1080,7 +1080,7 @@ LC_CLIENT_RESULT LC_Card_IsoDecipher(LC_CARD *card,
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoSign(LC_CARD *card,
+int LC_Card_IsoSign(LC_CARD *card,
                                  const char *ptr,
                                  unsigned int size,
                                  GWEN_BUFFER *sigBuf)
@@ -1089,12 +1089,12 @@ LC_CLIENT_RESULT LC_Card_IsoSign(LC_CARD *card,
   if (card->signFn)
     return card->signFn(card, ptr, size, sigBuf);
   else
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
 }
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
+int LC_Card_IsoVerify(LC_CARD *card,
                                    const char *dptr,
                                    unsigned int dsize,
                                    const char *sigptr,
@@ -1104,12 +1104,12 @@ LC_CLIENT_RESULT LC_Card_IsoVerify(LC_CARD *card,
   if (card->verifyFn)
     return card->verifyFn(card, dptr, dsize, sigptr, sigsize);
   else
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
 }
 
 
 
-LC_CLIENT_RESULT LC_Card_IsoInternalAuth(LC_CARD *card,
+int LC_Card_IsoInternalAuth(LC_CARD *card,
                                          int kid,
                                          const unsigned char *ptr,
                                          unsigned int size,
@@ -1119,7 +1119,7 @@ LC_CLIENT_RESULT LC_Card_IsoInternalAuth(LC_CARD *card,
   if (card->internalAuthFn)
     return card->internalAuthFn(card, kid, ptr, size, rBuf);
   else
-    return LC_Client_ResultNotSupported;
+    return GWEN_ERROR_NOT_SUPPORTED;
 }
 
 

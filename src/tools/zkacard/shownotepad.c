@@ -67,7 +67,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                         const LC_PININFO *pi,
                         uint32_t guiid)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int maxErrors;
   int currentErrors;
 
@@ -80,8 +80,8 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                            LC_PinInfo_GetId(pi),
                            &maxErrors,
                            &currentErrors);
-  if (res!=LC_Client_ResultNotSupported) {
-    if (res!=LC_Client_ResultOk) {
+  if (res!=GWEN_ERROR_NOT_SUPPORTED) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
@@ -116,7 +116,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
 
     res=LC_Card_IsoPerformVerification(hcard, 0, pi, &triesLeft);
 
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       /* tell the user about end of pin verification */
       EndEnterPin(pt, 0, bid);
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
@@ -229,7 +229,7 @@ int EnterPinWithPinInfo(LC_CARD *hcard,
                              pinBuffer,
                              pinLength,
                              &triesLeft);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       DBG_ERROR(LC_LOGDOMAIN, "sw1=%02x sw2=%02x (%s)",
                 LC_Card_GetLastSW1(hcard),
                 LC_Card_GetLastSW2(hcard),
@@ -327,20 +327,20 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   GWEN_DB_NODE *dbNotePad;
   GWEN_DB_NODE *dbRecord;
   int rv;
-  int keyNumber;
-  int j;
-  const char *s;
+  /*int keyNumber;*/
+  /*int j;*/
+  /*const char *s;*/
   int i;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_BUFFER *mbuf;
-  const GWEN_CRYPT_TOKEN_CONTEXT *cctx;
+  /*const GWEN_CRYPT_TOKEN_CONTEXT *cctx;*/
   uint8_t cnt;
   LC_CARD *hcard=0;
   LC_CLIENT *lc;
   uint8_t v=0;
   uint8_t haveAccessPin=0;
   const LC_PININFO *pi;
-  uint8_t guuid=0;
+  /*uint8_t guuid=0;*/
 
   const GWEN_ARGS args[]= {
     {
@@ -385,26 +385,26 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
 
   lc=LC_Client_new("zkacard", ZKACARDTOOL_PROGRAM_VERSION);
   res=LC_Client_Init(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
     return RETURNVALUE_SETUP;
   }
 
   res=LC_Client_Start(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "StartWait");
     return RETURNVALUE_WORK;
   }
 
   for (i=0;; i++) {
-    const GWEN_STRINGLIST *sl;
-    GWEN_STRINGLISTENTRY *se;
-    uint8_t found = 0;
+    /*const GWEN_STRINGLIST *sl;*/
+    /*GWEN_STRINGLISTENTRY *se;*/
+    /*uint8_t found = 0;*/
     if (v>0) {
       fprintf(stderr, "Waiting for card...\n");
     }
     res=LC_Client_GetNextCard(lc, &hcard, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(hcard, res, "GetNextCard");
       return RETURNVALUE_WORK;
     }
@@ -435,7 +435,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
       fprintf(stderr, "Not a zka card, releasing.\n");
     }
     res=LC_Client_ReleaseCard(lc, hcard);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(hcard, res, "ReleaseCard");
       return RETURNVALUE_WORK;
     }
@@ -451,7 +451,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Opening card.\n");
   res=LC_Card_Open(hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr,
             "ERROR: Error executing command CardOpen (%d).\n",
             res);
@@ -463,43 +463,41 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   pi=LC_ZkaCard_GetPinInfo(hcard, 3);
   if (pi == NULL)
     pi=LC_Card_GetPinInfoByName(hcard, "ch_pin");
+  if (pi == NULL) {
+    DBG_ERROR(LC_LOGDOMAIN, "No pininfo for cardholder pin");
+    return RETURNVALUE_WORK;
+  }
 
   while (!haveAccessPin) {
-    int rv;
-
     /* enter pin */
-    if (pi)
-      rv=EnterPinWithPinInfo(hcard,
-                             GWEN_Crypt_PinType_Access,
-                             pi,
-                             0);
-    else {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
+    if (pi) {
+      int rv;
+
+      rv=EnterPinWithPinInfo(hcard, GWEN_Crypt_PinType_Access, pi, 0);
+      if (rv) {
+        DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
+        return RETURNVALUE_WORK;
+      }
+      else
+        haveAccessPin=1;
     }
-    if (rv) {
-      DBG_ERROR(LC_LOGDOMAIN, "Error in PIN input");
-      return rv;
-    }
-    else
-      haveAccessPin=1;
   } /* while !havepin */
 
 
   res=LC_Card_SelectMf(hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting MF (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectDf(hcard, "DF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting DF_NOTEPAD (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
 
   res=LC_Card_SelectEf(hcard, "EF_NOTEPAD");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_ERROR(LC_LOGDOMAIN, "Error selecting EF_NOTEPAD (%d)", res);
     return GWEN_ERROR_NOT_OPEN;
   }
@@ -511,7 +509,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
     DBG_INFO(LC_LOGDOMAIN, "Reading entry %d", i);
     res=LC_Card_IsoReadRecord(hcard, LC_CARD_ISO_FLAGS_RECSEL_GIVEN, i, mbuf);
     GWEN_Buffer_Rewind(mbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       if (LC_Card_GetLastSW1(hcard)==0x6a &&
           LC_Card_GetLastSW2(hcard)==0x83) {
         DBG_INFO(LC_LOGDOMAIN, "All records read (%d)", i-1);
@@ -534,7 +532,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
         dbEntry=GWEN_DB_Group_new("entry");
         GWEN_Buffer_Rewind(mbuf);
         res=LC_Card_ParseRecord(hcard, i, mbuf, dbEntry);
-        if (res!=LC_Client_ResultOk) {
+        if (res<0) {
           DBG_ERROR(LC_LOGDOMAIN, "Error parsing record %d of EF_NOTEPAD (%d)", i, res);
           if (i>1)
             break;
@@ -582,7 +580,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Closing card.\n");
   res=LC_Card_Close(hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "CardClose");
     return RETURNVALUE_WORK;
   }
@@ -592,7 +590,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   if (v>0)
     fprintf(stderr, "Releasing card.\n");
   res=LC_Client_ReleaseCard(lc, hcard);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(hcard, res, "ReleaseCard");
     return RETURNVALUE_WORK;
   }
@@ -604,7 +602,7 @@ int showNotepad(GWEN_DB_NODE *dbArgs, int argc, char **argv)
   return 0;
 
   res=LC_Client_Fini(lc);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(0, res, "Init");
   }
 

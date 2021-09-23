@@ -45,7 +45,7 @@
 
 
 /* This function explains an error */
-void showError(LC_CARD *card, LC_CLIENT_RESULT res,
+void showError(LC_CARD *card, int res,
                const char *failedCommand)
 {
   const char *s;
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 {
   LC_CLIENT *cl;
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   int rv;
   int i;
 

@@ -70,9 +70,9 @@ void GWENHYWFAR_CB LC_ProcessorCard_freeData(void *bp, void *p)
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card)
+int CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PROCESSORCARD *mc;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening card as processor card");
@@ -82,26 +82,26 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Open(LC_CARD *card)
   assert(mc);
 
   res=mc->openFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_ProcessorCard_Reopen(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     mc->closeFn(card);
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card)
+int LC_ProcessorCard_Reopen(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PROCESSORCARD *mc;
 
   DBG_DEBUG(LC_LOGDOMAIN, "Opening processor card");
@@ -112,25 +112,25 @@ LC_CLIENT_RESULT LC_ProcessorCard_Reopen(LC_CARD *card)
 
   DBG_DEBUG(LC_LOGDOMAIN, "Selecting processor card and app");
   res=LC_Card_SelectCard(card, "ProcessorCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
   res=LC_Card_SelectApp(card, "ProcessorCard");
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }
 
-  return LC_Client_ResultOk;
+  return 0;
 }
 
 
 
-LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card)
+int CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   LC_PROCESSORCARD *mc;
 
   assert(card);
@@ -138,7 +138,7 @@ LC_CLIENT_RESULT CHIPCARD_CB LC_ProcessorCard_Close(LC_CARD *card)
   assert(mc);
 
   res=mc->closeFn(card);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     DBG_INFO(LC_LOGDOMAIN, "here");
     return res;
   }

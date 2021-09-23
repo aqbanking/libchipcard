@@ -1,7 +1,4 @@
 /***************************************************************************
- $RCSfile$
- -------------------
- cvs         : $Id$
  begin       : Sat Jun 23 2018
  copyright   : (C) 2018 by Martin Preuss, Stefan Bayer
  email       : martin@libchipcard.de, stefan.bayer@stefanbayer.net

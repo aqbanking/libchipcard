@@ -103,59 +103,9 @@ const GWEN_ARGS prg_args[]= {
 
 
 
-void showError(LC_CARD *card, LC_CLIENT_RESULT res, const char *x)
+void showError(LC_CARD *card, int res, const char *x)
 {
-  const char *s;
-
-  switch (res) {
-  case LC_Client_ResultOk:
-    s="Ok.";
-    break;
-  case LC_Client_ResultWait:
-    s="Timeout.";
-    break;
-  case LC_Client_ResultIpcError:
-    s="IPC error.";
-    break;
-  case LC_Client_ResultCmdError:
-    s="Command error.";
-    break;
-  case LC_Client_ResultDataError:
-    s="Data error.";
-    break;
-  case LC_Client_ResultAborted:
-    s="Aborted.";
-    break;
-  case LC_Client_ResultInvalid:
-    s="Invalid argument to command.";
-    break;
-  case LC_Client_ResultInternal:
-    s="Internal error.";
-    break;
-  case LC_Client_ResultGeneric:
-    s="Generic error.";
-    break;
-  case LC_Client_ResultNotSupported:
-    s="Function not supported.";
-    break;
-  default:
-    s="Unknown error.";
-    break;
-  }
-
-  fprintf(stderr, "Error in \"%s\": %s (%d)\n", x, s, res);
-  if (res==LC_Client_ResultCmdError && card) {
-    fprintf(stderr, "  Last card command result:\n");
-    fprintf(stderr, "   SW1=%02x, SW2=%02x\n",
-            LC_Card_GetLastSW1(card),
-            LC_Card_GetLastSW2(card));
-    s=LC_Card_GetLastResult(card);
-    if (s)
-      fprintf(stderr, "   Result: %s\n", s);
-    s=LC_Card_GetLastText(card);
-    if (s)
-      fprintf(stderr, "   Text  : %s\n", s);
-  }
+  LC_Card_PrintResult(card, x, res);
 }
 
 
@@ -168,7 +118,7 @@ int main(int argc, char **argv)
   LC_CLIENT *cl;
   GWEN_LOGGER_LOGTYPE logType;
   GWEN_LOGGER_LEVEL logLevel;
-  LC_CLIENT_RESULT res;
+  int res;
   GWEN_GUI *gui;
 
   gui=GWEN_Gui_CGui_new();
@@ -242,7 +192,7 @@ int main(int argc, char **argv)
 
   cl=LC_Client_new("chipcard-tool", PROGRAM_VERSION);
   res=LC_Client_Init(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not initialize libchipcard.\n");
     LC_Client_free(cl);
     GWEN_DB_Group_free(db);
@@ -271,7 +221,7 @@ int main(int argc, char **argv)
   }
 
   res=LC_Client_Fini(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     fprintf(stderr, "ERROR: Could not deinitialize libchipcard.\n");
     LC_Client_free(cl);
     GWEN_DB_Group_free(db);

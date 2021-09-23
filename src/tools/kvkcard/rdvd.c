@@ -3,7 +3,7 @@
 int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs)
 {
   int rv;
-  LC_CLIENT_RESULT res;
+  int res;
   int v;
   int dobeep;
 
@@ -21,14 +21,14 @@ int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs)
   if (v>0)
     fprintf(stderr, "Opening card as EGK card.\n");
   res=LC_Card_Open(card);
-  if (res==LC_Client_ResultOk) {
+  if (res>=0) {
     GWEN_BUFFER *tbuf;
 
     if (v>0)
       fprintf(stderr, "Card is a EGK card, handling it.\n");
     tbuf=GWEN_Buffer_new(0, 256, 0, 1);
     res=LC_EgkCard_ReadRawVd(card, tbuf);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "LC_EgkCard_ReadVd");
       GWEN_Buffer_free(tbuf);
       return RETURNVALUE_WORK;
@@ -38,7 +38,7 @@ int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Closing card.\n");
     res=LC_Card_Close(card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "CardClose");
       GWEN_Buffer_free(tbuf);
       return RETURNVALUE_WORK;
@@ -74,21 +74,21 @@ int readVD(LC_CARD *card, GWEN_DB_NODE *dbArgs)
 int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
   LC_CARD *card=0;
-  LC_CLIENT_RESULT res;
+  int res;
   int v;
   int i;
-  uint32_t cardId;
+  /*uint32_t cardId;*/
   int dobeep;
   int rv=0;
 
   v=GWEN_DB_GetIntValue(dbArgs, "verbosity", 0, 0);
-  cardId=GWEN_DB_GetIntValue(dbArgs, "cardId", 0, 0);
+  /*cardId=GWEN_DB_GetIntValue(dbArgs, "cardId", 0, 0);*/
   dobeep=GWEN_DB_GetIntValue(dbArgs, "beep", 0, 0);
 
   if (v>1)
     fprintf(stderr, "Connecting to server.\n");
   res=LC_Client_Start(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "StartWait");
     if (dobeep)
       errorBeep();
@@ -101,7 +101,7 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Waiting for card...\n");
     res=LC_Client_GetNextCard(cl, &card, 20);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "GetNextCard");
       if (dobeep)
         errorBeep();
@@ -115,7 +115,7 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
     if (v>0)
       fprintf(stderr, "Releasing card.\n");
     res=LC_Client_ReleaseCard(cl, card);
-    if (res!=LC_Client_ResultOk) {
+    if (res<0) {
       showError(card, res, "ReleaseCard");
       if (dobeep)
         errorBeep();
@@ -143,7 +143,7 @@ int rdvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   if (v>1)
     fprintf(stderr, "Telling the server that we need no more cards.\n");
   res=LC_Client_Stop(cl);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     showError(card, res, "Stop");
     if (dobeep)
       errorBeep();

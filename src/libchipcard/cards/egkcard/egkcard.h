@@ -54,7 +54,7 @@ CHIPCARD_API int LC_EgkCard_UnextendCard(LC_CARD *card);
  * after opening you can call this function here to let the card do some
  * necessary work before other functions of this group can be used.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card);
+CHIPCARD_API int LC_EgkCard_Reopen(LC_CARD *card);
 /*@}*/
 
 /** @name Pin Verification
@@ -64,13 +64,13 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_Reopen(LC_CARD *card);
 /**
  * Verify the given pin.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_VerifyPin(LC_CARD *card,
+CHIPCARD_API int LC_EgkCard_VerifyPin(LC_CARD *card,
                                                    const char *pin);
 /**
  * Secure pin verification. This can be used if the card's reader flags
  * indicate that the reader has a keypad.
  */
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card);
+CHIPCARD_API int LC_EgkCard_SecureVerifyPin(LC_CARD *card);
 /*@}*/
 
 
@@ -79,19 +79,19 @@ CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_SecureVerifyPin(LC_CARD *card);
  */
 /*@{*/
 
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf);
-CHIPCARD_API LC_CLIENT_RESULT LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf);
+CHIPCARD_API int LC_EgkCard_ReadRawVd(LC_CARD *card, GWEN_BUFFER *buf);
+CHIPCARD_API int LC_EgkCard_ReadRawPd(LC_CARD *card, GWEN_BUFFER *buf);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_EgkCard_ReadPersonalData(LC_CARD *card,
+int LC_EgkCard_ReadPersonalData(LC_CARD *card,
                                              LC_HI_PERSONAL_DATA **pData);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_EgkCard_ReadInsuranceData(LC_CARD *card,
+int LC_EgkCard_ReadInsuranceData(LC_CARD *card,
                                               LC_HI_INSURANCE_DATA **pData);
 
 CHIPCARD_API
-LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
+int LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
                                                LC_HI_INSURANCE_DATA **pData);
 
 /*@}*/
@@ -104,12 +104,12 @@ LC_CLIENT_RESULT LC_EgkCard_ParseInsuranceData(GWEN_XMLNODE *root,
 /*@{*/
 
 CHIPCARD_API CHIPCARD_DEPRECATED
-LC_CLIENT_RESULT LC_EgkCard_ReadPd(LC_CARD *card,
-                                   GWEN_BUFFER *buf);
+int LC_EgkCard_ReadPd(LC_CARD *card,
+                      GWEN_BUFFER *buf);
 
 CHIPCARD_API CHIPCARD_DEPRECATED
-LC_CLIENT_RESULT LC_EgkCard_ReadVd(LC_CARD *card,
-                                   GWEN_BUFFER *buf);
+int LC_EgkCard_ReadVd(LC_CARD *card,
+                      GWEN_BUFFER *buf);
 /*@}*/
 
 

@@ -17,12 +17,12 @@
 #include <gwenhywfar/msgengine.h>
 
 
-LC_CLIENT_RESULT LC_Client_ExecApdu(LC_CLIENT *cl,
-                                    LC_CARD *card,
-                                    const char *apdu,
-                                    unsigned int len,
-                                    GWEN_BUFFER *rbuf,
-                                    LC_CLIENT_CMDTARGET t);
+int LC_Client_ExecApdu(LC_CLIENT *cl,
+                       LC_CARD *card,
+                       const char *apdu,
+                       unsigned int len,
+                       GWEN_BUFFER *rbuf,
+                       LC_CLIENT_CMDTARGET t);
 
 GWEN_MSGENGINE *LC_Client_GetMsgEngine(const LC_CLIENT *cl);
 

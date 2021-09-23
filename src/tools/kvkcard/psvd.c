@@ -2,7 +2,7 @@
 
 int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
 {
-  LC_CLIENT_RESULT res;
+  int res;
   int v;
   int rv;
   const char *outFile;
@@ -38,7 +38,7 @@ int psvd(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)
   GWEN_XMLNode_StripNamespaces(root);
 
   res=LC_EgkCard_ParseInsuranceData(root, &data);
-  if (res!=LC_Client_ResultOk) {
+  if (res<0) {
     GWEN_XMLNode_free(root);
     DBG_ERROR(0, "Error: %d", res);
     return RETURNVALUE_WORK;
