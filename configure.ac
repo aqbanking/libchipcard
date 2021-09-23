@@ -491,10 +491,10 @@ AC_ARG_ENABLE(full-doc,
   enable_fulldoc="no")
 
 if test "$enable_fulldoc" = "yes"; then
-	DOXYGEN_INPUT="src/lib"
+	DOXYGEN_INPUT="src"
         DOXYGEN_DEFINE=""
 else
-	DOXYGEN_INPUT="chipcard"
+	DOXYGEN_INPUT="src"
 	DOXYGEN_DEFINE="DOXYGEN_HIDE"
 fi
 AC_SUBST(DOXYGEN_INPUT)
@@ -692,8 +692,6 @@ echo "Summary:"
 echo "================================="
 echo "Libchipcard version     : $CHIPCARD_VERSION_FULL_STRING"
 echo "System                  : $OSYSTEM"
-echo "Cfg Installation Folder : $lc_client_config_dir"
-echo "Cfg Search Folder       : $lc_cfg_searchdir"
 echo "Data Installation Folder: $lc_client_xml_dir"
 echo "Data Search Folder      : $lc_data_searchdir"
 echo "Local Installation Mode : $enable_local_install"
