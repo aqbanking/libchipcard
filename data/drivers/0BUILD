@@ -1,0 +1,9 @@
+<?xml?>
+
+<gwbuild>
+
+  <subdirs>
+    $(lc_os_driver_dir)
+  </subdirs>
+
+</gwbuild>

@@ -1,0 +1,10 @@
+<?xml?>
+
+<gwbuild>
+
+  <subdirs>
+    generic_pcsc
+    cyberjack_pcsc
+  </subdirs>
+
+</gwbuild>

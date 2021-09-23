@@ -1,0 +1,15 @@
+<?xml?>
+
+<gwbuild>
+
+  <data dist="true" install="$(datadir)/chipcard/cards/cyberjack_pcsc">
+    card.xml
+    kvk.xml
+    processorcard.xml
+  </data>
+
+  <data dist="true" install="$(datadir)/chipcard/drivers">
+    cyberjack_pcsc.xml
+  </data>
+
+</gwbuild>

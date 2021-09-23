@@ -196,12 +196,13 @@
 
 
     <data dist="TRUE" install="$(libdir)/pkgconfig" generated="true">
-      libchipcard.pc
+      libchipcard-client.pc
     </data>
   
   
     <subdirs>
       src
+      data
     </subdirs>
 
 

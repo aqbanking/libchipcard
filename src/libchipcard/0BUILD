@@ -24,11 +24,6 @@
       dummy.c
     </sources>
 
-
-    <data dist="true" install="$(datadir)/chipcard/cards">
-      card.xml
-    </data>
-
     <useTargets>
       base
       cards

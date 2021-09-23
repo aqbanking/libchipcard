@@ -1,0 +1,15 @@
+<?xml?>
+
+<gwbuild>
+
+  <data dist="true" install="$(datadir)/chipcard/cards/generic_pcsc">
+    card.xml
+    kvk.xml
+    processorcard.xml
+  </data>
+
+  <data dist="true" install="$(datadir)/chipcard/drivers">
+    generic_pcsc.xml
+  </data>
+
+</gwbuild>
