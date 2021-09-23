@@ -77,7 +77,7 @@ static int EnterPinWithPinInfo(LC_CARD *hcard,
                 "Unable to read status of pin %x (%d)",
                 LC_PinInfo_GetId(pi),
                 res);
-      return LC_Crypt_Token_ResultToError(res);
+      return res;
     }
 
     if ((currentErrors!=maxErrors)) {
