@@ -9,6 +9,7 @@
                         2.2. Building from GIT
                         2.3. Building the API Documentation
                         2.4. Building using gwbuild
+                        3. Dependencies
 
 
 
@@ -101,6 +102,13 @@ the source tree or in its main folder), change into that "build" folder and perf
 The last two steps accept the argument "-j XX" which lets you specify the number of parallel build processes
 to use.
 
+
+
+3. Dependencies
+===============
+
+- "Gwenhywfar" >= 5.6.0, available from https://www.aqbanking.de/ (required)
+- "pcsclite" (libpcsclite and libpcsclite-dev)
 
 
 
