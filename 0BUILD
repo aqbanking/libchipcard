@@ -125,6 +125,8 @@
         <variables>plugindir</variables>
       </dep>
 
+      <dep id="zlib" name="zlib" required="TRUE" />
+
       <ifNotVarMatches name="GWBUILD_SYSTEM" value="windows" >
         <dep id="pcsc" name="libpcsclite" required="TRUE" />
       </ifNotVarMatches>

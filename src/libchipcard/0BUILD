@@ -79,6 +79,7 @@
     <libraries>
       $(gwenhywfar_libs)
       $(pcsc_libs)
+      $(zlib_libs)
     </libraries>
 
 

@@ -74,15 +74,15 @@
 
     <useTargets>
       cards_chiptanusb
-      cards-ddv
-      cards-egk
-      cards-geldkarte
-      cards-kvk
-      cards-starcos
-      cards-zkacard
-      cards-chiptanusb
-      cards-memorycard
-      cards-processorcard
+      cards_ddv
+      cards_egk
+      cards_geldkarte
+      cards_kvk
+      cards_starcos
+      cards_zkacard
+      cards_memorycard
+      cards_processorcard
+      
     </useTargets>
 
 

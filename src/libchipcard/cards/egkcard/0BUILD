@@ -6,6 +6,7 @@
 
     <includes type="c" >
       $(gwenhywfar_cflags)
+      $(zlib_cflags)
       -I$(topsrcdir)/src
       -I$(topbuilddir)/src
       -I$(topsrcdir)
