@@ -33,39 +33,30 @@
 #define LC_CT_ZKA_NUM_CONTEXT 31
 
 
-static uint32_t BeginEnterPin(GWEN_UNUSED GWEN_CRYPT_PINTYPE pt,
-                              uint32_t gid)
+static uint32_t BeginEnterPin(GWEN_UNUSED GWEN_CRYPT_PINTYPE pt, uint32_t gid)
 {
-  char buffer[512];
+  int rv;
 
-  buffer[0]=0;
-  buffer[sizeof(buffer)-1]=0;
-
-  snprintf(buffer, sizeof(buffer)-1, "%s",
-           I18N("Please enter your PIN into the card reader."
-                "<html>"
-                "Please enter your PIN into the card reader."
-                "</html>"));
-  return GWEN_Gui_ShowBox(GWEN_GUI_SHOWBOX_FLAGS_BEEP,
-                          I18N("Secure PIN Input"),
-                          buffer, gid);
+  rv=GWEN_Gui_ProgressLog(gid, GWEN_LoggerLevel_Warning, I18N("Waiting for pin entry on card reader..."));
+  if (rv<0)
+    return 0;
+  return 0xffffffff;
 }
 
-static int EndEnterPin(GWEN_UNUSED GWEN_CRYPT_PINTYPE pt,
-                       GWEN_UNUSED int ok,
-                       uint32_t id)
+
+
+static int EndEnterPin(GWEN_UNUSED GWEN_CRYPT_PINTYPE pt, GWEN_UNUSED int ok, uint32_t id)
 {
 
-  GWEN_Gui_HideBox(id);
-
-  return 0;
+  return GWEN_Gui_ProgressLog(id, GWEN_LoggerLevel_Warning, I18N("Pin entry on card reader finished."));
 }
 
-static
-int EnterPinWithPinInfo(LC_CARD *hcard,
-                        GWEN_CRYPT_PINTYPE pt,
-                        const LC_PININFO *pi,
-                        uint32_t guiid)
+
+
+static int EnterPinWithPinInfo(LC_CARD *hcard,
+                               GWEN_CRYPT_PINTYPE pt,
+                               const LC_PININFO *pi,
+                               uint32_t guiid)
 {
   int res;
   int maxErrors;
