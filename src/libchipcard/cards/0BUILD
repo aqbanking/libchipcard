@@ -68,10 +68,6 @@
       card.xml
     </data>
 
-    <extradist>
-    </extradist>
-
-
     <useTargets>
       cards_chiptanusb
       cards_ddv

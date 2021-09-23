@@ -17,46 +17,15 @@
     <setVar name="local/cflags">$(visibility_cflags)</setVar>
 
   
-    <setVar name="local/typefiles" >
-    </setVar>
-  
-    <setVar name="local/built_sources" >
-    </setVar>
-  
-    <setVar name="local/built_headers_pub">
-    </setVar>
-  
-  
-    <setVar name="local/built_headers_priv" >
-    </setVar>
-  
-  
     <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/ct" >
-      $(local/built_headers_pub)
       ct_card.h
     </headers>
 
 
-    <headers dist="true" >
-      $(local/built_headers_priv)
-    </headers>
-  
-  
     <sources>
-      $(local/typefiles)
       ct_card.c
     </sources>
 
-
-    <extradist>
-    </extradist>
-
-
-    <useTargets>
-    </useTargets>
-
-    <subdirs>
-    </subdirs>
 
   </target>
   

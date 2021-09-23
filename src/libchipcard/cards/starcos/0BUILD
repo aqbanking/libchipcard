@@ -76,16 +76,6 @@
       starcos-card.xml
     </data>
 
-    <extradist>
-    </extradist>
-
-
-    <useTargets>
-    </useTargets>
-
-    <subdirs>
-    </subdirs>
-
   </target>
   
 </gwbuild>

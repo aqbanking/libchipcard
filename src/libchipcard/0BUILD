@@ -16,47 +16,11 @@
       -I$(topbuilddir)
     </includes>
 
-    <includes type="tm2" >
-      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
-      --include=$(builddir)
-    </includes>
-
-  
     <define name="BUILDING_CHIPCARD" />
     
     <setVar name="local/cflags">$(visibility_cflags)</setVar>
 
-    <setVar name="tm2flags" >
-      --api=CHIPCARD_API
-    </setVar>
-
-  
-    <setVar name="local/typefiles" >
-    </setVar>
-  
-    <setVar name="local/built_sources" >
-    </setVar>
-  
-    <setVar name="local/built_headers_pub">
-    </setVar>
-  
-  
-    <setVar name="local/built_headers_priv" >
-    </setVar>
-  
-  
-    <headers dist="true" install="$(includedir)/libchipcard6/libchipcard" >
-      $(local/built_headers_pub)
-    </headers>
-
-
-    <headers dist="true" >
-      $(local/built_headers_priv)
-    </headers>
-  
-  
     <sources>
-      $(local/typefiles)
       dummy.c
     </sources>
 
@@ -64,10 +28,6 @@
     <data dist="true" install="$(datadir)/chipcard/cards">
       card.xml
     </data>
-
-    <extradist>
-    </extradist>
-
 
     <useTargets>
       base

@@ -12,52 +12,21 @@
       -I$(topbuilddir)
     </includes>
 
-    <includes type="tm2" >
-      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
-      --include=$(builddir)
-    </includes>
-
-  
     <define name="BUILDING_CHIPCARD" />
     
     <setVar name="local/cflags">$(visibility_cflags)</setVar>
 
-    <setVar name="tm2flags" >
-      --api=CHIPCARD_API
-    </setVar>
-
-  
-    <setVar name="local/typefiles" >
-    </setVar>
-  
-    <setVar name="local/built_sources" >
-    </setVar>
-  
-    <setVar name="local/built_headers_pub">
-    </setVar>
-  
-  
-    <setVar name="local/built_headers_priv" >
-    </setVar>
-  
-  
     <headers dist="true" install="$(includedir)/libchipcard6/libchipcard/cards/ddvcard" >
-      $(local/built_headers_pub)
-
       ddvcard.h
     </headers>
 
 
     <headers dist="true" >
-      $(local/built_headers_priv)
-
       ddvcard_p.h
     </headers>
   
   
     <sources>
-      $(local/typefiles)
-
       ddvcard.c
     </sources>
 
@@ -72,16 +41,6 @@
       ddvcard-card-ddv0.xml
       ddvcard-card-ddv1.xml
     </data>
-
-    <extradist>
-    </extradist>
-
-
-    <useTargets>
-    </useTargets>
-
-    <subdirs>
-    </subdirs>
 
   </target>
   
