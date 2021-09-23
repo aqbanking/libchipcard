@@ -1,12 +1,107 @@
 
+                                Content
+                                =======
+
+
+                        1. What Is Libchipcard ?
+                        2. Building Libchipcard
+                        2.1. Building from the Tar File
+                        2.2. Building from GIT
+                        2.3. Building the API Documentation
+                        2.4. Building using gwbuild
+
+
+
+1. What Is Libchipcard ?
+========================
+
 Libchipcard is a library for generic access to chipcard readers and cards. It uses the
 system-wide PC/SC service which is available at least on Linux, Windows and MacOSX.
 
-On Linux you most will need the packages libpcsclite and a driver package. Most
+On Linux you need the packages libpcsclite and a driver package. Most
 readers on Linux nowadays use the generic CCID driver.
 
 Please have a look at the file in tutorials/ to see how you can use Libchipcard in
 your own projects.
+
+
+
+2. Building Libchipcard
+=======================
+
+
+2.1. Building from the Tar File
+-------------------------------
+
+#>./configure
+#>make
+#>make install
+
+(the last step most probably requires you to be root)
+
+Compilation hints for specific platforms:
+
+- For FreeBSD and potentially other non-Linux platform, it might be
+  necessary to use "gmake" instead of the "make" program.
+
+- Also, if your "make" program happens to complain about the variable
+  definition "I18NFILES = $(shell cat ..." (in Makefile.in around line
+  230) and related definitions, then you need to look for comments in
+  the Makefile about "old make programs". Follow the instructions in
+  these comments, i.e. set some variable definitions to an empty
+  variable manually. This should remove all potentially incompatible
+  directives from the Makefile.
+
+- (especially on Mac/Darwin): If your configure run does not
+  detect the QT libraries and it says "checking for qt3
+  libraries... not found", then you need to specify the linker
+  flags for qt3 manually in the env variable qt3_libs. I.e. if
+  your qt3 library files are in /opt/qt/lib and is called
+  libqt-mt, then you need to specify 
+  ./configure qt3_libs="-L/opt/qt/lib -lqt-mt"
+
+
+2.2. Building from GIT
+----------------------
+
+#> make -fMakefile.cvs
+#> ./configure
+#> make typedefs
+#> make types
+
+and continue as described in "5.1. Building from the Tar File".
+
+
+2.3. Building the API Documentation
+-----------------------------------
+
+#>make srcdoc
+
+If you want to install a linked API documentation (which links against the
+API documentations of the projects Libchipcard depends on) use this:
+
+#> make install-srcdoc
+
+This installs the linked doc to the path you gave to ./configure
+by "--with-docpath=PATH". It defaults to "$HOME/apidoc", which
+means it does *not* obey the --prefix argument.
+
+
+2.4. Building using gwbuild
+---------------------------
+
+Download the git version or a tarball of Libchipcard. Create a folder "build" somewhere (e.g. completely outside
+the source tree or in its main folder), change into that "build" folder and perform the following steps:
+
+#> gwbuild -s PATH_TO_SOURCE_TREE
+#> gwbuild -p
+#> gwbuild -B tm2builder
+#> gwbuild
+
+The last two steps accept the argument "-j XX" which lets you specify the number of parallel build processes
+to use.
+
+
 
 
 Martin Preuss, Hamburg/Germany, 2021/09/23
