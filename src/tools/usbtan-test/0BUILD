@@ -1,0 +1,34 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="Program" name="usbtan-test" install="$(bindir)" >
+
+    <includes type="c" >
+      $(gwenhywfar_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+  
+    <setVar name="local/cflags">$(visibility_cflags)</setVar>
+
+  
+    <sources>
+      main.c
+    </sources>
+
+    <useTargets>
+      chipcard
+    </useTargets>
+
+    <libraries>
+      $(gwenhywfar_libs)
+    </libraries>
+
+
+  </target>
+
+
+</gwbuild>

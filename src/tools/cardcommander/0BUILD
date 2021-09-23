@@ -1,0 +1,39 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="CxxProgram" name="cardcommander" install="$(bindir)" >
+
+    <includes type="cxx" >
+      $(gwenhywfar_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+  
+    <setVar name="local/cxxflags">$(visibility_cflags)</setVar>
+
+  
+    <headers dist="true" >
+      global.h
+    </headers>
+  
+  
+    <sources>
+      cardcommander.cpp
+    </sources>
+
+    <useTargets>
+      chipcard
+    </useTargets>
+
+    <libraries>
+      $(gwenhywfar_libs)
+    </libraries>
+
+
+  </target>
+
+
+</gwbuild>

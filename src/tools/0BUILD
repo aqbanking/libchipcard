@@ -1,0 +1,15 @@
+<?xml?>
+
+<gwbuild>
+
+  <subdirs>
+    cardcommander
+    chipcard-tool
+    geldkarte
+    kvkcard
+    memcard
+    usbtan-test
+    zkacard
+  </subdirs>
+
+</gwbuild>

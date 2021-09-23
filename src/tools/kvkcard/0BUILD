@@ -1,0 +1,48 @@
+<?xml?>
+
+<gwbuild>
+
+  <target type="Program" name="kvkcard" install="$(bindir)" >
+
+    <includes type="c" >
+      $(gwenhywfar_cflags)
+      -I$(topsrcdir)/src
+      -I$(topbuilddir)/src
+      -I$(topsrcdir)
+      -I$(topbuilddir)
+    </includes>
+  
+    <setVar name="local/cflags">$(visibility_cflags)</setVar>
+
+  
+    <headers dist="true" >
+      global.h
+    </headers>
+  
+  
+    <sources>
+      main.c
+    </sources>
+    
+    <extradist>
+      README 
+      read.c 
+      rdvd.c 
+      rdpd.c 
+      psvd.c
+    </extradist>
+    
+
+    <useTargets>
+      chipcard
+    </useTargets>
+
+    <libraries>
+      $(gwenhywfar_libs)
+    </libraries>
+
+
+  </target>
+
+
+</gwbuild>

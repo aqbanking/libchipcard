@@ -5,6 +5,7 @@
   <subdirs>
     libchipcard
     ct
+    tools
   </subdirs>
 
 </gwbuild>

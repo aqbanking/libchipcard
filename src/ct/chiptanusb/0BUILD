@@ -75,9 +75,6 @@
     </libraries>
 
 
-    <subdirs>
-    </subdirs>
-
     <writeFile name="chiptanusb.xml" />
 
 
