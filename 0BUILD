@@ -34,13 +34,13 @@
 
 
     <!-- version defines -->
-    <define name="CHIPCARD_VERSION_TAG"        value="testing" quoted="TRUE" />
+    <define name="CHIPCARD_VERSION_TAG"        value="$(project_vtag)" quoted="TRUE" />
     <define name="CHIPCARD_VERSION_MAJOR"      value="$(project_vmajor)" />
     <define name="CHIPCARD_VERSION_MINOR"      value="$(project_vminor)" />
     <define name="CHIPCARD_VERSION_PATCHLEVEL" value="$(project_vpatchlevel)" />
     <define name="CHIPCARD_VERSION_BUILD"      value="$(project_vbuild)" />
     <define name="CHIPCARD_VERSION_FULL_STRING" quoted="TRUE" 
-            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)-testing" />
+            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)-$(project_vtag)" />
     <define name="CHIPCARD_VERSION_STRING"      quoted="TRUE" 
             value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)" />
 
