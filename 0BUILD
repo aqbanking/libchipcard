@@ -1,19 +1,12 @@
 <?xml?>
 
 
-<gwbuild>
+<gwbuild requiredVersion="5.7.2.1">
 
-  <project name="libchipcard"
-           vmajor="5" vminor="99" vpatchlevel="0" vbuild="0" vtag="git"
+  <project name="libchipcard" version="5.99.0-git"
            so_current="8" so_age="0" so_revision="0"
            write_config_h="TRUE"
            >
-
-    <setVar name="package">$(project_name)</setVar>
-    <define name="PACKAGE" value="$(package)"  quoted="TRUE" />
-    <define name="VERSION" 
-            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)$(project_vtag)" 
-            quoted="true" />
 
     <!-- version vars (for SED)-->
     <setVar name="CHIPCARD_VERSION_MAJOR">$(project_vmajor)</setVar>
@@ -87,6 +80,27 @@
     <ifVarMatches name="option_local_install" value="TRUE" >
       <define name="ENABLE_LOCAL_INSTALL" value="1" />
     </ifVarMatches>
+
+    <!-- full api doc -->
+    <option id="full_doc" type="string">
+      <default>TRUE</default>
+      <choices>TRUE FALSE</choices>
+    </option>
+    <ifVarMatches name="option_full_doc" value="TRUE" >
+      <then>
+        <setVar name="DOXYGEN_INPUT">src $(topsrcdir)/doc/apidoc.h $(topsrcdir)/src $(topsrcdir)/tutorials</setVar>
+        <setVar name="DOXYGEN_FILE_PATTERNS">*.h *.hpp *.c *.cpp</setVar>
+        <setVar name="DOXYGEN_EXCLUDE_PATTERNS">*moc*</setVar>
+      </then>
+      <else>
+        <setVar name="DOXYGEN_INPUT">src $(topsrcdir)/doc/apidoc.h $(topsrcdir)/src $(topsrcdir)/tutorials</setVar>
+        <setVar name="DOXYGEN_FILE_PATTERNS">*.h *.hpp</setVar>
+        <setVar name="DOXYGEN_EXCLUDE_PATTERNS">*moc* *_p.h</setVar>
+      </else>
+    </ifVarMatches>
+    <setVar name="DOXYGEN_EXCLUDE">$(topsrcdir)/src/os/windows</setVar>
+    <setVar name="DOXYGEN_EXAMPLE_PATH">$(topsrcdir)/tutorials</setVar>
+
 
 
     <!-- paths -->
@@ -272,6 +286,7 @@
 
 
     <writeFile name="libchipcard-client.pc" />
+    <writeFile name="Doxyfile" />
 
 
   </project>
