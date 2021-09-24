@@ -1,6 +1,5 @@
 bin_PROGRAMS=geldkarte
 
-AM_CPPFLAGS=-I$(libchipcard_symlinkdir) $(gwenhywfar_includes)
 AM_CPPFLAGS= $(gwenhywfar_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
