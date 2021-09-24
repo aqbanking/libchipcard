@@ -45,6 +45,10 @@
     </subdirs>
 
 
+    <writeFile name="chipcard.h" />
+    <writeFile name="version.h" />
+
+
   </target>
 
 </gwbuild>
