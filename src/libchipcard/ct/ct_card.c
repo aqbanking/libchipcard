@@ -406,7 +406,8 @@ int _checkPinStatus(GWEN_CRYPT_TOKEN *ct, LC_CARD *hcard, uint32_t pinId)
   res=LC_Card_GetPinStatus(hcard, pinId, &maxErrors, &currentErrors);
   if (res<0) {
     if (res==GWEN_ERROR_NOT_SUPPORTED) {
-      DBG_INFO(LC_LOGDOMAIN, "Unable to read pin status for pin %02x (not supported)", pinId);
+      DBG_INFO(LC_LOGDOMAIN, "Unable to read pin status for pin %02x (not supported), not checking.", pinId);
+      return 0;
     }
     else {
       DBG_ERROR(LC_LOGDOMAIN, "Unable to read status of pin %x (%d)", pinId, res);
