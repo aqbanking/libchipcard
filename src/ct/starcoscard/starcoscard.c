@@ -36,9 +36,9 @@ GWEN_INHERIT(GWEN_PLUGIN, LC_CT_PLUGIN_STARCOS)
 
 
 
-GWEN_PLUGIN *ct_starcoscard_factory(GWEN_PLUGIN_MANAGER *pm,
-                                    const char *modName,
-                                    const char *fileName)
+CHIPCARD_EXPORT GWEN_PLUGIN *ct_starcoscard_factory(GWEN_PLUGIN_MANAGER *pm,
+                                                    const char *modName,
+                                                    const char *fileName)
 {
   GWEN_PLUGIN *pl;
 
