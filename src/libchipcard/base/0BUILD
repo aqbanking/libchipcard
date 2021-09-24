@@ -11,6 +11,7 @@
       -I$(topbuilddir)/src
       -I$(topsrcdir)
       -I$(topbuilddir)
+      -I$(builddir)
     </includes>
 
     <includes type="tm2" >

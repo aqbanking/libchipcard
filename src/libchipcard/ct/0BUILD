@@ -10,6 +10,7 @@
       -I$(topbuilddir)/src
       -I$(topsrcdir)
       -I$(topbuilddir)
+      -I$(builddir)
     </includes>
   
     <define name="BUILDING_CHIPCARD" />
