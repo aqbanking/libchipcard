@@ -141,7 +141,7 @@ int LC_Card_SelectDf(LC_CARD *card, const char *fname)
     DBG_INFO(LC_LOGDOMAIN, "here (%d)", res);
     return res;
   }
-  card->dfNode=NULL;
+  card->dfNode=n;
   card->efNode=NULL;
 
   return 0;
