@@ -11,9 +11,9 @@
 
     <setVar name="package">$(project_name)</setVar>
     <define name="PACKAGE" value="$(package)"  quoted="TRUE" />
-    <setVar name="VERSION">
-      $(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)$(project_vtag)
-    </setVar>
+    <define name="VERSION" 
+            value="$(project_vmajor).$(project_vminor).$(project_vpatchlevel).$(project_vbuild)$(project_vtag)" 
+            quoted="true" />
 
     <!-- version vars (for SED)-->
     <setVar name="CHIPCARD_VERSION_MAJOR">$(project_vmajor)</setVar>
@@ -93,7 +93,7 @@
     <ifVarMatches name="GWBUILD_SYSTEM" value="windows" > <!-- long version of IF statement with THEN and ELSE -->
       <then>
         <define       name="OS_WIN32" value="1" />
-        <setVar       name="chipcard_sys_is_windows">1</setVar>
+        <setVar       name="lc_sys_is_windows">1</setVar>
         <setVar       name="lc_client_xml_dir">share/chipcard</setVar>
         <setVar       name="lc_locale_searchdir">share/locale</setVar>
         <setVar       name="lc_os_driver_dir">win32</setVar>
@@ -101,7 +101,7 @@
       </then>
       <else>
         <define       name="OS_POSIX" value="1" />
-        <setVar       name="chipcard_sys_is_windows">0</setVar>
+        <setVar       name="lc_sys_is_windows">0</setVar>
         <setVar       name="lc_os_driver_dir">posix</setVar>
         <setVar       name="libchipcardc_libs">-L $(libdir) -lchipcard</setVar>
         <ifVarMatches name="option_local_install"     value="TRUE" >
@@ -116,7 +116,6 @@
         </ifVarMatches>
       </else>
     </ifVarMatches>
-    <define name="CHIPCARD_SYS_IS_WINDOWS" value="$(chipcard_sys_is_windows)" />
   
   
     <!-- dependencies ( pkg-config and libs) -->
