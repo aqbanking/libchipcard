@@ -1,8 +1,8 @@
 
-           Libchipcard4 (c) 2007 Martin Preuss<martin@libchipcard.de>
+           Libchipcard (c) 2021 Martin Preuss<martin@libchipcard.de>
 
 
-Libchipcard4 is licensed under the GNU LGPL v2.1 (see below).
+Libchipcard is licensed under the GNU LGPL v2.1 (see below).
 
 As the copyright holder of Libchipcard, Martin Preuss grants the following
 license exception:
@@ -12,7 +12,7 @@ Libchipcard with the OpenSSL Toolkit.
 No developer is required to provide this exception in a derived work.
 
 The following is the license text for the LGPL in a version that applies to
-Libchipcard4.
+Libchipcard.
 
 
 
