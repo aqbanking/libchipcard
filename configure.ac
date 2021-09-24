@@ -4,7 +4,7 @@ AC_PREREQ(2.60)
 AC_INIT
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
-AC_CONFIG_SRCDIR([chipcard-config.in.in])
+AC_CONFIG_SRCDIR([src/libchipcard/chipcard.h.in])
 AC_CONFIG_HEADER([config.h])
 
 
@@ -628,7 +628,6 @@ fi
 #
 
 AC_CONFIG_FILES([Makefile
-                 chipcard-config.in
                  Doxyfile
                  libchipcard.spec
                  libchipcard-client.pc

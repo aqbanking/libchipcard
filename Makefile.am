@@ -11,18 +11,6 @@ EXTRA_DIST= \
  chipcard.m4 \
  libchipcard.spec.in libchipcard.spec Makefile.cvs
 
-bin_SCRIPTS = chipcard-config
-M4dir = $(datadir)/aclocal
-M4_DATA = chipcard.m4 
-ACLOCAL_AMFLAGS = -I m4
-
-CLEANFILES = $(bin_SCRIPTS)
-
-chipcard-config: chipcard-config.in
-	echo "#! /bin/sh" >chipcard-config && \
-	echo 'prefix="@prefix@"' >>chipcard-config && \
-	cat chipcard-config.in >>chipcard-config && \
-	chmod a+x chipcard-config
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libchipcard-client.pc
@@ -241,7 +229,7 @@ uninstall-mo-catalogs:
 install-data-local: install-mo-catalogs
 uninstall-local: uninstall-mo-catalogs
 
-CLEANFILES += $(I18NCATALOGS)
+CLEANFILES = $(I18NCATALOGS)
 
 endif # if USE_I18N
 
