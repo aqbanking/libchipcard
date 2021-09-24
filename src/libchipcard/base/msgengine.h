@@ -20,7 +20,7 @@ extern "C" {
 #include <gwenhywfar/msgengine.h>
 
 /**
- * @file sharedstuff/msgengine.h
+ * @file base/msgengine.h
  *
  * This message engine implements a few new types:
  * <ul>
