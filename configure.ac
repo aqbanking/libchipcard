@@ -270,21 +270,17 @@ libchipcard_headerdir_am="\$(includedir)/libchipcard6/chipcard"
 libchipcard_headerdir="\${includedir}/libchipcard6/chipcard"
 
 
-case "$OS_TYPE" in
-    posix)
-        lc_sys_is_windows=0
-        
-        lc_client_xml_dir="\${datadir}/chipcard"
-        lc_os_driver_dir="posix"
-    	;;
-    windows)
-        AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
-        lc_sys_is_windows=1
-
-        lc_client_xml_dir="\${datadir}/chipcard"
-        lc_os_driver_dir="win32"
-    	;;
-esac
+if test "$OSYSTEM" = "windows" ; then
+  AC_DEFINE_UNQUOTED(BUILDING_LIBCHIPCARD2_DLL,1, [Define if DLL is built])
+  lc_sys_is_windows="1"
+  lc_client_xml_dir="\${datadir}/chipcard"
+  lc_os_driver_dir="win32"
+else
+  lc_sys_is_windows="0"
+  
+  lc_client_xml_dir="\${datadir}/chipcard"
+  lc_os_driver_dir="posix"
+fi
 
 AM_CONDITIONAL(IS_WINDOWS, [test "$OS_TYPE" = "windows"])
 AC_SUBST(lc_sys_is_windows)
