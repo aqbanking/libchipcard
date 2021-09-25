@@ -9,7 +9,7 @@ AM_CPPFLAGS= $(gwenhywfar_CFLAGS) \
 
 EXTRA_DIST=geldkarte-app.xml geldkarte-card.xml
 
-typefiles=\
+tm2files=\
   geldkarte_blog.xml \
   geldkarte_llog.xml \
   geldkarte_values.xml
@@ -43,11 +43,11 @@ carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=geldkarte-card.xml
 
 
-typefiles: $(typefiles)
-	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typefiles: $(tm2files)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
-typedefs: $(typefiles)
-	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typedefs: $(tm2files)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
 
 sources:

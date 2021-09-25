@@ -14,7 +14,7 @@ AM_CPPFLAGS= $(gwenhywfar_CFLAGS) $(pcsc_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-typefiles=pininfo.xml
+tm2files=pininfo.xml
 
 
 iheaderdir=@libchipcard_headerdir_am@
@@ -60,11 +60,11 @@ install-card-data:
 
 install-data-local: install-app-data install-card-data
 
-typefiles: $(typefiles)
-	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typefiles: $(tm2files)
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
-typedefs: $(typefiles)
-	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typedefs: $(tm2files)
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
 
 sources:

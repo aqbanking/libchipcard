@@ -8,11 +8,11 @@ AM_CPPFLAGS= $(gwenhywfar_CFLAGS) $(pcsc_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-typefiles=\
+tm2files=\
   hipersonaldata.xml \
   hiinsurancedata.xml
 
-EXTRA_DIST=card.xml $(typefiles)
+EXTRA_DIST=card.xml $(tm2files)
 
 noinst_LTLIBRARIES=libcards.la
 
@@ -47,11 +47,17 @@ carddatadir=@lc_client_xml_dir@/cards
 carddata_DATA=card.xml
 
 
-typefiles: $(typefiles)
-	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typefiles: $(tm2files)
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d typefiles; \
+	done
+	$(typemaker2_exe) -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
-typedefs: $(typefiles)
-	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(typefiles)
+typedefs: $(tm2files)
+	for d in $(SUBDIRS); do \
+	  $(MAKE) -C $$d typedefs; \
+	done
+	$(typemaker2_exe) --defs-only -I $(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c -I $(srcdir) --destfolder="$(srcdir)" -D CHIPCARD_API $(tm2files)
 
 
 sources:

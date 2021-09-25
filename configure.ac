@@ -228,6 +228,7 @@ AC_SUBST(GWENHYWFAR_MINIMUM_VERSION, "5.5.1.1")
 #AC_GWENHYWFAR(5,5,1,1)
 PKG_CHECK_MODULES([gwenhywfar], [gwenhywfar >= 5.5.1.1])
 PKG_CHECK_VAR([gwenhywfar_plugins], [gwenhywfar], [plugindir])
+PKG_CHECK_VAR([gwenhywfar_bindir], [gwenhywfar], [bindir])
 
 
 ###-------------------------------------------------------------------------
@@ -253,7 +254,7 @@ AC_SUBST(typemaker2_exe)
 AC_MSG_CHECKING(xmlmerge)
 AC_ARG_WITH(xmlmerge, [  --with-xmlmerge=PATH path and name of tool xmlmerge],
   [XMLMERGE="$withval"],
-  [XMLMERGE="$gwenhywfar_dir/bin/xmlmerge"])
+  [XMLMERGE="$gwenhywfar_bindir/bin/xmlmerge"])
 AC_SUBST(XMLMERGE)
 AC_MSG_RESULT($XMLMERGE)
 

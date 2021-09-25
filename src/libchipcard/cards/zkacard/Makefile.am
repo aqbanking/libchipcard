@@ -9,7 +9,7 @@ AM_CPPFLAGS= $(gwenhywfar_CFLAGS) \
 
 EXTRA_DIST=zkacard-app.xml zkacard-card.xml
 
-typefiles=types.xml
+tm2files=
 
 
 noinst_LTLIBRARIES=libcards-zkacard.la
