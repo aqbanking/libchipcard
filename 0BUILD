@@ -110,13 +110,11 @@
         <setVar       name="lc_sys_is_windows">1</setVar>
         <setVar       name="lc_client_xml_dir">share/chipcard</setVar>
         <setVar       name="lc_locale_searchdir">share/locale</setVar>
-        <setVar       name="lc_os_driver_dir">win32</setVar>
         <setVar       name="libchipcardc_libs">-L $(libdir) -lchipcard</setVar>
       </then>
       <else>
         <define       name="OS_POSIX" value="1" />
         <setVar       name="lc_sys_is_windows">0</setVar>
-        <setVar       name="lc_os_driver_dir">posix</setVar>
         <setVar       name="libchipcardc_libs">-L $(libdir) -lchipcard</setVar>
         <ifVarMatches name="option_local_install"     value="TRUE" >
           <then>

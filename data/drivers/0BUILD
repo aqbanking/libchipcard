@@ -3,7 +3,8 @@
 <gwbuild>
 
   <subdirs>
-    $(lc_os_driver_dir)
+    posix
+    win32
   </subdirs>
 
 </gwbuild>

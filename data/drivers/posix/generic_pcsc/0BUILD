@@ -2,14 +2,29 @@
 
 <gwbuild>
 
-  <data dist="true" install="$(datadir)/chipcard/cards/generic_pcsc">
+
+  <setVar name="local/cardfiles">
     card.xml
     kvk.xml
     processorcard.xml
-  </data>
+  </setVar>
 
-  <data dist="true" install="$(datadir)/chipcard/drivers">
+  <setVar name="local/driverfiles">
     generic_pcsc.xml
-  </data>
+  </setVar>
+
+
+
+  <ifNotVarMatches name="GWBUILD_SYSTEM" value="windows" >
+    <then>
+      <data dist="true" install="$(datadir)/chipcard/cards/generic_pcsc">$(local/cardfiles)</data>
+      <data dist="true" install="$(datadir)/chipcard/drivers">$(local/driverfiles)</data>
+    </then>
+    <else>
+      <data dist="true">$(local/cardfiles)</data>
+      <data dist="true">$(local/driverfiles)</data>
+    </else>
+  </ifNotVarMatches>
 
 </gwbuild>
+

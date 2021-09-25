@@ -1,4 +1,5 @@
 <cards>
+  <!-- posix/generic_pcsc/processorcard.xml -->
   <card name="ProcessorCard" >
 
     <commands>

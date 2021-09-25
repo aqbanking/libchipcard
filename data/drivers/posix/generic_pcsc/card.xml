@@ -1,4 +1,5 @@
 <cards>
+  <!-- posix/generic_pcsc/card.xml -->
   <card name="card" >
 
     <commands>
