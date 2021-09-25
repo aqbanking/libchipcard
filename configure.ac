@@ -227,7 +227,7 @@ AQ_DISTRIBUTION
 AC_SUBST(GWENHYWFAR_MINIMUM_VERSION, "5.5.1.1")
 #AC_GWENHYWFAR(5,5,1,1)
 PKG_CHECK_MODULES([gwenhywfar], [gwenhywfar >= 5.5.1.1])
-
+PKG_CHECK_VAR([gwenhywfar_plugins], [gwenhywfar], [plugindir])
 
 
 ###-------------------------------------------------------------------------
