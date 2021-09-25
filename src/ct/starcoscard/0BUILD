@@ -13,59 +13,19 @@
       -I$(builddir)
     </includes>
 
-    <includes type="tm2" >
-      --include=$(gwenhywfar_dir)/share/gwenhywfar/typemaker2/c
-      --include=$(builddir)
-    </includes>
-
-  
     <setVar name="local/cflags">$(visibility_cflags)</setVar>
 
-    <setVar name="tm2flags" >
-      --api=CHIPCARD_API
-    </setVar>
-
-  
-    <setVar name="local/typefiles" >
-    </setVar>
-  
-    <setVar name="local/built_sources" >
-    </setVar>
-  
-    <setVar name="local/built_headers_pub">
-    </setVar>
-  
-  
-    <setVar name="local/built_headers_priv" >
-    </setVar>
-  
-  
     <headers dist="true" >
-      $(local/built_headers_pub)
-    </headers>
-
-
-    <headers dist="true" >
-      $(local/built_headers_priv)
-
       starcoscard_p.h
     </headers>
   
-  
     <sources>
-      $(local/typefiles)
-
       starcoscard.c
     </sources>
-
 
     <data dist="true" install="$(gwenhywfar_plugindir)/ct">
       starcoscard.xml
     </data>
-
-    <extradist>
-    </extradist>
-
 
     <useTargets>
       chipcard
@@ -75,12 +35,7 @@
       $(gwenhywfar_libs)
     </libraries>
 
-
-    <subdirs>
-    </subdirs>
-
     <writeFile name="starcoscard.xml" />
-
 
   </target>
   
