@@ -1,7 +1,6 @@
 
 For Libchipcard6:
 
-- remove enum LC_CLIENT_RESULT, use GWEN_ERROR codes
 - maybe move all card types into one folder "cards"
 - remove PCSC folder
 
