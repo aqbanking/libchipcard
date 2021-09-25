@@ -202,10 +202,16 @@
 
     <define name="LOCALEDIR"              value="$(datadir)/locale"                           quoted="TRUE" />
 
-    <define name="OS_TYPE"      value="$(GWBUILD_SYSTEM)"    quoted="TRUE" />
     <define name="OS_SHORTNAME" value="$(GWBUILD_SYSTEM)"    quoted="TRUE" />
 
-
+    <ifVarMatches name="GWBUILD_SYSTEM" value="windows" >
+      <then>
+        <define name="OS_TYPE"      value="windows"    quoted="TRUE" />
+      </then>
+      <else>
+        <define name="OS_TYPE"      value="posix"    quoted="TRUE" />
+      </else>
+    </ifVarMatches>
 
 
     <data dist="TRUE" install="$(libdir)/pkgconfig" generated="true">
