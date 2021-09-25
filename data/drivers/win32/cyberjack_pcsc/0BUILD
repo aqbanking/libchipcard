@@ -1,0 +1,29 @@
+<?xml?>
+
+<gwbuild>
+
+
+  <setVar name="local/cardfiles">
+    card.xml
+    kvk.xml
+    processorcard.xml
+  </setVar>
+
+  <setVar name="local/driverfiles">
+    cyberjack_pcsc.xml
+  </setVar>
+
+
+
+  <ifVarMatches name="GWBUILD_SYSTEM" value="windows" >
+    <then>
+      <data dist="true" install="$(datadir)/chipcard/cards/cyberjack_pcsc">$(local/cardfiles)</data>
+      <data dist="true" install="$(datadir)/chipcard/drivers">$(local/driverfiles)</data>
+    </then>
+    <else>
+      <data dist="true">$(local/cardfiles)</data>
+      <data dist="true">$(local/driverfiles)</data>
+    </else>
+  </ifVarMatches>
+
+</gwbuild>
