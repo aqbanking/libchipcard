@@ -1,11 +1,11 @@
 SUBDIRS=base cards ct PCSC
 
-EXTRA_DIST=ressource.rc.in
+EXTRA_DIST=
 
 DEFS=-DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
-AM_CPPFLAGS= $(gwenhywfar_includes) \
+AM_CPPFLAGS= $(gwenhywfar_CFLAGS) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
   
@@ -23,7 +23,7 @@ libchipcard_la_SOURCES=dummy.c
 libchipcard_la_LIBADD= \
   base/libbase.la \
   cards/libcards.la \
-  ct/liblcct.la $(mingw_ldflags) @gwenhywfar_libs@ @zlib_libs@ $(pcsc_libraries) $(pcsc_lib)
+  ct/liblcct.la $(mingw_ldflags) $(gwenhywfar_LIBS) $(zlib_libs) $(pcsc_libraries) $(pcsc_lib)
 
 libchipcard_la_LDFLAGS= \
   @STRIPALL@ -no-undefined -version-info \
@@ -31,7 +31,7 @@ libchipcard_la_LDFLAGS= \
 
 
 libtest_SOURCES=libtest.c
-libtest_LDADD=@gwenhywfar_libs@ libchipcard.la
+libtest_LDADD=$(gwenhywfar_LIBS) libchipcard.la
 
 
 sources:

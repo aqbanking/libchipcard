@@ -3,11 +3,11 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
-AM_CPPFLAGS= $(gwenhywfar_includes) \
+AM_CPPFLAGS= $(gwenhywfar_CFLAGS) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
-EXTRA_DIST=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml starcos-card.xml types.xml
+EXTRA_DIST=starcos-app-hvb.xml starcos-app-vr.xml starcos-app.xml starcos-card.xml
 
 typefiles=starcos_keydescr.xml
 

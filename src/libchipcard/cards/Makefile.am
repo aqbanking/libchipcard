@@ -4,7 +4,7 @@ DEFS += \
   -DBUILDING_CHIPCARD
 
 AM_CFLAGS=$(visibility_cflags)
-AM_CPPFLAGS= $(gwenhywfar_includes) $(pcsc_includes) \
+AM_CPPFLAGS= $(gwenhywfar_CFLAGS) $(pcsc_includes) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 

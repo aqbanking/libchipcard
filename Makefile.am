@@ -8,7 +8,6 @@ EXTRA_DIST= \
  INSTALL \
  NEWS \
  README \
- chipcard.m4 \
  libchipcard.spec.in libchipcard.spec Makefile.cvs
 
 

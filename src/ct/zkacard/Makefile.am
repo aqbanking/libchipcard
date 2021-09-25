@@ -1,5 +1,5 @@
 AM_CFLAGS=$(visibility_cflags)
-AM_CPPFLAGS= $(gwenhywfar_includes) \
+AM_CPPFLAGS= $(gwenhywfar_CFLAGS) \
   -I$(top_srcdir) -I$(top_builddir) \
   -I$(top_srcdir)/src -I$(top_builddir)/src
 
@@ -17,7 +17,7 @@ noinst_HEADERS=\
 zkacard_la_SOURCES=dummy.c
 
 zkacard_la_LDFLAGS=-module -no-undefined -avoid-version
-zkacard_la_LIBADD=libct_zkacard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_libs)
+zkacard_la_LIBADD=libct_zkacard.la ../../libchipcard/libchipcard.la $(mingw_ldflags) $(gwenhywfar_LIBS)
 
 
 sources:
