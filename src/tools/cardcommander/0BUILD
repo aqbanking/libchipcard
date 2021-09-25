@@ -17,7 +17,6 @@
 
   
     <headers dist="true" >
-      global.h
     </headers>
   
   
