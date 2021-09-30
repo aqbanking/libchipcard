@@ -212,7 +212,7 @@
     </ifVarMatches>
 
 
-    <data dist="TRUE" install="$(libdir)/pkgconfig" generated="true">
+    <data dist="FALSE" install="$(libdir)/pkgconfig" generated="true">
       libchipcard-client.pc
     </data>
   
