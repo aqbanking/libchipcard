@@ -177,6 +177,8 @@ void LC_Card_free(LC_CARD *cd)
       free(cd->cardType);
       free(cd->lastResult);
       free(cd->lastText);
+      free(cd->readerType);
+      free(cd->driverType);
       GWEN_StringList_free(cd->cardTypes);
       GWEN_Buffer_free(cd->atr);
       GWEN_DB_Group_free(cd->dbCommandCache);
@@ -902,6 +904,7 @@ LC_CLIENT_RESULT LC_Card_SelectDf(LC_CARD *card, const char *fname)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectDFL";
 
   }
@@ -979,6 +982,7 @@ LC_CLIENT_RESULT LC_Card_SelectEf(LC_CARD *card, const char *fname)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectEFL";
 
   }
@@ -1045,6 +1049,7 @@ LC_CLIENT_RESULT LC_Card_SelectEfById(LC_CARD *card, const int  sid)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectEFL";
 
   }
