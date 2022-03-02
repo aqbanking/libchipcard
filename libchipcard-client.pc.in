@@ -6,9 +6,9 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-pkgdatadir=@lc_client_xml_dir@
 datarootdir=@datarootdir@
 datadir=@datadir@
+pkgdatadir=@lc_client_xml_dir@
 bindir=@bindir@
 sysconfdir=@sysconfdir@
 
