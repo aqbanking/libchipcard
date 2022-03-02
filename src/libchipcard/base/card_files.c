@@ -125,6 +125,7 @@ int LC_Card_SelectDf(LC_CARD *card, const char *fname)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectDFL";
 
   }
@@ -201,6 +202,7 @@ int LC_Card_SelectEf(LC_CARD *card, const char *fname)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectEFL";
 
   }
@@ -268,6 +270,7 @@ int LC_Card_SelectEfById(LC_CARD *card, const int  sid)
                         "fileId",
                         GWEN_Buffer_GetStart(buf),
                         GWEN_Buffer_GetUsedBytes(buf));
+    GWEN_Buffer_free(buf);
     cmd="SelectEFL";
 
   }
