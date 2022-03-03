@@ -1,4 +1,4 @@
 SUBDIRS=\
  generic_pcsc \
- cyberjack_ctapi
+ cyberjack_pcsc
 
