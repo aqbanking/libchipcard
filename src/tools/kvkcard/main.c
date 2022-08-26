@@ -13,24 +13,11 @@
 #endif
 
 #include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#include <sys/stat.h>
-#include <fcntl.h>
 
-#ifdef HAVE_SIGNAL_H
-# include <signal.h>
-#endif
 #include <unistd.h>
 
 #include "global.h"
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/db.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/cgui.h>
 

@@ -13,8 +13,6 @@
 
 #include "client_l.h"
 
-#include <gwenhywfar/msgengine.h>
-
 #include <winscard.h>
 #ifndef OS_WIN32
 # include <wintypes.h>

@@ -18,8 +18,6 @@
 #include "examplecard_p.h"
 
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/inherit.h>
-#include <gwenhywfar/misc.h>
 
 
 /* This must be at the top of the file to tell GWEN that we are to inherit

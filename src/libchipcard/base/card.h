@@ -16,7 +16,7 @@
  */
 /*@{*/
 
-#include <gwenhywfar/inherit.h>
+//#include <gwenhywfar/inherit.h>
 
 #ifdef __cplusplus
 extern "C" {

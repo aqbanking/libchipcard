@@ -18,11 +18,8 @@
 #include <libchipcard/cards/processorcard/processorcard.h>
 #include <libchipcard/ct/ct_card.h>
 
-#include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ctplugin_be.h>
-#include <gwenhywfar/text.h>
-#include <gwenhywfar/padd.h>
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
 

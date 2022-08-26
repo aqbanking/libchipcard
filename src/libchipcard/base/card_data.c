@@ -15,7 +15,6 @@
 #include "client_l.h"
 
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/text.h>
 
 
 

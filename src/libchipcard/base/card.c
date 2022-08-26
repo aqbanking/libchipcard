@@ -1,6 +1,6 @@
 /***************************************************************************
     begin       : Mon Mar 01 2004
-    copyright   : (C) 2021 by Martin Preuss
+    copyright   : (C) 2022 by Martin Preuss
     email       : martin@libchipcard.de
 
  ***************************************************************************
@@ -16,11 +16,8 @@
 #include "client_l.h"
 #include "client_cmd.h"
 #include "client_xml.h"
-#include "libchipcard/chipcard.h"
 
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/inherit.h>
-#include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
 #ifdef OS_WIN32

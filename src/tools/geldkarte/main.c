@@ -15,7 +15,6 @@
 
 #include "global.h"
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/db.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/cgui.h>
 

@@ -12,7 +12,6 @@
 #define LC_CT_CARD_H
 
 #include <libchipcard/base/card.h>
-#include <libchipcard/base/pininfo.h>
 
 #include <gwenhywfar/ct.h>
 

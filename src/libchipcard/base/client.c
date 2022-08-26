@@ -13,7 +13,6 @@
 
 #include "client_p.h"
 #include "client_xml.h"
-#include "card_l.h"
 #include "libchipcard/base/msgengine.h"
 #include "libchipcard/base/driverinfo.h"
 
@@ -24,8 +23,6 @@
 #include <gwenhywfar/pathmanager.h>
 #include <gwenhywfar/gui.h>
 #include <gwenhywfar/i18n.h>
-
-#include <assert.h>
 
 #include <winscard.h>
 

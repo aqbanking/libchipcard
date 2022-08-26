@@ -12,7 +12,6 @@
 #endif
 
 #include "client_cmd.h"
-#include "client_xml.h"
 #include "client_p.h"
 #include "card_l.h"
 

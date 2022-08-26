@@ -14,10 +14,6 @@
 
 #include "libchipcard/base/driverinfo.h"
 
-#include <gwenhywfar/stringlist.h>
-#include <gwenhywfar/buffer.h>
-#include <gwenhywfar/xml.h>
-#include <gwenhywfar/db.h>
 
 
 #endif

@@ -14,11 +14,7 @@
 
 #include <libchipcard/base/client.h>
 
-#include <gwenhywfar/args.h>
 #include <gwenhywfar/cgui.h>
-#include <gwenhywfar/text.h>
-#include <gwenhywfar/url.h>
-#include <gwenhywfar/ct.h>
 #include <gwenhywfar/ctplugin.h>
 #include <gwenhywfar/debug.h>
 

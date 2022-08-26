@@ -15,13 +15,9 @@
 #define CHIPCARD_NOWARN_DEPRECATED
 
 #include "egkcard_p.h"
-#include <libchipcard/chipcard.h>
 #include <libchipcard/cards/processorcard/processorcard.h>
 
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/inherit.h>
-#include <gwenhywfar/misc.h>
-#include <gwenhywfar/buffer.h>
 #include <gwenhywfar/text.h>
 
 #include <zlib.h>

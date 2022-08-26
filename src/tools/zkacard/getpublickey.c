@@ -15,17 +15,10 @@
 
 #include "global.h"
 
-#include <gwenhywfar/text.h>
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/ct_keyinfo.h>
 #include <gwenhywfar/gui.h>
-#include <gwenhywfar/ct.h>
 #include <gwenhywfar/ctplugin.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+
 
 int getPublicKey(GWEN_DB_NODE *dbArgs, int argc,  char **argv)
 {

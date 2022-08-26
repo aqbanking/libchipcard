@@ -13,14 +13,11 @@
 
 
 #include <libchipcard/chipcard.h>
-#include <libchipcard/base/client.h>
 #include <libchipcard/cards/kvkcard/kvkcard.h>
 #include <libchipcard/cards/egkcard/egkcard.h>
 #include <libchipcard/cards/hipersonaldata.h>
 #include <libchipcard/cards/hiinsurancedata.h>
 
-#include <gwenhywfar/logger.h>
-#include <gwenhywfar/process.h>
 
 
 #define RETURNVALUE_PARAM          1

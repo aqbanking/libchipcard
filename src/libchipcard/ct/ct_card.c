@@ -14,10 +14,8 @@
 
 #include "ct_card.h"
 
-#include <gwenhywfar/misc.h>
 #include <gwenhywfar/debug.h>
 #include <gwenhywfar/ct_be.h>
-#include <gwenhywfar/cryptdefs.h>
 #include <gwenhywfar/gui.h>
 
 

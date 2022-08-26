@@ -20,9 +20,6 @@
 
 #include <gwenhywfar/debug.h>
 
-#include <time.h>
-#include <assert.h>
-
 
 
 int getAtr(LC_CLIENT *cl, GWEN_DB_NODE *dbArgs)

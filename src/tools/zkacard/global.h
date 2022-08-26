@@ -14,9 +14,6 @@
 #include <libchipcard/base/client.h>
 #include <libchipcard/ct/ct_card.h>
 
-#include <gwenhywfar/logger.h>
-#include <gwenhywfar/db.h>
-#include <gwenhywfar/ct.h>
 #include <gwenhywfar/debug.h>
 
 

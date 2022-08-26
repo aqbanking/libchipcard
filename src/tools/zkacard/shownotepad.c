@@ -19,15 +19,9 @@
 #include <libchipcard/cards/zkacard/zkacard.h>
 #include <libchipcard/ct/ct_card.h>
 
-#include <gwenhywfar/text.h>
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/gui.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
 
 
 #define LC_CT_ZKA_NUM_CONTEXT 31

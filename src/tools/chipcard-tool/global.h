@@ -12,11 +12,8 @@
 #define RSACARD_GLOBAL_H
 
 
-#include <libchipcard/chipcard.h>
 #include <libchipcard/base/client.h>
 
-#include <gwenhywfar/logger.h>
-#include <gwenhywfar/db.h>
 
 #define I18N(msg) msg
 

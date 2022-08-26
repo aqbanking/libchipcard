@@ -13,8 +13,6 @@
 
 #include <libchipcard/chipcard.h>
 
-#include <gwenhywfar/buffer.h>
-#include <gwenhywfar/misc.h>
 
 #ifdef __cplusplus
 extern "C" {

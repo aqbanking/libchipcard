@@ -14,7 +14,6 @@
 
 #include <libchipcard/chipcard.h>
 
-#include <gwenhywfar/db.h>
 
 int LC_DriverInfo_ReadDrivers(const char *dataDir,
                               GWEN_DB_NODE *dbDrivers,

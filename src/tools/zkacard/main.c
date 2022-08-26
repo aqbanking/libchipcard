@@ -15,10 +15,6 @@
 #include "global.h"
 #include <gwenhywfar/args.h>
 #include <gwenhywfar/cgui.h>
-#include <gwenhywfar/text.h>
-#include <gwenhywfar/url.h>
-#include <gwenhywfar/ct.h>
-#include <gwenhywfar/ctplugin.h>
 
 #define PROGRAM_VERSION "0.1"
 

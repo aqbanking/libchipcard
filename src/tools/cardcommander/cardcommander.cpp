@@ -31,15 +31,10 @@
 #include <libchipcard/chipcard.h>
 #include <libchipcard/base/client.h>
 
-#include <gwenhywfar/logger.h>
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/db.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/cgui.h>
 
-#include <stdio.h>
-#include <errno.h>
-#include <cctype>
 #include <string>
 
 

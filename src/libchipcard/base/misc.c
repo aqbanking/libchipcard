@@ -16,8 +16,6 @@
 
 #include <gwenhywfar/debug.h>
 
-#include <assert.h>
-
 
 
 uint32_t LC_ReaderFlags_fromDb(GWEN_DB_NODE *db, const char *name)

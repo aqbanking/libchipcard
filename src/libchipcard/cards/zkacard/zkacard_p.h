@@ -13,7 +13,6 @@
 
 #include "zkacard.h"
 #include "libchipcard/base/card_imp.h"
-#include "libchipcard/base/pininfo.h"
 
 
 
@@ -43,9 +42,9 @@ static void GWENHYWFAR_CB LC_ZkaCard_freeData(void *bp, void *p);
 static int CHIPCARD_CB LC_ZkaCard_Open(LC_CARD *card);
 static int CHIPCARD_CB LC_ZkaCard_Close(LC_CARD *card);
 static int CHIPCARD_CB LC_ZkaCard_GetPinStatus(LC_CARD *card,
-                                                            unsigned int pid,
-                                                            int *maxErrors,
-                                                            int *currentErrors);
+                                               unsigned int pid,
+                                               int *maxErrors,
+                                               int *currentErrors);
 
 
 /*static int LC_ZkaCard__PrepareSign(LC_CARD *card, int globalKey, int keyId, int keyVersion);*/

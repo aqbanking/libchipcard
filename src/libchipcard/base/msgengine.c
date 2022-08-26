@@ -14,16 +14,9 @@
 
 #include "msgengine_p.h"
 
-#include "libchipcard/chipcard.h"
-
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/inherit.h>
-#include <gwenhywfar/misc.h>
 #include <gwenhywfar/text.h>
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 
 
 GWEN_INHERIT(GWEN_MSGENGINE, LC_MSGENGINE)

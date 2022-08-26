@@ -11,7 +11,6 @@
 #ifndef CHIPCARD_CLIENT_CLIENT_L_H
 #define CHIPCARD_CLIENT_CLIENT_L_H
 
-#include "libchipcard/base/client.h"
 #include "libchipcard/base/card.h"
 
 #include <gwenhywfar/msgengine.h>

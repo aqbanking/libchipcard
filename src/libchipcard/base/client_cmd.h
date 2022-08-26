@@ -11,7 +11,6 @@
 #define CHIPCARD_CLIENT_CLIENT_CMD_H
 
 
-#include "libchipcard/base/client.h"
 #include "libchipcard/base/card.h"
 
 

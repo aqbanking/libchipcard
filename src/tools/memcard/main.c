@@ -13,13 +13,9 @@
 #endif
 
 #include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "global.h"
 #include <gwenhywfar/args.h>
-#include <gwenhywfar/db.h>
 #include <gwenhywfar/cgui.h>
 
 #define I18N(msg) msg

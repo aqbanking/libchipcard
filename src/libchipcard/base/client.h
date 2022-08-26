@@ -17,7 +17,6 @@
 /*@{*/
 
 #include <gwenhywfar/inherit.h>
-#include <gwenhywfar/error.h>
 
 #include <libchipcard/chipcard.h>
 

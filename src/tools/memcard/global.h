@@ -16,7 +16,6 @@
 #include <libchipcard/base/client.h>
 #include <libchipcard/cards/memorycard/memorycard.h>
 
-#include <gwenhywfar/logger.h>
 
 
 #define RETURNVALUE_PARAM   1

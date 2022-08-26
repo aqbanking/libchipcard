@@ -13,17 +13,13 @@
 
 
 #include "driverinfo_p.h"
-#include "libchipcard/chipcard.h"
 
 #include <gwenhywfar/directory.h>
 #include <gwenhywfar/text.h>
 #include <gwenhywfar/debug.h>
 
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
 
 
 

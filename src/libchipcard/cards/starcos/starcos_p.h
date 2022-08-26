@@ -13,7 +13,7 @@
 
 #include <libchipcard/base/card_imp.h>
 #include "starcos.h"
-#include "starcos_keydescr.h"
+
 
 typedef struct LC_STARCOS LC_STARCOS;
 

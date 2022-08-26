@@ -12,8 +12,6 @@
 #define CHIPCARD_CARD_CHIPTANUSB_H
 
 #include <libchipcard/base/card.h>
-#include <libchipcard/base/pininfo.h>
-#include <gwenhywfar/db.h>
 
 
 CHIPCARD_API

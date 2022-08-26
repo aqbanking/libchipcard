@@ -11,7 +11,6 @@
 #define CHIPCARD_CARD_CHIPTANUSB_P_H
 
 #include "chiptanusb.h"
-#include "libchipcard/base/pininfo.h"
 #include "libchipcard/base/card_imp.h"
 
 

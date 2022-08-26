@@ -14,15 +14,10 @@
 
 
 #include "kvkcard_p.h"
-#include <libchipcard/chipcard.h>
 #include <libchipcard/base/tlv.h>
 #include <libchipcard/cards/memorycard/memorycard.h>
 
 #include <gwenhywfar/debug.h>
-#include <gwenhywfar/inherit.h>
-#include <gwenhywfar/misc.h>
-#include <gwenhywfar/buffer.h>
-#include <gwenhywfar/text.h>
 
 
 GWEN_INHERIT(LC_CARD, LC_KVKCARD)
