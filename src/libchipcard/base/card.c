@@ -174,6 +174,8 @@ void LC_Card_free(LC_CARD *cd)
       free(cd->cardType);
       free(cd->lastResult);
       free(cd->lastText);
+      free(cd->readerType);
+      free(cd->driverType);
       GWEN_StringList_free(cd->cardTypes);
       GWEN_Buffer_free(cd->atr);
       GWEN_DB_Group_free(cd->dbCommandCache);
