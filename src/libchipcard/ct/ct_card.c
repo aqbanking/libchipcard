@@ -94,9 +94,7 @@ int LC_Crypt_Token_VerifyPinWithPinInfo(GWEN_CRYPT_TOKEN *ct,
     return res;
   }
 
-  if ((pinType!=GWEN_Crypt_PinType_Manage) &&
-      (LC_Card_GetReaderFlags(hcard) & LC_READER_FLAGS_KEYPAD) &&
-      !(GWEN_Crypt_Token_GetModes(ct) & GWEN_CRYPT_TOKEN_MODE_FORCE_PIN_ENTRY)) {
+  if ((pinType!=GWEN_Crypt_PinType_Manage) && (LC_Card_GetReaderFlags(hcard) & LC_READER_FLAGS_KEYPAD)) {
     /* use reader's keypad */
     res=_verifyPinViaKeypad(ct, hcard, pinType, pinInfo, guiid);
     if (res<0) {
